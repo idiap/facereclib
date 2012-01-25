@@ -4,3 +4,4 @@ List of missing bits:
 - Check databases consistency
 - Allows global (grid) scripts to only do one part of the processing chain
 - Add command line options that overwrite configuration file ones
+- Force option inconsistency (does not deal with scores)
