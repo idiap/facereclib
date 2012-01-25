@@ -3,7 +3,7 @@
 
 """Submits all feature creation jobs to the Idiap grid"""
 
-import os, sys, math
+import os, sys, subprocess, math
 import argparse
 
 def checked_directory(base, name):
@@ -54,7 +54,7 @@ def submit(job_manager, command, dependencies=[], array=None):
       queue='all.q', stdout=logdir, stderr=logdir, name=name, array=array,
       env=FACERECLIB_WRAPPER_ENVIRONMENT)
 
-def generic_submit(script_filename, config_filename, TOTAL_ARRAY_JOBS, job_manager):
+def generic_submit(script_filename, config_filename, TOTAL_ARRAY_JOBS, job_manager, nogrid=False):
   """Submit the given script on the grid using with the provided configuration file
 
   Keyword parameters
@@ -76,15 +76,15 @@ def generic_submit(script_filename, config_filename, TOTAL_ARRAY_JOBS, job_manag
 
   cmd = [
           script_filename,
-          '--config-file=%s' % config_filename,
-          '--grid'
+          '--config-file=%s' % config_filename
         ]
   print cmd
-  array = (1,TOTAL_ARRAY_JOBS,1)
-  job = submit(job_manager, cmd, array=array)
-  print 'submitted:', job
-
-  return job
+  if nogrid: subprocess.call(cmd)
+  else:
+    cmd = [ cmd, '--grid' ]
+    array = (1,TOTAL_ARRAY_JOBS,1)
+    job = submit(job_manager, cmd, array=array)
+    print 'submitted:', job
 
 
 def main():
@@ -97,6 +97,8 @@ def main():
       dest='script_file', default="", help='Filename of the script to run on the grid (defaults to "%(default)s")')
   parser.add_argument('-c', '--config-file', metavar='FILE', type=str,
       dest='config_file', default="", help='Filename of the configuration file to use to run the script on the grid (defaults to "%(default)s")')
+  parser.add_argument('-j', '--nogrid', dest='nogrid', action='store_true',
+      default=False, help='Do not use the SGE grid, but the current machine directly.')
   args = parser.parse_args()
 
   # Loads the configuration 
@@ -110,7 +112,7 @@ def main():
   jm = JobManager()
 
   # Runs the jobs
-  jobs = generic_submit(args.script_file, args.config_file, n_jobs, jm)
+  generic_submit(args.script_file, args.config_file, n_jobs, jm, args.nogrid)
 
 if __name__ == '__main__':
   main()
