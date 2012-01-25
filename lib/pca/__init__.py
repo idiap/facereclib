@@ -60,7 +60,7 @@ def pca_enrol_model(enrol_files, model_path):
     img = bob.io.load( str(enrol_files[k]) )
 
     if model.shape[0] == 0:
-      np.resize(model, img.shape[0])
+      model.resize(img.shape[0])
       model[:]=0
     if img.shape[0] != model.shape[0]:
       raise Exception('Size mismatched')
@@ -90,7 +90,7 @@ def pca_scores(model_file, probe_files):
     if not os.path.exists(str(f)):
       raise RuntimeError, "Could not find model %s." % str(f)
     probe = bob.io.load(str(f))
-    scores[0,i] = -bob.math.norm(probe-model)
+    scores[0,i] = -np.linalg.norm(probe-model)
     i += 1
   # Returns the (negative) distance between the samples and the model
   return scores
@@ -113,7 +113,7 @@ def pca_scores_A(models_ids, models_dir, probe_files, db,
 
     # Saves to text file
     import utils
-    scores_list = utils.convertScoreToList(A.as_row(), probe_files)
+    scores_list = utils.convertScoreToList(np.reshape(A,A.size), probe_files)
     sc_nonorm_filename = os.path.join(scores_nonorm_dir, group, str(model_id) + "_" + str(probes_split_id).zfill(4) + ".txt")
     f_nonorm = open(sc_nonorm_filename, 'w')
     for x in scores_list:

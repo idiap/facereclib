@@ -52,7 +52,7 @@ def compute(img_input, pos_input, prep_output,
       TT(cropped_img, preprocessed_img)
 
       # vectorize and save
-      #prep_img_1d = np.reshape(preprocessed_img, preprocessed_img.size)
-      prep_img_1d = bob.core.array.convert(preprocessed_img, 'uint8', sourceRange=(-THRESHOLD,THRESHOLD), destRange=(0,255))
+      prep_img_1d = np.reshape(preprocessed_img, preprocessed_img.size)
+      #prep_img_1d = bob.core.array.convert(preprocessed_img, 'uint8', sourceRange=(-THRESHOLD,THRESHOLD), destRange=(0,255))
       utils.ensure_dir(os.path.dirname(str(prep_output[k])))
       bob.io.save(prep_img_1d,str(prep_output[k]))

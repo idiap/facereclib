@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# vim: set fileencoding=utf-8 :
+# Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
 
 import os
 import bob
@@ -40,7 +42,6 @@ def main():
     print "Training PCA model"
     train_files = db.files(directory=config.features_dir, extension=config.features_ext,
                            protocol=config.protocol, groups='world', **config.world_options) 
-    #                      expressions='neutral', world_sampling=1, world_noflash=True)
     print "Number of training files: " + str(len(train_files))
     import pca
     pca.pca_train(train_files, config.pca_model_filename, config.pca_n_outputs)
