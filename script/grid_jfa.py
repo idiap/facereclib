@@ -81,10 +81,11 @@ def main():
   # Trains the UBM
   cmd_ubm = [ 
               'gmm_ubm.py', 
-              '--config-file=%s' % args.config_file, 
-              '--grid'
+              '--config-file=%s' % args.config_file
             ]
-  if args.nogrid: subprocess.call(cmd_ubm)
+  if args.nogrid: 
+    print cmd_ubm
+    subprocess.call(cmd_ubm)
   else:
     job_ubm = submit(jm, cmd_ubm, dependencies=[], array=None, queue='q1d', mem='4G')
     print 'submitted:', job_ubm
@@ -93,23 +94,26 @@ def main():
   job_gmmstats = []
   n_input = len(db.files(directory=config.img_input_dir, extension=config.img_input_ext, protocol=config.protocol, **config.all_files_options))
   n_jobs = int(math.ceil(n_input / float(config.N_MAX_FILES_PER_JOB)))
-  cmd_gmmstats =  [
-                    'gmm_stats.py',  
-                    '--config-file=%s' % args.config_file, 
-                    '--grid'
-                  ]
-  if args.nogrid: subprocess.call(cmd_gmmstats)
+  cmd_gmmstats = [
+                  'gmm_stats.py',  
+                  '--config-file=%s' % args.config_file
+                 ]
+  if args.nogrid: 
+    print cmd_gmmstats
+    subprocess.call(cmd_gmmstats)
   else:
+    cmd_ubm.append('--grid')
     job_gmmstats = submit(jm, cmd_gmmstats, dependencies=[job_ubm.id()], array=(1,n_jobs,1)) 
     print 'submitted:', job_gmmstats
 
   # Trains the JFA base
   cmd_jfabase = [ 
-              'jfa_base.py', 
-              '--config-file=%s' % args.config_file, 
-              '--grid'
-            ]
-  if args.nogrid: subprocess.call(cmd_jfabase)
+                  'jfa_base.py', 
+                  '--config-file=%s' % args.config_file
+                ]
+  if args.nogrid: 
+    print cmd_jfabase
+    subprocess.call(cmd_jfabase)
   else:
     job_jfabase = submit(jm, cmd_jfabase, dependencies=[job_gmmstats.id()], array=None, queue='q1d', mem='8G')
     print 'submitted:', job_jfabase
@@ -123,10 +127,12 @@ def main():
                     'jfa_tmodels.py',
                     '--group=%s' % group,
                     '--config-file=%s' % args.config_file,
-                    '--grid'
                   ]
-      if args.nogrid: subprocess.call(cmd_tnorm)
+      if args.nogrid: 
+        print cmd_tnorm
+        subprocess.call(cmd_tnorm)
       else:
+        cmd_tnorm.append('--grid')
         job_tnorm_int = submit(jm, cmd_tnorm, dependencies=[job_jfabase.id()], array=(1,n_array_jobs,1), queue='q1d', mem='4G')
         job_tnorm_L.append(job_tnorm_int.id())
         print 'submitted:', job_tnorm_int
@@ -138,11 +144,13 @@ def main():
     cmd_models = [
                   'jfa_models.py',
                   '--group=%s' % group,
-                  '--config-file=%s' % args.config_file,
-                  '--grid'
-                  ]
-    if args.nogrid: subprocess.call(cmd_models)
+                  '--config-file=%s' % args.config_file
+                 ]
+    if args.nogrid: 
+      print cmd_models
+      subprocess.call(cmd_models)
     else:
+      cmd_models.append('--grid')
       job_models_int = submit(jm, cmd_models, dependencies=[job_jfabase.id()], array=(1,n_array_jobs,1), queue='q1d', mem='4G')
       job_models_L.append(job_models_int.id())
       print 'submitted:', job_models_int
@@ -160,25 +168,28 @@ def main():
       n_splits_for_model = int(math.ceil(n_probes_for_model / float(config.N_MAX_PROBES_PER_JOB)))
       n_array_jobs += n_splits_for_model
     cmd_scores_A = [
-                  'jfa_scores_A.py',
-                  '--group=%s' % group,
-                  '--config-file=%s' % args.config_file,
-                  '--grid'
-                  ]
-    if args.nogrid: subprocess.call(cmd_scores_A)
+                    'jfa_scores_A.py',
+                    '--group=%s' % group,
+                    '--config-file=%s' % args.config_file
+                   ]
+    if args.nogrid: 
+      print cmd_scores_A
+      subprocess.call(cmd_scores_A)
     else:
+      cmd_scores_A.append('--grid')
       job_scores_int = submit(jm, cmd_scores_A, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='8G')
       job_scores_A.append(job_scores_int.id())
       print 'submitted:', job_scores_int
 
   # Merges the raw scores
   job_scores_Am = []
-  cmd_scores_Am =  [
+  cmd_scores_Am = [
                     'scores_A_merge.py',  
-                    '--config-file=%s' % args.config_file, 
-                    '--grid'
+                    '--config-file=%s' % args.config_file
                   ]
-  if args.nogrid: subprocess.call(cmd_scores_Am)
+  if args.nogrid: 
+    print cmd_scores_Am
+    subprocess.call(cmd_scores_Am)
   else:
     job_scores_Am = submit(jm, cmd_scores_Am, dependencies=job_scores_A) 
     print 'submitted:', job_scores_Am
@@ -199,25 +210,28 @@ def main():
       # Number of array jobs 
       n_array_jobs = n_model_ids * n_zsamples_splits
       cmd_scores_B = [
-                    'jfa_scores_B.py',
-                    '--group=%s' % group,
-                    '--config-file=%s' % args.config_file,
-                    '--grid'
-                    ]
-      if args.nogrid: subprocess.call(cmd_scores_B)
+                      'jfa_scores_B.py',
+                      '--group=%s' % group,
+                      '--config-file=%s' % args.config_file
+                     ]
+      if args.nogrid: 
+        print cmd_scores_B
+        subprocess.call(cmd_scores_B)
       else:
+        cmd_scores_B.append('--grid')
         job_scores_int = submit(jm, cmd_scores_B, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='4G')
         job_scores_B.append(job_scores_int.id())
         print 'submitted:', job_scores_int
 
   # Merges the B matrices 
   job_scores_Bm = []
-  cmd_scores_Bm =  [
+  cmd_scores_Bm = [
                     'scores_B_merge.py',  
-                    '--config-file=%s' % args.config_file, 
-                    '--grid'
+                    '--config-file=%s' % args.config_file
                   ]
-  if args.nogrid: subprocess.call(cmd_scores_Bm)
+  if args.nogrid: 
+    print cmd_scores_Bm
+    subprocess.call(cmd_scores_Bm)
   else:
     job_scores_Bm = submit(jm, cmd_scores_Bm, dependencies=job_scores_B) 
     print 'submitted:', job_scores_Bm
@@ -243,23 +257,26 @@ def main():
       cmd_scores_C = [
                     'jfa_scores_C.py',
                     '--group=%s' % group,
-                    '--config-file=%s' % args.config_file,
-                    '--grid'
+                    '--config-file=%s' % args.config_file
                     ]
-      if args.nogrid: subprocess.call(cmd_scores_C)
+      if args.nogrid: 
+        print cmd_scores_C
+        subprocess.call(cmd_scores_C)
       else:
+        cmd_scores_C.append('--grid')
         job_scores_int = submit(jm, cmd_scores_C, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='4G')
         job_scores_C.append(job_scores_int.id())
         print 'submitted:', job_scores_int
 
   # Merges the C matrices 
   job_scores_Cm = []
-  cmd_scores_Cm =  [
+  cmd_scores_Cm = [
                     'scores_C_merge.py',  
-                    '--config-file=%s' % args.config_file, 
-                    '--grid'
+                    '--config-file=%s' % args.config_file
                   ]
-  if args.nogrid: subprocess.call(cmd_scores_Cm)
+  if args.nogrid: 
+    print cmd_scores_Cm
+    subprocess.call(cmd_scores_Cm)
   else:
     job_scores_Cm = submit(jm, cmd_scores_Cm, dependencies=job_scores_C) 
     print 'submitted:', job_scores_Cm
@@ -281,25 +298,28 @@ def main():
       # Number of jobs
       n_array_jobs = int(n_zsamples_splits) * n_tnorm_models_ids
       cmd_scores_D = [
-                    'jfa_scores_D.py',
-                    '--group=%s' % group,
-                    '--config-file=%s' % args.config_file,
-                    '--grid'
-                    ]
-      if args.nogrid: subprocess.call(cmd_scores_D)
+                      'jfa_scores_D.py',
+                      '--group=%s' % group,
+                      '--config-file=%s' % args.config_file
+                     ]
+      if args.nogrid: 
+        print cmd_scores_D
+        subprocess.call(cmd_scores_D)
       else:
+        cmd_scores_D.append('--grid')
         job_scores_int = submit(jm, cmd_scores_D, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='4G')
         job_scores_D.append(job_scores_int.id())
         print 'submitted:', job_scores_int
 
   # Merges the D matrices 
   job_scores_Dm = []
-  cmd_scores_Dm =  [
+  cmd_scores_Dm = [
                     'scores_D_merge.py',  
-                    '--config-file=%s' % args.config_file, 
-                    '--grid'
+                    '--config-file=%s' % args.config_file
                   ]
-  if args.nogrid: subprocess.call(cmd_scores_Dm)
+  if args.nogrid: 
+    print cmd_scores_Dm
+    subprocess.call(cmd_scores_Dm)
   else:
     job_scores_Dm = submit(jm, cmd_scores_Dm, dependencies=job_scores_D) 
     print 'submitted:', job_scores_Dm
@@ -308,12 +328,12 @@ def main():
   job_scores_ZT = []
   if config.zt_norm:
     cmd_scores_ZT = [ 
-              'scores_ztnorm.py', 
-              '--config-file=%s' % args.config_file, 
-              '--grid'
-              ]
-
-  if args.nogrid: subprocess.call(cmd_scores_ZT)
+                      'scores_ztnorm.py', 
+                      '--config-file=%s' % args.config_file
+                    ]
+  if args.nogrid: 
+    print cmd_scores_ZT
+    subprocess.call(cmd_scores_ZT)
   else:
     job_scores_ZT = submit(jm, cmd_scores_ZT, dependencies=[job_scores_Am.id(), job_scores_Bm.id(),job_scores_Cm.id(), job_scores_Dm.id()], queue='q1d', mem='4G')
     print 'submitted:', job_scores_ZT
@@ -322,9 +342,10 @@ def main():
   cmd_cat = [ 
               'concatenate_scores.py', 
               '--config-file=%s' % args.config_file, 
-              '--grid'
             ]
-  if args.nogrid: subprocess.call(cmd_cat)
+  if args.nogrid: 
+    print cmd_scores_cat
+    subprocess.call(cmd_cat)
   else:
     job_cat = submit(jm, cmd_cat, dependencies=[job_scores_Am.id(),job_scores_ZT.id()], array=None)
     print 'submitted:', job_cat

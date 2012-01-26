@@ -102,7 +102,7 @@ def main():
     print cmd_pca_project
     subprocess.call(cmd_pca_project)
   else:
-    cmd_pca_project = [ cmd_pca_project, '--grid' ]
+    cmd_pca_project.append('--grid')
     job_pca_project = submit(jm, cmd_pca_project, dependencies=[job_pca.id()], array=(1,n_jobs,1))
     print 'submitted:', job_pca_project
 
@@ -120,7 +120,7 @@ def main():
         print cmd_tnorm
         subprocess.call(cmd_tnorm)
       else:
-        cmd_tnorm = [ cmd_tnorm, '--grid' ]
+        cmd_tnorm.append('--grid')
         job_tnorm_int = submit(jm, cmd_tnorm, dependencies=[job_pca_project.id()], array=(1,n_array_jobs,1))
         job_tnorm_L.append(job_tnorm_int.id())
         print 'submitted:', job_tnorm_int
@@ -138,7 +138,7 @@ def main():
       print cmd_models
       subprocess.call(cmd_models)
     else:
-      cmd_models = [ cmd_models, '--grid' ]
+      cmd_models.append('--grid')
       job_models_int = submit(jm, cmd_models, dependencies=[job_pca_project.id()], array=(1,n_array_jobs,1))
       job_models_L.append(job_models_int.id())
       print 'submitted:', job_models_int
@@ -162,7 +162,7 @@ def main():
       print cmd_scores_A
       subprocess.call(cmd_scores_A)
     else:
-      cmd_scores_A = [ cmd_scores_A, '--grid' ]
+      cmd_scores_A.append('--grid')
       job_scores_int = submit(jm, cmd_scores_A, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='4G')
       job_scores_A.append(job_scores_int.id())
       print 'submitted:', job_scores_int
@@ -202,7 +202,7 @@ def main():
         print cmd_scores_B
         subprocess.call(cmd_scores_B)
       else:
-        cmd_scores_B = [ cmd_scores_B, '--grid' ]
+        cmd_scores_B.append('--grid')
         job_scores_int = submit(jm, cmd_scores_B, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='4G')
         job_scores_B.append(job_scores_int.id())
         print 'submitted:', job_scores_int
@@ -241,7 +241,7 @@ def main():
         print cmd_scores_C
         subprocess.call(cmd_scores_C)
       else:
-        cmd_scores_C = [ cmd_scores_C, '--grid' ]
+        cmd_scores_C.append('--grid')
         job_scores_int = submit(jm, cmd_scores_C, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='4G')
         job_scores_C.append(job_scores_int.id())
         print 'submitted:', job_scores_int
@@ -281,7 +281,7 @@ def main():
         print cmd_scores_D
         subprocess.call(cmd_scores_D)
       else:
-        cmd_scores_D = [ cmd_scores_D, '--grid' ]
+        cmd_scores_D.append('--grid')
         job_scores_int = submit(jm, cmd_scores_D, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='4G')
         job_scores_D.append(job_scores_int.id())
         print 'submitted:', job_scores_int
