@@ -9,8 +9,8 @@ N_MAX_PROBES_PER_JOB = 1000
 # 0/ The database to use
 db = bob.db.banca.Database()
 protocol = 'P'
-base_output_USER_dir = "/idiap/user/lelshafey/banca/gmm"
-base_output_TEMP_dir = "/idiap/temp/lelshafey/banca/gmm"
+base_output_USER_dir = "/idiap/user/mguenther/databases/banca/gmm"
+base_output_TEMP_dir = "/idiap/temp/mguenther/databases/banca/gmm"
 
 # 1/ Face normalization
 img_input_dir = "/idiap/group/vision/visidiap/databases/banca/english/images_gray"
