@@ -163,7 +163,7 @@ def main():
       subprocess.call(cmd_scores_A)
     else:
       cmd_scores_A = [ cmd_scores_A, '--grid' ]
-      job_scores_int = submit(jm, cmd_scores_A, dependencies=deps, array=(1,n_array_jobs,1), queue'q1d', mem='4G')
+      job_scores_int = submit(jm, cmd_scores_A, dependencies=deps, array=(1,n_array_jobs,1), queue='q1d', mem='4G')
       job_scores_A.append(job_scores_int.id())
       print 'submitted:', job_scores_int
 
