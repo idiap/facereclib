@@ -169,7 +169,7 @@ def main():
 
   # Merges the raw scores
   job_scores_Am = []
-  cmd_scores_Am =  [
+  cmd_scores_Am = [
                     'scores_A_merge.py',  
                     '--config-file=%s' % args.config_file
                   ]
