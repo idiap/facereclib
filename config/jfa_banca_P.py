@@ -12,8 +12,8 @@ protocol = 'P'
 # JFA dimensionality (used in the path)
 ru = 2
 rv = 2
-base_output_USER_dir = "/idiap/user/lelshafey/banca/isv/U" + str(ru) + "_V" + str(rv)
-base_output_TEMP_dir = "/idiap/temp/lelshafey/banca/isv/U" + str(ru) + "_V" + str(rv)
+base_output_USER_dir = "/idiap/user/lelshafey/banca/jfa/U" + str(ru) + "_V" + str(rv)
+base_output_TEMP_dir = "/idiap/temp/lelshafey/banca/jfa/U" + str(ru) + "_V" + str(rv)
 
 # 1/ Face normalization
 img_input_dir = "/idiap/group/vision/visidiap/databases/banca/english/images_gray"

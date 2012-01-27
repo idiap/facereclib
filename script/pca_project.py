@@ -33,13 +33,12 @@ def main():
   # finally, if we are on a grid environment, just find what I have to process.
   if args.grid:
     pos = int(os.environ['SGE_TASK_ID']) - 1
-    n_total = config.TOTAL_ARRAY_JOBS
-    n_per_job = math.ceil(len(input_features) / float(config.TOTAL_ARRAY_JOBS))
+    n_jobs = int(math.ceil(len(input_features) / float(config.N_MAX_FILES_PER_JOB)))
     
-    if pos >= n_total:
+    if pos >= n_jobs:
       raise RuntimeError, "Grid request for job %d on a setup with %d jobs" % \
-          (pos, n_total)
-    input_features_g = utils.split_dictionary(input_features, n_per_job)[pos]
+          (pos, n_jobs)
+    input_features_g = utils.split_dictionary(input_features, config.N_MAX_FILES_PER_JOB)[pos]
     input_features = input_features_g
 
   # Checks that the base directory for storing the features exists

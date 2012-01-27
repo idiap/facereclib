@@ -78,12 +78,11 @@ def generic_submit(script_filename, config_filename, TOTAL_ARRAY_JOBS, job_manag
           script_filename,
           '--config-file=%s' % config_filename
         ]
-  print cmd
   if nogrid: subprocess.call(cmd)
   else:
-    cmd = [ cmd, '--grid' ]
+    cmd.append('--grid')
     array = (1,TOTAL_ARRAY_JOBS,1)
-    job = submit(job_manager, cmd, array=array)
+    job = submit(job_manager, cmd, [], array=array)
     print 'submitted:', job
 
 
