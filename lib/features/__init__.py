@@ -4,6 +4,22 @@
 
 """Features for face recognition"""
 
-import dct
-import lbp
-import tantriggs
+from DCT import DCTBlocks
+from LGBPHS import LGBPHS
+from GridGraph import GridGraph
+from Eigenface import Eigenface
+
+
+import numpy
+
+class Linearize:
+  """Extracts Eigenface feature by simply concatenating all pixels of the image into one long vector"""
+  
+  def __init__(self, setup):
+    """Nothing to be done here."""
+    pass
+    
+  def __call__(self, image):
+    """Takes a 2D image and linearizes it into a 1D vector"""
+    return numpy.reshape(image, image.size)
+
