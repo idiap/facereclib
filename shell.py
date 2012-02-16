@@ -9,8 +9,7 @@ import sys
 import subprocess
 
 # Choose here the bob release you want to use:
-DEFAULT_BOB_DIR = '/idiap/home/mguenther/Source/bob'
-#DEFAULT_BOB_DIR = '/idiap/group/torch5spro/nightlies/last'
+DEFAULT_BOB_DIR = '/idiap/group/torch5spro/nightlies/last'
 
 def find_install_dir():
   """Test to see if I find my own libraries, otherwise, we are probably running
