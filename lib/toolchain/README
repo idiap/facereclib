@@ -1,0 +1,6 @@
+In this folder, the basic toolchain and a FileSelector class dealing with calls to the databases are stored. 
+
+The BaseToolchain.ProcessingToolChain defines functions that deals with the databases, reads according lists, and finally calls the according functions from the tools (and from the feature extraction tools, which are stored in the lib/features folder). Additionally, it provides functions that compute functions to compute scores without score value normalization, and also computing ZT-norms. If you require more functionality, don't hesitate to modify the default toolchain.
+
+The FileSelector.FileSelector provides functions to generate file lists of original images, preprocessed images, extracted features, and projected features. Also, model and Tmodel ids (and file lists) as well as probe files (also for the given model) can be obtained. Furthermore, the files to store intermediate score results are provided. Currently, the FileSelector is tested with the BANCA and the MOBIO database.
+
