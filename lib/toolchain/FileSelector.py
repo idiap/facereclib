@@ -93,8 +93,9 @@ class FileSelector:
     
   def model_file(self, model_id, group):
     """Returns the file of the model and assures that the directory exists"""
-    utils.ensure_dir(os.path.dirname(self.m_config.models_dir))
-    return os.path.join(self.m_config.models_dir, str(model_id) + ".hdf5")
+    model_file = os.path.join(self.m_config.models_dir, group, str(model_id) + self.m_config.default_extension) 
+    utils.ensure_dir(os.path.dirname(model_file))
+    return model_file
     
 
   def Tmodel_ids(self, group):
@@ -108,47 +109,48 @@ class FileSelector:
   
   def Tmodel_file(self, model_id, group):
     """Returns the file of the T-Norm-model and assures that the directory exists"""
-    utils.ensure_dir(os.path.dirname(self.m_config.tnorm_models_dir))
-    return os.path.join(self.m_config.tnorm_models_dir, str(model_id) + ".hdf5")
+    tmodel_file = os.path.join(self.m_config.tnorm_models_dir, str(model_id) + self.m_config.default_extension) 
+    utils.ensure_dir(os.path.dirname(tmodel_file))
+    return tmodel_file
     
 
   ### Probe files and ZT-Normalization  
   def A_file(self, model_id, group):
     a_dir = os.path.join(self.m_config.zt_norm_A_dir, group)
     utils.ensure_dir(a_dir)
-    return os.path.join(a_dir, str(model_id) + ".hdf5")
+    return os.path.join(a_dir, str(model_id) + self.m_config.default_extension)
 
   def B_file(self, model_id, group):
     b_dir = os.path.join(self.m_config.zt_norm_B_dir, group)
     utils.ensure_dir(b_dir)
-    return os.path.join(b_dir, str(model_id) + ".hdf5")
+    return os.path.join(b_dir, str(model_id) + self.m_config.default_extension)
 
   def C_file(self, model_id, group):
     c_dir = os.path.join(self.m_config.zt_norm_C_dir, group)
     utils.ensure_dir(c_dir)
-    return os.path.join(c_dir, "TM" + str(model_id) + ".hdf5")
+    return os.path.join(c_dir, "TM" + str(model_id) + self.m_config.default_extension)
 
   def C_file_for_model(self, model_id, group):
     c_dir = os.path.join(self.m_config.zt_norm_C_dir, group)
-    return os.path.join(c_dir, str(model_id) + ".hdf5")
+    return os.path.join(c_dir, str(model_id) + self.m_config.default_extension)
     
   def D_file(self, model_id, group):
     d_dir = os.path.join(self.m_config.zt_norm_D_dir, group)
     utils.ensure_dir(d_dir)
-    return os.path.join(d_dir, str(model_id) + ".hdf5")
+    return os.path.join(d_dir, str(model_id) + self.m_config.default_extension)
     
   def D_matrix_file(self, group):
     d_dir = os.path.join(self.m_config.zt_norm_D_dir, group)
-    return os.path.join(d_dir, "D.hdf5")
+    return os.path.join(d_dir, "D" + self.m_config.default_extension)
     
   def D_same_value_file(self, model_id, group):
     d_dir = os.path.join(self.m_config.zt_norm_D_sameValue_dir, group)
     utils.ensure_dir(d_dir)
-    return os.path.join(d_dir, str(model_id) + ".hdf5")
+    return os.path.join(d_dir, str(model_id) + self.m_config.default_extension)
 
   def D_same_value_matrix_file(self, group):
     d_dir = os.path.join(self.m_config.zt_norm_D_sameValue_dir, group)
-    return os.path.join(d_dir, "D_sameValue.hdf5")
+    return os.path.join(d_dir, "D_sameValue" + self.m_config.default_extension)
   
   def no_norm_file(self, model_id, group):
     norm_dir = os.path.join(self.m_config.scores_nonorm_dir, group)
