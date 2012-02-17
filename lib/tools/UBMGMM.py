@@ -138,7 +138,7 @@ class UBMGMMTool:
     self.m_trainer.setPriorGMM(self.m_ubm)
     
     # Initializes GMMStats object 
-    self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.nGaussians, self.m_ubm.nInputs)
+    self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.DimC, self.m_ubm.DimD)
 
 
   def project(self, feature):
