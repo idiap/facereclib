@@ -19,7 +19,7 @@ feature_extractor = features.GridGraph
 gabor_wavelet_transform = bob.ip.GaborWaveletTransform()
 
 normalize_jets = True
-extract_phases = False
+extract_phases = True
 
 
 # 2/ Grid graph parameters

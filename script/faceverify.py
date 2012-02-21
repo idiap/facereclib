@@ -7,6 +7,7 @@ import toolchain
 import os, sys, math
 import imp
 
+
 def config_for(args, db):
   """This function returns the configuration that is partially read from the database setup, and partially from the command line arguments"""
   # import setup of the database
@@ -48,7 +49,7 @@ def config_for(args, db):
 
 
 def default_tool_chain(args):
-  """Executes the default toolchain on the local machine"""
+  """Executes the toolchain on the local machine"""
   db = imp.load_source('db', args.database)
   ts = imp.load_source('ts', args.tool_chain)
   pp = imp.load_source('pp', args.features)
@@ -88,17 +89,25 @@ def default_tool_chain(args):
  
 
 
+
+
 # Finds myself first
-FACERECLIB_DIR = '/idiap/home/mguenther/Source/tools/facereclib'
+FACERECLIB_DIR = os.path.dirname(__file__)
+
 # Defines the gridtk installation root - by default we look at a fixed location
 # in the currently detected FACERECLIB_DIR. You can change this and hard-code
 # whatever you prefer.
 GRIDTK_DIR = os.path.join(FACERECLIB_DIR, 'gridtk')
 sys.path.insert(0, GRIDTK_DIR)
-FACERECLIB_WRAPPER = os.path.join(FACERECLIB_DIR, 'shell.py')
-# The environment assures the correct execution of the wrapper
-FACERECLIB_WRAPPER_ENVIRONMENT = ['FACERECLIB_DIR=%s' % FACERECLIB_DIR]
 import gridtk
+
+# define the python command to be called
+import bob
+PYTHON_EXECUTABLE=os.path.join(bob.build.prefixes, 'bin', 'python' + bob.build.pyver)
+
+# the python environment, including the current python path
+PYTHON_PATH = ['PYTHONPATH=%s:%s' % (os.environ['PYTHONPATH'], FACERECLIB_DIR)]
+
 
 
 def generate_job_array(list_to_split, number_of_files_per_job):
@@ -125,19 +134,29 @@ def indices(list_to_split, number_of_files_per_job):
 def common_parameters():
   """This function generates a list of command line arguments that should be added in calls to sub-tasks,
      to assure that all tasks share the same setup."""
+     
+  global parameters
   par = ''
-  for p in sys.argv[1:]:
+  for p in parameters:
     par += p + ' '
   return par
   
+class fakejob:
+  def id(self): return 0
 
 def submit(command, list_to_split, number_of_files_per_job, job_manager, common_parameters, dependencies=[], name = None, array=None, queue=None, mem=None, hostname=None, pe_opt=None):
   """Submits one job using our specialized shell wrapper. We hard-code certain
   parameters we like to use. You can change general submission parameters
   directly at this method."""
- 
+
+  # get the name of this file 
+  this_file = __file__
+  if this_file[-1] == 'c':
+    this_file = this_file[0:-1]
+    
+  # execute command
   cmd = [
-          sys.argv[0],
+          this_file,
           '--execute-sub-task',
           command,
           common_parameters
@@ -153,18 +172,19 @@ def submit(command, list_to_split, number_of_files_per_job, job_manager, common_
   if array == None:
     array = generate_job_array(list_to_split, number_of_files_per_job)
 
-  use_cmd = gridtk.tools.make_python_wrapper(FACERECLIB_WRAPPER, cmd)
-    
+  use_cmd = ['-S', PYTHON_EXECUTABLE]
+  use_cmd.extend(cmd)
+  
   job = job_manager.submit(use_cmd, deps=dependencies, cwd=True,
       queue=queue, mem=mem, hostname=hostname, pe_opt=pe_opt,
       stdout=logdir, stderr=logdir, name=name, array=array, 
-      env=FACERECLIB_WRAPPER_ENVIRONMENT)
+      env=PYTHON_PATH)
 
   print 'submitted:', job
   return job
 
 
-def add_grid_jobs(args):
+def add_grid_jobs(args, external_dependencies = []):
   """This function submits calls to the grid according to the desired tool and to the given command line parameters.
      It launches only those jobs, that are necessary for the current tool, and that are not disabled with --skip... option.
      Also, it adds reasonable dependencies to the jobs so that they are executed in the right order."""
@@ -188,7 +208,7 @@ def add_grid_jobs(args):
 
   job_ids = {}
 
-  deps = []
+  deps = external_dependencies
   # image preprocessing
   if not args.skip_preprocessing:
     job_ids['preprocessing'] = submit('--preprocess', file_selector.original_image_list(), cfg.number_of_images_per_job, jm, cp).id()
@@ -251,7 +271,9 @@ def add_grid_jobs(args):
         
       # concatenate results   
       submit('--concatenate --group=%s'%group, [], 1, jm, cp, dependencies=concat_deps[group], array = (1,1,1), name = "concat-%s"%group)
-    
+      
+  # return the job ids, in case anyone wants to know them
+  return job_ids 
 
 def execute_grid_job(args):
   """This function executes the grid job that is specified on the command line."""
@@ -313,18 +335,12 @@ def execute_grid_job(args):
   if args.concatenate:
     tool_chain.concatenate(args.zt_norm, groups=[args.group])
   
-
-def main():
-  """This is the main entry point for computing face verification experiments.
-  You just have to specify configuration scripts for any of the steps of the toolchain, which are:
-  -- the database
-  -- feature extraction (including image preprocessing)
-  -- the score computation tool
-  -- and the grid configuration (in case, the function should be executed in the grid).
-  Additionally, you can skip parts of the toolchain by selecting proper --skip-... parameters.
-  If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.
-  If files should be re-generated, please specify the --force option (might be combined with the --skip-... options)"""
   
+def parse_args(args = sys.argv[1:]):
+  # sorry for that.
+  global parameters
+  parameters = args
+
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__,
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -443,22 +459,39 @@ def main():
   parser.add_argument('--concatenate', action='store_true',
                       help = argparse.SUPPRESS) #'Concatenates the results of all scores of the given group'
   
-  args = parser.parse_args()
-  
   # TODO: test which other implications of --skip-... options make sense
+  
+  return parser.parse_args(args)
+
+
+def face_verify(args):
+  """This is the main entry point for computing face verification experiments.
+  You just have to specify configuration scripts for any of the steps of the toolchain, which are:
+  -- the database
+  -- feature extraction (including image preprocessing)
+  -- the score computation tool
+  -- and the grid configuration (in case, the function should be executed in the grid).
+  Additionally, you can skip parts of the toolchain by selecting proper --skip-... parameters.
+  If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.
+  If files should be re-generated, please specify the --force option (might be combined with the --skip-... options)"""
   
   # as the main entry point, check whether the grid option was given
   if not args.grid:
     # not in a grid, use default tool chain sequentially
     default_tool_chain(args)
+    return []
     
   elif args.execute_sub_task:
     # execute the desired sub-task
     execute_grid_job(args)
   else:
     # no other parameter given, so deploy new jobs
-    add_grid_jobs(args)
+    return add_grid_jobs(args)
     
         
 if __name__ == "__main__":
-  main()
+  # do the command line parsing
+  args = parse_args()
+  
+  # perform face verification test
+  face_verify(args)
