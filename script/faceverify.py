@@ -2,10 +2,20 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import argparse
-import toolchain
+
 import os, sys, math
+import argparse
 import imp
+
+# Finds myself first
+FACEREC_DIR = os.path.dirname(__file__)
+# get the facerec lib path
+FACEREC_LIB_DIR = os.path.realpath(os.path.join(FACEREC_DIR, '..', 'lib'))
+# add this path to the system path, so that the scripts can be executed 
+sys.path.insert(0, FACEREC_LIB_DIR)
+
+# now, import the tool chain from the lib directory
+import toolchain
 
 
 def config_for(args, db):
@@ -88,25 +98,20 @@ def default_tool_chain(args):
     tool_chain.concatenate(args.zt_norm)
  
 
+# define the python command to be called; 
+# this is stored in the bob.build.prefixes variable, when the bob installation is correct 
+try:
+  import bob
+except ImportError:
+  raise "Cannot find Bob. Please assure that your bob installation (e.g. $BOB_BUILD_DIR/lib/python2.6) is set in the PYTHONPATH environment variable"
+  
+if bob.build.prefixes == '':
+  raise "The Bob installation seems to be inappropriate. Please use the bobmaker tool to compile bob."
 
-
-
-# Finds myself first
-FACERECLIB_DIR = os.path.dirname(__file__)
-
-# Defines the gridtk installation root - by default we look at a fixed location
-# in the currently detected FACERECLIB_DIR. You can change this and hard-code
-# whatever you prefer.
-GRIDTK_DIR = os.path.join(FACERECLIB_DIR, 'gridtk')
-sys.path.insert(0, GRIDTK_DIR)
-import gridtk
-
-# define the python command to be called
-import bob
 PYTHON_EXECUTABLE=os.path.join(bob.build.prefixes, 'bin', 'python' + bob.build.pyver)
 
 # the python environment, including the current python path
-PYTHON_PATH = ['PYTHONPATH=%s:%s' % (os.environ['PYTHONPATH'], FACERECLIB_DIR)]
+PYTHON_PATH = ['PYTHONPATH=%s:%s:%s' % (os.environ['PYTHONPATH'], FACEREC_DIR, FACEREC_LIB_DIR)]
 
 
 
@@ -202,16 +207,25 @@ def add_grid_jobs(args, external_dependencies = []):
   file_selector = toolchain.FileSelector(config, db)
   extractor = pp.feature_extractor(pp)
   tool = ts.tool(file_selector, ts)
+
+  # import gridtk which is assumed to be in the PYTHONPATH or in the lib directory
+  try:  
+    import gridtk
+  except ImportError:
+    raise "The gridtk toolkit is neither found in your PYTHONPATH nor is it found in the lib directory of this faceverif toolkit."
+  
   # create job manager
   jm = gridtk.manager.JobManager()
   jm.temp_dir = config.base_output_TEMP_dir
 
   job_ids = {}
 
+  # if there are any external dependencies, we need to respect them
   deps = external_dependencies
+  
   # image preprocessing
   if not args.skip_preprocessing:
-    job_ids['preprocessing'] = submit('--preprocess', file_selector.original_image_list(), cfg.number_of_images_per_job, jm, cp).id()
+    job_ids['preprocessing'] = submit('--preprocess', file_selector.original_image_list(), cfg.number_of_images_per_job, jm, cp, dependencies=deps).id()
     deps.append(job_ids['preprocessing'])
     
   # feature extraction training
@@ -248,12 +262,12 @@ def add_grid_jobs(args, external_dependencies = []):
     enrol_deps_N[group] = deps[:]
     enrol_deps_T[group] = deps[:]
     if not args.skip_model_enrolment:
-      job_ids['model_%s_N'%group] = submit('--enrol-models --group=%s --model-type=N'%group, file_selector.model_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-N-%s"%group).id()
-      enrol_deps_N[group].append(job_ids['model_%s_N'%group])
+      job_ids['enrol_%s_N'%group] = submit('--enrol-models --group=%s --model-type=N'%group, file_selector.model_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-N-%s"%group).id()
+      enrol_deps_N[group].append(job_ids['enrol_%s_N'%group])
 
       if args.zt_norm:
-        job_ids['model_%s_T'%group] = submit('--enrol-models --group=%s --model-type=T'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-T-%s"%group).id()
-        enrol_deps_T[group].append(job_ids['model_%s_T'%group])
+        job_ids['enrol_%s_T'%group] = submit('--enrol-models --group=%s --model-type=T'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-T-%s"%group).id()
+        enrol_deps_T[group].append(job_ids['enrol_%s_T'%group])
         
     # compute A,B,C, and D scores
     if not args.skip_score_computation:
@@ -274,6 +288,7 @@ def add_grid_jobs(args, external_dependencies = []):
       
   # return the job ids, in case anyone wants to know them
   return job_ids 
+
 
 def execute_grid_job(args):
   """This function executes the grid job that is specified on the command line."""
@@ -337,6 +352,7 @@ def execute_grid_job(args):
   
   
 def parse_args(args = sys.argv[1:]):
+  """This function parses the given options (which by default are the command line options"""
   # sorry for that.
   global parameters
   parameters = args
@@ -490,6 +506,7 @@ def face_verify(args):
     
         
 if __name__ == "__main__":
+  """Executes the main function"""
   # do the command line parsing
   args = parse_args()
   

@@ -1,0 +1,215 @@
+#!/usr/bin/env python
+# vim: set fileencoding=utf-8 :
+# Manuel Guenther <Manuel.Guenther@idiap.ch>
+
+import faceverify as verif
+import os
+import argparse
+# import utils AFTER faceverify since this has set the python path correctly
+import utils
+from docutils.readers.python.pynodes import parameter
+
+
+steps = ['preprocessing', 'features', 'projection', 'enrol', 'scores']
+
+skips = [[''], 
+         ['--skip-preprocessing'], 
+         ['--skip-feature-extraction-training', '--skip-feature-extraction'],
+         ['--skip-projection-training', '--skip-projection'],
+         ['--skip-enroler-training', '--skip-model-enrolment']
+        ]
+
+dkeys  = ['DUMMY', 'preprocessing', 'feature_extraction', 'feature_projection', 'enrol']
+
+def next_level(config, index):
+  for i in range(index, len(steps)):
+    if hasattr(config, steps[i]):
+      return getattr(config, steps[i])
+  return None
+
+
+def write_config_file(args, infile_name, sub_dir, keyword, value):
+  # read the config file
+  infile = open(infile_name, 'r')
+  outfile_name = os.path.join(args.config_dir, sub_dir, os.path.basename(infile_name))
+  utils.ensure_dir(os.path.dirname(outfile_name))
+#  print "\nWriting configuration file '%s'\n"%outfile_name
+  outfile = open(outfile_name, 'w')
+  
+  # iterate through the file    
+  for line in infile:
+    if line.find(keyword) == 0:
+      # replace the lines by the new values
+      outfile.writelines(keyword + " = " + value + "\n")
+    else:
+      outfile.writelines(line)
+  
+  # close files
+  infile.close()
+  outfile.close()
+  
+  # return the name of the written config file
+  return outfile_name
+
+
+def directory_parameters(dirs):
+  parameters = []  
+  # add directory parameters
+  if dirs['preprocessing'] != '':
+    parameters.extend(['--preprocessed-image-directory', os.path.join(dirs['preprocessing'], 'preprocessed')]) 
+  if dirs['features'] != '':
+    parameters.extend(['--features-directory', os.path.join(dirs['features'], 'features')]) 
+  if dirs['projection'] != '':
+    parameters.extend(['--projected-directory', os.path.join(dirs['projection'], 'projected')]) 
+  if dirs['enrol'] != '':
+    parameters.extend(['--models-directories', os.path.join(dirs['enrol'], 'N-Models'), os.path.join(dirs['enrol'], 'T-Models')]) 
+  if dirs['scores'] != '':
+    parameters.extend(['--score-sub-dir', dirs['scores']])
+  return parameters 
+
+def get_deps(job_ids, index):
+  # get the dependencies
+  deps = []
+  for k in sorted(job_ids.keys()):
+    for i in range(index+1):
+      if k.find(dkeys[i]) != -1:
+        deps.append(job_ids[k])
+
+  print "Dependencies for the job at step '%s' are:"%steps[index], deps 
+  return deps
+  
+
+def get_skips(index):
+  # get the skip parameters
+  the_skips = []
+  for i in range(1,index+1):
+    the_skips.extend(skips[i])
+  print "Skips for step '%s' are: "%steps[index], the_skips
+  return the_skips
+
+
+def execute_dependent_task(args, feature_file, tool_file, dirs, skips, deps):
+  # invoke face verification with the new configuration, including proper dependencies
+  parameters = args.parameters[1:]
+  parameters.extend(['-p', feature_file, '-t', tool_file])
+  parameters.extend(directory_parameters(dirs))
+  parameters.extend(skips)
+  
+  print parameters
+  verif_args = verif.parse_args(parameters)
+  
+#  return []
+  
+  job_ids = verif.add_grid_jobs(verif_args, external_dependencies = deps)
+  return job_ids
+
+
+def remove_keyword(keyword, config):
+  new_config = {}
+  for key in config.keys():
+    if key != keyword:
+      new_config[key] = config[key]
+  return new_config
+
+
+def default_dir(config, sub_dir = None):
+  dir = sub_dir
+  for keyword in config.keys():
+    for sub_dir in config[keyword]:
+      if config[keyword][sub_dir] == None:
+        if dir == None:
+          dir = sub_dir
+        else:
+          dir = os.path.join(dir, sub_dir)
+  return dir
+    
+global job_ids
+job_ids = {}
+first = {}
+
+def execute_recursively(args, config, index, current_setup, dirs, feature_file, tool_file, dependency_level):
+  if current_setup == None:
+    return
+  if not len(current_setup):
+#    print "\nEntering step", steps[index], "for executing task"
+    # try if we need to do another level of recursion
+    i = index
+    while i < len(steps)-1:
+      i += 1
+      dirs[steps[i]] = dirs[steps[i-1]]
+      # copy directory from previous index
+      if hasattr(config, steps[i]):
+        execute_recursively(args, config, i, next_level(config, i), dirs, feature_file, tool_file, dependency_level)
+        return
+      
+    if i == len(steps)-1:
+      # we are at the lowest level, execute jobs
+      new_job_ids = execute_dependent_task(args, feature_file, tool_file, dirs, get_skips(dependency_level), get_deps(job_ids, dependency_level))
+#
+#      print "integrating job ids:", new_job_ids
+#      print "into old job ids:", job_ids
+      job_ids.update(new_job_ids)
+#      print "result:", job_ids
+        
+  else:
+#    print "\nEntering step", steps[index], "for recursive calls"
+#    print "executing recursively on step '%s' with dependency step '%s'"%(steps[index], steps[dependency_level])
+    # read out the current level of recursion
+    keyword = current_setup.keys()[0]
+    replacements = current_setup[keyword]
+    remaining_setup = remove_keyword(keyword, current_setup)
+    
+#    print remaining_setup
+    
+    first[steps[index]] = True
+    # iterate through the replacements
+    for sub in replacements.keys():
+      dirs[steps[index]] = os.path.join(dirs[steps[index-1]], sub)
+      # replace the current keyword with the current replacement
+      new_feature_file = write_config_file(args, feature_file, dirs[steps[index]], keyword, replacements[sub]) if index < 2 else feature_file
+      new_tool_file = write_config_file(args, tool_file, dirs[steps[index]], keyword, replacements[sub]) if index >= 2 else tool_file
+      execute_recursively(args, config, index, remaining_setup, dirs, new_feature_file, new_tool_file, dependency_level if first[steps[index]] else index)
+      first[steps[index]] = False
+    
+#  print "Leaving step", steps[index], "\n"
+
+def main():
+  # set up command line parser
+  parser = argparse.ArgumentParser(description=__doc__,
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  
+  parser.add_argument('-f', '--features', type = str, dest = 'features', required = True, metavar = 'FILE',
+                      help = 'The feature extraction config file to use')
+  parser.add_argument('-t', '--tool', type = str, dest = 'tool', required = True, metavar = 'FILE', 
+                      help = 'The tool you want to use')
+  
+  parser.add_argument('-c', '--config-file', type = str, dest = 'config', required = True, metavar = 'FILE',
+                      help = 'The configuration file explaining what to replace by what')
+
+  parser.add_argument('-C', '--config-dir', type = str, dest='config_dir', default = '.',
+                      help = 'Directory where the automatically generated config files should be written into')
+  
+  parser.add_argument('parameters', nargs = argparse.REMAINDER)
+  
+  args = parser.parse_args()
+
+
+  # read the configuration file
+  import imp
+  config = imp.load_source('config', args.config)
+  dirs = {}
+  for t in steps:
+    dirs[t] = '.'
+   
+  i = 0
+  while i < len(steps)-1:
+    i += 1
+    dirs[steps[i]] = dirs[steps[i-1]]
+    # copy directory from previous index
+    if hasattr(config, steps[i]):
+      execute_recursively(args, config, i, next_level(config,i), dirs, args.features, args.tool, 0)
+      break
+  
+
+if __name__ == "__main__":
+  main()
