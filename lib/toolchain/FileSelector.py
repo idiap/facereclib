@@ -37,23 +37,27 @@ class FileSelector:
   ### Training and projecting features
   def training_image_list(self):
     """Returns the list of images that should be used for extractor training"""
-    return self.m_db.files(directory=self.m_config.preprocessed_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.m_db_options.world_options)  
+    return self.m_db.files(directory=self.m_config.preprocessed_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.m_db_options.world_extractor_options)  
 
   def training_feature_list(self):
     """Returns the list of features that should be used for projector training"""
-    return self.m_db.files(directory=self.m_config.features_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.m_db_options.world_options)  
+    return self.m_db.files(directory=self.m_config.features_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.m_db_options.world_projector_options)  
 
   def training_feature_list_by_models(self, dir_type):
     """Returns the list of training features, which is split up by the client ids."""
     # get the type of directory that is required
-    if dir_type == 'features': cur_dir = self.m_config.features_dir 
-    elif dir_type == 'projected': cur_dir = self.m_config.projected_dir
+    if dir_type == 'features': 
+      cur_dir = self.m_config.features_dir 
+      cur_world_options = self.m_config.world_projector_options
+    elif dir_type == 'projected': 
+      cur_dir = self.m_config.projected_dir
+      cur_world_options = self.m_config.world_enroler_options
     # iterate over all training model ids
     train_models = self.m_db.models(groups='world', protocol=self.m_config.protocol)
     training_filenames = []
     for m in train_models:
       # collect training features for current model id
-      train_data_m = self.m_db.files(directory=cur_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', model_ids=(m,), **self.m_config.world_options) 
+      train_data_m = self.m_db.files(directory=cur_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', model_ids=(m,), **cur_world_options) 
       # add this model to the list
       training_filenames.append(train_data_m)
     # return the list of models
