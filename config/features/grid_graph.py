@@ -16,7 +16,10 @@ CROP_OW = 32
 
 feature_extractor = features.GridGraph
 
-gabor_wavelet_transform = bob.ip.GaborWaveletTransform()
+gabor_wavelet_transform = bob.ip.GaborWaveletTransform
+SIGMA_GABOR = math.sqrt(2.)*math.pi
+KMAX_GABOR = math.pi / 2.
+
 
 normalize_jets = True
 extract_phases = True

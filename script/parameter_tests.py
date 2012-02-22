@@ -44,17 +44,23 @@ def write_config_file(args, infile_name, sub_dir, keyword, value):
 #  print "\nWriting configuration file '%s'\n"%outfile_name
   outfile = open(outfile_name, 'w')
   
+  replacement_count = 0
+  
   # iterate through the file    
   for line in infile:
     if line.find(keyword) == 0:
       # replace the lines by the new values
       outfile.writelines(keyword + " = " + value + "\n")
+      replacement_count += 1
     else:
       outfile.writelines(line)
   
   # close files
   infile.close()
   outfile.close()
+  
+  if not replacement_count:
+    raise "Could not find the keyword '%s' in the given script '%s'!"%(keyword, infile_name)
   
   # return the name of the written config file
   return outfile_name
@@ -69,10 +75,13 @@ def directory_parameters(dirs):
     parameters.extend(['--preprocessed-image-directory', os.path.join(dirs['preprocessing'], 'preprocessed')]) 
   if dirs['features'] != '':
     parameters.extend(['--features-directory', os.path.join(dirs['features'], 'features')]) 
+    parameters.extend(['--extractor-file', os.path.join(dirs['features'], 'Extractor.hdf5')]) 
   if dirs['projection'] != '':
     parameters.extend(['--projected-directory', os.path.join(dirs['projection'], 'projected')]) 
+    parameters.extend(['--projector-file', os.path.join(dirs['projection'], 'Projector.hdf5')]) 
   if dirs['enrol'] != '':
     parameters.extend(['--models-directories', os.path.join(dirs['enrol'], 'N-Models'), os.path.join(dirs['enrol'], 'T-Models')]) 
+    parameters.extend(['--enroler-file', os.path.join(dirs['enrol'], 'Enroler.hdf5')]) 
   if dirs['scores'] != '':
     parameters.extend(['--score-sub-dir', dirs['scores']])
   return parameters 
@@ -108,14 +117,22 @@ def execute_dependent_task(args, feature_file, tool_file, dirs, skips, deps):
   parameters.extend(['-p', feature_file, '-t', tool_file])
   parameters.extend(directory_parameters(dirs))
   parameters.extend(skips)
-  
-#  print parameters
-  verif_args = verif.parse_args(parameters)
-  
-#  return []
-  
-  job_ids = verif.add_grid_jobs(verif_args, external_dependencies = deps)
-  return job_ids
+
+  global task_count
+  task_count += 1
+
+  if args.dry_run:
+    print parameters
+    return []
+  else:
+    # let the face verification script parse the parameters
+    verif_args = verif.parse_args(parameters)
+
+    # execute the face verification  
+    job_ids = verif.add_grid_jobs(verif_args, external_dependencies = deps)
+    global job_count
+    job_count += len(job_ids) 
+    return job_ids
 
 
 def remove_keyword(keyword, config):
@@ -167,9 +184,10 @@ def execute_recursively(args, config, index, current_setup, dirs, feature_file, 
     # The first job is dependent on the given dependency level, 
     # while the following jobs are dependent on this level only 
     first = True
+    dir = dirs[steps[index]]
     # iterate through the replacements
     for sub in replacements.keys():
-      dirs[steps[index]] = os.path.join(dirs[steps[index-1]], sub)
+      dirs[steps[index]] = os.path.join(dir, sub)
       # replace the current keyword with the current replacement
       new_feature_file = write_config_file(args, feature_file, dirs[steps[index]], keyword, replacements[sub]) if index < 2 else feature_file
       new_tool_file = write_config_file(args, tool_file, dirs[steps[index]], keyword, replacements[sub]) if index >= 2 else tool_file
@@ -195,6 +213,9 @@ def main():
   parser.add_argument('-C', '--config-dir', type = str, dest='config_dir', default = '.',
                       help = 'Directory where the automatically generated config files should be written into')
   
+  parser.add_argument('-d', '--dry-run', action = 'store_true', dest='dry_run', 
+                      help = 'Just show the commands and count them, but do not execute them')
+  
   # These are the parameters that are forwarded to the face verify script. Use -- to separate the para 
   parser.add_argument('parameters', nargs = argparse.REMAINDER,
                       help = 'Parameters directly passed to the face verify script. It should at least include the -d (and the -g) option. Use -- to separate this parameters from the parameters of this script.')
@@ -210,15 +231,20 @@ def main():
   for t in steps:
     dirs[t] = '.'
    
+  global task_count
+  task_count = 0
+  global job_count
+  job_count = 0
+  
   i = 0
   while i < len(steps)-1:
-    i += 1
-    dirs[steps[i]] = dirs[steps[i-1]]
-    # copy directory from previous index
+    # test if the config file for the given step is there
     if hasattr(config, steps[i]):
       execute_recursively(args, config, i, next_level(config,i), dirs, args.features, args.tool, 0)
-      return
-  
+      break
+    i += 1
+
+  print "\nDone. The number of executed tasks is:", task_count, "which is split up into", job_count, "single jobs"
 
 if __name__ == "__main__":
   main()

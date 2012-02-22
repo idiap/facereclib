@@ -16,7 +16,15 @@ class LGBPHS:
           setup.RADIUS, setup.P_N, setup.CIRCULAR,
           setup.TO_AVERAGE, setup.ADD_AVERAGE_BIT, setup.UNIFORM, setup.ROT_INV
     )
-    self.m_gwt = setup.gabor_wavelet_transform
+    
+    kwargs = {}
+    if hasattr(setup, 'GABOR_DIRECTIONS'): kwargs['number_of_angles'] = setup.GABOR_DIRECTIONS
+    if hasattr(setup, 'GABOR_SCALES'): kwargs['number_of_scales'] = setup.GABOR_SCALES
+    if hasattr(setup, 'GABOR_SIGMA'): kwargs['sigma'] = setup.GABOR_SIGMA
+    if hasattr(setup, 'GABOR_K_MAX'): kwargs['k_max'] = setup.GABOR_K_MAX
+    if hasattr(setup, 'GABOR_K_FAC'): kwargs['k_fac'] = setup.GABOR_K_FAC
+    
+    self.m_gwt = setup.gabor_wavelet_transform(**kwargs)
     self.m_trafo_image = None
     self.m_abs_image = None
   
@@ -25,8 +33,7 @@ class LGBPHS:
     # perform GWT on image
     if self.m_trafo_image == None or self.m_trafo_image.shape[1:2] != image.shape:
       # create jet image
-#      self.m_trafo_image = self.m_gwt.trafo_image(image)
-      self.m_trafo_image = numpy.ndarray((40,image.shape[0],image.shape[1]), dtype=numpy.complex128)
+      self.m_trafo_image = self.m_gwt.trafo_image(image)
       self.m_abs_image = numpy.ndarray(image.shape, dtype=numpy.float)
       
     # convert image to complex
@@ -35,8 +42,7 @@ class LGBPHS:
     
     lgbphs_array = None
     # iterate through the layers of the trafo image
-#    for j in range(self.m_gwt.number_of_kernels):
-    for j in range(40):
+    for j in range(self.m_gwt.number_of_kernels):
       # compute absolute part of complex response
       bob.core.array.get_part(self.m_trafo_image[j,:,:], self.m_abs_image)
       # Computes LBP histograms
@@ -49,8 +55,7 @@ class LGBPHS:
       start = j * n_bins * n_blocks
 
       if lgbphs_array == None:
-#        lgbphs_array = numpy.ndarray((n_blocks * n_bins * self.m_gwt.number_of_kernels,), 'float64')
-        lgbphs_array = numpy.ndarray((n_blocks * n_bins * 40,), 'float64')
+        lgbphs_array = numpy.ndarray((n_blocks * n_bins * self.m_gwt.number_of_kernels,), 'float64')
 
       for bi in range(0,n_blocks):
         start2 = bi*n_bins + start

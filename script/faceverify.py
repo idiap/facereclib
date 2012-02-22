@@ -106,7 +106,7 @@ except ImportError:
   raise "Cannot find Bob. Please assure that your bob installation (e.g. $BOB_BUILD_DIR/lib/python2.6) is set in the PYTHONPATH environment variable"
   
 if bob.build.prefixes == '':
-  raise "The Bob installation seems to be inappropriate. Please use the bobmaker tool to compile bob."
+  raise "The Bob installation seems to be inappropriate. Please use the bobmaker tool to compile Bob."
 
 PYTHON_EXECUTABLE=os.path.join(bob.build.prefixes, 'bin', 'python' + bob.build.pyver)
 

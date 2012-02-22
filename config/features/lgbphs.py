@@ -27,7 +27,9 @@ ALPHA = 0.1
 # feature extraction
 feature_extractor = features.LGBPHS
 
-gabor_wavelet_transform = bob.ip.GaborWaveletTransform(5,8,math.sqrt(2.)*math.pi)
+gabor_wavelet_transform = bob.ip.GaborWaveletTransform
+SIGMA_GABOR = math.sqrt(2.)*math.pi
+KMAX_GABOR = math.pi / 2.
 
 # LBP
 BLOCK_H = 10
