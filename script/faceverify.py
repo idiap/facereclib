@@ -215,7 +215,7 @@ def add_grid_jobs(args, external_dependencies = []):
     raise "The gridtk toolkit is neither found in your PYTHONPATH nor is it found in the lib directory of this faceverif toolkit."
   
   # create job manager
-  jm = gridtk.manager.JobManager()
+  jm = gridtk.manager.JobManager(statefile = args.gridtk_db)
   jm.temp_dir = config.base_output_TEMP_dir
 
   job_ids = {}
@@ -396,7 +396,7 @@ def parse_args(args = sys.argv[1:]):
                       help = 'Name of the directory of the features')
   parser.add_argument('--projected-directory', type = str, metavar = 'DIR', default = 'projected', dest = 'projected_dir',
                       help = 'Name of the directory where the projected data should be stored')
-  parser.add_argument('--models-directories', type=str, metavar = 'DIR', nargs = 2, dest='models_dirs',
+  parser.add_argument('--models-directories', type = str, metavar = 'DIR', nargs = 2, dest='models_dirs',
                       default = ['models', 'tmodels'],
                       help = 'Subdirectories (of temp directory) where the models should be stored')
   parser.add_argument('--zt-norm-directories', type = str, metavar = 'DIR', nargs = 5, dest='zt_dirs', 
@@ -405,6 +405,8 @@ def parse_args(args = sys.argv[1:]):
   parser.add_argument('--score-dirs', type = str, metavar = 'DIR', nargs = 2, dest='score_dirs',
                       default = ['nonorm', 'ztnorm'],
                       help = 'Subdirectories (of user directories) where to write the results to')
+  parser.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_db',
+                      help = 'The db file in which the submitted jobs will be written')
   
   #######################################################################################
   ############################ other options ############################################

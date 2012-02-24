@@ -16,7 +16,7 @@ class GridGraph:
     if hasattr(setup, 'GABOR_SIGMA'): gabor_kwargs['sigma'] = setup.GABOR_SIGMA
     if hasattr(setup, 'GABOR_K_MAX'): gabor_kwargs['k_max'] = setup.GABOR_K_MAX
     if hasattr(setup, 'GABOR_K_FAC'): gabor_kwargs['k_fac'] = setup.GABOR_K_FAC
-    self.m_gwt = setup.gabor_wavelet_transform(**gabor_kwargs)
+    self.m_gwt = bob.ip.GaborWaveletTransform(**gabor_kwargs)
 
     if hasattr(setup, 'COUNT_BETWEEN_EYES'):
       # compute eye positions from image preprocessing setup

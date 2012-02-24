@@ -66,24 +66,36 @@ def write_config_file(args, infile_name, sub_dir, keyword, value):
   return outfile_name
 
 
-def directory_parameters(dirs):
+def directory_parameters(args, dirs):
   """This function generates the faceverify parameters that define the directories, where the data is stored. 
      The directories are set such that data is reused whenever possible, but disjoined if needed."""
-  parameters = []  
+  parameters = []
+  last_dir = '.'  
   # add directory parameters
   if dirs['preprocessing'] != '':
-    parameters.extend(['--preprocessed-image-directory', os.path.join(dirs['preprocessing'], 'preprocessed')]) 
+    parameters.extend(['--preprocessed-image-directory', os.path.join(dirs['preprocessing'], 'preprocessed')])
+    last_dir = dirs['preprocessing'] 
   if dirs['features'] != '':
     parameters.extend(['--features-directory', os.path.join(dirs['features'], 'features')]) 
     parameters.extend(['--extractor-file', os.path.join(dirs['features'], 'Extractor.hdf5')]) 
+    last_dir = dirs['features'] 
   if dirs['projection'] != '':
     parameters.extend(['--projected-directory', os.path.join(dirs['projection'], 'projected')]) 
     parameters.extend(['--projector-file', os.path.join(dirs['projection'], 'Projector.hdf5')]) 
+    last_dir = dirs['projection'] 
   if dirs['enrol'] != '':
     parameters.extend(['--models-directories', os.path.join(dirs['enrol'], 'N-Models'), os.path.join(dirs['enrol'], 'T-Models')]) 
     parameters.extend(['--enroler-file', os.path.join(dirs['enrol'], 'Enroler.hdf5')]) 
+    last_dir = dirs['enrol'] 
   if dirs['scores'] != '':
     parameters.extend(['--score-sub-dir', dirs['scores']])
+    last_dir = dirs['scores'] 
+    
+  # add directory for the submitted db
+  dbfile = os.path.join(args.db_dir, last_dir, 'submitted.db')
+  utils.ensure_dir(os.path.dirname(dbfile))
+  parameters.extend(['--submit-db-file', dbfile])
+  
   return parameters 
 
 
@@ -115,7 +127,7 @@ def execute_dependent_task(args, feature_file, tool_file, dirs, skips, deps):
   # invoke face verification with the new configuration, including proper dependencies
   parameters = args.parameters[1:]
   parameters.extend(['-p', feature_file, '-t', tool_file])
-  parameters.extend(directory_parameters(dirs))
+  parameters.extend(directory_parameters(args, dirs))
   parameters.extend(skips)
 
   global task_count
@@ -212,6 +224,12 @@ def main():
 
   parser.add_argument('-C', '--config-dir', type = str, dest='config_dir', default = '.',
                       help = 'Directory where the automatically generated config files should be written into')
+  
+  parser.add_argument('-S', '--submit-db-dir', type = str, dest='db_dir', default = '.',
+                      help = 'Directory where the submitted.db files should be written into')
+  
+  parser.add_argument('-L', '--log-dir', type = str, dest='log_dir', default = '.',
+                      help = 'Directory where the log files should be written into')
   
   parser.add_argument('-d', '--dry-run', action = 'store_true', dest='dry_run', 
                       help = 'Just show the commands and count them, but do not execute them')

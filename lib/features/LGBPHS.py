@@ -24,7 +24,7 @@ class LGBPHS:
     if hasattr(setup, 'GABOR_K_MAX'): kwargs['k_max'] = setup.GABOR_K_MAX
     if hasattr(setup, 'GABOR_K_FAC'): kwargs['k_fac'] = setup.GABOR_K_FAC
     
-    self.m_gwt = setup.gabor_wavelet_transform(**kwargs)
+    self.m_gwt = bob.ip.GaborWaveletTransform(**kwargs)
     self.m_trafo_image = None
     self.m_abs_image = None
   
