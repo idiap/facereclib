@@ -8,5 +8,6 @@ from GaborJets import GaborJetTool
 from LGBPHS import LGBPHSTool
 from UBMGMM import UBMGMMTool
 from JFA import JFATool
+from ISV import ISVTool
 from PCA import PCATool
 from PLDA import PLDATool
