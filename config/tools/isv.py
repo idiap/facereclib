@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import tools
+import facereclib
 
-tool = tools.ISVTool
+tool = facereclib.tools.ISVTool
 
 # 2/ GMM Training
 n_gaussians = 512

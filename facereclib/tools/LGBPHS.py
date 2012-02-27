@@ -11,7 +11,7 @@ class LGBPHSTool:
   def __init__(self, file_selector, setup):
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
     # nothing to be done here
-    pass
+    self.m_distance_function = setup.distance_function
   
   def enrol(self, enrol_features):
     """Enroling model by taking the average of all features"""
@@ -26,9 +26,6 @@ class LGBPHSTool:
     
   def score(self, model, probe):
     """Computes the score as the histogram intersection"""
-    dist = 0
-    for i in range(0, model.shape[0]):
-      dist += min(model[i], probe[i])
-    return dist
+    return self.m_distance_function(model, probe)
 
 

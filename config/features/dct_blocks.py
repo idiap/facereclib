@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import preprocessing
-import features
+import facereclib
 
-preprocessor = preprocessing.TanTriggs
+preprocessor = facereclib.preprocessing.TanTriggs
 
 # Cropping
 CROP_EYES_D = 33
@@ -20,7 +19,7 @@ SIZE = 5
 THRESHOLD = 10.
 ALPHA = 0.1
 
-feature_extractor = features.DCTBlocks
+feature_extractor = facereclib.features.DCTBlocks
 
 # DCT blocks
 BLOCK_H = 12

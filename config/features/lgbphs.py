@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import preprocessing
-import features
+import facereclib
 import bob
 import math
 
-preprocessor = preprocessing.TanTriggs
+preprocessor = facereclib.preprocessing.TanTriggs
 
 # Cropping
 CROP_EYES_D = 33
@@ -25,9 +24,12 @@ ALPHA = 0.1
 
 
 # feature extraction
-feature_extractor = features.LGBPHS
+feature_extractor = facereclib.features.LGBPHS
 
-gabor_wavelet_transform = bob.ip.GaborWaveletTransform(5,8,math.sqrt(2.)*math.pi)
+# Gabor parameters
+SIGMA_GABOR = math.sqrt(2.)*math.pi
+KMAX_GABOR = math.pi / 2.
+
 
 # LBP
 BLOCK_H = 10

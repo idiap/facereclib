@@ -5,7 +5,7 @@
 import os
 import numpy
 import bob
-import utils
+from .. import utils
 
 class ProcessingToolChain:
   """This class includes functionalities for a default tool chain to produce verification scores"""

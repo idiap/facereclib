@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import preprocessing
-import features
+import facereclib
 
-preprocessor = preprocessing.TanTriggs
+preprocessor = facereclib.preprocessing.TanTriggs
 
 # Cropping
 CROP_EYES_D = 33
@@ -23,5 +22,5 @@ ALPHA = 0.1
 
 
 # Linearization of the image to a vector
-feature_extractor = features.Linearize
+feature_extractor = facereclib.features.Linearize
 

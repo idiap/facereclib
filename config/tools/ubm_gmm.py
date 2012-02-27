@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import tools
+import facereclib
 import bob
 
-tool = tools.UBMGMMTool
+tool = facereclib.tools.UBMGMMTool
 
 
 # 2/ GMM Training

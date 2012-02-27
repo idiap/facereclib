@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import tools
+import facereclib
 import bob
 
 
 # setup of the tool chain
-tool = tools.GaborJetTool
+tool = facereclib.tools.GaborJetTool
 
 # extract average model?
 extract_averaged_model = True

@@ -7,15 +7,10 @@ import os, sys, math
 import argparse
 import imp
 
-# Finds myself first
-FACEREC_DIR = os.path.dirname(__file__)
-# get the facerec lib path
-FACEREC_LIB_DIR = os.path.realpath(os.path.join(FACEREC_DIR, '..', 'lib'))
-# add this path to the system path, so that the scripts can be executed 
-sys.path.insert(0, FACEREC_LIB_DIR)
+import gridtk
 
 # now, import the tool chain from the lib directory
-import toolchain
+from .. import toolchain
 
 
 def config_for(args, db):
@@ -98,23 +93,6 @@ def default_tool_chain(args):
     tool_chain.concatenate(args.zt_norm)
  
 
-# define the python command to be called; 
-# this is stored in the bob.build.prefixes variable, when the bob installation is correct 
-try:
-  import bob
-except ImportError:
-  raise "Cannot find Bob. Please assure that your bob installation (e.g. $BOB_BUILD_DIR/lib/python2.6) is set in the PYTHONPATH environment variable"
-  
-if bob.build.prefixes == '':
-  raise "The Bob installation seems to be inappropriate. Please use the bobmaker tool to compile bob."
-
-PYTHON_EXECUTABLE=os.path.join(bob.build.prefixes, 'bin', 'python' + bob.build.pyver)
-
-# the python environment, including the current python path
-PYTHON_PATH = ['PYTHONPATH=%s:%s:%s' % (os.environ['PYTHONPATH'], FACEREC_DIR, FACEREC_LIB_DIR)]
-
-
-
 def generate_job_array(list_to_split, number_of_files_per_job):
   """Generates an array for the list to be split and the number of files that one job should generate""" 
   n_jobs = int(math.ceil(len(list_to_split) / float(number_of_files_per_job)))
@@ -148,20 +126,21 @@ def common_parameters():
   
 class fakejob:
   def id(self): return 0
+  
 
 def submit(command, list_to_split, number_of_files_per_job, job_manager, common_parameters, dependencies=[], name = None, array=None, queue=None, mem=None, hostname=None, pe_opt=None):
   """Submits one job using our specialized shell wrapper. We hard-code certain
   parameters we like to use. You can change general submission parameters
   directly at this method."""
 
-  # get the name of this file 
-  this_file = __file__
-  if this_file[-1] == 'c':
-    this_file = this_file[0:-1]
+  # get the name of the python interpreter
+  ### AAARRRGGGHHH!
+  # I don't want to do this! Is there no better way?????
+  bin_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
     
   # execute command
   cmd = [
-          this_file,
+          os.path.join(bin_dir,'faceverify.py'),
           '--execute-sub-task',
           command,
           common_parameters
@@ -177,16 +156,16 @@ def submit(command, list_to_split, number_of_files_per_job, job_manager, common_
   if array == None:
     array = generate_job_array(list_to_split, number_of_files_per_job)
 
-  use_cmd = ['-S', PYTHON_EXECUTABLE]
+  use_cmd = ['-S', os.path.join(bin_dir, 'python')]
   use_cmd.extend(cmd)
   
   job = job_manager.submit(use_cmd, deps=dependencies, cwd=True,
       queue=queue, mem=mem, hostname=hostname, pe_opt=pe_opt,
-      stdout=logdir, stderr=logdir, name=name, array=array, 
-      env=PYTHON_PATH)
+      stdout=logdir, stderr=logdir, name=name, array=array)
 
   print 'submitted:', job
   return job
+
 
 
 def add_grid_jobs(args, external_dependencies = []):
@@ -208,14 +187,8 @@ def add_grid_jobs(args, external_dependencies = []):
   extractor = pp.feature_extractor(pp)
   tool = ts.tool(file_selector, ts)
 
-  # import gridtk which is assumed to be in the PYTHONPATH or in the lib directory
-  try:  
-    import gridtk
-  except ImportError:
-    raise "The gridtk toolkit is neither found in your PYTHONPATH nor is it found in the lib directory of this faceverif toolkit."
-  
   # create job manager
-  jm = gridtk.manager.JobManager()
+  jm = gridtk.manager.JobManager(statefile = args.gridtk_db)
   jm.temp_dir = config.base_output_TEMP_dir
 
   job_ids = {}
@@ -396,7 +369,7 @@ def parse_args(args = sys.argv[1:]):
                       help = 'Name of the directory of the features')
   parser.add_argument('--projected-directory', type = str, metavar = 'DIR', default = 'projected', dest = 'projected_dir',
                       help = 'Name of the directory where the projected data should be stored')
-  parser.add_argument('--models-directories', type=str, metavar = 'DIR', nargs = 2, dest='models_dirs',
+  parser.add_argument('--models-directories', type = str, metavar = 'DIR', nargs = 2, dest='models_dirs',
                       default = ['models', 'tmodels'],
                       help = 'Subdirectories (of temp directory) where the models should be stored')
   parser.add_argument('--zt-norm-directories', type = str, metavar = 'DIR', nargs = 5, dest='zt_dirs', 
@@ -405,6 +378,8 @@ def parse_args(args = sys.argv[1:]):
   parser.add_argument('--score-dirs', type = str, metavar = 'DIR', nargs = 2, dest='score_dirs',
                       default = ['nonorm', 'ztnorm'],
                       help = 'Subdirectories (of user directories) where to write the results to')
+  parser.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_db',
+                      help = 'The db file in which the submitted jobs will be written')
   
   #######################################################################################
   ############################ other options ############################################
@@ -504,11 +479,14 @@ def face_verify(args):
     # no other parameter given, so deploy new jobs
     return add_grid_jobs(args)
     
-        
-if __name__ == "__main__":
+
+def main():
   """Executes the main function"""
   # do the command line parsing
   args = parse_args()
-  
   # perform face verification test
   face_verify(args)
+        
+if __name__ == "__main__":
+  main()  
+

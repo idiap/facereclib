@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import tools
+import facereclib
 
-tool = tools.JFATool
+tool = facereclib.tools.JFATool
 
 # 2/ GMM Training
 n_gaussians = 512

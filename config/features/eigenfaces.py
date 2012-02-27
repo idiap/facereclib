@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import preprocessing
-import features
+import facereclib
 
-preprocessor = preprocessing.TanTriggs
+preprocessor = facereclib.preprocessing.TanTriggs
 
 # Cropping
 CROP_EYES_D = 33
@@ -23,7 +22,7 @@ ALPHA = 0.1
 
 
 # compute eigenfaces using the training database
-feature_extractor = features.Eigenface
+feature_extractor = facereclib.features.Eigenface
 
 n_outputs = 300
 

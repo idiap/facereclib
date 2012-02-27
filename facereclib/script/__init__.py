@@ -4,11 +4,5 @@
 
 """Tool chain for computing verification scores"""
 
-import toolchain
-import features
-import preprocessing
-import tools
-import utils
-
-if os.path.exists('gridtk'):
-  import gridtk
+import faceverify
+import parameter_tests

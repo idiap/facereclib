@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import tools
+import facereclib
 import bob
 
-tool = tools.PCATool
+tool = facereclib.tools.PCATool
 
 n_outputs = 300
 

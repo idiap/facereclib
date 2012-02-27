@@ -3,7 +3,7 @@
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
 import os
-import utils
+from .. import utils
 import bob
 
 class FileSelector:

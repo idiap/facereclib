@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import tools
+import facereclib
 
-tool = tools.PLDATool
+tool = facereclib.tools.PLDATool
 
 n_outputs = 200
 n_inputs = 300
