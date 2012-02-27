@@ -7,15 +7,10 @@ import os, sys, math
 import argparse
 import imp
 
-# Finds myself first
-FACEREC_DIR = os.path.dirname(__file__)
-# get the facerec lib path
-FACEREC_LIB_DIR = os.path.realpath(os.path.join(FACEREC_DIR, '..', 'lib'))
-# add this path to the system path, so that the scripts can be executed 
-sys.path.insert(0, FACEREC_LIB_DIR)
+import gridtk
 
 # now, import the tool chain from the lib directory
-import toolchain
+from .. import toolchain
 
 
 def config_for(args, db):
@@ -98,20 +93,8 @@ def default_tool_chain(args):
     tool_chain.concatenate(args.zt_norm)
  
 
-# define the python command to be called; 
-# this is stored in the bob.build.prefixes variable, when the bob installation is correct 
-try:
-  import bob
-except ImportError:
-  raise "Cannot find Bob. Please assure that your bob installation (e.g. $BOB_BUILD_DIR/lib/python2.6) is set in the PYTHONPATH environment variable"
-  
-if bob.build.prefixes == '':
-  raise "The Bob installation seems to be inappropriate. Please use the bobmaker tool to compile Bob."
-
-PYTHON_EXECUTABLE=os.path.join(bob.build.prefixes, 'bin', 'python' + bob.build.pyver)
-
 # the python environment, including the current python path
-PYTHON_PATH = ['PYTHONPATH=%s:%s:%s' % (os.environ['PYTHONPATH'], FACEREC_DIR, FACEREC_LIB_DIR)]
+PYTHON_PATH = ['PYTHONPATH=%s' % (os.environ['PYTHONPATH'])]
 
 
 
@@ -208,12 +191,6 @@ def add_grid_jobs(args, external_dependencies = []):
   extractor = pp.feature_extractor(pp)
   tool = ts.tool(file_selector, ts)
 
-  # import gridtk which is assumed to be in the PYTHONPATH or in the lib directory
-  try:  
-    import gridtk
-  except ImportError:
-    raise "The gridtk toolkit is neither found in your PYTHONPATH nor is it found in the lib directory of this faceverif toolkit."
-  
   # create job manager
   jm = gridtk.manager.JobManager(statefile = args.gridtk_db)
   jm.temp_dir = config.base_output_TEMP_dir
@@ -506,11 +483,14 @@ def face_verify(args):
     # no other parameter given, so deploy new jobs
     return add_grid_jobs(args)
     
-        
-if __name__ == "__main__":
+
+def main():
   """Executes the main function"""
   # do the command line parsing
   args = parse_args()
-  
   # perform face verification test
   face_verify(args)
+        
+if __name__ == "__main__":
+  main()  
+

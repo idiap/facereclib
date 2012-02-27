@@ -2,12 +2,11 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import faceverify as verif
+import faceverify
 import os
 import argparse
-# import utils AFTER faceverify since this has set the python path correctly
-import utils
-from docutils.readers.python.pynodes import parameter
+from .. import utils
+# from docutils.readers.python.pynodes import parameter
 
 
 # The different steps of the preprocessing chain.
