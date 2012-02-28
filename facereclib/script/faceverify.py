@@ -85,12 +85,12 @@ def default_tool_chain(args):
   if not args.skip_enroler_training and hasattr(tool, 'train_enroler'):
     tool_chain.train_enroler(tool, force = args.force)
   if not args.skip_model_enrolment:
-    tool_chain.enrol_models(tool, args.zt_norm, force = args.force)
+    tool_chain.enrol_models(tool, not args.no_zt_norm, force = args.force)
   if not args.skip_score_computation:
-    tool_chain.compute_scores(tool, args.zt_norm, preload_probes = args.preload_probes)
-    if args.zt_norm:
+    tool_chain.compute_scores(tool, not args.no_zt_norm, preload_probes = args.preload_probes)
+    if not args.no_zt_norm:
       tool_chain.zt_norm()
-    tool_chain.concatenate(args.zt_norm)
+    tool_chain.concatenate(not args.no_zt_norm)
  
 
 def generate_job_array(list_to_split, number_of_files_per_job):
@@ -136,11 +136,13 @@ def submit(command, list_to_split, number_of_files_per_job, job_manager, common_
   # get the name of the python interpreter
   ### AAARRRGGGHHH!
   # I don't want to do this! Is there no better way?????
-  bin_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
+  executable = sys.argv[0] 
+  bin_dir = os.path.realpath(os.path.dirname(executable))
+   
     
   # execute command
   cmd = [
-          os.path.join(bin_dir,'faceverify.py'),
+          executable,
           '--execute-sub-task',
           command,
           common_parameters
@@ -238,7 +240,7 @@ def add_grid_jobs(args, external_dependencies = []):
       job_ids['enrol_%s_N'%group] = submit('--enrol-models --group=%s --model-type=N'%group, file_selector.model_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-N-%s"%group).id()
       enrol_deps_N[group].append(job_ids['enrol_%s_N'%group])
 
-      if args.zt_norm:
+      if not args.no_zt_norm:
         job_ids['enrol_%s_T'%group] = submit('--enrol-models --group=%s --model-type=T'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-T-%s"%group).id()
         enrol_deps_T[group].append(job_ids['enrol_%s_T'%group])
         
@@ -246,7 +248,7 @@ def add_grid_jobs(args, external_dependencies = []):
     if not args.skip_score_computation:
       job_ids['score_%s_A'%group] = submit('--compute-scores --group=%s --score-type=A'%group, file_selector.model_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_N[group], name = "score-A-%s"%group).id()
       concat_deps[group] = [job_ids['score_%s_A'%group]]
-      if args.zt_norm:
+      if not args.no_zt_norm:
         job_ids['score_%s_B'%group] = submit('--compute-scores --group=%s --score-type=B'%group, file_selector.model_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_N[group], name = "score-B-%s"%group).id()
         job_ids['score_%s_C'%group] = submit('--compute-scores --group=%s --score-type=C'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_T[group], name = "score-C-%s"%group).id()
         job_ids['score_%s_D'%group] = submit('--compute-scores --group=%s --score-type=D'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_T[group], name = "score-D-%s"%group).id()
@@ -307,25 +309,25 @@ def execute_grid_job(args):
   # enrol models
   if args.enrol_models:
     if args.model_type == 'N':
-      tool_chain.enrol_models(tool, args.zt_norm, indices = indices(file_selector.model_ids(args.group), cfg.number_of_models_per_enrol_job), groups=[args.group], types = ['N'], force = args.force)
+      tool_chain.enrol_models(tool, not args.no_zt_norm, indices = indices(file_selector.model_ids(args.group), cfg.number_of_models_per_enrol_job), groups=[args.group], types = ['N'], force = args.force)
     else:
-      tool_chain.enrol_models(tool, args.zt_norm, indices = indices(file_selector.Tmodel_ids(args.group), cfg.number_of_models_per_enrol_job), groups=[args.group], types = ['T'], force = args.force)
+      tool_chain.enrol_models(tool, not args.no_zt_norm, indices = indices(file_selector.Tmodel_ids(args.group), cfg.number_of_models_per_enrol_job), groups=[args.group], types = ['T'], force = args.force)
       
   # compute scores
   if args.compute_scores:
     if args.score_type in ['A', 'B']:
-      tool_chain.compute_scores(tool, args.zt_norm, indices = indices(file_selector.model_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes)
+      tool_chain.compute_scores(tool, not args.no_zt_norm, indices = indices(file_selector.model_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes)
     elif args.score_type in ['C', 'D']:
-      tool_chain.compute_scores(tool, args.zt_norm, indices = indices(file_selector.Tmodel_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes)
+      tool_chain.compute_scores(tool, not args.no_zt_norm, indices = indices(file_selector.Tmodel_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes)
     else:
       tool_chain.zt_norm(groups=[args.group])
   # concatenate
   if args.concatenate:
-    tool_chain.concatenate(args.zt_norm, groups=[args.group])
+    tool_chain.concatenate(not args.no_zt_norm, groups=[args.group])
   
   
 def parse_args(args = sys.argv[1:]):
-  """This function parses the given options (which by default are the command line options"""
+  """This function parses the given options (which by default are the command line options)"""
   # sorry for that.
   global parameters
   parameters = args
@@ -336,119 +338,114 @@ def parse_args(args = sys.argv[1:]):
   
   #######################################################################################
   ############## options that are required to be specified #######################
-  parser.add_argument('-d', '--database', metavar = 'FILE', type = str, required = True,
-                      help = 'The database configuration file')
-  parser.add_argument('-t', '--tool-chain', type = str, dest = 'tool_chain', required = True, metavar = 'FILE', 
-                      help = 'The tool chain configuration file')
-  parser.add_argument('-p', '--features-extraction', metavar = 'FILE', type = str, dest='features', 
-                      help = 'Configuration script for preprocessing the images and extracting the features')
+  config_group = parser.add_argument_group('\nConfiguration files that need to be specified on the command line')
+  config_group.add_argument('-d', '--database', metavar = 'FILE', type = str, required = True,
+      help = 'The database configuration file')
+  config_group.add_argument('-t', '--tool-chain', type = str, dest = 'tool_chain', required = True, metavar = 'FILE', 
+      help = 'The tool chain configuration file')
+  config_group.add_argument('-p', '--features-extraction', metavar = 'FILE', type = str, dest='features', 
+      help = 'Configuration script for preprocessing the images and extracting the features')
   
-  parser.add_argument('-g', '--grid', metavar = 'FILE', type = str, 
-                      help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine')
+  config_group.add_argument('-g', '--grid', metavar = 'FILE', type = str, 
+      help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine')
 
   #######################################################################################
   ############## options to modify default directories or file names ####################
-  parser.add_argument('-T', '--temp-dir', metavar = 'DIR', type = str, dest = 'temp_dir',
-                      help = 'The directory for temporary files; defaults to /idiap/temp/$USER/database-name/sub-dir (or /scratch/$USER/database-name/sub-dir, when executed locally)')
-  parser.add_argument('-U', '--user-dir', metavar = 'DIR', type = str, dest = 'user_dir',
-                      help = 'The directory for temporary files; defaults to /idiap/user/$USER/database-name/sub-dir')
-  parser.add_argument('-b', '--sub-dir', type = str, dest = 'sub_dir', default = 'default',
-                      help = 'The sub-directory where the results of the current experiment should be stored.')
-  parser.add_argument('-s', '--score-sub-dir', type = str, dest = 'score_sub_dir', default = 'scores',
-                      help = 'The sub-directory where to write the scores to.')
+  dir_group = parser.add_argument_group('\nDirectories that can be changed according to your requirements')
+  dir_group.add_argument('-T', '--temp-dir', metavar = 'DIR', type = str, dest = 'temp_dir',
+      help = 'The directory for temporary files; if not specified, /idiap/temp/$USER/database-name/sub-dir (or /scratch/$USER/database-name/sub-dir, when executed locally) is used')
+  dir_group.add_argument('-U', '--user-dir', metavar = 'DIR', type = str, dest = 'user_dir',
+      help = 'The directory for temporary files; if not specified, /idiap/user/$USER/database-name/sub-dir is used')
+  dir_group.add_argument('-b', '--sub-dir', metavar = 'DIR', type = str, dest = 'sub_dir', default = 'default',
+      help = 'The sub-directory where the results of the current experiment should be stored.')
+  dir_group.add_argument('-s', '--score-sub-dir', metavar = 'DIR', type = str, dest = 'score_sub_dir', default = 'scores',
+      help = 'The sub-directory where to write the scores to.')
   
-  parser.add_argument('--extractor-file', type = str, metavar = 'FILE', default = 'Extractor.hdf5',
-                      help = 'Name of the file to write the feature extractor into')
-  parser.add_argument('--projector-file', type = str, metavar = 'FILE', default = 'Projector.hdf5',
-                      help = 'Name of the file to write the feature projector into')
-  parser.add_argument('--enroler-file' , type = str, metavar = 'FILE', default = 'Enroler.hdf5',
-                      help = 'Name of the file to write the model enroler into')
-  parser.add_argument('--preprocessed-image-directory', type = str, metavar = 'DIR', default = 'preprocessed', dest = 'preprocessed_dir',
-                      help = 'Name of the directory of the preprocessed images')
-  parser.add_argument('--features-directory', type = str, metavar = 'DIR', default = 'features', dest = 'features_dir',
-                      help = 'Name of the directory of the features')
-  parser.add_argument('--projected-directory', type = str, metavar = 'DIR', default = 'projected', dest = 'projected_dir',
-                      help = 'Name of the directory where the projected data should be stored')
-  parser.add_argument('--models-directories', type = str, metavar = 'DIR', nargs = 2, dest='models_dirs',
-                      default = ['models', 'tmodels'],
-                      help = 'Subdirectories (of temp directory) where the models should be stored')
-  parser.add_argument('--zt-norm-directories', type = str, metavar = 'DIR', nargs = 5, dest='zt_dirs', 
-                      default = ['zt_norm_A', 'zt_norm_B', 'zt_norm_C', 'zt_norm_D', 'zt_norm_D_sameValue'],
-                      help = 'Subdiretories (of temp directory) where to write the zt_norm values')
-  parser.add_argument('--score-dirs', type = str, metavar = 'DIR', nargs = 2, dest='score_dirs',
-                      default = ['nonorm', 'ztnorm'],
-                      help = 'Subdirectories (of user directories) where to write the results to')
-  parser.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_db',
-                      help = 'The db file in which the submitted jobs will be written')
+  file_group = parser.add_argument_group('\nName (maybe including a path relative to the --temp-dir) of files that will be generated. Note that not all files will be used by all tools')
+  file_group.add_argument('--extractor-file', type = str, metavar = 'FILE', default = 'Extractor.hdf5',
+      help = 'Name of the file to write the feature extractor into')
+  file_group.add_argument('--projector-file', type = str, metavar = 'FILE', default = 'Projector.hdf5',
+      help = 'Name of the file to write the feature projector into')
+  file_group.add_argument('--enroler-file' , type = str, metavar = 'FILE', default = 'Enroler.hdf5',
+      help = 'Name of the file to write the model enroler into')
+  
+  sub_dir_group = parser.add_argument_group('\nSubdirectories of certain parts of the toolchain. You can specify directories in case you want to reuse parts of the experiments (e.g. extracted features) in other experiments. Please note that these directories are relative to the --temp-dir (except --score-dirs, which are relative to the --user-dir)')
+  sub_dir_group.add_argument('--preprocessed-image-directory', type = str, metavar = 'DIR', default = 'preprocessed', dest = 'preprocessed_dir',
+      help = 'Name of the directory of the preprocessed images')
+  sub_dir_group.add_argument('--features-directory', type = str, metavar = 'DIR', default = 'features', dest = 'features_dir',
+      help = 'Name of the directory of the features')
+  sub_dir_group.add_argument('--projected-directory', type = str, metavar = 'DIR', default = 'projected', dest = 'projected_dir',
+      help = 'Name of the directory where the projected data should be stored')
+  sub_dir_group.add_argument('--models-directories', type = str, metavar = 'DIR', nargs = 2, dest='models_dirs',
+      default = ['models', 'tmodels'],
+      help = 'Subdirectories (of temp directory) where the models should be stored')
+  sub_dir_group.add_argument('--zt-norm-directories', type = str, metavar = 'DIR', nargs = 5, dest='zt_dirs', 
+      default = ['zt_norm_A', 'zt_norm_B', 'zt_norm_C', 'zt_norm_D', 'zt_norm_D_sameValue'],
+      help = 'Subdiretories (of --temp-dir) where to write the zt_norm values')
+  sub_dir_group.add_argument('--score-dirs', type = str, metavar = 'DIR', nargs = 2, dest='score_dirs',
+      default = ['nonorm', 'ztnorm'],
+      help = 'Subdirectories (of --user-dir) where to write the results to')
+  sub_dir_group.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_db',
+      help = 'The db file in which the submitted jobs will be written')
   
   #######################################################################################
   ############################ other options ############################################
-  parser.add_argument('-z', '--zt-norm', action='store_false', dest = 'zt_norm',
-                      help = 'DISABLE the computation of ZT norms')
-  parser.add_argument('-f', '--force', action='store_true',
-                      help = 'Force to erase former data if already exist')
-  parser.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
-                      help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
+  other_group = parser.add_argument_group('\nFlags that change the behaviour of the experiment')
+  other_group.add_argument('-z', '--no-zt-norm', action='store_true', dest = 'no_zt_norm',
+      help = 'DISABLE the computation of ZT norms')
+  other_group.add_argument('-f', '--force', action='store_true',
+      help = 'Force to erase former data if already exist')
+  other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
+      help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
 
   #######################################################################################
   ################# options for skipping parts of the toolchain #########################
-  parser.add_argument('--skip-preprocessing', '--nopre', action='store_true', dest='skip_preprocessing',
-                      help = 'Skip the image preprocessing step')
-  parser.add_argument('--skip-feature-extraction-training', '--nofet', action='store_true', dest='skip_feature_extraction_training',
-                      help = 'Skip the feature extraction training step')
-  parser.add_argument('--skip-feature-extraction', '--nofe', action='store_true', dest='skip_feature_extraction',
-                      help = 'Skip the feature extraction step')
-  parser.add_argument('--skip-projection-training', '--noprot', action='store_true', dest='skip_projection_training',
-                      help = 'Skip the feature extraction training')
-  parser.add_argument('--skip-projection', '--nopro', action='store_true', dest='skip_projection',
-                      help = 'Skip the feature projection')
-  parser.add_argument('--skip-enroler-training', '--noenrt', action='store_true', dest='skip_enroler_training',
-                      help = 'Skip the training of the model enrolment')
-  parser.add_argument('--skip-model-enrolment', '--noenr', action='store_true', dest='skip_model_enrolment',
-                      help = 'Skip the model enrolment step')
-  parser.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
-                      help = 'Skip the score computation step')
+  skip_group = parser.add_argument_group('\nFlags that allow to skip certain parts of the experiments. This does only make sense when the generated files are already there (e.g. when reusing parts of other experiments)')
+  skip_group.add_argument('--skip-preprocessing', '--nopre', action='store_true', dest='skip_preprocessing',
+      help = 'Skip the image preprocessing step')
+  skip_group.add_argument('--skip-feature-extraction-training', '--nofet', action='store_true', dest='skip_feature_extraction_training',
+      help = 'Skip the feature extraction training step')
+  skip_group.add_argument('--skip-feature-extraction', '--nofe', action='store_true', dest='skip_feature_extraction',
+      help = 'Skip the feature extraction step')
+  skip_group.add_argument('--skip-projection-training', '--noprot', action='store_true', dest='skip_projection_training',
+      help = 'Skip the feature extraction training')
+  skip_group.add_argument('--skip-projection', '--nopro', action='store_true', dest='skip_projection',
+      help = 'Skip the feature projection')
+  skip_group.add_argument('--skip-enroler-training', '--noenrt', action='store_true', dest='skip_enroler_training',
+      help = 'Skip the training of the model enrolment')
+  skip_group.add_argument('--skip-model-enrolment', '--noenr', action='store_true', dest='skip_model_enrolment',
+      help = 'Skip the model enrolment step')
+  skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
+      help = 'Skip the score computation step')
                       
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
   parser.add_argument('--execute-sub-task', action='store_true', dest = 'execute_sub_task',
-                      help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
-  
+      help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
   parser.add_argument('--preprocess', action='store_true', 
-                      help = argparse.SUPPRESS) #'Perform image preprocessing on the given range of images'
-  
+      help = argparse.SUPPRESS) #'Perform image preprocessing on the given range of images'
   parser.add_argument('--feature-extraction-training', action='store_true', dest = 'feature_extraction_training',
-                      help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
-  
+      help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
   parser.add_argument('--feature-extraction', action='store_true', dest = 'feature_extraction',
-                      help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
-  
+      help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
   parser.add_argument('--train-projector', action='store_true', dest = 'train_projector',
-                      help = argparse.SUPPRESS) #'Perform feature extraction training'
-                      
+      help = argparse.SUPPRESS) #'Perform feature extraction training'
   parser.add_argument('--feature-projection', action='store_true', dest = 'projection',
-                      help = argparse.SUPPRESS) #'Perform feature projection'
-  
+      help = argparse.SUPPRESS) #'Perform feature projection'
   parser.add_argument('--train-enroler', action='store_true', dest = 'train_enroler',
-                      help = argparse.SUPPRESS) #'Perform enrolment training'
-  
+      help = argparse.SUPPRESS) #'Perform enrolment training'
   parser.add_argument('--enrol-models', action='store_true', dest = 'enrol_models',
-                      help = argparse.SUPPRESS) #'Generate the given range of models from the features'
-                      
+      help = argparse.SUPPRESS) #'Generate the given range of models from the features'
   parser.add_argument('--model-type', type = str, choices = ['N', 'T'], metavar = 'TYPE', 
-                      help = argparse.SUPPRESS) #'Which type of models to generate (Normal or TModels)'
-  
+      help = argparse.SUPPRESS) #'Which type of models to generate (Normal or TModels)'
   parser.add_argument('--compute-scores', action='store_true', dest = 'compute_scores',
-                      help = argparse.SUPPRESS) #'Compute scores for the given range of models'
-  
+      help = argparse.SUPPRESS) #'Compute scores for the given range of models'
   parser.add_argument('--score-type', type = str, choices=['A', 'B', 'C', 'D', 'Z'],  metavar = 'SCORE', 
-                      help = argparse.SUPPRESS) #'The type of scores that should be computed'
-  
+      help = argparse.SUPPRESS) #'The type of scores that should be computed'
   parser.add_argument('--group', type = str,  metavar = 'GROUP', 
-                      help = argparse.SUPPRESS) #'The group for which the current action should be performed'
-  
+      help = argparse.SUPPRESS) #'The group for which the current action should be performed'
   parser.add_argument('--concatenate', action='store_true',
-                      help = argparse.SUPPRESS) #'Concatenates the results of all scores of the given group'
+      help = argparse.SUPPRESS) #'Concatenates the results of all scores of the given group'
   
   # TODO: test which other implications of --skip-... options make sense
   

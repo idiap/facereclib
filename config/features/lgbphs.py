@@ -27,8 +27,8 @@ ALPHA = 0.1
 feature_extractor = facereclib.features.LGBPHS
 
 # Gabor parameters
-SIGMA_GABOR = math.sqrt(2.)*math.pi
-KMAX_GABOR = math.pi / 2.
+GABOR_SIGMA = math.sqrt(2.)*math.pi
+GABOR_K_MAX = math.pi / 2.
 
 
 # LBP

@@ -26,7 +26,6 @@ class LGBPHS:
     
     self.m_gwt = bob.ip.GaborWaveletTransform(**kwargs)
     self.m_trafo_image = None
-    self.m_abs_image = None
   
   def __call__(self, image):
     """Extracts the local Gabor binary pattern histogram sequence from the given image"""
@@ -34,7 +33,6 @@ class LGBPHS:
     if self.m_trafo_image == None or self.m_trafo_image.shape[1:2] != image.shape:
       # create jet image
       self.m_trafo_image = self.m_gwt.trafo_image(image)
-      self.m_abs_image = numpy.ndarray(image.shape, dtype=numpy.float)
       
     # convert image to complex
     image = image.astype(numpy.complex128)
@@ -44,12 +42,11 @@ class LGBPHS:
     # iterate through the layers of the trafo image
     for j in range(self.m_gwt.number_of_kernels):
       # compute absolute part of complex response
-      bob.core.array.get_part(self.m_trafo_image[j,:,:], self.m_abs_image)
+      abs_image = numpy.abs(self.m_trafo_image[j,:,:])
       # Computes LBP histograms
-      lbphs_blocks = self.m_lgbphs_extractor(self.m_abs_image)
+      lbphs_blocks = self.m_lgbphs_extractor(abs_image)
       
-      # TODO: complete this!
-      # Converts to Blitz++ array
+      # Converts to Blitz array
       n_bins = self.m_lgbphs_extractor.NBins
       n_blocks = len(lbphs_blocks)
       start = j * n_bins * n_blocks
