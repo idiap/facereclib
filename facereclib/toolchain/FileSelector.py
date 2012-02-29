@@ -113,7 +113,7 @@ class FileSelector:
   
   def Tmodel_file(self, model_id, group):
     """Returns the file of the T-Norm-model and assures that the directory exists"""
-    tmodel_file = os.path.join(self.m_config.tnorm_models_dir, str(model_id) + self.m_config.default_extension) 
+    tmodel_file = os.path.join(self.m_config.tnorm_models_dir, group, str(model_id) + self.m_config.default_extension) 
     utils.ensure_dir(os.path.dirname(tmodel_file))
     return tmodel_file
     

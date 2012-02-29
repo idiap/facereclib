@@ -554,7 +554,7 @@ class ProcessingToolChain:
     bob.io.save(D_same_value, self.m_file_selector.D_same_value_matrix_file(group))
   
 
-  def zt_norm(self, groups=['dev', 'eval']):
+  def zt_norm(self, groups = ['dev', 'eval']):
     """Computes ZT-Norm using the previously generated files"""
     for group in groups:
       # list of models
@@ -592,7 +592,7 @@ class ProcessingToolChain:
         f_ztnorm.close()
     
     
-  def concatenate(self, compute_zt_norm, groups=['dev','eval']):
+  def concatenate(self, compute_zt_norm, groups = ['dev', 'eval']):
     """Concatenates all results into one score file"""
     for group in groups:
       # (sorted) list of models

@@ -85,12 +85,12 @@ def default_tool_chain(args):
   if not args.skip_enroler_training and hasattr(tool, 'train_enroler'):
     tool_chain.train_enroler(tool, force = args.force)
   if not args.skip_model_enrolment:
-    tool_chain.enrol_models(tool, not args.no_zt_norm, force = args.force)
+    tool_chain.enrol_models(tool, not args.no_zt_norm, groups = args.groups, force = args.force)
   if not args.skip_score_computation:
-    tool_chain.compute_scores(tool, not args.no_zt_norm, preload_probes = args.preload_probes)
+    tool_chain.compute_scores(tool, not args.no_zt_norm, groups = args.groups, preload_probes = args.preload_probes)
     if not args.no_zt_norm:
-      tool_chain.zt_norm()
-    tool_chain.concatenate(not args.no_zt_norm)
+      tool_chain.zt_norm(groups = args.groups)
+    tool_chain.concatenate(not args.no_zt_norm, groups = args.groups)
  
 
 def generate_job_array(list_to_split, number_of_files_per_job):
@@ -233,7 +233,7 @@ def add_grid_jobs(args, external_dependencies = []):
   enrol_deps_T = {}
   score_deps = {}
   concat_deps = {}
-  for group in ['dev', 'eval']:
+  for group in args.groups:
     enrol_deps_N[group] = deps[:]
     enrol_deps_T[group] = deps[:]
     if not args.skip_model_enrolment:
@@ -397,6 +397,8 @@ def parse_args(args = sys.argv[1:]):
       help = 'Force to erase former data if already exist')
   other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
+  other_group.add_argument('--groups', type = str,  metavar = 'GROUP', nargs = '+', default = ['dev', 'eval'],
+      help = "The group (i.e., 'dev' or  'eval') for which the models and scores should be generated")
 
   #######################################################################################
   ################# options for skipping parts of the toolchain #########################
