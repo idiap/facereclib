@@ -435,7 +435,7 @@ class ProcessingToolChain:
 
     # Gets the Z-Norm impostor samples
     Zprobe_ids = []
-    for k in Zprobe_objects.keys():
+    for k in sorted(Zprobe_objects.keys()):
       Zprobe_ids.append(Zprobe_objects[k][3])
 
     # Loads the T-Norm models
@@ -452,8 +452,8 @@ class ProcessingToolChain:
           D = self.__scores__(Tmodel, Zprobe_objects)
         bob.io.save(D, self.m_file_selector.D_file(Tmodel_id, group))
   
-        Tmodel_ids = [self.m_file_selector.m_config.db.getClientIdFromModelId(Tmodel_id)]
-        D_sameValue_tm = bob.machine.ztnormSameValue(Tmodel_ids, Zprobe_ids)
+        Tclient_id = [self.m_file_selector.m_config.db.getClientIdFromModelId(Tmodel_id)]
+        D_sameValue_tm = bob.machine.ztnormSameValue(Tclient_id, Zprobe_ids)
         bob.io.save(D_sameValue_tm, score_file)
 
 
