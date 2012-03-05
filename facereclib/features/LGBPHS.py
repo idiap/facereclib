@@ -17,14 +17,15 @@ class LGBPHS:
           setup.TO_AVERAGE, setup.ADD_AVERAGE_BIT, setup.UNIFORM, setup.ROT_INV
     )
     
-    kwargs = {}
-    if hasattr(setup, 'GABOR_DIRECTIONS'): kwargs['number_of_angles'] = setup.GABOR_DIRECTIONS
-    if hasattr(setup, 'GABOR_SCALES'): kwargs['number_of_scales'] = setup.GABOR_SCALES
-    if hasattr(setup, 'GABOR_SIGMA'): kwargs['sigma'] = setup.GABOR_SIGMA
-    if hasattr(setup, 'GABOR_K_MAX'): kwargs['k_max'] = setup.GABOR_K_MAX
-    if hasattr(setup, 'GABOR_K_FAC'): kwargs['k_fac'] = setup.GABOR_K_FAC
-    
-    self.m_gwt = bob.ip.GaborWaveletTransform(**kwargs)
+    self.m_gwt = bob.ip.GaborWaveletTransform(
+          number_of_angles = setup.GABOR_DIRECTIONS,
+          number_of_scales = setup.GABOR_SCALES,
+          sigma = setup.GABOR_SIGMA, 
+          k_max = setup.GABOR_K_MAX,
+          k_fac = setup.GABOR_K_FAC, 
+          pow_of_k = setup.GABOR_POW_OF_K,
+          dc_free = setup.GABOR_DC_FREE
+    )
     self.m_trafo_image = None
   
   def __call__(self, image):
