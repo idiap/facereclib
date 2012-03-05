@@ -45,21 +45,21 @@ class ProcessingToolChain:
     # read eye files
     eye_files = self.m_file_selector.eye_position_list()
     preprocessed_image_files = self.m_file_selector.preprocessed_image_list()
-    
-    # iterate through the images and perform normalization
+
+    # select a subset of keys to iterate    
     keys = sorted(image_files.keys())
     if indices != None:
       keys = keys[indices[0]:indices[1]]
+      print "Splitting of index range", indices, "to",
+
+    print "preprocess images from directory", os.path.dirname(image_files.values()[0]), "to dirctory", os.path.dirname(preprocessed_image_files.values()[0])
+    # iterate through the images and perform normalization
     for k in keys:
       image_file = image_files[k]
       preprocessed_image_file = preprocessed_image_files[k]
       eye_file = eye_files[k]
 
-      if self.__check_file__(preprocessed_image_file, force):
-        print "Preprocessed image '%s' already exists."  % preprocessed_image_file
-      else:
-        print "Generating preprocessed image '%s' from file '%s'." % (preprocessed_image_file, image_file)
-
+      if not self.__check_file__(preprocessed_image_file, force):
         # read eyes position file
         annots = [int(j.strip()) for j in open(eye_file).read().split()]
         if self.m_file_selector.m_db_options.first_annot == 0: 
@@ -99,14 +99,14 @@ class ProcessingToolChain:
     keys = sorted(image_files.keys())
     if indices != None:
       keys = keys[indices[0]:indices[1]]
+      print "Splitting of index range", indices, "to",
+
+    print "extract features from image directory", os.path.dirname(image_files.values()[0]), "to dirctory", os.path.dirname(feature_files.values()[0])
     for k in keys:
       image_file = image_files[k]
       feature_file = feature_files[k]
       
-      if self.__check_file__(feature_file, force):
-        print "Feature file '%s' already exists."  % (feature_file)
-      else:
-        print "Computing feature file '%s' from sample '%s'." % (feature_file, image_file)
+      if not self.__check_file__(feature_file, force):
         # load image
         image = bob.io.load(str(image_file))
         # extract feature
@@ -145,14 +145,14 @@ class ProcessingToolChain:
       keys = sorted(feature_files.keys())
       if indices != None:
         keys = keys[indices[0]:indices[1]]
+        print "Splitting of index range", indices, "to",
+
+      print "project features from directory", os.path.dirname(feature_files.values()[0]), "to dirctory", os.path.dirname(projected_files.values()[0])
       for k in keys:
         feature_file = feature_files[k]
         projected_file = projected_files[k]
         
-        if self.__check_file__(projected_file, force):
-          print "Projected file '%s' already exists."  % (projected_file)
-        else:
-          print "Projecting feature '%s' from sample '%s'." % (projected_file, feature_file)
+        if not self.__check_file__(projected_file, force):
           # load feature
           feature = bob.io.load(str(feature_file))
           # project feature
@@ -213,15 +213,15 @@ class ProcessingToolChain:
 
         if indices != None: 
           model_ids = model_ids[indices[0]:indices[1]]
-
+          print "Splitting of index range", indices, "to",
+  
+        print "enrol models of group", group
         for model_id in model_ids:
           # Path to the model
           model_file = self.m_file_selector.model_file(model_id, group)
 
           # Removes old file if required
-          if self.__check_file__(model_file, force):
-            print "Model %s already exists." % model_file
-          else:
+          if not self.__check_file__(model_file, force):
             enrol_files = self.m_file_selector.enrol_files(model_id, group, use_projected_features)
             
             # load all files into memory
@@ -231,7 +231,6 @@ class ProcessingToolChain:
               feature = self.__read_feature__(str(enrol_files[k]))
               enrol_features.append(feature)
             
-            print "Enroling model", model_file, "from", len(enrol_features), "features"
             model = tool.enrol(enrol_features)
             # save the model
             self.__save__(model, model_file)
@@ -243,15 +242,15 @@ class ProcessingToolChain:
 
         if indices != None: 
           model_ids = model_ids[indices[0]:indices[1]]
-
+          print "Splitting of index range", indices, "to",
+  
+        print "enrol T-models of group", group
         for model_id in model_ids:
           # Path to the model
           model_file = self.m_file_selector.Tmodel_file(model_id, group)
 
           # Removes old file if required
-          if self.__check_file__(model_file, force):
-            print "Tmodel %s already exists." % model_file
-          else:
+          if not self.__check_file__(model_file, force):
             enrol_files = self.m_file_selector.Tenrol_files(model_id, group, use_projected_features)
 
             # load all files into memory
@@ -262,7 +261,6 @@ class ProcessingToolChain:
               feature = self.__read_feature__(str(enrol_files[k]))
               enrol_features.append(feature)
               
-            print "Enroling Tmodel", model_file, "from", len(enrol_features), "features"
             model = tool.enrol(enrol_features)
             # save model
             self.__save__(model, model_file)

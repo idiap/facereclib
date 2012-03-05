@@ -173,6 +173,7 @@ class FileSelector:
     
   def zt_norm_result_file(self, group):
     norm_dir = self.m_config.scores_ztnorm_dir
+    utils.ensure_dir(norm_dir)
     return os.path.join(norm_dir, "scores-" + group)
   
   def create_directories(self, group):

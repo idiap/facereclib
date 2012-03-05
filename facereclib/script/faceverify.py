@@ -37,18 +37,18 @@ def config_for(args, db):
   config.preprocessed_dir = os.path.join(config.base_output_TEMP_dir, args.preprocessed_dir) 
   config.features_dir = os.path.join(config.base_output_TEMP_dir, args.features_dir)
   config.projected_dir = os.path.join(config.base_output_TEMP_dir, args.projected_dir)
-  config.models_dir = os.path.join(config.base_output_TEMP_dir, db.protocol, args.models_dirs[0])
-  config.tnorm_models_dir = os.path.join(config.base_output_TEMP_dir, db.protocol, args.models_dirs[1])
+  config.models_dir = os.path.join(config.base_output_TEMP_dir, args.models_dirs[0], db.protocol)
+  config.tnorm_models_dir = os.path.join(config.base_output_TEMP_dir, args.models_dirs[1], db.protocol)
   
-  config.zt_norm_A_dir = os.path.join(config.base_output_TEMP_dir, db.protocol, args.score_sub_dir, args.zt_dirs[0])
-  config.zt_norm_B_dir = os.path.join(config.base_output_TEMP_dir, db.protocol, args.score_sub_dir, args.zt_dirs[1])
-  config.zt_norm_C_dir = os.path.join(config.base_output_TEMP_dir, db.protocol, args.score_sub_dir, args.zt_dirs[2])
-  config.zt_norm_D_dir = os.path.join(config.base_output_TEMP_dir, db.protocol, args.score_sub_dir, args.zt_dirs[3])
-  config.zt_norm_D_sameValue_dir = os.path.join(config.base_output_TEMP_dir, db.protocol, args.score_sub_dir, args.zt_dirs[4])
+  config.zt_norm_A_dir = os.path.join(config.base_output_TEMP_dir, args.score_sub_dir, db.protocol, args.zt_dirs[0])
+  config.zt_norm_B_dir = os.path.join(config.base_output_TEMP_dir, args.score_sub_dir, db.protocol, args.zt_dirs[1])
+  config.zt_norm_C_dir = os.path.join(config.base_output_TEMP_dir, args.score_sub_dir, db.protocol, args.zt_dirs[2])
+  config.zt_norm_D_dir = os.path.join(config.base_output_TEMP_dir, args.score_sub_dir, db.protocol, args.zt_dirs[3])
+  config.zt_norm_D_sameValue_dir = os.path.join(config.base_output_TEMP_dir, args.score_sub_dir, db.protocol, args.zt_dirs[4])
   config.default_extension = ".hdf5"
   
-  config.scores_nonorm_dir = os.path.join(config.base_output_USER_dir, db.protocol, args.score_sub_dir, args.score_dirs[0]) 
-  config.scores_ztnorm_dir = os.path.join(config.base_output_USER_dir, db.protocol, args.score_sub_dir, args.score_dirs[1]) 
+  config.scores_nonorm_dir = os.path.join(config.base_output_USER_dir, args.score_sub_dir, db.protocol, args.score_dirs[0]) 
+  config.scores_ztnorm_dir = os.path.join(config.base_output_USER_dir, args.score_sub_dir, db.protocol, args.score_dirs[1]) 
   
   return config
 
@@ -87,10 +87,10 @@ def default_tool_chain(args):
   if not args.skip_model_enrolment:
     tool_chain.enrol_models(tool, not args.no_zt_norm, groups = args.groups, force = args.force)
   if not args.skip_score_computation:
-    tool_chain.compute_scores(tool, not args.no_zt_norm, groups = args.groups, preload_probes = args.preload_probes)
+    tool_chain.compute_scores(tool, not args.no_zt_norm, groups = args.groups, preload_probes = args.preload_probes, force = args.force)
     if not args.no_zt_norm:
-      tool_chain.zt_norm(groups = args.groups)
-    tool_chain.concatenate(not args.no_zt_norm, groups = args.groups)
+      tool_chain.zt_norm(groups = args.groups, force = args.force)
+    tool_chain.concatenate(not args.no_zt_norm, groups = args.groups, force = args.force)
  
 
 def generate_job_array(list_to_split, number_of_files_per_job):
@@ -133,12 +133,21 @@ def submit(command, list_to_split, number_of_files_per_job, job_manager, common_
   parameters we like to use. You can change general submission parameters
   directly at this method."""
 
-  # get the name of the python interpreter
+  # get the directory of the called script (hopefulle this is the bin directory
   ### AAARRRGGGHHH!
   # I don't want to do this! Is there no better way?????
-  executable = sys.argv[0] 
-  bin_dir = os.path.realpath(os.path.dirname(executable))
-   
+  bin_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
+
+  # get the name of this file 
+  this_file = __file__
+  if this_file[-1] == 'c':
+    this_file = this_file[0:-1]
+  
+  # we want to have the executable with the name of this file, which is laying in the bin directory
+  executable = os.path.join(bin_dir, os.path.basename(this_file))
+  
+  if executable == this_file:
+    raise "Please do not use the scripts from the facereclib directory, but rather use the scripts in the bin/ directory"
     
   # execute command
   cmd = [
@@ -316,14 +325,14 @@ def execute_grid_job(args):
   # compute scores
   if args.compute_scores:
     if args.score_type in ['A', 'B']:
-      tool_chain.compute_scores(tool, not args.no_zt_norm, indices = indices(file_selector.model_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes)
+      tool_chain.compute_scores(tool, not args.no_zt_norm, indices = indices(file_selector.model_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes, force = args.force)
     elif args.score_type in ['C', 'D']:
-      tool_chain.compute_scores(tool, not args.no_zt_norm, indices = indices(file_selector.Tmodel_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes)
+      tool_chain.compute_scores(tool, not args.no_zt_norm, indices = indices(file_selector.Tmodel_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes, force = args.force)
     else:
-      tool_chain.zt_norm(groups=[args.group])
+      tool_chain.zt_norm(groups=[args.group], force = args.force)
   # concatenate
   if args.concatenate:
-    tool_chain.concatenate(not args.no_zt_norm, groups=[args.group])
+    tool_chain.concatenate(not args.no_zt_norm, groups=[args.group], force = args.force)
   
   
 def parse_args(args = sys.argv[1:]):
@@ -454,7 +463,7 @@ def parse_args(args = sys.argv[1:]):
   return parser.parse_args(args)
 
 
-def face_verify(args):
+def face_verify(args, external_dependencies = None):
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
@@ -476,7 +485,7 @@ def face_verify(args):
     execute_grid_job(args)
   else:
     # no other parameter given, so deploy new jobs
-    return add_grid_jobs(args)
+    return add_grid_jobs(args, external_dependencies = external_dependencies)
     
 
 def main():
