@@ -89,8 +89,8 @@ def default_tool_chain(args):
   if not args.skip_score_computation:
     tool_chain.compute_scores(tool, not args.no_zt_norm, groups = args.groups, preload_probes = args.preload_probes, force = args.force)
     if not args.no_zt_norm:
-      tool_chain.zt_norm(groups = args.groups, force = args.force)
-    tool_chain.concatenate(not args.no_zt_norm, groups = args.groups, force = args.force)
+      tool_chain.zt_norm(groups = args.groups)
+    tool_chain.concatenate(not args.no_zt_norm, groups = args.groups)
  
 
 def generate_job_array(list_to_split, number_of_files_per_job):
@@ -329,10 +329,10 @@ def execute_grid_job(args):
     elif args.score_type in ['C', 'D']:
       tool_chain.compute_scores(tool, not args.no_zt_norm, indices = indices(file_selector.Tmodel_ids(args.group), cfg.number_of_models_per_score_job), groups=[args.group], types = [args.score_type], preload_probes = args.preload_probes, force = args.force)
     else:
-      tool_chain.zt_norm(groups=[args.group], force = args.force)
+      tool_chain.zt_norm(groups=[args.group])
   # concatenate
   if args.concatenate:
-    tool_chain.concatenate(not args.no_zt_norm, groups=[args.group], force = args.force)
+    tool_chain.concatenate(not args.no_zt_norm, groups=[args.group])
   
   
 def parse_args(args = sys.argv[1:]):
