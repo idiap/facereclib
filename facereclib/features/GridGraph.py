@@ -10,13 +10,15 @@ class GridGraph:
   
   def __init__(self, setup):
     #   generate extractor machine
-    gabor_kwargs = {}
-    if hasattr(setup, 'GABOR_DIRECTIONS'): gabor_kwargs['number_of_angles'] = setup.GABOR_DIRECTIONS
-    if hasattr(setup, 'GABOR_SCALES'): gabor_kwargs['number_of_scales'] = setup.GABOR_SCALES
-    if hasattr(setup, 'GABOR_SIGMA'): gabor_kwargs['sigma'] = setup.GABOR_SIGMA
-    if hasattr(setup, 'GABOR_K_MAX'): gabor_kwargs['k_max'] = setup.GABOR_K_MAX
-    if hasattr(setup, 'GABOR_K_FAC'): gabor_kwargs['k_fac'] = setup.GABOR_K_FAC
-    self.m_gwt = bob.ip.GaborWaveletTransform(**gabor_kwargs)
+    self.m_gwt = bob.ip.GaborWaveletTransform(
+          number_of_angles = setup.GABOR_DIRECTIONS,
+          number_of_scales = setup.GABOR_SCALES,
+          sigma = setup.GABOR_SIGMA, 
+          k_max = setup.GABOR_K_MAX,
+          k_fac = setup.GABOR_K_FAC, 
+          pow_of_k = setup.GABOR_POW_OF_K,
+          dc_free = setup.GABOR_DC_FREE
+    )
 
     if hasattr(setup, 'COUNT_BETWEEN_EYES'):
       # compute eye positions from image preprocessing setup
