@@ -463,7 +463,7 @@ def parse_args(args = sys.argv[1:]):
   return parser.parse_args(args)
 
 
-def face_verify(args, external_dependencies = None):
+def face_verify(args, external_dependencies = []):
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
