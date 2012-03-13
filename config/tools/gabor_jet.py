@@ -9,7 +9,7 @@ import math
 tool = facereclib.tools.GaborJetTool
 
 # extract average model?
-extract_averaged_model = True
+extract_averaged_model = False
 
 
 # Gabor wavelet transform setup (if required by the Gabor jet similarity function)
