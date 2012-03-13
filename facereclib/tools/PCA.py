@@ -9,7 +9,7 @@ import numpy
 class PCATool:
   """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
 
-  def __init__(self, file_selector, setup):
+  def __init__(self, setup):
     """Initializes the local UBM-GMM tool chain with the given file selector object"""
     self.m_config = setup
     self.m_machine = None

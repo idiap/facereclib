@@ -82,8 +82,12 @@ class ProcessingToolChain:
         print "Extractor '%s' already exists." % extractor_file
       else:
         # train model
-        train_files = self.m_file_selector.training_image_list() 
-        print "Training Extractor '%s' using %d training files: " %(extractor_file, len(train_files))
+        if hasattr(extractor, 'use_training_images_sorted_by_identity'):
+          train_files = self.m_file_selector.training_feature_list_by_models('preprocessed')
+          print "Training Extractor '%s' using %d identities: " %(extractor_file, len(train_files))
+        else:
+          train_files = self.m_file_selector.training_image_list() 
+          print "Training Extractor '%s' using %d training files: " %(extractor_file, len(train_files))
         extractor.train(train_files, extractor_file)
 
     
@@ -124,9 +128,13 @@ class ProcessingToolChain:
       if self.__check_file__(projector_file, force):
         print "Projector '%s' already exists." % projector_file
       else:
-        # train model
-        train_files = self.m_file_selector.training_feature_list() 
-        print "Training Projector '%s' using %d training files: " %(projector_file, len(train_files))
+        # train projector
+        if hasattr(tool, 'use_training_features_sorted_by_identity'):
+          train_files = self.m_file_selector.training_feature_list_by_models('features')
+          print "Training Projector '%s' using %d identities: " %(projector_file, len(train_files))
+        else:
+          train_files = self.m_file_selector.training_feature_list() 
+          print "Training Projector '%s' using %d training files: " %(projector_file, len(train_files))
   
         # perform training
         tool.train_projector(train_files, str(projector_file))

@@ -12,10 +12,10 @@ class ISVTool (UBMGMMTool):
   """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
 
   
-  def __init__(self, file_selector, setup):
+  def __init__(self, setup):
     """Initializes the local UBM-GMM tool with the given file selector object"""
     # call base class constructor
-    UBMGMMTool.__init__(self, file_selector, setup)
+    UBMGMMTool.__init__(self, setup)
     
     del self.use_unprojected_features_for_model_enrol
 
@@ -36,9 +36,9 @@ class ISVTool (UBMGMMTool):
        There is one list for each identity"""
     # Initializes a python list for the GMMStats
     gmm_stats = [] 
-    for l in ld_files: 
+    for k in sorted(ld_files.keys()): 
       # Loads the list of GMMStats for the given client
-      gmm_stats_c = self.__load_gmm_stats__(l)
+      gmm_stats_c = self.__load_gmm_stats__(ld_files[k])
       # Appends to the main list 
       gmm_stats.append(gmm_stats_c)
     return gmm_stats

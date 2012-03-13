@@ -66,7 +66,7 @@ def default_tool_chain(args):
   # generate processing tools
   preprocessor = pp.preprocessor(pp)
   extractor = pp.feature_extractor(pp)
-  tool = ts.tool(file_selector, ts)
+  tool = ts.tool(ts)
 
   # generate toolchain, using the tool chain specified in the config script
   tool_chain = toolchain.ToolChain(file_selector)
@@ -196,7 +196,7 @@ def add_grid_jobs(args, external_dependencies = []):
   # generate File selector for the given config file
   file_selector = toolchain.FileSelector(config, db)
   extractor = pp.feature_extractor(pp)
-  tool = ts.tool(file_selector, ts)
+  tool = ts.tool(ts)
 
   # create job manager
   jm = gridtk.manager.JobManager(statefile = args.gridtk_db)
@@ -288,7 +288,7 @@ def execute_grid_job(args):
   # generate image preprocessor
   preprocessor = pp.preprocessor(pp)
   extractor = pp.feature_extractor(pp)
-  tool = ts.tool(file_selector, ts)
+  tool = ts.tool(ts)
   # generate toolchain, using the tool chain specified in the config script
   tool_chain = toolchain.ToolChain(file_selector)
   

@@ -8,7 +8,7 @@ import numpy
 class GaborJetTool:
   """Tool chain for computing Gabor jets, Gabor graphs, and Gabor graph comparisons"""
   
-  def __init__(self, file_selector, setup):
+  def __init__(self, setup):
     # graph machine for enroling models and comparing graphs
     self.m_graph_machine = bob.machine.GaborGraphMachine()
     # jet comparison function

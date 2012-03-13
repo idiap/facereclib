@@ -8,7 +8,7 @@ import numpy
 class LGBPHSTool:
   """Tool chain for computing local Gabor binary pattern histogram sequences"""
   
-  def __init__(self, file_selector, setup):
+  def __init__(self, setup):
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
     # nothing to be done here
     self.m_distance_function = setup.distance_function

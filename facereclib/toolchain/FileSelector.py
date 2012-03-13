@@ -46,7 +46,10 @@ class FileSelector:
   def training_feature_list_by_models(self, dir_type):
     """Returns the list of training features, which is split up by the client ids."""
     # get the type of directory that is required
-    if dir_type == 'features': 
+    if dir_type == 'preprocessed': 
+      cur_dir = self.m_config.preprocessed_dir 
+      cur_world_options = self.m_config.world_extractor_options
+    elif dir_type == 'features': 
       cur_dir = self.m_config.features_dir 
       cur_world_options = self.m_config.world_projector_options
     elif dir_type == 'projected': 
@@ -54,12 +57,12 @@ class FileSelector:
       cur_world_options = self.m_config.world_enroler_options
     # iterate over all training model ids
     train_models = self.m_db.models(groups='world', protocol=self.m_config.protocol)
-    training_filenames = []
+    training_filenames = {}
     for m in train_models:
       # collect training features for current model id
       train_data_m = self.m_db.files(directory=cur_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', model_ids=(m,), **cur_world_options) 
       # add this model to the list
-      training_filenames.append(train_data_m)
+      training_filenames[m] = train_data_m
     # return the list of models
     return training_filenames
     

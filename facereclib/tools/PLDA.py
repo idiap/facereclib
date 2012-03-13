@@ -7,21 +7,16 @@ import numpy
 import types
 
 
-def plda_training_feature_list(self):
-  """Overwrites the default training image list generatation since PLDA needs to have training images per identity"""
-  return self.training_feature_list_by_models('features')
-
-
 class PLDATool:
   """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
 
-  def __init__(self, file_selector, setup):
+  def __init__(self, setup):
     """Initializes the local UBM-GMM tool chain with the given file selector object"""
     self.m_config = setup
 
     # overwrite the training image list generation from the file selector
     # since PLDA needs training data to be split up into models
-    file_selector.training_feature_list = types.MethodType(plda_training_feature_list, file_selector) 
+    self.use_training_features_sorted_by_identity = True
 
 
   def __load_data_by_client__(self, training_files):
@@ -30,7 +25,7 @@ class PLDATool:
     
     # Initializes an arrayset for the data
     data = []
-    for client in range(0,len(training_files)):
+    for client in sorted(training_files.keys()):
       # Arrayset for this client
       client_data = bob.io.Arrayset()
       client_files = training_files[client]
