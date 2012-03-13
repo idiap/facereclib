@@ -13,7 +13,11 @@ class NullPreprocessor:
   def __init__(self, config):
     pass
     
-  def __call__(self, image):
+  def __call__(self, input_file, eye_pos):
+    image = bob.io.load(str(input_file))
+    # convert to grayscale
+    if(image.ndim == 3):
+      image = bob.ip.rgb_to_gray(image)
     return image
 
 
