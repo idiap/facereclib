@@ -209,31 +209,31 @@ def add_grid_jobs(args, external_dependencies = []):
   
   # image preprocessing
   if not args.skip_preprocessing:
-    job_ids['preprocessing'] = submit('--preprocess', file_selector.original_image_list(), cfg.number_of_images_per_job, jm, cp, dependencies=deps).id()
+    job_ids['preprocessing'] = submit('--preprocess', file_selector.original_image_list(), cfg.number_of_images_per_job, jm, cp, dependencies=deps, **cfg.preprocessing_queue).id()
     deps.append(job_ids['preprocessing'])
     
   # feature extraction training
   if not args.skip_feature_extraction_training and hasattr(extractor, 'train'):
-    job_ids['extraction_training'] = submit('--feature-extraction-training', [], 1, jm, cp, dependencies=deps, array = (1,1,1), queue='q1d', mem='8G', name='f-training').id()
+    job_ids['extraction_training'] = submit('--feature-extraction-training', [], 1, jm, cp, dependencies=deps, array = (1,1,1), name='f-training', **cfg.training_queue).id()
     deps.append(job_ids['extraction_training'])
     
 
   if not args.skip_feature_extraction:
-    job_ids['feature_extraction'] = submit('--feature-extraction', file_selector.preprocessed_image_list(), cfg.number_of_features_per_job, jm, cp, dependencies=deps).id()
+    job_ids['feature_extraction'] = submit('--feature-extraction', file_selector.preprocessed_image_list(), cfg.number_of_features_per_job, jm, cp, dependencies=deps, **cfg.extraction_queue).id()
     deps.append(job_ids['feature_extraction'])
     
   # feature projection training
   if not args.skip_projection_training and hasattr(tool, 'train_projector'):
-    job_ids['training'] = submit('--train-projector', [], 1, jm, cp, dependencies=deps, array = (1,1,1), queue='q1d', mem='8G', name="p-training").id()
+    job_ids['training'] = submit('--train-projector', [], 1, jm, cp, dependencies=deps, array = (1,1,1), name="p-training", **cfg.training_queue).id()
     deps.append(job_ids['training'])
     
   if not args.skip_projection and hasattr(tool, 'project'):
-    job_ids['feature_projection'] = submit('--feature-projection', file_selector.feature_list(), cfg.number_of_projections_per_job, jm, cp, dependencies=deps).id()
+    job_ids['feature_projection'] = submit('--feature-projection', file_selector.feature_list(), cfg.number_of_projections_per_job, jm, cp, dependencies=deps, **cfg.projection_queue).id()
     deps.append(job_ids['feature_projection'])
     
   # model enrolment training
   if not args.skip_enroler_training and hasattr(tool, 'train_enroler'):
-    job_ids['enrolment_training'] = submit('--train-enroler', [], 1, jm, cp, dependencies=deps, array = (1,1,1), queue='q1d', mem='8G', name="e-training").id()
+    job_ids['enrolment_training'] = submit('--train-enroler', [], 1, jm, cp, dependencies=deps, array = (1,1,1), name="e-training", **cfg.training_queue).id()
     deps.append(job_ids['enrolment_training'])
     
     
@@ -246,21 +246,21 @@ def add_grid_jobs(args, external_dependencies = []):
     enrol_deps_N[group] = deps[:]
     enrol_deps_T[group] = deps[:]
     if not args.skip_model_enrolment:
-      job_ids['enrol_%s_N'%group] = submit('--enrol-models --group=%s --model-type=N'%group, file_selector.model_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-N-%s"%group).id()
+      job_ids['enrol_%s_N'%group] = submit('--enrol-models --group=%s --model-type=N'%group, file_selector.model_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-N-%s"%group, **cfg.enrol_queue).id()
       enrol_deps_N[group].append(job_ids['enrol_%s_N'%group])
 
       if not args.no_zt_norm:
-        job_ids['enrol_%s_T'%group] = submit('--enrol-models --group=%s --model-type=T'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-T-%s"%group).id()
+        job_ids['enrol_%s_T'%group] = submit('--enrol-models --group=%s --model-type=T'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_enrol_job, jm, cp, dependencies=deps, name = "enrol-T-%s"%group, **cfg.enrol_queue).id()
         enrol_deps_T[group].append(job_ids['enrol_%s_T'%group])
         
     # compute A,B,C, and D scores
     if not args.skip_score_computation:
-      job_ids['score_%s_A'%group] = submit('--compute-scores --group=%s --score-type=A'%group, file_selector.model_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_N[group], name = "score-A-%s"%group).id()
+      job_ids['score_%s_A'%group] = submit('--compute-scores --group=%s --score-type=A'%group, file_selector.model_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_N[group], name = "score-A-%s"%group, **cfg.score_queue).id()
       concat_deps[group] = [job_ids['score_%s_A'%group]]
       if not args.no_zt_norm:
-        job_ids['score_%s_B'%group] = submit('--compute-scores --group=%s --score-type=B'%group, file_selector.model_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_N[group], name = "score-B-%s"%group).id()
-        job_ids['score_%s_C'%group] = submit('--compute-scores --group=%s --score-type=C'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_T[group], name = "score-C-%s"%group).id()
-        job_ids['score_%s_D'%group] = submit('--compute-scores --group=%s --score-type=D'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_T[group], name = "score-D-%s"%group).id()
+        job_ids['score_%s_B'%group] = submit('--compute-scores --group=%s --score-type=B'%group, file_selector.model_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_N[group], name = "score-B-%s"%group, **cfg.score_queue).id()
+        job_ids['score_%s_C'%group] = submit('--compute-scores --group=%s --score-type=C'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_T[group], name = "score-C-%s"%group, **cfg.score_queue).id()
+        job_ids['score_%s_D'%group] = submit('--compute-scores --group=%s --score-type=D'%group, file_selector.Tmodel_ids(group), cfg.number_of_models_per_score_job, jm, cp, dependencies=enrol_deps_T[group], name = "score-D-%s"%group, **cfg.score_queue).id()
         
         # compute zt-norm
         score_deps[group] = [job_ids['score_%s_A'%group], job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group]]
