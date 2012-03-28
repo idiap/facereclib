@@ -7,11 +7,11 @@ import math
 preprocessor = facereclib.preprocessing.TanTriggs
 
 # Cropping
-CROP_EYES_D = 33
 CROP_H = 80
-CROP_W = 64
-CROP_OH = 16
-CROP_OW = 32
+CROP_W = CROP_H / 5 * 4
+CROP_EYES_D = CROP_W / 2 + 1
+CROP_OH = CROP_H / 5
+CROP_OW = CROP_W / 2
 
 # Tan Triggs
 GAMMA = 0.2
@@ -38,6 +38,6 @@ extract_phases = False
 
 # tight grid grap paramaters
 FIRST = (6, 6)
-LAST = (74, 58)
+LAST = (CROP_H - FIRST[0], CROP_W - FIRST[1])
 STEP = (1, 1)
 

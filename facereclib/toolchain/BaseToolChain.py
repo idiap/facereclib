@@ -78,7 +78,7 @@ class ProcessingToolChain:
     """Trains the feature extractor, if it requires training"""
     if hasattr(extractor,'train'):
       extractor_file = self.m_file_selector.extractor_file()
-      if self.__check_file__(extractor_file, force):
+      if self.__check_file__(extractor_file, force, 1000):
         print "Extractor '%s' already exists." % extractor_file
       else:
         # train model
@@ -125,7 +125,7 @@ class ProcessingToolChain:
     if hasattr(tool,'train_projector'):
       projector_file = self.m_file_selector.projector_file()
       
-      if self.__check_file__(projector_file, force):
+      if self.__check_file__(projector_file, force, 1000):
         print "Projector '%s' already exists." % projector_file
       else:
         # train projector
@@ -183,7 +183,7 @@ class ProcessingToolChain:
     if hasattr(tool, 'train_enroler'):
       enroler_file = self.m_file_selector.enroler_file()
       
-      if self.__check_file__(enroler_file, force):
+      if self.__check_file__(enroler_file, force, 1000):
         print "Enroler '%s' already exists." % enroler_file
       else:
         if hasattr(tool, 'load_projector'):

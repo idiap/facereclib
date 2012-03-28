@@ -36,12 +36,19 @@ class GridGraph:
       raise "The setup of the Grid graph is unknown."
       
     self.m_jet_image = None
-    self.m_extract_phases = setup.extract_phases
     self.m_normalize_jets = setup.normalize_jets
+    if isinstance(setup.extract_phases, bool):
+      self.m_extract_phases = setup.extract_phases
+      self.m_inline_phases = False
+    else:
+      self.m_extract_phases = setup.extract_phases == 'inline'
+      self.m_inline_phases = self.m_extract_phases
 
     # preallocate memory for the face graph    
     if self.m_extract_phases:
       self.m_face_graph = numpy.ndarray((self.m_graph_machine.number_of_nodes, 2, self.m_gwt.number_of_kernels), 'float64')
+      if self.m_inline_phases:
+        self.m_reshaped_graph = numpy.ndarray((self.m_graph_machine.number_of_nodes, 2 * self.m_gwt.number_of_kernels), 'float64')
     else:
       self.m_face_graph = numpy.ndarray((self.m_graph_machine.number_of_nodes, self.m_gwt.number_of_kernels), 'float64')
     
@@ -65,6 +72,13 @@ class GridGraph:
         else:
           bob.ip.normalize_gabor_jet(self.m_face_graph[n,:])
 
-    # return the extracted face graph     
-    return self.m_face_graph
+    if self.m_inline_phases:
+      # reshape Gabor jets of the graph, if desired
+      for i in range(self.m_graph_machine.number_of_nodes):
+        self.m_reshaped_graph[i,:] = self.m_face_graph[i].flatten()
+      return self.m_reshaped_graph
+
+    else:
+      # return the extracted face graph     
+      return self.m_face_graph
 

@@ -14,7 +14,7 @@ pos_input_ext = ".pos"
 
 first_annot = 1
 all_files_options = { 'expressions': 'neutral' }
-world_extractor_options = {}
+world_extractor_options = { 'expressions': 'neutral' }
 world_projector_options = { 'expressions': 'neutral', 'world_sampling': 3, 'world_first': True } 
 world_enroler_options = { 'expressions': 'neutral' }
 
