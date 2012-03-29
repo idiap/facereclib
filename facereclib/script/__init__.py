@@ -4,4 +4,5 @@
 
 """Tool chain for computing verification scores"""
 
-import faceverify
+import faceverify_zt
+
