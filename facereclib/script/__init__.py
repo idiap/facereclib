@@ -5,4 +5,5 @@
 """Tool chain for computing verification scores"""
 
 import faceverify_zt
+import faceverify_gbu
 
