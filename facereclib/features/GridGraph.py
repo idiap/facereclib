@@ -57,7 +57,7 @@ class GridGraph:
   def __call__(self, image):
     if self.m_jet_image == None or self.m_jet_image.shape[0:1] != image.shape:
       # create jet image
-      self.m_jet_image = self.m_gwt.jet_image(image, self.m_extract_phases)
+      self.m_jet_image = self.m_gwt.empty_jet_image(image, self.m_extract_phases)
       
     # compute jets (Do not normalize the Gabor jets of the whole image)
     self.m_gwt.compute_jets(image, self.m_jet_image, False)

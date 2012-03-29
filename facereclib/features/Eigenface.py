@@ -26,11 +26,11 @@ class Eigenface:
       data.append(self.__linearize__(feature))
 
     print "Training LinearMachine using PCA (SVD)"
-    T = bob.trainer.SVDPCATrainer()
-    self.m_machine, __eig_vals = T.train(data)
+    t = bob.trainer.SVDPCATrainer()
+    self.m_machine, __eig_vals = t.train(data)
     # Machine: get shape, then resize
     self.m_machine.resize(self.m_machine.shape[0], self.m_config.n_outputs)
-    self.m_machine.save(bob.io.HDF5File(extractor_file))
+    self.m_machine.save(bob.io.HDF5File(extractor_file, "w"))
   
   
   def load(self, extractor_file):

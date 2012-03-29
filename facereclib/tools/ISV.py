@@ -55,11 +55,11 @@ class ISVTool (UBMGMMTool):
     # load GMM stats from training files
     gmm_stats = self.__load_gmm_stats_list__(train_files)
 
-    T = bob.trainer.JFABaseTrainer(self.m_jfabase)
-    T.trainISV(gmm_stats, self.m_config.n_iter_train, self.m_config.relevance_factor)
+    t = bob.trainer.JFABaseTrainer(self.m_jfabase)
+    t.train_isv(gmm_stats, self.m_config.n_iter_train, self.m_config.relevance_factor)
 
     # Save the JFA base AND the UBM into the same file
-    self.m_jfabase.save(bob.io.HDF5File(enroler_file))
+    self.m_jfabase.save(bob.io.HDF5File(enroler_file, "w"))
 
    
 
@@ -104,7 +104,7 @@ class ISVTool (UBMGMMTool):
 
   def score(self, model, probe):
     """Computes the score for the given model and the given probe using the scoring function from the config file"""
-    A = numpy.ndarray((1,), 'float64')
-    model.forward([probe], A)
-    return A[0]
+    scores = numpy.ndarray((1,), 'float64')
+    model.forward([probe], scores)
+    return scores[0]
 

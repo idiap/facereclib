@@ -3,7 +3,6 @@
 # Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
 
 import os
-import bob
 
 def ensure_dir(dirname):
   """ Creates the directory dirname if it does not already exist,

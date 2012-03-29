@@ -9,7 +9,8 @@ import numpy
 import math
 
 class NullPreprocessor:
-  """Skips proprocessing files by simply copying the contents into an hdf5 file"""
+  """Skips proprocessing files by simply copying the contents into an hdf5 file 
+  (and perform gray scale conversion if required)"""
   def __init__(self, config):
     pass
     

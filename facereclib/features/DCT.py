@@ -25,7 +25,7 @@ class DCTBlocks:
       src[i, :, :] = (block - mean) / std
 
         
-  def __normalize_DCT__(self, src):
+  def __normalize_dct__(self, src):
     for i in range(src.shape[1]):
       col = src[:, i]
       mean = numpy.mean(col)
@@ -86,7 +86,7 @@ class DCTBlocks:
         TMP_tensor[bi, TMP_tensor_min:TMP_tensor_max] = dct_blocks[bi, dct_blocks_min:dct_blocks_max]
 
     if norm_after:
-      self.__normalize_DCT__(TMP_tensor)
+      self.__normalize_dct__(TMP_tensor)
 
     return TMP_tensor
 

@@ -33,7 +33,7 @@ class LGBPHS:
     # perform GWT on image
     if self.m_trafo_image == None or self.m_trafo_image.shape[1:2] != image.shape:
       # create jet image
-      self.m_trafo_image = self.m_gwt.trafo_image(image)
+      self.m_trafo_image = self.m_gwt.empty_trafo_image(image)
       
     # convert image to complex
     image = image.astype(numpy.complex128)

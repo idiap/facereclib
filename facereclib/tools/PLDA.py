@@ -48,21 +48,21 @@ class PLDATool:
     data = self.__load_data_by_client__(training_features)
     
     # create trainer
-    T = bob.trainer.PLDABaseTrainer(self.m_config.nf, self.m_config.ng, self.m_config.acc, self.m_config.n_iter, False)
-    T.seed = self.m_config.seed
-    T.initF_method = self.m_config.initFmethod
-    T.initF_ratio = self.m_config.initFratio
-    T.initG_method = self.m_config.initGmethod
-    T.initG_ratio = self.m_config.initGratio
-    T.initSigma_method = self.m_config.initSmethod
-    T.initSigma_ratio = self.m_config.initSratio
+    t = bob.trainer.PLDABaseTrainer(self.m_config.nf, self.m_config.ng, self.m_config.acc, self.m_config.n_iter, False)
+    t.seed = self.m_config.seed
+    t.init_f_method = self.m_config.initFmethod
+    t.init_f_ratio = self.m_config.initFratio
+    t.init_g_method = self.m_config.initGmethod
+    t.init_g_ratio = self.m_config.initGratio
+    t.init_sigma_method = self.m_config.initSmethod
+    t.init_sigma_ratio = self.m_config.initSratio
 
     # train machine
     self.m_plda_base_machine = bob.machine.PLDABaseMachine(self.m_config.n_inputs, self.m_config.nf, self.m_config.ng)
-    T.train(self.m_plda_base_machine, data)
+    t.train(self.m_plda_base_machine, data)
     
     # write machine to file
-    self.m_plda_base_machine.save(bob.io.HDF5File(str(projector_file)))
+    self.m_plda_base_machine.save(bob.io.HDF5File(str(projector_file), "w"))
 
 
   def load_projector(self, projector_file):

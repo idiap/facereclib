@@ -47,11 +47,11 @@ class UBMGMMTool:
     std -= (mean ** 2)
     std = std ** 0.5 # sqrt(std)
 
-    arStd = bob.io.Arrayset()
+    ar_std = bob.io.Arrayset()
     for array in arrayset:
-      arStd.append(array.astype('float64') / std)
+      ar_std.append(array.astype('float64') / std)
 
-    return (arStd,std)
+    return (ar_std,std)
 
 
   def __multiply_vectors_by_factors__(self, matrix, vector):
@@ -78,9 +78,9 @@ class UBMGMMTool:
 
     # Normalizes the Arrayset if required
     if not self.m_config.norm_KMeans:
-      normalizedAr = ar
+      normalized_ar = ar
     else:
-      (normalizedAr,stdAr) = self.__normalize_std_arrayset__(ar)
+      (normalized_ar,std_ar) = self.__normalize_std_arrayset__(ar)
 
 
     # Creates the machines (KMeans and GMM)
@@ -88,14 +88,14 @@ class UBMGMMTool:
     self.m_ubm = bob.machine.GMMMachine(self.m_config.n_gaussians, input_size)
 
     # Creates the KMeansTrainer
-    kmeansTrainer = bob.trainer.KMeansTrainer()
-    kmeansTrainer.convergenceThreshold = self.m_config.convergence_threshold
-    kmeansTrainer.maxIterations = self.m_config.iterk
+    kmeans_trainer = bob.trainer.KMeansTrainer()
+    kmeans_trainer.convergence_threshold = self.m_config.convergence_threshold
+    kmeans_trainer.max_iterations = self.m_config.iterk
 
     # Trains using the KMeansTrainer
-    kmeansTrainer.train(kmeans, normalizedAr)
+    kmeans_trainer.train(kmeans, normalized_ar)
     
-    [variances, weights] = kmeans.getVariancesAndWeightsForEachCluster(normalizedAr)
+    [variances, weights] = kmeans.get_variances_and_weights_for_each_cluster(normalized_ar)
     means = kmeans.means
 
     # Undoes the normalization
@@ -107,17 +107,17 @@ class UBMGMMTool:
     self.m_ubm.means = means
     self.m_ubm.variances = variances
     self.m_ubm.weights = weights
-    self.m_ubm.setVarianceThresholds(self.m_config.variance_threshold)
+    self.m_ubm.set_variance_thresholds(self.m_config.variance_threshold)
 
     # Trains the GMM
     trainer = bob.trainer.ML_GMMTrainer(self.m_config.update_means, self.m_config.update_variances, self.m_config.update_weights)
-    trainer.convergenceThreshold = self.m_config.convergence_threshold
-    trainer.maxIterations = self.m_config.iterg_train
+    trainer.convergence_threshold = self.m_config.convergence_threshold
+    trainer.max_iterations = self.m_config.iterg_train
     trainer.train(self.m_ubm, ar)
 
     # Saves the UBM to file
     print "Saving model to file", projector_file
-    self.m_ubm.save(bob.io.HDF5File(projector_file))
+    self.m_ubm.save(bob.io.HDF5File(projector_file, "w"))
     
 
   #######################################################
@@ -127,18 +127,18 @@ class UBMGMMTool:
     """Reads the UBM model from file"""
     # read UBM
     self.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(projector_file))
-    self.m_ubm.setVarianceThresholds(self.m_config.variance_threshold)
+    self.m_ubm.set_variance_thresholds(self.m_config.variance_threshold)
     # prepare MAP_GMM_Trainer
     if self.m_config.responsibilities_threshold == 0.:
       self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_config.relevance_factor, True, False, False)
     else:
       self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_config.relevance_factor, True, False, False, self.m_config.responsibilities_threshold)
-    self.m_trainer.convergenceThreshold = self.m_config.convergence_threshold
-    self.m_trainer.maxIterations = self.m_config.iterg_enrol
-    self.m_trainer.setPriorGMM(self.m_ubm)
+    self.m_trainer.convergence_threshold = self.m_config.convergence_threshold
+    self.m_trainer.max_iterations = self.m_config.iterg_enrol
+    self.m_trainer.set_prior_gmm(self.m_ubm)
     
     # Initializes GMMStats object 
-    self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.DimC, self.m_ubm.DimD)
+    self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
 
 
   def project(self, feature):
@@ -147,7 +147,7 @@ class UBMGMMTool:
     feature = bob.io.Arrayset(feature)
     # Accumulates statistics
     self.m_gmm_stats.init()
-    self.m_ubm.accStatistics(feature, self.m_gmm_stats)
+    self.m_ubm.acc_statistics(feature, self.m_gmm_stats)
 
     # return the resulting statistics
     return self.m_gmm_stats
@@ -163,7 +163,7 @@ class UBMGMMTool:
 
     # Creates a GMM from the UBM
     gmm = bob.machine.GMMMachine(self.m_ubm)
-    gmm.setVarianceThresholds(self.m_config.variance_threshold)
+    gmm.set_variance_thresholds(self.m_config.variance_threshold)
 
     # Trains the GMM
     self.m_trainer.train(gmm, ar)
