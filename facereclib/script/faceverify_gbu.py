@@ -246,7 +246,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   
   # add the arguments required for all tool chains
-  config_group, dir_group, file_group, sub_dir_group = ToolChainExecutorGBU.required_command_line_options(parser)
+  config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorGBU.required_command_line_options(parser)
 
   config_group.add_argument('-D', '--database-directory', metavar = 'DIR', type = str, dest='database_dir', required = True,
       help = 'The directory containing the GBU database configuration file(s)')
@@ -256,9 +256,6 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   
   #######################################################################################
   ############################ other options ############################################
-  other_group = parser.add_argument_group('\nFlags that change the behaviour of the experiment')
-  other_group.add_argument('-q', '--dry-run', action='store_true', dest='dry_run',
-      help = 'Only report the grid commands that will be executed, but do not execute them')
   other_group.add_argument('-f', '--force', action='store_true',
       help = 'Force to erase former data if already exist')
   other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
@@ -266,26 +263,6 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   other_group.add_argument('--protocols', type = str, nargs = '+', choices = ['Good', 'Bad', 'Ugly'], default = ['Good', 'Bad', 'Ugly'],
       help = 'The protocols to use, by default all three (Good, Bad, and Ugly) are executed.')
 
-  #######################################################################################
-  ################# options for skipping parts of the toolchain #########################
-  skip_group = parser.add_argument_group('\nFlags that allow to skip certain parts of the experiments. This does only make sense when the generated files are already there (e.g. when reusing parts of other experiments)')
-  skip_group.add_argument('--skip-preprocessing', '--nopre', action='store_true', dest='skip_preprocessing',
-      help = 'Skip the image preprocessing step')
-  skip_group.add_argument('--skip-feature-extraction-training', '--nofet', action='store_true', dest='skip_feature_extraction_training',
-      help = 'Skip the feature extraction training step')
-  skip_group.add_argument('--skip-feature-extraction', '--nofe', action='store_true', dest='skip_feature_extraction',
-      help = 'Skip the feature extraction step')
-  skip_group.add_argument('--skip-projection-training', '--noprot', action='store_true', dest='skip_projection_training',
-      help = 'Skip the feature extraction training')
-  skip_group.add_argument('--skip-projection', '--nopro', action='store_true', dest='skip_projection',
-      help = 'Skip the feature projection')
-  skip_group.add_argument('--skip-enroler-training', '--noenrt', action='store_true', dest='skip_enroler_training',
-      help = 'Skip the training of the model enrolment')
-  skip_group.add_argument('--skip-model-enrolment', '--noenr', action='store_true', dest='skip_model_enrolment',
-      help = 'Skip the model enrolment step')
-  skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
-      help = 'Skip the score computation step')
-                      
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
   parser.add_argument('--execute-sub-task', action='store_true', dest = 'execute_sub_task',
@@ -316,7 +293,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   return parser.parse_args(command_line_arguments)
 
 
-def face_verify(args, external_dependencies = []):
+def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
@@ -345,9 +322,9 @@ def face_verify(args, external_dependencies = []):
     
     # for the first protocol, we do not have any own dependencies
     dependencies = external_dependencies
-    resulting_dependencies = []
+    resulting_dependencies = {}
     perform_training = True
-    dry_run_init = 0
+    dry_run_init = external_fake_job_id
     for protocol in args.protocols:
       # set the database
       args.database = os.path.join(args.database_dir, 'GBU_%s.py'%protocol)
@@ -360,7 +337,7 @@ def face_verify(args, external_dependencies = []):
 
       # add the jobs
       new_dependencies = executor.add_jobs_to_grid(dependencies, perform_training = perform_training)
-      resulting_dependencies.extend(new_dependencies)
+      resulting_dependencies.update(new_dependencies)
       
       # select the dependencies that executes training
       if perform_training:
@@ -370,7 +347,7 @@ def face_verify(args, external_dependencies = []):
         # skip the training for the next protocol
         perform_training = False
 
-      dry_run_init += 100
+      dry_run_init += 30
     # at the end of all protocols, return the list of dependencies
     return resulting_dependencies
   else:

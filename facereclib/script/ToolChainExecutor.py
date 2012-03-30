@@ -80,7 +80,31 @@ class ToolChainExecutor:
     sub_dir_group.add_argument('--projected-directory', type = str, metavar = 'DIR', default = 'projected', dest = 'projected_dir',
         help = 'Name of the directory where the projected data should be stored')
   
-    return (config_group, dir_group, file_group, sub_dir_group)
+    other_group = parser.add_argument_group('\nFlags that change the behaviour of the experiment')
+    other_group.add_argument('-q', '--dry-run', action='store_true', dest='dry_run',
+        help = 'Only report the grid commands that will be executed, but do not execute them')
+
+    #######################################################################################
+    ################# options for skipping parts of the toolchain #########################
+    skip_group = parser.add_argument_group('\nFlags that allow to skip certain parts of the experiments. This does only make sense when the generated files are already there (e.g. when reusing parts of other experiments)')
+    skip_group.add_argument('--skip-preprocessing', '--nopre', action='store_true', dest='skip_preprocessing',
+        help = 'Skip the image preprocessing step')
+    skip_group.add_argument('--skip-feature-extraction-training', '--nofet', action='store_true', dest='skip_feature_extraction_training',
+        help = 'Skip the feature extraction training step')
+    skip_group.add_argument('--skip-feature-extraction', '--nofe', action='store_true', dest='skip_feature_extraction',
+        help = 'Skip the feature extraction step')
+    skip_group.add_argument('--skip-projection-training', '--noprot', action='store_true', dest='skip_projection_training',
+        help = 'Skip the feature extraction training')
+    skip_group.add_argument('--skip-projection', '--nopro', action='store_true', dest='skip_projection',
+        help = 'Skip the feature projection')
+    skip_group.add_argument('--skip-enroler-training', '--noenrt', action='store_true', dest='skip_enroler_training',
+        help = 'Skip the training of the model enrolment')
+    skip_group.add_argument('--skip-model-enrolment', '--noenr', action='store_true', dest='skip_model_enrolment',
+        help = 'Skip the model enrolment step')
+    skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
+        help = 'Skip the score computation step')
+                        
+    return (config_group, dir_group, file_group, sub_dir_group, other_group, skip_group)
   
   # make this methos static.
   required_command_line_options = staticmethod(required_command_line_options)

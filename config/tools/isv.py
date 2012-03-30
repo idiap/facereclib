@@ -16,7 +16,7 @@ update_variances = True
 norm_KMeans = True
 
 # 3/ JFA Training
-ru = 160 # Already set above
+ru = 160 
 relevance_factor = 4
 n_iter_train = 10
 n_iter_enrol = 1

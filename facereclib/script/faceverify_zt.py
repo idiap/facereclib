@@ -131,13 +131,13 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['enrolment_training'])
        
     # enrol models
-    enrol_deps_N = {}
-    enrol_deps_T = {}
+    enrol_deps_n = {}
+    enrol_deps_t = {}
     score_deps = {}
     concat_deps = {}
     for group in self.m_args.groups:
-      enrol_deps_N[group] = deps[:]
-      enrol_deps_T[group] = deps[:]
+      enrol_deps_n[group] = deps[:]
+      enrol_deps_t[group] = deps[:]
       if not self.m_args.skip_model_enrolment:
         job_ids['enrol_%s_N'%group] = self.submit_grid_job(
                 '--enrol-models --group=%s --model-type=N'%group, 
@@ -146,17 +146,17 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                 number_of_files_per_job = self.m_grid_config.number_of_models_per_enrol_job, 
                 dependencies = deps, 
                 **self.m_grid_config.enrol_queue)
-        enrol_deps_N[group].append(job_ids['enrol_%s_N'%group])
+        enrol_deps_n[group].append(job_ids['enrol_%s_N'%group])
   
         if not self.m_args.no_zt_norm:
           job_ids['enrol_%s_T'%group] = self.submit_grid_job(
                   '--enrol-models --group=%s --model-type=T'%group,
                   name = "enrol-T-%s"%group, 
-                  list_to_split = self.m_file_selector.Tmodel_ids(group), 
+                  list_to_split = self.m_file_selector.tmodel_ids(group), 
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_enrol_job, 
                   dependencies = deps,
                   **self.m_grid_config.enrol_queue)
-          enrol_deps_T[group].append(job_ids['enrol_%s_T'%group])
+          enrol_deps_t[group].append(job_ids['enrol_%s_T'%group])
           
       # compute A,B,C, and D scores
       if not self.m_args.skip_score_computation:
@@ -165,7 +165,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                 name = "score-A-%s"%group, 
                 list_to_split = self.m_file_selector.model_ids(group), 
                 number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job, 
-                dependencies = enrol_deps_N[group], 
+                dependencies = enrol_deps_n[group], 
                 **self.m_grid_config.score_queue)
         concat_deps[group] = [job_ids['score_%s_A'%group]]
         
@@ -175,23 +175,23 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                   name = "score-B-%s"%group, 
                   list_to_split = self.m_file_selector.model_ids(group), 
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job, 
-                  dependencies = enrol_deps_N[group], 
+                  dependencies = enrol_deps_n[group], 
                   **self.m_grid_config.score_queue)
           
           job_ids['score_%s_C'%group] = self.submit_grid_job(
                   '--compute-scores --group=%s --score-type=C'%group, 
                   name = "score-C-%s"%group, 
-                  list_to_split = self.m_file_selector.Tmodel_ids(group), 
+                  list_to_split = self.m_file_selector.tmodel_ids(group), 
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job, 
-                  dependencies = enrol_deps_T[group], 
+                  dependencies = enrol_deps_t[group], 
                   **self.m_grid_config.score_queue)
                   
           job_ids['score_%s_D'%group] = self.submit_grid_job(
                   '--compute-scores --group=%s --score-type=D'%group, 
                   name = "score-D-%s"%group, 
-                  list_to_split = self.m_file_selector.Tmodel_ids(group), 
+                  list_to_split = self.m_file_selector.tmodel_ids(group), 
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job, 
-                  dependencies = enrol_deps_T[group], 
+                  dependencies = enrol_deps_t[group], 
                   **self.m_grid_config.score_queue)
           
           # compute zt-norm
@@ -315,7 +315,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   # add the arguments required for all tool chains
-  config_group, dir_group, file_group, sub_dir_group = ToolChainExecutorZT.required_command_line_options(parser)
+  config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorZT.required_command_line_options(parser)
   
   sub_dir_group.add_argument('--models-directories', type = str, metavar = 'DIR', nargs = 2, dest='models_dirs',
       default = ['models', 'tmodels'],
@@ -329,9 +329,6 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   
   #######################################################################################
   ############################ other options ############################################
-  other_group = parser.add_argument_group('\nFlags that change the behaviour of the experiment')
-  other_group.add_argument('-q', '--dry-run', action='store_true', dest='dry_run',
-      help = 'Only report the grid commands that will be executed, but do not execute them')
   other_group.add_argument('-z', '--no-zt-norm', action='store_true', dest = 'no_zt_norm',
       help = 'DISABLE the computation of ZT norms')
   other_group.add_argument('-f', '--force', action='store_true',
@@ -341,26 +338,6 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   other_group.add_argument('--groups', type = str,  metavar = 'GROUP', nargs = '+', default = ['dev', 'eval'],
       help = "The group (i.e., 'dev' or  'eval') for which the models and scores should be generated")
 
-  #######################################################################################
-  ################# options for skipping parts of the toolchain #########################
-  skip_group = parser.add_argument_group('\nFlags that allow to skip certain parts of the experiments. This does only make sense when the generated files are already there (e.g. when reusing parts of other experiments)')
-  skip_group.add_argument('--skip-preprocessing', '--nopre', action='store_true', dest='skip_preprocessing',
-      help = 'Skip the image preprocessing step')
-  skip_group.add_argument('--skip-feature-extraction-training', '--nofet', action='store_true', dest='skip_feature_extraction_training',
-      help = 'Skip the feature extraction training step')
-  skip_group.add_argument('--skip-feature-extraction', '--nofe', action='store_true', dest='skip_feature_extraction',
-      help = 'Skip the feature extraction step')
-  skip_group.add_argument('--skip-projection-training', '--noprot', action='store_true', dest='skip_projection_training',
-      help = 'Skip the feature extraction training')
-  skip_group.add_argument('--skip-projection', '--nopro', action='store_true', dest='skip_projection',
-      help = 'Skip the feature projection')
-  skip_group.add_argument('--skip-enroler-training', '--noenrt', action='store_true', dest='skip_enroler_training',
-      help = 'Skip the training of the model enrolment')
-  skip_group.add_argument('--skip-model-enrolment', '--noenr', action='store_true', dest='skip_model_enrolment',
-      help = 'Skip the model enrolment step')
-  skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
-      help = 'Skip the score computation step')
-                      
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
   parser.add_argument('--execute-sub-task', action='store_true', dest = 'execute_sub_task',
@@ -395,7 +372,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   return parser.parse_args(command_line_arguments)
 
 
-def face_verify(args, external_dependencies = []):
+def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
@@ -429,7 +406,7 @@ def face_verify(args, external_dependencies = []):
       
     # initialize the executor to submit the jobs to the grid 
     global parameters
-    executor.set_common_parameters(calling_file = this_file, parameters = parameters)
+    executor.set_common_parameters(calling_file = this_file, parameters = parameters, fake_job_id = external_fake_job_id )
     
     # add the jobs
     return executor.add_jobs_to_grid(external_dependencies)
