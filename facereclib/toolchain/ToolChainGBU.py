@@ -51,7 +51,7 @@ class ToolChainGBU:
       # select a subset of keys to iterate    
       partition = range(indices[0],indices[1]) if indices else range(len(image_files))
   
-      print "preprocessing", len(partition), "images from directory", os.path.dirname(image_files[0]), "to dirctory", os.path.dirname(preprocessed_image_files[0])
+      print "preprocessing", len(partition), "images from directory", os.path.dirname(image_files[0]), "to directory", os.path.dirname(preprocessed_image_files[0])
       # iterate through the images and perform normalization
       for i in partition:
         image_file = image_files[i]
@@ -94,7 +94,7 @@ class ToolChainGBU:
       # extract the features
       partition = range(indices[0],indices[1]) if indices else range(len(image_files))
   
-      print "extracting", len(partition), "features from image directory", os.path.dirname(image_files[0]), "to dirctory", os.path.dirname(feature_files[0])
+      print "extracting", len(partition), "features from image directory", os.path.dirname(image_files[0]), "to directory", os.path.dirname(feature_files[0])
       for i in partition:
         image_file = image_files[i]
         feature_file = feature_files[i]
@@ -150,7 +150,7 @@ class ToolChainGBU:
         # project the features
         partition = range(indices[0],indices[1]) if indices else range(len(feature_files))
   
-        print "project", len(partition), "features from directory", os.path.dirname(feature_files[0]), "to dirctory", os.path.dirname(projected_files[0])
+        print "project", len(partition), "features from directory", os.path.dirname(feature_files[0]), "to directory", os.path.dirname(projected_files[0])
         for i in partition:
           feature_file = feature_files[i]
           projected_file = projected_files[i]

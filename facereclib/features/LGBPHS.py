@@ -48,7 +48,7 @@ class LGBPHS:
       lbphs_blocks = self.m_lgbphs_extractor(abs_image)
       
       # Converts to Blitz array
-      n_bins = self.m_lgbphs_extractor.NBins
+      n_bins = self.m_lgbphs_extractor.n_bins
       n_blocks = len(lbphs_blocks)
       start = j * n_bins * n_blocks
 

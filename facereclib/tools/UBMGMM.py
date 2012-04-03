@@ -100,8 +100,8 @@ class UBMGMMTool:
 
     # Undoes the normalization
     if self.m_config.norm_KMeans:
-      self.__multiply_vectors_by_factors__(means, stdAr)
-      self.__multiply_vectors_by_factors__(variances, stdAr ** 2)
+      self.__multiply_vectors_by_factors__(means, std_ar)
+      self.__multiply_vectors_by_factors__(variances, std_ar ** 2)
 
     # Initializes the GMM
     self.m_ubm.means = means

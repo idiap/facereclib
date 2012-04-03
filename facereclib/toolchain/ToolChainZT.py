@@ -67,6 +67,11 @@ class ToolChainZT:
         else: 
           eye_positions = annots[1:5]
           
+        # sanity check
+        if eye_positions[0] > eye_positions[2]:
+          print "WARNING! Eye positions in", str(eye_file), "might be incorrect"
+        
+          
         # call the image preprocessor
         utils.ensure_dir(os.path.dirname(preprocessed_image_file))
         preprocessed_image = preprocessor(image_file, eye_positions)

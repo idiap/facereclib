@@ -7,9 +7,9 @@ name = 'scface'
 db = bob.db.scface.Database()
 protocol = 'combined'
 
-img_input_dir = "/idiap/temp/lelshafey/databases/scface/images/"
+img_input_dir = "/idiap/group/biometric/databases/scface/images/"
 img_input_ext = ".jpg"
-pos_input_dir = "/idiap/temp/lelshafey/databases/scface/groundtruths/"
+pos_input_dir = "/idiap/group/biometric/databases/scface/groundtruths/"
 pos_input_ext = ".pos"
 
 first_annot = 0

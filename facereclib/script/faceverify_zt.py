@@ -267,7 +267,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.enrol_models(
             self.m_tool, 
             not self.m_args.no_zt_norm, 
-            indices = self.indices(self.m_file_selector.Tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job), 
+            indices = self.indices(self.m_file_selector.tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job), 
             groups = [self.m_args.group], 
             types = ['T'], 
             force = self.m_args.force)
@@ -288,7 +288,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.compute_scores(
             self.m_tool, 
             not self.m_args.no_zt_norm, 
-            indices = self.indices(self.m_file_selector.Tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job), 
+            indices = self.indices(self.m_file_selector.tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job), 
             groups = [self.m_args.group], 
             types = [self.m_args.score_type], 
             preload_probes = self.m_args.preload_probes, 

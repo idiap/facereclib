@@ -14,6 +14,12 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
   def __init__(self, args):
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
+    
+    if args.training_set_file:
+      # overwrite the training set file in each of the databases
+      print "Using training set file", args.training_set_file, "instead of", self.m_configuration.training
+      self.m_configuration.training = args.training_set_file
+      
 
     # specify the file selector and tool chain objects to be used by this class (and its base class) 
     self.m_file_selector = toolchain.FileSelectorGBU(self.m_configuration)
@@ -250,6 +256,9 @@ def parse_args(command_line_arguments = sys.argv[1:]):
 
   config_group.add_argument('-D', '--database-directory', metavar = 'DIR', type = str, dest='database_dir', required = True,
       help = 'The directory containing the GBU database configuration file(s)')
+  
+  file_group.add_argument('-B', '--training-set-file', metavar = 'FILE', type = str, 
+      help = 'Use the given training list instead of the one specified in the database config file')
   
   sub_dir_group.add_argument('--model-directory', type = str, metavar = 'DIR', dest='model_dir',default = 'models',
       help = 'Subdirectories (of temp directory) where the models should be stored')
