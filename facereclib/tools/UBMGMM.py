@@ -4,7 +4,6 @@
 
 import bob
 import numpy
-import types
 
 
 class UBMGMMTool:

@@ -42,7 +42,7 @@ class ImageInformation:
     return self.m_identity
 
 
-class FSContentHandler (xml.sax.handler.ContentHandler):
+class XmlFileReaderGBU (xml.sax.handler.ContentHandler):
   def __init__(self):
     pass
   
@@ -75,27 +75,28 @@ class FSContentHandler (xml.sax.handler.ContentHandler):
 class FileSelectorGBU:
   """This class provides shortcuts for selecting different files for different stages of the verification process"""
   
-  def __read_list__(self, xml_file, eye_file):
+  def __read_list__(self, xml_file, eye_file = None):
     """Reads the xml list and attaches the eye files, if given"""
     # create xml reading instance
-    handler = FSContentHandler()
+    handler = XmlFileReaderGBU()
     xml.sax.parse(xml_file, handler)
     image_list = handler.m_image_list
 
-    # generate temporary dictionary for faster read of the eye position file    
-    image_dict={}
-    for image in image_list:
-      image_dict[image.file_id()] = image
-    
-    # read the eye position list
-    f = open(eye_file)
-    for line in f:
-      entries=line.split(',')
-      assert len(entries) == 5
-      name = os.path.splitext(os.path.basename(entries[0]))[0]
-      # test if these eye positions belong to any file of this list
-      if name in image_dict:
-        image_dict[name].set_eye_position(entries[1:])
+    if eye_file:
+      # generate temporary dictionary for faster read of the eye position file    
+      image_dict={}
+      for image in image_list:
+        image_dict[image.file_id()] = image
+      
+      # read the eye position list
+      f = open(eye_file)
+      for line in f:
+        entries=line.split(',')
+        assert len(entries) == 5
+        name = os.path.splitext(os.path.basename(entries[0]))[0]
+        # test if these eye positions belong to any file of this list
+        if name in image_dict:
+          image_dict[name].set_eye_position(entries[1:])
 
     return image_list
 

@@ -257,6 +257,9 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   config_group.add_argument('-D', '--database-directory', metavar = 'DIR', type = str, dest='database_dir', required = True,
       help = 'The directory containing the GBU database configuration file(s)')
   
+  config_group.add_argument('-a', '--database-file-appendix', metavar = 'STR', type = str, default = '',
+      help = 'Add the appendix to "<database_dir>/GBU_<protocol>%%s.xml to use special lists (e.g., images from local directories)')
+  
   file_group.add_argument('-B', '--training-set-file', metavar = 'FILE', type = str, 
       help = 'Use the given training list instead of the one specified in the database config file')
   
@@ -336,7 +339,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     dry_run_init = external_fake_job_id
     for protocol in args.protocols:
       # set the database
-      args.database = os.path.join(args.database_dir, 'GBU_%s.py'%protocol)
+      args.database = os.path.join(args.database_dir, 'GBU_%s%s.py'%(protocol,args.database_file_appendix))
       current_parameters = parameters[:]
       current_parameters.extend(['--database', args.database])
       
@@ -364,7 +367,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
 
     for protocol in args.protocols:
       # set the database
-      args.database = os.path.join(args.database_dir, 'GBU_%s.py'%protocol)
+      args.database = os.path.join(args.database_dir, 'GBU_%s%s.py'%(protocol,args.database_file_appendix))
       
       executor = ToolChainExecutorGBU(args)
       # execute the tool chain locally

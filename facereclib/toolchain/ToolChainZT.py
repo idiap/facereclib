@@ -185,6 +185,7 @@ class ToolChainZT:
   def train_enroler(self, tool, force=False):
     """Traines the model enrolment stage using the projected features"""
     self.m_tool = tool
+    use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enrol')
     if hasattr(tool, 'train_enroler'):
       enroler_file = self.m_file_selector.enroler_file()
       
@@ -194,7 +195,7 @@ class ToolChainZT:
         if hasattr(tool, 'load_projector'):
           tool.load_projector(self.m_file_selector.projector_file())
         # training models
-        train_files = self.m_file_selector.training_feature_list_by_models('projected')
+        train_files = self.m_file_selector.training_feature_list_by_models('projected' if use_projected_features else 'features')
   
         # perform training
         print "Training Enroler '%s' using %d training files: " %(enroler_file, len(train_files))

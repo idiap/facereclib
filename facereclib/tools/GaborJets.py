@@ -21,17 +21,21 @@ class GaborJetTool:
     graph_count = len(enrol_features)
     
     c = 0 # counts the number of enrolment files
-    model = numpy.ndarray((graph_count, enrol_features[0].shape[0], enrol_features[0].shape[1], enrol_features[0].shape[2]), dtype=numpy.float64)
+    shape = list(enrol_features[0].shape)
+    shape.insert(0, graph_count)
+    model = numpy.ndarray(tuple(shape), dtype=numpy.float64)
     for graph in enrol_features:
-      if graph.shape[0:2] != model.shape[1:3]:
+      if graph.shape != model.shape[1:]:
         raise Exception('Size mismatched')
 
-      model[c,:,:,:] = graph[:,:,:]
+      model[c] = graph
       c += 1
 
     if self.m_average_model:
+      if model.ndim() != 4:
+        raise Exception('Averaging is only supported when phases are included')
       # compute average model
-      average = numpy.ndarray(model.shape[1:4], dtype=numpy.float64)
+      average = numpy.ndarray(model.shape[1:], dtype=numpy.float64)
       self.m_graph_machine.average(model, average)
       # return the average
       return average

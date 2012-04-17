@@ -49,4 +49,5 @@ ADD_AVERAGE_BIT = False
 UNIFORM = True
 ROT_INV = False
 
-
+# How to split the histogram
+SPLIT = None

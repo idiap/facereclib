@@ -26,6 +26,6 @@ class LGBPHSTool:
     
   def score(self, model, probe):
     """Computes the score as the histogram intersection"""
-    return self.m_distance_function(model, probe)
+    return self.m_distance_function(model.flatten(), probe.flatten())
 
 

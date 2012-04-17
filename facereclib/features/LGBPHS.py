@@ -27,6 +27,7 @@ class LGBPHS:
           dc_free = setup.GABOR_DC_FREE
     )
     self.m_trafo_image = None
+    self.m_split = setup.SPLIT
   
   def __call__(self, image):
     """Extracts the local Gabor binary pattern histogram sequence from the given image"""
@@ -47,19 +48,35 @@ class LGBPHS:
       # Computes LBP histograms
       lbphs_blocks = self.m_lgbphs_extractor(abs_image)
       
-      # Converts to Blitz array
+      # Converts to Blitz array (of different dimensionalities)
       n_bins = self.m_lgbphs_extractor.n_bins
       n_blocks = len(lbphs_blocks)
-      start = j * n_bins * n_blocks
 
+      if self.m_split == None:
+        shape = (n_blocks * n_bins * self.m_gwt.number_of_kernels,)  
+      elif self.m_split == 'blocks':
+        shape = (n_blocks, n_bins * self.m_gwt.number_of_kernels)
+      elif self.m_split == 'wavelets':
+        shape = (self.m_gwt.number_of_kernels, n_bins * n_blocks)
+      elif self.m_split == 'both':
+        shape = (self.m_gwt.number_of_kernels * n_blocks, n_bins)
+      
+      # create new array if not done yet
       if lgbphs_array == None:
-        lgbphs_array = numpy.ndarray((n_blocks * n_bins * self.m_gwt.number_of_kernels,), 'float64')
+        lgbphs_array = numpy.ndarray(shape, 'float64')
 
-      for bi in range(0,n_blocks):
-        start2 = bi*n_bins + start
-        for j in range(n_bins):
-          lgbphs_array[start2 + j] = lbphs_blocks[bi][j]
-          
+      # fill array in the desired shape
+      if self.m_split == None:
+        lgbphs_array[j*n_blocks*n_bins:(j+1)*n_blocks*n_bins] = lbphs_blocks.flatten()
+      elif self.m_split == 'blocks':
+        for b in range(n_blocks):
+          lgbphs_array[b,j*n_bins:(j+1)*n_bins] = lbphs_blocks[b]
+      elif self.m_split == 'wavelets':
+        lgbphs_array[j,0:n_blocks*n_bins] = lbphs_blocks.flatten()
+      elif self.m_split == 'both':
+        for b in range(n_bins):
+          lgbphs_array[j*n_blocks + b,0:n_bins] = lbphs_blocks[b]
+    
     # return the concatenated list of all histograms
     return lgbphs_array
 
