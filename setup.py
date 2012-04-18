@@ -25,6 +25,6 @@ setup(
     install_requires=[
         "argparse", # better option parsing
         "gridtk",   # SGE job submission at Idiap
-        #"bob",      # base signal proc./machine learning library
+        "bob",      # base signal proc./machine learning library
     ],
 )
