@@ -6,7 +6,6 @@ import os
 import numpy
 import bob
 from .. import utils
-import pyvision
 
 class ToolChainGBU:
   """This class includes functionalities for a default tool chain to produce verification scores"""
