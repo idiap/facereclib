@@ -74,8 +74,7 @@ class ToolChainZT:
           
         # call the image preprocessor
         utils.ensure_dir(os.path.dirname(preprocessed_image_file))
-        preprocessed_image = preprocessor(image_file, eye_positions)
-        bob.io.save(preprocessed_image, str(preprocessed_image_file))
+        preprocessed_image = preprocessor(str(image_file), eye_positions, str(preprocessed_image_file))
   
   
   

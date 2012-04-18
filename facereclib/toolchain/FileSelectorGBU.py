@@ -7,6 +7,7 @@ from .. import utils
 import bob
 import xml.sax
 import pickle
+import numpy
 
 class ImageInformation:
   """This class holds all the information available for one image"""
@@ -102,10 +103,11 @@ class FileSelectorGBU:
   def __generate_full_mask__(self):
     """Generates a complete mask that is used to specify which pairs to be used for comparison"""
     mask = numpy.ones((len(self.m_query), len(self.m_target)), dtype = numpy.uint8) * 127
-    for query_index in len(self.m_query):
-      for target_index in len(self.m_target):
+    for query_index in range(len(self.m_query)):
+      for target_index in range(len(self.m_target)):
         if self.m_query[query_index].identity() == self.m_target[target_index].identity():
           mask[query_index,target_index] = 255
+          
     return mask
   
   def __init__(self, config):
@@ -263,7 +265,7 @@ class FileSelectorGBU:
     queries=[]
     for query_index in range(len(self.m_query)):
       if self.m_mask[query_index, target_index]:
-# assert that mask value 255 (i.e. -1) is used when both identities are the same
+        # assert that mask value 255 (i.e. -1) is used when both identities are the same
         if ((self.m_mask[query_index,target_index] == 127) == (self.m_query[query_index].identity() == self.m_target[target_index].identity())):
           print "Warning: mask value", self.m_mask[target_index,query_index], "is wrong for pair", self.m_query[query_index].identity(), self.m_target[target_index].identity()
 

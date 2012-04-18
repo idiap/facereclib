@@ -28,6 +28,24 @@ class LGBPHS:
     )
     self.m_trafo_image = None
     self.m_split = setup.SPLIT
+    self.m_use_phases = setup.USE_PHASES
+  
+  
+  def __fill__(self, lgbphs_array, lgbphs_blocks, j):
+    """Copies the given array into the given blocks""" 
+    # fill array in the desired shape
+    if self.m_split == None:
+      lgbphs_array[j*self.m_n_blocks*self.m_n_bins : (j+1)*self.m_n_blocks*self.m_n_bins] = lbphs_blocks.flatten()
+    elif self.m_split == 'blocks':
+      for b in range(self.m_n_blocks):
+        lgbphs_array[b, j*self.m_n_bins : (j+1)*self.m_n_bins] = lbphs_blocks[b]
+    elif self.m_split == 'wavelets':
+      lgbphs_array[j, 0 : self.m_n_blocks*self.m_n_bins] = lbphs_blocks.flatten()
+    elif self.m_split == 'both':
+      for b in range(self.m_n_blocks):
+        lgbphs_array[j*self.m_n_blocks + b, 0 : self.m_n_bins] = lbphs_blocks[b]
+    
+    
   
   def __call__(self, image):
     """Extracts the local Gabor binary pattern histogram sequence from the given image"""
@@ -40,43 +58,45 @@ class LGBPHS:
     image = image.astype(numpy.complex128)
     self.m_gwt(image, self.m_trafo_image)
     
+    jet_length = self.m_gwt.number_of_kernels * (2 if self.m_use_phases else 1) 
+    
     lgbphs_array = None
     # iterate through the layers of the trafo image
     for j in range(self.m_gwt.number_of_kernels):
       # compute absolute part of complex response
-      abs_image = numpy.abs(self.m_trafo_image[j,:,:])
+      abs_image = numpy.abs(self.m_trafo_image[j])
       # Computes LBP histograms
-      lbphs_blocks = self.m_lgbphs_extractor(abs_image)
+      abs_blocks = self.m_lgbphs_extractor(abs_image)
       
       # Converts to Blitz array (of different dimensionalities)
-      n_bins = self.m_lgbphs_extractor.n_bins
-      n_blocks = len(lbphs_blocks)
+      self.m_n_bins = self.m_lgbphs_extractor.n_bins
+      self.m_n_blocks = len(abs_blocks)
 
       if self.m_split == None:
-        shape = (n_blocks * n_bins * self.m_gwt.number_of_kernels,)  
+        shape = (self.m_n_blocks * self.m_n_bins * jet_length,)  
       elif self.m_split == 'blocks':
-        shape = (n_blocks, n_bins * self.m_gwt.number_of_kernels)
+        shape = (self.m_n_blocks, self.m_n_bins * jet_length)
       elif self.m_split == 'wavelets':
-        shape = (self.m_gwt.number_of_kernels, n_bins * n_blocks)
+        shape = (jet_length, self.m_n_bins * self.m_n_blocks)
       elif self.m_split == 'both':
-        shape = (self.m_gwt.number_of_kernels * n_blocks, n_bins)
+        shape = (jet_length * self.m_n_blocks, self.m_n_bins)
       
       # create new array if not done yet
       if lgbphs_array == None:
         lgbphs_array = numpy.ndarray(shape, 'float64')
 
-      # fill array in the desired shape
-      if self.m_split == None:
-        lgbphs_array[j*n_blocks*n_bins:(j+1)*n_blocks*n_bins] = lbphs_blocks.flatten()
-      elif self.m_split == 'blocks':
-        for b in range(n_blocks):
-          lgbphs_array[b,j*n_bins:(j+1)*n_bins] = lbphs_blocks[b]
-      elif self.m_split == 'wavelets':
-        lgbphs_array[j,0:n_blocks*n_bins] = lbphs_blocks.flatten()
-      elif self.m_split == 'both':
-        for b in range(n_bins):
-          lgbphs_array[j*n_blocks + b,0:n_bins] = lbphs_blocks[b]
-    
+      # fill the array with the absolute values of the Gabor wavelet transform
+      self.__fill__(lgbphs_array, abs_blocks, j)
+      
+      if self.m_use_phases:
+        # compute phase part of complex response
+        phase_image = numpy.angle(self.m_trafo_image[j])
+        # Computes LBP histograms
+        phase_blocks = self.m_lgbphs_extractor(phase_image)
+        # fill the array with the phases at the end of the blocks
+        self.__fill__(lgbphs_array, phase_blocks, j + self.m_gwt.number_of_kernels)
+        
+
     # return the concatenated list of all histograms
     return lgbphs_array
 

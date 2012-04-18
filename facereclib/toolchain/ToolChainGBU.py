@@ -60,8 +60,7 @@ class ToolChainGBU:
         if not self.__check_file__(preprocessed_image_file, force):
           # read eyes position file
           utils.ensure_dir(os.path.dirname(preprocessed_image_file))
-          preprocessed_image = preprocessor(image_file, eye_position)
-          bob.io.save(preprocessed_image, str(preprocessed_image_file))
+          preprocessed_image = preprocessor(str(image_file), eye_position, str(preprocessed_image_file))
               
   
   def train_extractor(self, extractor, force = False):

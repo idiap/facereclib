@@ -51,3 +51,4 @@ ROT_INV = False
 
 # How to split the histogram
 SPLIT = None
+USE_PHASES = False
