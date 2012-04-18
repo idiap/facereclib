@@ -5,7 +5,6 @@
 import os
 from .. import utils
 import bob
-import pyvision
 import xml.sax
 import pickle
 
@@ -99,7 +98,16 @@ class FileSelectorGBU:
           image_dict[name].set_eye_position(entries[1:])
 
     return image_list
-
+  
+  def __generate_full_mask__(self):
+    """Generates a complete mask that is used to specify which pairs to be used for comparison"""
+    mask = numpy.ones((len(self.m_query), len(self.m_target)), dtype = numpy.uint8) * 127
+    for query_index in len(self.m_query):
+      for target_index in len(self.m_target):
+        if self.m_query[query_index].identity() == self.m_target[target_index].identity():
+          mask[query_index,target_index] = 255
+    return mask
+  
   def __init__(self, config):
     """Initialize the file selector object with the current configuration"""
     self.m_config = config
@@ -109,7 +117,11 @@ class FileSelectorGBU:
     self.m_training = self.__read_list__(config.training, config.eye_file)
     self.m_target = self.__read_list__(config.target, config.eye_file)
     self.m_query = self.__read_list__(config.query, config.eye_file)
-    self.m_mask = pyvision.BEEDistanceMatrix(config.mask).matrix
+    if hasattr(config, 'mask'):
+      import pyvision
+      self.m_mask = pyvision.BEEDistanceMatrix(config.mask).matrix
+    else:
+      self.m_mask = self.__generate_full_mask__()
     
     
   def __generate_list__(self, set, directory, extension = None, use_protocol_subdir = True):
