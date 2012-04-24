@@ -14,16 +14,16 @@ Image preprocessing
 -------------------
 Classes that do image preprocessing have to have at least two functions:
 
-* ``__init__(self, config)__``: where ``config`` is the image preprocessing configuration read from file (usually one in config/features)
+* ``__init__(self, config)__``: where ``config`` is the image preprocessing configuration read from file (usually one in *config/features*)
 * ``__call__(self, image, eye_pos) -> image``: normalizes the face given the vector of eye positions in the order ``[re_x, re_y, le_x, le_y]``. The given image is a numpy.ndarray, maybe including color images (i.e., shape ``[3, height, width]``). The returned image should also be a numpy.ndarray, if possible (e.g. to be usable by all the algorithms) as 2D with shape ``[height, width]``.
 
-Please also add a configuration file in config/features that uses your class and that includes some default configuration of your algorithm. Please note that the configuration file of the image preprocessing is shared with the configuration file of the feature extraction stage.
+Please also add a configuration file in *config/features* that uses your class and that includes some default configuration of your algorithm. Please note that the configuration file of the image preprocessing is shared with the configuration file of the feature extraction stage.
 
 Feature extraction
 ------------------
 In the feature extraction stage, the classes have to provide at least the functions:
 
-* ``__init__(self, config)__``: where ``config`` is the feature extraction configuration read from file  (usually one in config/features)
+* ``__init__(self, config)__``: where ``config`` is the feature extraction configuration read from file  (usually one in *config/features*)
 * ``__call__(self, image) -> feature``: extracts the feature from the given preprocessed image. The returned feature should be a numpy.ndarray, the dimensionality of the feature is not important.
 
 If the feature extraction process requires a trained extractor model, simply define the function:
@@ -37,14 +37,14 @@ or (given that your training algorithm needs to have the training data split by 
 * put the line ``self.use_training_images_sorted_by_identity = True`` into your ``__init__`` function 
 * ``train(self, image_list, extractor_file)``: trains the feature extraction with the two layered dictionary structure ``person_id -> {file_id -> image_filename}`` and writes the ``extractor_file``
 
-Finally, add a configuration file to config/features. Please note that the configuration file of the feature extraction is shared with the configuration file of the image preprocessing stage.
+Finally, add a configuration file to *config/features*. Please note that the configuration file of the feature extraction is shared with the configuration file of the image preprocessing stage.
 
 
 Tools
 -----
 Implementing your face recognition tool should be as straightforward. A face recognition tool has to have at least three functions:
 
-* ``__init__(self, config)__``: where ``config`` is the tool configuration read from file  (usually one in config/tools)
+* ``__init__(self, config)__``: where ``config`` is the tool configuration read from file  (usually one in *config/tools*)
 * ``enrol(self, enrol_features) -> model``: enrolls a model from the given vector of features (which usually stem from one identity). The returned model must either be a numpy.ndarray or an instance of a class that defines a ``save`` method.
 * ``score(self, model, probe) -> value``: computes a similarity or probability score that the given probe feature and the given model include the same identity
 
@@ -73,14 +73,11 @@ By default, it is assumed that both the models and the probe features are numpy.
 * ``read_model(self, model_file) -> model``: reads the model from file
 * ``read_probe(self, probe_file) -> feature``: reads the probe feature from file
 
-Add the end, please provide a configuration file for your tool in config/tools.
+Add the end, please provide a configuration file for your tool in *config/tools*.
 
 
 Executing experiments with your classes
 ---------------------------------------
-Finally, executing experiments using your image preprocessing, feature extraction, and/or recognition tool should be identical to the tools that are already available. Nonetheless, it might be a good idea to first run the experiments locally (i.e., calling the ``bin/faceverify_zt.py`` without the ``--grid`` option) to see if your functions do work and do provide the expected results. It might also be a good idea to use a small image database, like config/database/banca_P.py.
+Finally, executing experiments using your image preprocessing, feature extraction, and/or recognition tool should be identical to the tools that are already available. Nonetheless, it might be a good idea to first run the experiments locally (i.e., calling the *bin/faceverify_zt.py* without the ``--grid`` option) to see if your functions do work and do provide expected results. It might also be a good idea to use a small image database, like *config/database/banca_P.py*.
 
-
-
-.. _NIST: http://www.nist.gov/itl/iad/ig/focs.cfm
 

@@ -25,7 +25,7 @@ To install the FaceRecLib, please check the latest version of it via:
   $ git clone /idiap/group/torch5spro/sandboxes/facereclib2.git
   $ cd facereclib2
 
-For the facereclib to work, it requires Bob (http://idiap.github.com/bob/) to be installed. At Idiap, you can either have your local Bob installation or use the global one located at:
+For the facereclib to work, it requires `Bob`_ to be installed. At Idiap, you can either have your local Bob installation or use the global one located at:
 
 ::
 
@@ -33,7 +33,7 @@ For the facereclib to work, it requires Bob (http://idiap.github.com/bob/) to be
 
 where <VERSION> is your operating system version.
 
-The facereclib project is based on the BuildOut (http://www.buildout.org/) python linking system. If you want to use another version of Bob than the nightlies, you have to modify the delivered "buildout.cfg" by specifying the path to your Bob installation. 
+The facereclib project is based on the `BuildOut`_ python linking system. If you want to use another version of Bob than the nightlies, you have to modify the delivered *buildout.cfg* by specifying the path to your Bob installation. 
 
 Afterwards, execute the buildout script by typing:
 
@@ -47,14 +47,7 @@ Afterwards, execute the buildout script by typing:
 Running experiments
 -------------------
 
-These two commands will automatically download all desired packages (local.bob.recipe and gridtk) for github and generate some scripts in the bin directory, including 
-
-::
-
-  > bin/faceverify_zt.py
-  
-  
-This script can be used to employ face verification experiments. To use it you have to specify at least three command line parameters (see also the --help option):
+These two commands will automatically download all desired packages (`local.bob.recipe`_ and `gridtk`_) from GitHub and generate some scripts in the bin directory, including the script *bin/faceverify_zt.py*. This script can be used to employ face verification experiments. To use it you have to specify at least three command line parameters (see also the ``--help`` option):
 
 * ``--database``: The configuration file for the database
 * ``--features-extraction``: The configuration file for image preprocessing and feature extraction
@@ -67,31 +60,19 @@ If you want to run the experiments in the Idiap GRID, you simply can specify:
   
 If no grid configuration file is specified, the experiment is run sequentially on the local machine.
 
-For several databases, feature types, recognition systems, and grid requirements the facereclib provides these configuration files. They are located in the 
-
-:: 
-
-  > config/...
-
-directories. None of the parameters in the configurations are fixed, so please feel free to test different settings.
+For several databases, feature types, recognition systems, and grid requirements the facereclib provides these configuration files. They are located in the *config/...* directories. None of the parameters in the configurations are fixed, so please feel free to test different settings.
 
 Please note that not all combinations of features and tools make sense since the tools expect different kinds of features (e.g. UBM/GMM needs 2D features, whereas PCA expects 1D features).
 
 
-By default, the verification result will be written to
-
-::
-
-  > /idiap/user/$USER/<DATABASE>/<EXPERIMENT>/<SUBDIR>/<PROTOCOL>
-  
-where
+By default, the verification result will be written to directory */idiap/user/$USER/<DATABASE>/<EXPERIMENT>/<SUBDIR>/<PROTOCOL>*, where
 
 * DATABASE: the name of the database. It is read from the database configuration file
 * EXPERIMENT: a user-specified experiment name (--sub-dir option), by default it is "default"
 * SUBDIR: another user-specified name (--score-sub-dir), e.g. to specify different options of the experiment
 * PROTOCOL: the protocol which is read from the database configuration file
 
-After running a  ZT-Norm based experiment, the output directory contains two sub-directories "nonorm", "ztnorm", each of which contain the files "scores-dev" and "scores-eval". One way to compute the final result is to use the "bob_compute_perf.py" script from your Bob installation, e.g., by calling:
+After running a  ZT-Norm based experiment, the output directory contains two sub-directories *nonorm*, *ztnorm*, each of which contain the files *scores-dev* and *scores-eval*. One way to compute the final result is to use the *bob_compute_perf.py* script from your Bob installation, e.g., by calling:
 
 .. code-block:: sh
 
@@ -133,7 +114,7 @@ If required by the feature extraction tool, an optional feature extraction train
 
 Feature Projection
 ~~~~~~~~~~~~~~~~~~
-Some provided tools need to process the features before they can be used for verification. In the FaceRecLib, this step is referenced as the *projection* step. Again, the projection might require training, which is executed using the extracted features from the training set. Afterwards, all features are projected (using the the previously trained *Projector*).
+Some provided tools need to process the features before they can be used for verification. In the FaceRecLib, this step is referenced as the **projection** step. Again, the projection might require training, which is executed using the extracted features from the training set. Afterwards, all features are projected (using the the previously trained Projector).
 
 
 Model Enrollment
@@ -143,7 +124,7 @@ Model enrollment defines the stage, where several (projected or unprojected) fea
 
 Scoring
 ~~~~~~~
-In the final scoring stage, the models are compared to probe features and a similarity score is computed for each pair of model and probe. Some of the models (the so-called T-Norm_Model) and some of the probe features (so-called Z-probe-features) are split up, so they can be used to normalize the scores later on.
+In the final scoring stage, the models are compared to probe features and a similarity score is computed for each pair of model and probe. Some of the models (the so-called T-Norm-Model) and some of the probe features (so-called Z-Norm-probe-features) are split up, so they can be used to normalize the scores later on.
 
 
 
@@ -151,12 +132,12 @@ Command line options
 --------------------
 Additionally to the required command line options discussed above, there are several options to modify the behavior of the FaceRecLib experiments. One set of command line options change the directory structure of the output:
 
-* ``--temp-directory``: Base directory where to write temporary files into (the default is /idiap/temp/$USER/<DATABASE> when using the grid or /scratch/$USER/<DATABASE> when executing jobs locally)
+* ``--temp-directory``: Base directory where to write temporary files into (the default is */idiap/temp/$USER/<DATABASE>* when using the grid or */scratch/$USER/<DATABASE>* when executing jobs locally)
 * ``--user-directory``: Base directory where to write the results
-* ``--sub-directory``: sub-directory into <TEMP_DIR>/<DATABASE> and <USER_DIR>/<DATABASE> where the files generated by the experiment will be put
-* ``--score-sub-directory``: name of <USER_DIR>/<DATABASE>/<PROTOCOL> where the scores are put into
+* ``--sub-directory``: sub-directory into *<TEMP_DIR>* and *<USER_DIR>* where the files generated by the experiment will be put
+* ``--score-sub-directory``: name of the sub-directory in *<USER_DIR>/<PROTOCOL>* where the scores are put into
   
-If you want to re-use parts previous experiments, you can specify the directories (which are relative to the <TEMP_DIR>, but you can also specify absolute paths):
+If you want to re-use parts previous experiments, you can specify the directories (which are relative to the *<TEMP_DIR>*, but you can also specify absolute paths):
 
 * ``--preprocessed-image-directory``
 * ``--features-directory``
@@ -180,7 +161,7 @@ For that purpose, it is also useful to skip parts of the tool chain. To do that 
 * ``--skip-model-enrolment``
 * ``--skip-score-computation``
   
-although by default files that already exist are not re-created. To enforce the re-creation of the files, you can use the ``--force`` option, which of course can be combined with the ``--skip``-options (in which case the skip is preferred).
+although by default files that already exist are not re-created. To enforce the re-creation of the files, you can use the ``--force`` option, which of course can be combined with the ``--skip...``-options (in which case the skip is preferred).
 
 There are some more command line options that can be specified:
 
@@ -191,12 +172,15 @@ There are some more command line options that can be specified:
 
 The GBU database
 ----------------
-There is another script "bin/faceverify_gbu.py" that executes experiments on the Good, Bad, and Ugly (GBU) database. In principle, most of the parameters from above can be used. One violation is that instead of the --database option, now the --database-directory (the directory containing the GBU database files, normally: config/database) needs to be specified.
+There is another script *bin/faceverify_gbu.py* that executes experiments on the Good, Bad, and Ugly (GBU) database. In principle, most of the parameters from above can be used. One violation is that instead of the ``--database`` option, now the ``--database-directory`` (the directory containing the GBU database files, normally: *config/database*) needs to be specified.
 
 When running experiments on the GBU database, the default GBU protocol (as provided by `NIST`_) is used. Hence, training is performed on the special Training set, and experiments are executed using the Target set as models (using a single image for model enrollment) and the Query set as probe.
 
-The GBU protocol does not specify T-Norm-models or Z-Norm-probes, nor it splits off development and test set. Hence, only a single score file is generated, which might later on be converted into an ROC curve.
+The GBU protocol does not specify T-Norm-models or Z-Norm-probes, nor it splits off development and test set. Hence, only a single score file is generated, which might later on be converted into an ROC curve using Bob functions.
 
-
+.. _Bob: http://idiap.github.com/bob/
+.. _local.bob.recipe: https://github.com/idiap/local.bob.recipe
+.. _gridtk: https://github.com/idiap/gridtk
+.. _BuildOut: http://www.buildout.org/
 .. _NIST: http://www.nist.gov/itl/iad/ig/focs.cfm
 
