@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    manual
+   contribute
 
 Indices and tables
 ==================

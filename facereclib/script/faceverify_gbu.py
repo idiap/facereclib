@@ -258,7 +258,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = 'The directory containing the GBU database configuration file(s)')
   
   config_group.add_argument('-a', '--database-file-appendix', metavar = 'STR', type = str, default = '',
-      help = 'Add the appendix to "<database_dir>/GBU_<protocol>%%s.xml to use special lists (e.g., images from local directories)')
+      help = 'Add the appendix to "<database_dir>/GBU_<protocol>%%s.xml" to use special lists (e.g., images from local directories)')
   
   file_group.add_argument('-B', '--training-set-file', metavar = 'FILE', type = str, 
       help = 'Use the given training list instead of the one specified in the database config file')
