@@ -24,5 +24,5 @@ relevance_factor = 4
 responsibilities_threshold = 0
 
 # Scoring
-scoring_function = bob.machine.linearScoring
+scoring_function = bob.machine.linear_scoring
 
