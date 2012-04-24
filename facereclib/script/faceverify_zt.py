@@ -322,7 +322,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = 'Subdirectories (of temp directory) where the models should be stored')
   sub_dir_group.add_argument('--zt-norm-directories', type = str, metavar = 'DIR', nargs = 5, dest='zt_dirs', 
       default = ['zt_norm_A', 'zt_norm_B', 'zt_norm_C', 'zt_norm_D', 'zt_norm_D_sameValue'],
-      help = 'Subdiretories (of --temp-dir) where to write the zt_norm values')
+      help = 'Subdirectories (of --temp-dir) where to write the zt_norm values')
   sub_dir_group.add_argument('--score-dirs', type = str, metavar = 'DIR', nargs = 2, dest='score_dirs',
       default = ['nonorm', 'ztnorm'],
       help = 'Subdirectories (of --user-dir) where to write the results to')

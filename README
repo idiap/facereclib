@@ -1,18 +1,12 @@
 This is the facereclib toolkit, designed to run (face) verification/recognition
-experiments with the SGE grid infrastructure at Idiap.
+experiments with the SGE grid infrastructure at Idiap. To generate the documentation,
+please change into the doc directory and call
 
-It requires both:
-- gridtk
-- bob
+make html
+firefox _build/html/index.html
 
-Before launching experiments, you need
-- to create/update the symbolic link gridtk pointing to your installation
-  of the gridtk, in the facereclib/ directory.
-- to specify which torch installation should be used. This can for instance be done in the shell.py file
-  (by default: /idiap/group/torch5spro/nightlies/last)
+Thank you.
 
-Please look at the documentation for (some) more details.
-Feel free to do any kind of improvements.
+Manuel Guenther
+2012-04-23
 
-Laurent El Shafey
-October 4th, 2011
