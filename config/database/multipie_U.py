@@ -9,7 +9,7 @@ protocol = 'U'
 
 img_input_dir = "/idiap/resource/database/Multi-Pie/data/"
 img_input_ext = ".png"
-pos_input_dir = "/idiap/user/mguenther/annotations/multipie/"
+pos_input_dir = "/idiap/group/biometric/annotations/multipie/"
 pos_input_ext = ".pos"
 
 first_annot = 1
