@@ -42,8 +42,6 @@ class ToolChainZT:
     """Preprocesses the images with the given preprocessing tool"""
     # get the file lists      
     image_files = self.m_file_selector.original_image_list()
-    # read eye files
-    eye_files = self.m_file_selector.eye_position_list()
     preprocessed_image_files = self.m_file_selector.preprocessed_image_list()
 
     # select a subset of keys to iterate    
@@ -54,28 +52,37 @@ class ToolChainZT:
 
     print "preprocess", len(keys), "images from directory", os.path.dirname(image_files.values()[0]), "to directory", os.path.dirname(preprocessed_image_files.values()[0])
     # iterate through the images and perform normalization
+
+    # read eye files
+    # - note: the resulting value of eye_files may be None
+    eye_files = self.m_file_selector.eye_position_list()
+
     for k in keys:
       image_file = image_files[k]
       preprocessed_image_file = preprocessed_image_files[k]
-      eye_file = eye_files[k]
 
       if not self.__check_file__(preprocessed_image_file, force):
-        # read eyes position file
-        annots = [int(j.strip()) for j in open(eye_file).read().split()]
-        if self.m_file_selector.m_db_options.first_annot == 0: 
-          eye_positions = annots[0:4]
-        else: 
-          eye_positions = annots[1:5]
-          
-        # sanity check
-        if eye_positions[0] > eye_positions[2]:
-          print "WARNING! Eye positions in", str(eye_file), "might be incorrect"
-        
-          
-        # call the image preprocessor
-        utils.ensure_dir(os.path.dirname(preprocessed_image_file))
-        preprocessed_image = preprocessor(str(image_file), eye_positions, str(preprocessed_image_file))
-  
+        if eye_files != None:
+          # read eyes position file
+          eye_file = eye_files[k]
+          annots = [int(j.strip()) for j in open(eye_file).read().split()]
+          if self.m_file_selector.m_db_options.first_annot == 0: 
+            eye_positions = annots[0:4]
+          else: 
+            eye_positions = annots[1:5]
+            
+          # sanity check
+          if eye_positions[0] > eye_positions[2]:
+            print "WARNING! Eye positions in", str(eye_file), "might be incorrect"
+            
+          # call the image preprocessor
+          utils.ensure_dir(os.path.dirname(preprocessed_image_file))
+          preprocessed_image = preprocessor(str(image_file), eye_positions, str(preprocessed_image_file))
+
+        else:
+          # eye_files == None, so call the preprocessor without specifying eye positions 
+          preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file))
+
   
   
   def train_extractor(self, extractor, force = False):
@@ -116,12 +123,17 @@ class ToolChainZT:
       
       if not self.__check_file__(feature_file, force):
         # load image
-        image = bob.io.load(str(image_file))
+        #image = bob.io.load(str(image_file))
+        if hasattr(extractor,'read'):
+          image = extractor.read(image_file)
+        else:
+          image = bob.io.load(str(image_file))
+
         # extract feature
         feature = extractor(image)
+
         # Save feature
         self.__save__(feature, str(feature_file))
-    
       
 
   def train_projector(self, tool, force=False):
@@ -145,6 +157,8 @@ class ToolChainZT:
  
     
   def project_features(self, tool, indices = None, force=False):
+    self.m_tool = tool
+
     """Extract the features for all files of the database"""
     # load the projector file
     if hasattr(tool, 'project'):
@@ -166,7 +180,8 @@ class ToolChainZT:
         
         if not self.__check_file__(projected_file, force):
           # load feature
-          feature = bob.io.load(str(feature_file))
+          #feature = bob.io.load(str(feature_file))
+          feature = self.__read_feature__(str(feature_file))
           # project feature
           projected = tool.project(feature)
           # write it
