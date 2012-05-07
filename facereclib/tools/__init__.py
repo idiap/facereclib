@@ -15,6 +15,8 @@ from PLDA import PLDATool
 
 import numpy
 import bob
+
+
 class DummyTool:
   """This class is used to test all the possible funcitons of the tool chain, but it does basically nothing."""
   
@@ -45,6 +47,10 @@ class DummyTool:
     """Just returns the feature since this dummy implemenation does not really project the data"""
     return feature
   
+  def save_feature(self, feature, feature_file):
+    """Saves the given feature to the given file"""
+    bob.io.save(feature, feature_file)
+  
   def train_enroler(self, train_files, enroler_file):
     """Does not train the projector, but writes some file"""
     # try to read the training files
@@ -63,6 +69,9 @@ class DummyTool:
     assert len(enrol_features)
     return enrol_features[0]
 
+  def save_model(self, model, model_file):
+    """Writes the model to the given model file"""
+    bob.io.save(model, model_file)
     
   def read_model(self, model_file):
     """Reads the model from file"""
@@ -73,6 +82,6 @@ class DummyTool:
     return bob.io.load(probe_file)
     
   def score(self, model, probe):
-    """Returns the euclidean distance between model and probe"""
+    """Returns the Euclidean distance between model and probe"""
     return bob.math.euclidean_distance(model, probe)
   

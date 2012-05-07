@@ -1,6 +1,6 @@
 In this folder, different preprocessing steps are provided. If you want to add another preprocessing tool, please assure that your class has at least:
 
 - an "__init__(self, setup)" function to initialize the preprocessor with the given setup. The setup is dependent on the current preprocessor and is read from a config file.
-- a "__call__(self, input_image, eye_positions) -> preprocessed_image" function that preprocesses and returns the given image (maybe using the provided eye positions).
+- a "__call__(self, input_file, output_file, eye_positions)" function that reads the given image, preprocesses it (maybe using the provided eye positions) and writes it to the given file.
 
 

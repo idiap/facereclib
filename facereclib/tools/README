@@ -4,12 +4,14 @@ In this folder, several tools for learning, projecting features, creating models
 - a function called "score(self, model, probe) -> float" that computes a SIMILARITY measure (a float) between the given model and the given probe,
 - an "__init__(self, file_selector, setup)" function that initializes the class using the given setup (which is dependent on the class, and which is read from a config file). In case you need non-default database calles, please re-define the according function in the file_selector class.
 
-Additionally, the model can have:
+Additionally, the tool can have:
 
 - a function called "train(self, training_files, projector_file)" that uses the given list of training features to compute a feature projection model and saves it to file,
 - a "load(self, projector_file)" function that loads the previously computed projection model,
 - a "project(self, feature) -> projected_feature" function that uses the projection model to project the feature
-- a "load_model(self, model_file) -> model" function that loads the mode that has been created by the "enrol" function (if you don't specify this function it is assumed that your models are numpy.ndarray's),
+- a "save_feature(self, feature, feature_file)" function, e.g. when your projected feature is not of type numpy.ndarray and has no "save(HDF5File)" function.  
+- a "save_model(self, model, model_file)" function, e.g. when your model is not of type numpy.ndarray and has no "save(HDF5File)" function.  
+- a "load_model(self, model_file) -> model" function that loads the model that has been created by the "enrol" function (if you don't specify this function it is assumed that your models are numpy.ndarray's),
 - a "load_probe(self, probe_file) -> probe" function that loads the probe that has been projected before (if you don't specify this function it is assumed that your probes are numpy.ndarray's),
 - and finally a variable called "use_unprojected_features_for_model_enrol" to specify that your "enrol" function requires features that are not projected. By default, the features given to the "enrol" function are already projected.
 

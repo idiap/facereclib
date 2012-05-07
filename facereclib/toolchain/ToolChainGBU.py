@@ -14,15 +14,31 @@ class ToolChainGBU:
     """Initializes the tool chain object with the current file selector"""
     self.m_file_selector = file_selector
     
-  def __save__(self, data, filename):
+  def __save_feature__(self, data, filename):
+    """Saves the given feature to the given file""" 
     utils.ensure_dir(os.path.dirname(filename))
-    if hasattr(data, 'save'):
+    if hasattr(self.m_tool, 'save_feature'):
+      # Tool has a save_feature function, so use this one
+      self.m_tool.save_feature(data, str(filename))
+    elif hasattr(data, 'save'):
       # this is some class that supports saving itself
       data.save(bob.io.HDF5File(str(filename), "w"))
     else:
       # this is most probably a numpy.ndarray that can be saved by bob.io.save
       bob.io.save(data, str(filename))
       
+  def __save_model__(self, data, filename):
+    utils.ensure_dir(os.path.dirname(filename))
+      # Tool has a save_model function, so use this one
+    if hasattr(self.m_tool, 'save_model'):
+      self.m_tool.save_model(data, filename)
+    elif hasattr(data, 'save'):
+      # this is some class that supports saving itself
+      data.save(bob.io.HDF5File(str(filename), "w"))
+    else:
+      # this is most probably a numpy.ndarray that can be saved by bob.io.save
+      bob.io.save(data, str(filename))
+            
  
   def __check_file__(self, filename, force, expected_file_size = 1):
     """Checks if the file exists and has size greater or equal to expected_file_size.
@@ -37,7 +53,8 @@ class ToolChainGBU:
         return True
     return False
     
-    
+
+
   def preprocess_images(self, preprocessor, sets=['training','target','query'], indices=None, force=False):
     """Preprocesses the images with the given preprocessing tool"""
     for set in sets:
@@ -60,9 +77,10 @@ class ToolChainGBU:
         if not self.__check_file__(preprocessed_image_file, force):
           # read eyes position file
           utils.ensure_dir(os.path.dirname(preprocessed_image_file))
-          preprocessed_image = preprocessor(str(image_file), eye_position, str(preprocessed_image_file))
+          preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file), eye_position)
               
-  
+
+
   def train_extractor(self, extractor, force = False):
     """Trains the feature extractor, if it requires training"""
     if hasattr(extractor,'train'):
@@ -79,7 +97,8 @@ class ToolChainGBU:
           print "Training Extractor '%s' using %d training files: " %(extractor_file, len(train_files))
         extractor.train(train_files, extractor_file)
 
-  
+
+
   def extract_features(self, extractor, sets=['training','target','query'], indices = None, force=False):
     """Extracts the features using the given extractor"""
     if hasattr(extractor, 'load'):
@@ -101,18 +120,11 @@ class ToolChainGBU:
           # load image
           image = bob.io.load(str(image_file))
           # extract feature
-          feature = extractor(image)
-          # Save feature
+          feature = extractor(image, feature_file)
+           # Save feature
           self.__save__(feature, str(feature_file))
-          
-#### write feature to text file
-          if False:
-            f = open("/scratch/mguenther/GBU/Good/features_mine/"+str(os.path.splitext(os.path.basename(feature_file))[0])+'.txt', "w")
-            for x in feature:
-              f.write(str(x) + '\n')
-            f.close()
-####
-      
+         
+
 
   def train_projector(self, tool, force=False):
     """Train the feature extraction process with the preprocessed images of the world group"""
@@ -133,7 +145,8 @@ class ToolChainGBU:
         # perform training
         tool.train_projector(train_files, str(projector_file))
  
-    
+
+
   def project_features(self, tool, sets=['training','target','query'], indices = None, force=False):
     """Extract the features for all files of the database"""
     # load the projector file
@@ -160,9 +173,10 @@ class ToolChainGBU:
             projected = tool.project(feature)
             # write it
             utils.ensure_dir(os.path.dirname(projected_file))
-            self.__save__(projected, projected_file)
+            self.__save_feature__(projected, projected_file)
   
-    
+
+
   def __read_feature__(self, feature_file):
     """This function reads the model from file. Overload this function if your model is no numpy.ndarray."""
     if hasattr(self.m_tool, 'read_feature'):
@@ -189,7 +203,8 @@ class ToolChainGBU:
         print "Training Enroler '%s' using %d identities: " %(enroler_file, len(train_files))
         tool.train_enroler(train_files, str(enroler_file))
 
-    
+
+
   def enrol_models(self, tool, indices = None, force=False):
     """Enrol the models for 'dev' and 'eval' groups, for both models and T-Norm-models.
        This function by default used the projected features to compute the models.
@@ -230,7 +245,8 @@ class ToolChainGBU:
         
         model = tool.enrol(enrol_features)
         # save the model
-        self.__save__(model, model_file)
+        self.__save_model__(model, model_file)
+
 
 
   def __read_model__(self, model_file):
@@ -246,7 +262,6 @@ class ToolChainGBU:
       return self.m_tool.read_probe(probe_file)
     else:
       return bob.io.load(probe_file)
-
 
   def compute_scores(self, tool, force = False, indices = None, preload_probes = False):
     """Computes the scores between target and query"""
@@ -306,14 +321,11 @@ class ToolChainGBU:
         f.close()
         
 
+
   def concatenate(self):
     """Concatenates all results into one score file"""
     # list of model indices
     model_indices = self.m_file_selector.model_indices()
-
-#### compute full score matrix as well
-#    sim_matrix = numpy.ndarray((len(model_indices),len(model_indices)), dtype=numpy.float64)
-####    
 
     f = open(self.m_file_selector.result_file(), 'w')
     # Concatenates the scores
@@ -321,17 +333,5 @@ class ToolChainGBU:
       res_file = open(self.m_file_selector.model_score_file(model_index), 'r')
       f.write(res_file.read())
       res_file.close()
-####
-#      res_file = open(self.m_file_selector.model_score_file(model_index), 'r')
-#      probe_index = 0
-#      for line in res_file:
-#        score = line.split(" ")[3]
-#        sim_matrix[probe_index,model_index] = score
-#        probe_index += 1
-####
-    f.close()
 
-#### write similarity matrix
-#    beemat = pyvision.BEEDistanceMatrix(sim_matrix,"","",None,is_distance=False)
-#    beemat.save("/scratch/mguenther/GBU/Good/sim_matrix.txt")
-####
+    f.close()

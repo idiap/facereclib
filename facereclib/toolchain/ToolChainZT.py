@@ -14,15 +14,30 @@ class ToolChainZT:
     """Initializes the tool chain object with the current file selector"""
     self.m_file_selector = file_selector
     
-  def __save__(self, data, filename):
+  def __save_feature__(self, data, filename):
+    """Saves the given feature to the given file""" 
     utils.ensure_dir(os.path.dirname(filename))
-    if hasattr(data, 'save'):
+    if hasattr(self.m_tool, 'save_feature'):
+      # Tool has a save_feature function, so use this one
+      self.m_tool.save_feature(data, str(filename))
+    elif hasattr(data, 'save'):
       # this is some class that supports saving itself
       data.save(bob.io.HDF5File(str(filename), "w"))
     else:
       # this is most probably a numpy.ndarray that can be saved by bob.io.save
       bob.io.save(data, str(filename))
       
+  def __save_model__(self, data, filename):
+    utils.ensure_dir(os.path.dirname(filename))
+      # Tool has a save_model function, so use this one
+    if hasattr(self.m_tool, 'save_model'):
+      self.m_tool.save_model(data, filename)
+    elif hasattr(data, 'save'):
+      # this is some class that supports saving itself
+      data.save(bob.io.HDF5File(str(filename), "w"))
+    else:
+      # this is most probably a numpy.ndarray that can be saved by bob.io.save
+      bob.io.save(data, str(filename))
  
   def __check_file__(self, filename, force, expected_file_size = 1):
     """Checks if the file exists and has size greater or equal to expected_file_size.
@@ -37,7 +52,8 @@ class ToolChainZT:
         return True
     return False
     
-    
+
+
   def preprocess_images(self, preprocessor, indices=None, force=False):
     """Preprocesses the images with the given preprocessing tool"""
     # get the file lists      
@@ -62,6 +78,7 @@ class ToolChainZT:
       preprocessed_image_file = preprocessed_image_files[k]
 
       if not self.__check_file__(preprocessed_image_file, force):
+        eye_positions = None
         if eye_files != None:
           # read eyes position file
           eye_file = eye_files[k]
@@ -74,14 +91,11 @@ class ToolChainZT:
           # sanity check
           if eye_positions[0] > eye_positions[2]:
             print "WARNING! Eye positions in", str(eye_file), "might be incorrect"
-            
-          # call the image preprocessor
-          utils.ensure_dir(os.path.dirname(preprocessed_image_file))
-          preprocessed_image = preprocessor(str(image_file), eye_positions, str(preprocessed_image_file))
 
-        else:
-          # eye_files == None, so call the preprocessor without specifying eye positions 
-          preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file))
+        # call the image preprocessor
+        utils.ensure_dir(os.path.dirname(preprocessed_image_file))
+        preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file), eye_positions)
+
 
   
   
@@ -105,6 +119,7 @@ class ToolChainZT:
   
   def extract_features(self, extractor, indices = None, force=False):
     """Extracts the features using the given extractor"""
+    self.m_tool = extractor
     if hasattr(extractor, 'load'):
       extractor.load(self.m_file_selector.extractor_file())
     image_files = self.m_file_selector.preprocessed_image_list()
@@ -123,7 +138,6 @@ class ToolChainZT:
       
       if not self.__check_file__(feature_file, force):
         # load image
-        #image = bob.io.load(str(image_file))
         if hasattr(extractor,'read'):
           image = extractor.read(image_file)
         else:
@@ -133,7 +147,8 @@ class ToolChainZT:
         feature = extractor(image)
 
         # Save feature
-        self.__save__(feature, str(feature_file))
+        self.__save_feature__(feature, str(feature_file))
+
       
 
   def train_projector(self, tool, force=False):
@@ -155,7 +170,8 @@ class ToolChainZT:
         # perform training
         tool.train_projector(train_files, str(projector_file))
  
-    
+
+
   def project_features(self, tool, indices = None, force=False):
     self.m_tool = tool
 
@@ -186,9 +202,10 @@ class ToolChainZT:
           projected = tool.project(feature)
           # write it
           utils.ensure_dir(os.path.dirname(projected_file))
-          self.__save__(projected, projected_file)
+          self.__save_feature__(projected, projected_file)
   
-    
+
+
   def __read_feature__(self, feature_file):
     """This function reads the model from file. Overload this function if your model is no numpy.ndarray."""
     if hasattr(self.m_tool, 'read_feature'):
@@ -215,7 +232,8 @@ class ToolChainZT:
         print "Training Enroler '%s' using %d training files: " %(enroler_file, len(train_files))
         tool.train_enroler(train_files, str(enroler_file))
 
-    
+
+
   def enrol_models(self, tool, compute_zt_norm, indices = None, groups = ['dev', 'eval'], types = ['N','T'], force=False):
     """Enrol the models for 'dev' and 'eval' groups, for both models and T-Norm-models.
        This function by default used the projected features to compute the models.
@@ -261,7 +279,7 @@ class ToolChainZT:
             
             model = tool.enrol(enrol_features)
             # save the model
-            self.__save__(model, model_file)
+            self.__save_model__(model, model_file)
 
     # T-Norm-Models
     if 'T' in types and compute_zt_norm:
@@ -291,7 +309,8 @@ class ToolChainZT:
               
             model = tool.enrol(enrol_features)
             # save model
-            self.__save__(model, model_file)
+            self.__save_model__(model, model_file)
+
 
 
   def __read_model__(self, model_file):
@@ -391,7 +410,7 @@ class ToolChainZT:
         for x in scores_list:
           f_nonorm.write(str(x[2]) + " " + str(x[0]) + " " + str(x[3]) + " " + str(x[4]) + "\n")
         f_nonorm.close()
-    
+
   def __scores_b__(self, model_ids, group, force, preload_probes):
     """Computes B scores"""
     # probe files:
@@ -418,7 +437,7 @@ class ToolChainZT:
         else:
           b = self.__scores__(model, zprobe_objects)
         bob.io.save(b, score_file)
-    
+
   def __scores_c__(self, tmodel_ids, group, force, preload_probes):
     """Computed C scores"""
     # probe files:
@@ -580,6 +599,7 @@ class ToolChainZT:
     bob.io.save(d_same_value, self.m_file_selector.d_same_value_matrix_file(group))
   
 
+
   def zt_norm(self, groups = ['dev', 'eval']):
     """Computes ZT-Norm using the previously generated files"""
     for group in groups:
@@ -616,8 +636,9 @@ class ToolChainZT:
         for x in ztscores_list:
           f_ztnorm.write(str(x[2]) + " " + str(x[0]) + " " + str(x[3]) + " " + str(x[4]) + "\n")
         f_ztnorm.close()
-    
-    
+
+
+
   def concatenate(self, compute_zt_norm, groups = ['dev', 'eval']):
     """Concatenates all results into one score file"""
     for group in groups:
@@ -638,5 +659,3 @@ class ToolChainZT:
           res_file = open(self.m_file_selector.zt_norm_file(model_id, group), 'r')
           f.write(res_file.read())
         f.close()
-    
-    
