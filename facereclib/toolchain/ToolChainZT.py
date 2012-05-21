@@ -648,7 +648,9 @@ class ToolChainZT:
       f = open(self.m_file_selector.no_norm_result_file(group), 'w')
       # Concatenates the scores
       for model_id in model_ids:
-        res_file = open(self.m_file_selector.no_norm_file(model_id, group), 'r')
+        model_file = self.m_file_selector.no_norm_file(model_id, group)
+        assert os.path.exists(model_file)
+        res_file = open(model_file, 'r')
         f.write(res_file.read())
       f.close()
 

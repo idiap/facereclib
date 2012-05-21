@@ -112,7 +112,7 @@ class ToolChainExecutor:
 
   def set_common_parameters(self, calling_file, parameters, fake_job_id = 0):
     """Sets the parameters that the grid jobs require to be called.
-    Just hand over all parameters of the faceverify script, and this funciton will do the rest.
+    Just hand over all parameters of the faceverify script, and this function will do the rest.
     Please call this function before submitting jobs to the grid 
     using the submit_jobs_to_grid function"""
               
