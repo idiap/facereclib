@@ -7,5 +7,5 @@
 from FileSelectorZT import FileSelectorZT
 from ToolChainZT import ToolChainZT
 
-from FileSelectorGBU import FileSelectorGBU, XmlFileReaderGBU
+from FileSelectorGBU import FileSelectorGBU
 from ToolChainGBU import ToolChainGBU

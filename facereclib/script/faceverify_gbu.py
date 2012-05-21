@@ -11,24 +11,22 @@ from .. import toolchain
 
 class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
   
-  def __init__(self, args):
+  def __init__(self, args, protocol):
+    # select the protocol
+    self.m_protocol = protocol
+
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
-    
-    if args.training_set_file:
-      # overwrite the training set file in each of the databases
-      print "Using training set file", args.training_set_file, "instead of", self.m_configuration.training
-      self.m_configuration.training = args.training_set_file
-      
 
     # specify the file selector and tool chain objects to be used by this class (and its base class) 
-    self.m_file_selector = toolchain.FileSelectorGBU(self.m_configuration)
+    self.m_file_selector = toolchain.FileSelectorGBU(self.m_configuration, self.m_database_config)
     self.m_tool_chain = toolchain.ToolChainGBU(self.m_file_selector)
     
 
   def protocol_specific_configuration(self):
     """Special configuration for GBU protocol"""
     self.m_configuration.img_input_dir = self.m_database_config.img_input_dir  
+    self.m_database_config.protocol = self.m_protocol
     self.m_configuration.model_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.model_dir, self.m_database_config.protocol)
   
     self.m_configuration.default_extension = ".hdf5"
@@ -72,13 +70,14 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     training_deps = external_dependencies[:]
     
     sets = ['training','target','query'] if perform_training else ['target','query']
+    default_opt = ' --protocol %s'%self.m_database_config.protocol
     # image preprocessing; never has any dependencies.
     if not self.m_args.skip_preprocessing:
       for set in sets:
         job_ids['preprocessing_%s'%set] = self.submit_grid_job(
-                '--preprocess --sub-set %s'%set, 
+                '--preprocess --sub-set %s'%set + default_opt, 
                 name = 'pre-%s'%set, 
-                list_to_split = self.m_file_selector.image_list(set), 
+                list_to_split = self.m_file_selector.original_image_list(set), 
                 number_of_files_per_job = self.m_grid_config.number_of_images_per_job, 
                 dependencies = [], 
                 **self.m_grid_config.preprocessing_queue)
@@ -91,7 +90,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # feature extraction training
     if not self.m_args.skip_feature_extraction_training and perform_training and hasattr(self.m_feature_extractor, 'train'):
       job_ids['extraction_training'] = self.submit_grid_job(
-              '--feature-extraction-training', 
+              '--feature-extraction-training' + default_opt, 
               name = 'f-training', 
               dependencies = training_deps,
               **self.m_grid_config.training_queue)
@@ -100,7 +99,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_feature_extraction:
       for set in sets:
         job_ids['feature_extraction_%s'%set] = self.submit_grid_job(
-                '--feature-extraction --sub-set %s'%set, 
+                '--feature-extraction --sub-set %s'%set + default_opt, 
                 name = 'extr-%s'%set, 
                 list_to_split = self.m_file_selector.preprocessed_image_list(set), 
                 number_of_files_per_job = self.m_grid_config.number_of_features_per_job, 
@@ -115,7 +114,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # feature projection training
     if not self.m_args.skip_projection_training and perform_training and hasattr(self.m_tool, 'train_projector'):
       job_ids['projector_training'] = self.submit_grid_job(
-              '--train-projector', 
+              '--train-projector' + default_opt, 
               name = "p-training", 
               dependencies = training_deps, 
               **self.m_grid_config.training_queue)
@@ -124,7 +123,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
       for set in sets:
         job_ids['feature_projection_%s'%set] = self.submit_grid_job(
-                '--feature-projection --sub-set %s'%set, 
+                '--feature-projection --sub-set %s'%set + default_opt, 
                 list_to_split = self.m_file_selector.feature_list(set), 
                 number_of_files_per_job = self.m_grid_config.number_of_projections_per_job, 
                 dependencies = deps, 
@@ -139,7 +138,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # model enrolment training
     if not self.m_args.skip_enroler_training and perform_training and hasattr(self.m_tool, 'train_enroler'):
       job_ids['enrolment_training'] = self.submit_grid_job(
-              '--train-enroler', 
+              '--train-enroler' + default_opt, 
               dependencies = training_deps, 
               name="e-training", 
               **self.m_grid_config.training_queue)
@@ -148,8 +147,8 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # enrol models
     if not self.m_args.skip_model_enrolment:
       job_ids['enrol'] = self.submit_grid_job(
-              '--enrol-models', 
-              list_to_split = self.m_file_selector.model_indices(), 
+              '--enrol-models' + default_opt, 
+              list_to_split = self.m_file_selector.model_ids(), 
               number_of_files_per_job = self.m_grid_config.number_of_models_per_enrol_job, 
               dependencies = deps, 
               name = "enrol", 
@@ -159,8 +158,8 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # compute scores
     if not self.m_args.skip_score_computation:
       job_ids['score'] = self.submit_grid_job(
-              '--compute-scores', 
-              list_to_split = self.m_file_selector.model_indices(), 
+              '--compute-scores' + default_opt, 
+              list_to_split = self.m_file_selector.model_ids(), 
               number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job, 
               dependencies = deps, 
               name = "score", 
@@ -169,7 +168,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       
     # concatenate results   
     job_ids['concatenate'] = self.submit_grid_job(
-            '--concatenate', 
+            '--concatenate' + default_opt, 
             dependencies = deps, 
             name = "concat")
         
@@ -184,7 +183,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.preprocess_images(
           self.m_preprocessor, 
           sets = [self.m_args.sub_set], 
-          indices = self.indices(self.m_file_selector.image_list(self.m_args.sub_set), self.m_grid_config.number_of_images_per_job), 
+          indices = self.indices(self.m_file_selector.original_image_list(self.m_args.sub_set), self.m_grid_config.number_of_images_per_job), 
           force = self.m_args.force)
       
     if self.m_args.feature_extraction_training:
@@ -224,14 +223,14 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if self.m_args.enrol_models:
       self.m_tool_chain.enrol_models(
           self.m_tool, 
-          indices = self.indices(self.m_file_selector.model_indices(), self.m_grid_config.number_of_models_per_enrol_job), 
+          indices = self.indices(self.m_file_selector.model_ids(), self.m_grid_config.number_of_models_per_enrol_job), 
           force = self.m_args.force)
         
     # compute scores
     if self.m_args.compute_scores:
       self.m_tool_chain.compute_scores(
           self.m_tool, 
-          indices = self.indices(self.m_file_selector.model_indices(), self.m_grid_config.number_of_models_per_score_job), 
+          indices = self.indices(self.m_file_selector.model_ids(), self.m_grid_config.number_of_models_per_score_job), 
           preload_probes = self.m_args.preload_probes, 
           force = self.m_args.force)
   
@@ -254,16 +253,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   # add the arguments required for all tool chains
   config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorGBU.required_command_line_options(parser)
 
-  config_group.add_argument('-D', '--database-directory', metavar = 'DIR', type = str, dest='database_dir', required = True,
-      help = 'The directory containing the GBU database configuration file(s)')
-  
-  config_group.add_argument('-a', '--database-file-appendix', metavar = 'STR', type = str, default = '',
-      help = 'Add the appendix to "<database_dir>/GBU_<protocol>%%s.xml" to use special lists (e.g., images from local directories)')
-  
-  file_group.add_argument('-B', '--training-set-file', metavar = 'FILE', type = str, 
-      help = 'Use the given training list instead of the one specified in the database config file')
-  
-  sub_dir_group.add_argument('--model-directory', type = str, metavar = 'DIR', dest='model_dir',default = 'models',
+  sub_dir_group.add_argument('--model-directory', type = str, metavar = 'DIR', dest='model_dir', default = 'models',
       help = 'Subdirectories (of temp directory) where the models should be stored')
   
   #######################################################################################
@@ -277,25 +267,27 @@ def parse_args(command_line_arguments = sys.argv[1:]):
 
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
-  parser.add_argument('--execute-sub-task', action='store_true', dest = 'execute_sub_task',
+  parser.add_argument('--execute-sub-task', action='store_true',
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
   parser.add_argument('--preprocess', action='store_true', 
       help = argparse.SUPPRESS) #'Perform image preprocessing on the given range of images'
-  parser.add_argument('--sub-set', type=str, choices=['training','target','query'], dest='sub_set',
+  parser.add_argument('--sub-set', type=str, choices=['training','target','query'],
       help = argparse.SUPPRESS) #'The subset of the data for which the process should be executed'
-  parser.add_argument('--feature-extraction-training', action='store_true', dest = 'feature_extraction_training',
+  parser.add_argument('--protocol', type=str, choices=['Good','Bad','Ugly'],
+      help = argparse.SUPPRESS) #'The protocol which should be used in this sub-task'
+  parser.add_argument('--feature-extraction-training', action='store_true',
       help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
-  parser.add_argument('--feature-extraction', action='store_true', dest = 'feature_extraction',
+  parser.add_argument('--feature-extraction', action='store_true',
       help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
-  parser.add_argument('--train-projector', action='store_true', dest = 'train_projector',
+  parser.add_argument('--train-projector', action='store_true',
       help = argparse.SUPPRESS) #'Perform feature extraction training'
   parser.add_argument('--feature-projection', action='store_true', dest = 'projection',
       help = argparse.SUPPRESS) #'Perform feature projection'
-  parser.add_argument('--train-enroler', action='store_true', dest = 'train_enroler',
+  parser.add_argument('--train-enroler', action='store_true',
       help = argparse.SUPPRESS) #'Perform enrolment training'
-  parser.add_argument('--enrol-models', action='store_true', dest = 'enrol_models',
+  parser.add_argument('--enrol-models', action='store_true',
       help = argparse.SUPPRESS) #'Generate the given range of models from the features'
-  parser.add_argument('--compute-scores', action='store_true', dest = 'compute_scores',
+  parser.add_argument('--compute-scores', action='store_true',
       help = argparse.SUPPRESS) #'Compute scores for the given range of models'
   parser.add_argument('--concatenate', action='store_true',
       help = argparse.SUPPRESS) #'Concatenates the results of all scores of the given group'
@@ -318,7 +310,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
   
   if args.execute_sub_task:
     # execute the desired sub-task
-    executor = ToolChainExecutorGBU(args)
+    executor = ToolChainExecutorGBU(args, protocol=args.protocol)
     executor.execute_grid_job()
     return []
   
@@ -338,14 +330,9 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     perform_training = True
     dry_run_init = external_fake_job_id
     for protocol in args.protocols:
-      # set the database
-      args.database = os.path.join(args.database_dir, 'GBU_%s%s.py'%(protocol,args.database_file_appendix))
-      current_parameters = parameters[:]
-      current_parameters.extend(['--database', args.database])
-      
       # create an executor object
-      executor = ToolChainExecutorGBU(args)
-      executor.set_common_parameters(calling_file = this_file, parameters = current_parameters, fake_job_id = dry_run_init)
+      executor = ToolChainExecutorGBU(args, protocol)
+      executor.set_common_parameters(calling_file = this_file, parameters = parameters, fake_job_id = dry_run_init)
 
       # add the jobs
       new_dependencies = executor.add_jobs_to_grid(dependencies, perform_training = perform_training)
@@ -366,10 +353,8 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     # not in a grid, use default tool chain sequentially
 
     for protocol in args.protocols:
-      # set the database
-      args.database = os.path.join(args.database_dir, 'GBU_%s%s.py'%(protocol,args.database_file_appendix))
-      
-      executor = ToolChainExecutorGBU(args)
+      # generate executor for the current protocol
+      executor = ToolChainExecutorGBU(args, protocol)
       # execute the tool chain locally
       executor.execute_tool_chain()
     

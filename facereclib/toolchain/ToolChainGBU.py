@@ -59,20 +59,23 @@ class ToolChainGBU:
     """Preprocesses the images with the given preprocessing tool"""
     for set in sets:
       # get the file lists
-      image_files = self.m_file_selector.image_list(set)
+      image_files = self.m_file_selector.original_image_list(set)
       # read eye files
       eye_positions = self.m_file_selector.eye_position_list(set)
       preprocessed_image_files = self.m_file_selector.preprocessed_image_list(set)
-  
+
       # select a subset of keys to iterate    
-      partition = range(indices[0],indices[1]) if indices else range(len(image_files))
+      keys = sorted(image_files.keys())
+      if indices != None:
+        keys = keys[indices[0]:indices[1]]
+        print "Splitting of index range", indices, "to",
   
-      print "preprocessing", len(partition), "images from directory", os.path.dirname(image_files[0]), "to directory", os.path.dirname(preprocessed_image_files[0])
+      print "preprocess", len(keys), "images from directory", os.path.dirname(image_files.values()[0]), "to directory", os.path.dirname(preprocessed_image_files.values()[0])
       # iterate through the images and perform normalization
-      for i in partition:
-        image_file = image_files[i]
-        preprocessed_image_file = preprocessed_image_files[i]
-        eye_position = eye_positions[i]
+      for k in keys:
+        image_file = image_files[k]
+        preprocessed_image_file = preprocessed_image_files[k]
+        eye_position = eye_positions[k]
   
         if not self.__check_file__(preprocessed_image_file, force):
           # read eyes position file
@@ -101,6 +104,7 @@ class ToolChainGBU:
 
   def extract_features(self, extractor, sets=['training','target','query'], indices = None, force=False):
     """Extracts the features using the given extractor"""
+    self.m_tool = extractor
     if hasattr(extractor, 'load'):
       extractor.load(self.m_file_selector.extractor_file())
       
@@ -109,20 +113,23 @@ class ToolChainGBU:
       feature_files = self.m_file_selector.feature_list(set)
   
       # extract the features
-      partition = range(indices[0],indices[1]) if indices else range(len(image_files))
+      keys = sorted(image_files.keys())
+      if indices != None:
+        keys = keys[indices[0]:indices[1]]
+        print "Splitting of index range", indices, "to",
   
-      print "extracting", len(partition), "features from image directory", os.path.dirname(image_files[0]), "to directory", os.path.dirname(feature_files[0])
-      for i in partition:
-        image_file = image_files[i]
-        feature_file = feature_files[i]
+      print "extract", len(keys), "features from image directory", os.path.dirname(image_files.values()[0]), "to directory", os.path.dirname(feature_files.values()[0])
+      for k in keys:
+        image_file = image_files[k]
+        feature_file = feature_files[k]
         
         if not self.__check_file__(feature_file, force):
           # load image
           image = bob.io.load(str(image_file))
           # extract feature
-          feature = extractor(image, feature_file)
+          feature = extractor(image)
            # Save feature
-          self.__save__(feature, str(feature_file))
+          self.__save_feature__(feature, str(feature_file))
          
 
 
@@ -149,6 +156,7 @@ class ToolChainGBU:
 
   def project_features(self, tool, sets=['training','target','query'], indices = None, force=False):
     """Extract the features for all files of the database"""
+    self.m_tool = tool
     # load the projector file
     if hasattr(tool, 'project'):
       if hasattr(tool, 'load_projector'):
@@ -158,13 +166,16 @@ class ToolChainGBU:
         feature_files = self.m_file_selector.feature_list(set)
         projected_files = self.m_file_selector.projected_list(set)
 
-        # project the features
-        partition = range(indices[0],indices[1]) if indices else range(len(feature_files))
+        # extract the features
+        keys = sorted(feature_files.keys())
+        if indices != None:
+          keys = keys[indices[0]:indices[1]]
+          print "Splitting of index range", indices, "to",
   
-        print "project", len(partition), "features from directory", os.path.dirname(feature_files[0]), "to directory", os.path.dirname(projected_files[0])
-        for i in partition:
-          feature_file = feature_files[i]
-          projected_file = projected_files[i]
+        print "project", len(keys), "features from directory", os.path.dirname(feature_files.values()[0]), "to directory", os.path.dirname(projected_files.values()[0])
+        for k in keys:
+          feature_file = feature_files[k]
+          projected_file = projected_files[k]
           
           if not self.__check_file__(projected_file, force):
             # load feature
@@ -224,23 +235,25 @@ class ToolChainGBU:
     use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enrol')
 
     # enrol models
-    model_indices = self.m_file_selector.model_indices()
+    model_ids = self.m_file_selector.model_ids()
+    
+    if indices != None: 
+      model_ids = model_ids[indices[0]:indices[1]]
+      print "Splitting of index range", indices, "for",
 
-    partition = range(indices[0],indices[1]) if indices else range(len(model_indices))
-
-    print "enroling", len(partition), "models"
-    for model_index in partition:
-      model_file = self.m_file_selector.model_file(model_index)
+    print "enrolling models"
+    for model_id in model_ids:
+      model_file = self.m_file_selector.model_file(model_id)
       
       # Removes old file if required
       if not self.__check_file__(model_file, force):
-        enrol_files = self.m_file_selector.enrol_files(model_index, use_projected_features)
+        enrol_files = self.m_file_selector.enrol_files(model_id, use_projected_features)
             
         # load all files into memory
         enrol_features = []
-        for enrol_index in range(len(enrol_files)):
+        for enrol_file in enrol_files.itervalues():
           # processes one file
-          feature = self.__read_feature__(str(enrol_files[enrol_index]))
+          feature = self.__read_feature__(str(enrol_file))
           enrol_features.append(feature)
         
         model = tool.enrol(enrol_features)
@@ -275,44 +288,50 @@ class ToolChainGBU:
     if hasattr(tool,'load_enroler'):
       tool.load_enroler(self.m_file_selector.enroler_file())
 
-    model_indices = self.m_file_selector.model_indices()
-    query_list = self.m_file_selector.probe_files(use_projected_dir)
+    # get model and probe files
+    model_ids = self.m_file_selector.model_ids()
+    probe_files = self.m_file_selector.probe_files(use_projected_dir)
     
+    # get the claimed probe ids
+    claimed_probe_ids = {}
+    for probe_id in probe_files:
+      claimed_probe_ids[probe_id] = self.m_file_selector.client_id_for_id(probe_id)
+      
+    # preload probe files?
     if preload_probes:
       print "Preloading query files"
-      preloaded_probes = []
-      for probe_file in query_list:
-        preloaded_probes.append(self.__read_probe__(str(probe_file))) 
-    
-    # get the subset of target files to be used
-    partition = range(indices[0],indices[1]) if indices else range(len(model_indices))
-    
-    print "computing scores for", len(partition), "models"
-    for model_index in partition:
+      preloaded_probes = {}
+      for k, probe_file in probe_files.iteritems():
+        preloaded_probes[k] = self.__read_probe__(str(probe_file)) 
 
-      score_file = str(self.m_file_selector.model_score_file(model_index))
+    # use only some models?
+    if indices != None: 
+      model_ids = model_ids[indices[0]:indices[1]]
+
+    # compute scores.
+    print "computing scores for", len(model_ids), "models"
+    for model_id in model_ids:
+      real_client_id = self.m_file_selector.client_id_for_id(model_id)
+
+      score_file = str(self.m_file_selector.model_score_file(model_id))
       if self.__check_file__(score_file, force):
         print "Score file '%s' already exists." % (score_file)
       else:
         # load target (which is the model in our case)
-        model = self.__read_model__(str(self.m_file_selector.model_file(model_index)))
-        
-        # get query files for the current target
-        query_informations = self.m_file_selector.queries_for_target(model_index)
+        model = self.__read_model__(str(self.m_file_selector.model_file(model_id)))
         
         # compute scores for the current target
         score_list = []
-        for query_index in range(len(query_informations)):
+        for probe_id in sorted(probe_files.keys()):
           # get query information
-          query_info = query_informations[query_index]
           if preload_probes:
-            query = preloaded_probes[query_info[0]]
+            probe = preloaded_probes[probe_id]
           else:
-            query = self.__read_probe__(str(query_list[query_info[0]]))
+            probe = self.__read_probe__(probe_files[probe_id])
         
-          score = tool.score(model, query)
+          score = tool.score(model, probe)
           
-          score_list.append((query_info[2], query_info[1], score))
+          score_list.append((real_client_id, claimed_probe_ids[probe_id], score))
           
         # write score file
         f = open(score_file, 'w')
@@ -325,12 +344,14 @@ class ToolChainGBU:
   def concatenate(self):
     """Concatenates all results into one score file"""
     # list of model indices
-    model_indices = self.m_file_selector.model_indices()
+    model_ids = self.m_file_selector.model_ids()
 
     f = open(self.m_file_selector.result_file(), 'w')
     # Concatenates the scores
-    for model_index in model_indices:
-      res_file = open(self.m_file_selector.model_score_file(model_index), 'r')
+    for model_id in model_ids:
+      model_file = self.m_file_selector.model_score_file(model_id)
+      assert os.path.exists(model_file)
+      res_file = open(model_file, 'r')
       f.write(res_file.read())
       res_file.close()
 
