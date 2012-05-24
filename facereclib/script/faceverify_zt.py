@@ -51,7 +51,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_projection_training and hasattr(self.m_tool, 'train_projector'):
       self.m_tool_chain.train_projector(self.m_tool, force = self.m_args.force)
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
-      self.m_tool_chain.project_features(self.m_tool, force = self.m_args.force)
+      self.m_tool_chain.project_features(self.m_tool, force = self.m_args.force, extractor = self.m_feature_extractor)
     # model enrolment
     if not self.m_args.skip_enroler_training and hasattr(self.m_tool, 'train_enroler'):
       self.m_tool_chain.train_enroler(self.m_tool, force = self.m_args.force)
@@ -244,7 +244,8 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.project_features(
           self.m_tool, 
           indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_projections_per_job), 
-          force = self.m_args.force)
+          force = self.m_args.force,
+          extractor = self.m_feature_extractor)
       
     # train model enroler
     if self.m_args.train_enroler:

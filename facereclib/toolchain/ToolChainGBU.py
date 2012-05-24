@@ -154,7 +154,7 @@ class ToolChainGBU:
  
 
 
-  def project_features(self, tool, sets=['training','target','query'], indices = None, force=False):
+  def project_features(self, tool, extractor, sets=['training','target','query'], indices = None, force=False):
     """Extract the features for all files of the database"""
     self.m_tool = tool
     # load the projector file
@@ -179,7 +179,7 @@ class ToolChainGBU:
           
           if not self.__check_file__(projected_file, force):
             # load feature
-            feature = bob.io.load(str(feature_file))
+            feature = self.__read_feature__(str(feature_file), extractor)
             # project feature
             projected = tool.project(feature)
             # write it
@@ -188,10 +188,10 @@ class ToolChainGBU:
   
 
 
-  def __read_feature__(self, feature_file):
+  def __read_feature__(self, feature_file, tool):
     """This function reads the model from file. Overload this function if your model is no numpy.ndarray."""
-    if hasattr(self.m_tool, 'read_feature'):
-      return self.m_tool.read_feature(feature_file)
+    if hasattr(tool, 'read_feature'):
+      return tool.read_feature(feature_file)
     else:
       return bob.io.load(feature_file)
   
@@ -253,7 +253,7 @@ class ToolChainGBU:
         enrol_features = []
         for enrol_file in enrol_files.itervalues():
           # processes one file
-          feature = self.__read_feature__(str(enrol_file))
+          feature = self.__read_feature__(str(enrol_file), tool)
           enrol_features.append(feature)
         
         model = tool.enrol(enrol_features)

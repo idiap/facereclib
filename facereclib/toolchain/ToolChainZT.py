@@ -172,10 +172,10 @@ class ToolChainZT:
  
 
 
-  def project_features(self, tool, indices = None, force=False):
+  def project_features(self, tool, extractor, indices = None, force=False):
+    """Extract the features for all files of the database"""
     self.m_tool = tool
 
-    """Extract the features for all files of the database"""
     # load the projector file
     if hasattr(tool, 'project'):
       if hasattr(tool, 'load_projector'):
@@ -197,7 +197,7 @@ class ToolChainZT:
         if not self.__check_file__(projected_file, force):
           # load feature
           #feature = bob.io.load(str(feature_file))
-          feature = self.__read_feature__(str(feature_file))
+          feature = self.__read_feature__(str(feature_file), extractor)
           # project feature
           projected = tool.project(feature)
           # write it
@@ -206,10 +206,10 @@ class ToolChainZT:
   
 
 
-  def __read_feature__(self, feature_file):
-    """This function reads the model from file. Overload this function if your model is no numpy.ndarray."""
-    if hasattr(self.m_tool, 'read_feature'):
-      return self.m_tool.read_feature(feature_file)
+  def __read_feature__(self, feature_file, tool):
+    """This function reads the feature from file. It uses the tool.read_feature() function, if available, otherwise it uses bob.io.load()"""
+    if hasattr(tool, 'read_feature'):
+      return tool.read_feature(feature_file)
     else:
       return bob.io.load(feature_file)
   
@@ -274,7 +274,7 @@ class ToolChainZT:
             enrol_features = []
             for k in sorted(enrol_files.keys()):
               # processes one file
-              feature = self.__read_feature__(str(enrol_files[k]))
+              feature = self.__read_feature__(str(enrol_files[k]), tool)
               enrol_features.append(feature)
             
             model = tool.enrol(enrol_features)
@@ -304,7 +304,7 @@ class ToolChainZT:
             for k in sorted(enrol_files.keys()):
               # processes one file
               
-              feature = self.__read_feature__(str(enrol_files[k]))
+              feature = self.__read_feature__(str(enrol_files[k]), tool)
               enrol_features.append(feature)
               
             model = tool.enrol(enrol_features)

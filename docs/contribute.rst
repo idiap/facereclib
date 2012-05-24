@@ -28,9 +28,10 @@ In the feature extraction stage, the classes have to provide at least the functi
 * ``__init__(self, config)``: where ``config`` is the feature extraction configuration read from file  (usually one in *config/features*)
 * ``__call__(self, image) -> feature``: extracts the feature from the given preprocessed image. The returned feature should be a numpy.ndarray. 
 
-If your features are not of type numpy.ndarray, please add a ``save_feature`` function (see below) to write features of other types (note that the currently implemented tools require numpy.ndarray features).
+If your features are not of type numpy.ndarray, please add a ``save_feature`` function (see below) to write features of other types (note that the currently implemented tools require numpy.ndarray features). Please also provide a function to read your kind of features:
 
 * ``save_feature(self, feature, feature_file)``: saves the feature (as returned by the ``__call__`` function) to the given filename
+* ``read_feature(self, feature_file) -> feature``: reads the feature (as written by the ``save_feature`` function) from the given filename
 
 If the feature extraction process requires a trained extractor model, simply define the function:
 
