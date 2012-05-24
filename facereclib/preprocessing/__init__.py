@@ -7,6 +7,7 @@
 import bob
 import numpy
 import math
+from .. import utils
 
 class NullPreprocessor:
   """Skips proprocessing files by simply copying the contents into an hdf5 file 
@@ -48,8 +49,6 @@ class FaceCrop:
       # save output image    
       bob.io.save(self.m_fen_image, output_file)
     
-    
-    
 class TanTriggs:
   """Croppes the face and applies Tan-Triggs algorithm"""
 
@@ -80,5 +79,33 @@ class TanTriggs:
     # save output image    
     bob.io.save(self.m_tan_image, output_file)
     
-    
+class TanTriggsVideo:
+  """Applies the Tan-Triggs algorithm to each frame in a video"""
+
+  def __init__(self, config):
+    self.m_config = config
+    # prepare image normalization
+    self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
+
+  #def __call__(self, input_file, output_file, eye_pos = None): # Note: eye_pos not supported. Videos are assumed to be already 
+  def __call__(self, input_file, output_file, eye_pos = None):
+    """For each frame in the VideoFrameContainer (read from input_file) applies the Tan-Triggs algorithm, then writes the resulting VideoFrameContainer to output_file. NOTE: eye_pos is ignored even if specified."""
+    # Read input
+    frame_container = utils.VideoFrameContainer(str(input_file))
+
+    # Process each frame
+    output_frame_container = utils.VideoFrameContainer()
+    for (frame_id, image) in frame_container.frames():
+      
+      # Convert to grayscale if it seems necessary
+      if(image.ndim == 3):
+        image = bob.ip.rgb_to_gray(image)
+        
+      # Perform Tan-Triggs and store result
+      self.m_tan_image = numpy.ndarray(image.shape, numpy.float64)
+      self.m_tan(image, self.m_tan_image)
+      output_frame_container.add_frame(frame_id,self.m_tan_image)
+      
+    # Save output image    
+    output_frame_container.save(output_file)
 

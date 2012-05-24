@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 # Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
+# Roy Wallace <roy.wallace@idiap.ch>
 
 import os
+import bob
+import re
 
 def ensure_dir(dirname):
   """ Creates the directory dirname if it does not already exist,
@@ -99,3 +102,52 @@ def probes_used_extract_scores(full_scores, same_probes):
         model_scores[j,c] = full_scores[j,i]
       c+=1
   return model_scores 
+
+######
+
+class VideoFrameContainer:
+  """A class for reading, manipulating and saving video content. 
+  A VideoFrameContainer contains several frames (images), each of which may have a corresponding vector of quality measures. When loaded from or saved to a HDF5 file format, the contents are as follows: 
+      /data/<frame_id>, where each <frame_id> is an integer
+  """
+  # TODO later: Implement support for reading/writing accompanying quality vectors per frame, i.e.:
+  #    /quality/<frame_id> (optional), where each <frame_id> is an integer
+
+  def __init__(self, filename = None):
+    self._frames = []
+    if filename:
+      # Read content (frames) from HDF5File
+      f = bob.io.HDF5File(filename, "r")
+      f.cd('/data/')
+      for path in f.paths():
+
+        # Resolve frame_id
+        m = re.match('/data/([0-9]*)', path)
+        if not m: raise Exception('Failed to read frame_id')
+        frame_id = m.group(0)
+
+        # Read frame
+        data = f.read(path)
+        self._frames.append((frame_id, data))
+      del f
+
+  def frames(self):
+    """Generator that returns the contents of each frame.
+    Each item is returned as the 2-tuple (frame_id, data),
+    sorted by ascending frame_id."""
+    for frame in sorted(self._frames, key=lambda x: x[0]):
+      yield frame
+
+  def add_frame(self,frame_id,frame):
+    self._frames.append((frame_id,frame))
+
+  def save(self,filename):
+    f = bob.io.HDF5File(filename, "w")
+    f.create_group('/data')
+    f.cd('/data/')
+    for frame in self._frames:
+      frame_id = frame[0]
+      data = frame[1]
+      f.set(str(frame_id), data)
+    del f
+
