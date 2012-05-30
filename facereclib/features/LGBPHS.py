@@ -35,15 +35,18 @@ class LGBPHS:
     """Copies the given array into the given blocks""" 
     # fill array in the desired shape
     if self.m_split == None:
-      lgbphs_array[j*self.m_n_blocks*self.m_n_bins : (j+1)*self.m_n_blocks*self.m_n_bins] = lbphs_blocks.flatten()
+      start = j * self.m_n_bins * self.m_n_blocks
+      for b in range(self.m_n_blocks):
+        lgbphs_array[start + b * self.m_n_bins : start + (b+1) * self.m_n_bins] = lgbphs_blocks[b]
     elif self.m_split == 'blocks':
       for b in range(self.m_n_blocks):
-        lgbphs_array[b, j*self.m_n_bins : (j+1)*self.m_n_bins] = lbphs_blocks[b]
+        lgbphs_array[b, j * self.m_n_bins : (j+1) * self.m_n_bins] = lgbphs_blocks[b]
     elif self.m_split == 'wavelets':
-      lgbphs_array[j, 0 : self.m_n_blocks*self.m_n_bins] = lbphs_blocks.flatten()
+      for b in range(self.m_n_blocks):
+        lgbphs_array[j, b * self.m_n_bins : (b+1) * self.m_n_bins] = lgbphs_blocks[b]
     elif self.m_split == 'both':
       for b in range(self.m_n_blocks):
-        lgbphs_array[j*self.m_n_blocks + b, 0 : self.m_n_bins] = lbphs_blocks[b]
+        lgbphs_array[j * self.m_n_blocks + b, 0 : self.m_n_bins] = lgbphs_blocks[b]
     
     
   

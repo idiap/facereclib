@@ -408,7 +408,7 @@ class ToolChainZT:
         scores_list = utils.convertScoreToList(numpy.reshape(a,a.size), probe_objects)
         f_nonorm = open(self.m_file_selector.no_norm_file(model_id, group), 'w')
         for x in scores_list:
-          f_nonorm.write(str(x[2]) + " " + str(x[0]) + " " + str(x[3]) + " " + str(x[4]) + "\n")
+          f_nonorm.write(str(x[2]) + " " + str(x[1]) + " " + str(x[3]) + " " + str(x[4]) + "\n")
         f_nonorm.close()
 
   def __scores_b__(self, model_ids, group, force, preload_probes):
@@ -634,7 +634,7 @@ class ToolChainZT:
         sc_ztnorm_filename = self.m_file_selector.zt_norm_file(model_id, group)
         f_ztnorm = open(sc_ztnorm_filename, 'w')
         for x in ztscores_list:
-          f_ztnorm.write(str(x[2]) + " " + str(x[0]) + " " + str(x[3]) + " " + str(x[4]) + "\n")
+          f_ztnorm.write(str(x[2]) + " " + str(x[1]) + " " + str(x[3]) + " " + str(x[4]) + "\n")
         f_ztnorm.close()
 
 

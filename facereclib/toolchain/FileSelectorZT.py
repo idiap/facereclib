@@ -22,7 +22,7 @@ class FileSelectorZT:
     
   def eye_position_list(self):
     """Returns the list of eye positions, if any (else None)"""
-    if self.m_config.pos_input_dir == None:
+    if not hasattr(self.m_config, 'pos_input_dir') or self.m_config.pos_input_dir == None:
       return None
 
     return self.m_db.files(directory=self.m_config.pos_input_dir, extension=self.m_config.pos_input_ext, protocol=self.m_config.protocol, **self.m_db_options.all_files_options)

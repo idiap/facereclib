@@ -16,7 +16,8 @@ setup(
     entry_points={
       'console_scripts': [
         'faceverify_zt.py = facereclib.script.faceverify_zt:main',
-        'faceverify_gbu.py = facereclib.script.faceverify_gbu:main'
+        'faceverify_gbu.py = facereclib.script.faceverify_gbu:main',
+        'faceverify_lfw.py = facereclib.script.faceverify_lfw:main'
         ],
       },
 

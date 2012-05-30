@@ -368,8 +368,6 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   parser.add_argument('--concatenate', action='store_true',
       help = argparse.SUPPRESS) #'Concatenates the results of all scores of the given group'
   
-  # TODO: test which other implications of --skip-... options make sense
-  
   return parser.parse_args(command_line_arguments)
 
 
