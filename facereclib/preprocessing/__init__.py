@@ -87,7 +87,6 @@ class TanTriggsVideo:
     # prepare image normalization
     self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
 
-  #def __call__(self, input_file, output_file, eye_pos = None): # Note: eye_pos not supported. Videos are assumed to be already 
   def __call__(self, input_file, output_file, eye_pos = None):
     """For each frame in the VideoFrameContainer (read from input_file) applies the Tan-Triggs algorithm, then writes the resulting VideoFrameContainer to output_file. NOTE: eye_pos is ignored even if specified."""
     # Read input
