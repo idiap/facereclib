@@ -107,7 +107,7 @@ def probes_used_extract_scores(full_scores, same_probes):
 
 class VideoFrameContainer:
   """A class for reading, manipulating and saving video content. 
-  A VideoFrameContainer contains several frames (images), each of which may have a corresponding vector of quality measures. When loaded from or saved to a HDF5 file format, the contents are as follows: 
+  A VideoFrameContainer contains data for each of several frames. The data for a frame may represent e.g. a still image, or features extracted from an image. When loaded from or saved to a HDF5 file format, the contents are as follows: 
       /data/<frame_id>, where each <frame_id> is an integer
   """
   # TODO later: Implement support for reading/writing accompanying quality vectors per frame, i.e.:
@@ -141,13 +141,12 @@ class VideoFrameContainer:
   def add_frame(self,frame_id,frame):
     self._frames.append((frame_id,frame))
 
-  def save(self,filename):
-    f = bob.io.HDF5File(filename, "w")
+  def save(self,f):
+    """ Save to the specified HDF5File """
     f.create_group('/data')
     f.cd('/data/')
     for frame in self._frames:
       frame_id = frame[0]
       data = frame[1]
       f.set(str(frame_id), data)
-    del f
 

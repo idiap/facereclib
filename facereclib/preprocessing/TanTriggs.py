@@ -109,5 +109,7 @@ class TanTriggsVideo:
       output_frame_container.add_frame(frame_id,self.m_tan_image)
       
     # Save output image    
-    output_frame_container.save(output_file)
+    f = bob.io.HDF5File(output_file, "w")
+    output_frame_container.save(f)
+    del f
 
