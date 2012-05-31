@@ -2,8 +2,6 @@
 
 import bob
 
-# TODO: test this config...
-
 # 0/ The database to use
 name = 'banca'
 db = bob.db.banca.Database()
@@ -15,7 +13,7 @@ img_input_dir = "/idiap/home/rwallace/work/databases/banca-video/output/frames/"
 img_input_ext = ".hdf5"
 #pos_input_dir = "/idiap/group/vision/visidiap/databases/groundtruth/banca/english/eyecenter/"
 #pos_input_ext = ".pos"
-pos_input_dir = None
+pos_input_dir = None # None because hdf5 files in img_input_dir are pre-cropped with Omniperception annotations
 pos_input_ext = None
 
 first_annot = 0

@@ -5,6 +5,7 @@
 """Features for face recognition"""
 
 from DCT import DCTBlocks
+from DCTVideo import DCTBlocksVideo
 from LGBPHS import LGBPHS
 from GridGraph import GridGraph
 from Eigenface import Eigenface

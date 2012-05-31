@@ -12,7 +12,7 @@ class DCTBlocks:
   def __init__(self, config):
     self.m_config = config
 
-  def __normalize_blocks__(self, src):
+  def _normalize_blocks(self, src):
     for i in range(src.shape[0]):
       block = src[i, :, :]
       mean = numpy.mean(block)
@@ -25,7 +25,7 @@ class DCTBlocks:
       src[i, :, :] = (block - mean) / std
 
         
-  def __normalize_dct__(self, src):
+  def _normalize_dct(self, src):
     for i in range(src.shape[1]):
       col = src[:, i]
       mean = numpy.mean(col)
@@ -38,13 +38,13 @@ class DCTBlocks:
       src[:, i] = (col - mean) / std
 
 
-  def __dct_features__(self, prep, norm_before = True, norm_after = True, add_xy = False):
+  def _dct_features(self, prep, norm_before = True, norm_after = True, add_xy = False):
     block_shape = bob.ip.get_block_3d_output_shape(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
     blocks = numpy.ndarray(block_shape, 'float64')
     bob.ip.block(prep, blocks, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
 
     if norm_before:
-      self.__normalize_blocks__(blocks)
+      self._normalize_blocks(blocks)
 
     if add_xy:
       real_DCT_coef = self.m_config.N_DCT_COEF - 2
@@ -88,7 +88,7 @@ class DCTBlocks:
         TMP_tensor[bi, TMP_tensor_min:TMP_tensor_max] = dct_blocks[bi, dct_blocks_min:dct_blocks_max]
 
     if norm_after:
-      self.__normalize_dct__(TMP_tensor)
+      self._normalize_dct(TMP_tensor)
 
     return TMP_tensor
 
@@ -97,5 +97,5 @@ class DCTBlocks:
     """Computes and returns DCT blocks for the given input image"""
 
     # Computes DCT features
-    return self.__dct_features__(image)
+    return self._dct_features(image)
 
