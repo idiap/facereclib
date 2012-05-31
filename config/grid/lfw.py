@@ -3,7 +3,7 @@
 # setup of the grid parameters
 
 # default queue used for training
-training_queue = { 'queue':'q1dm', 'mem':'32G', 'pe_opt': 'pe_mth 4', 'slots' : '4' }
+training_queue = { 'queue':'q1dm', 'memfree':'16G', 'pe_opt': 'pe_mth 2', 'hvmem' : '8GB' }
 
 # number of images that one job should preprocess
 number_of_images_per_job = 1000
