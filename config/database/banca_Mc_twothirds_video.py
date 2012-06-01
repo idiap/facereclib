@@ -17,7 +17,5 @@ pos_input_dir = None # None because hdf5 files in img_input_dir are pre-cropped 
 pos_input_ext = None
 
 first_annot = 0
-all_files_options = {}
-world_extractor_options = {}
 world_projector_options = { 'subworld': "twothirds" }
-world_enroler_options = {}
+

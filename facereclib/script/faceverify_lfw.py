@@ -150,6 +150,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
                 dependencies = deps, 
                 name = "enrol-%s-%s"%(protocol,group),
                 **self.m_grid_config.enrol_queue)
+      for group in groups:
         deps.append(job_ids['enrol-%s'%group])
   
     # compute scores
@@ -162,6 +163,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
                 dependencies = deps, 
                 name = "score-%s-%s"%(protocol,group), 
                 **self.m_grid_config.score_queue)
+      for group in groups:
         deps.append(job_ids['score-%s'%group])
       
     # concatenate results
