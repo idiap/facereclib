@@ -13,8 +13,4 @@ pos_input_dir = "/idiap/group/biometric/annotations/mobio/"
 pos_input_ext = ".pos"
 
 first_annot = 0
-all_files_options = {}
-world_extractor_options = {}
-world_projector_options = {} 
-world_enroler_options = {}
 
