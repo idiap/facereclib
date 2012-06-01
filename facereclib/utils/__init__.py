@@ -132,11 +132,16 @@ class VideoFrameContainer:
       del f
 
   def frames(self):
-    """Generator that returns the contents of each frame.
-    Each item is returned as the 2-tuple (frame_id, data),
-    sorted by ascending frame_id."""
+    """Generator that returns the 2-tuple (frame_id, data),
+    for each frame sorted by ascending frame_id."""
     for frame in sorted(self._frames, key=lambda x: x[0]):
       yield frame
+
+  def frames_data(self):
+    """Generator that returns the contents of each frame,
+    sorted by ascending frame_id."""
+    for frame in sorted(self._frames, key=lambda x: x[0]):
+      yield frame[1]
 
   def add_frame(self,frame_id,frame):
     self._frames.append((frame_id,frame))

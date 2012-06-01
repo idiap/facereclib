@@ -7,7 +7,7 @@ import numpy
 
 
 class UBMGMMTool:
-  """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
+  """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
 
   
   def __init__(self, setup):
@@ -62,27 +62,24 @@ class UBMGMMTool:
   
   #######################################################
   ################ UBM training #########################
-  def train_projector(self, train_files, projector_file):
-    """Computes the Unified Background Model from the training ("world") data"""
 
-    print "Training UBM model with %d features" % len(train_files)
-    
-    # Loads the data into an Arrayset
-    ar = bob.io.Arrayset()
-    for k in sorted(train_files.keys()):
-      ar.extend(bob.io.load(str(train_files[k])))
+  def _train_projector_using_arrayset(self, arrayset, projector_file):
+
+    print " -> %d feature vectors" % len(arrayset)
 
     # Computes input size
-    input_size = ar.shape[0]
+    input_size = arrayset.shape[0]
 
     # Normalizes the Arrayset if required
+    print " -> Normalising the arrayset"
     if not self.m_config.norm_KMeans:
-      normalized_ar = ar
+      normalized_arrayset = arrayset
     else:
-      (normalized_ar,std_ar) = self.__normalize_std_arrayset__(ar)
+      (normalized_arrayset,std_arrayset) = self.__normalize_std_arrayset__(arrayset)
 
 
     # Creates the machines (KMeans and GMM)
+    print " -> Creating machines"
     kmeans = bob.machine.KMeansMachine(self.m_config.n_gaussians, input_size)
     self.m_ubm = bob.machine.GMMMachine(self.m_config.n_gaussians, input_size)
 
@@ -92,15 +89,17 @@ class UBMGMMTool:
     kmeans_trainer.max_iterations = self.m_config.iterk
 
     # Trains using the KMeansTrainer
-    kmeans_trainer.train(kmeans, normalized_ar)
+    print " -> Training kmeans"
+    kmeans_trainer.train(kmeans, normalized_arrayset)
     
-    [variances, weights] = kmeans.get_variances_and_weights_for_each_cluster(normalized_ar)
+    [variances, weights] = kmeans.get_variances_and_weights_for_each_cluster(normalized_arrayset)
     means = kmeans.means
 
     # Undoes the normalization
+    print " -> Undoing normalisation"
     if self.m_config.norm_KMeans:
-      self.__multiply_vectors_by_factors__(means, std_ar)
-      self.__multiply_vectors_by_factors__(variances, std_ar ** 2)
+      self.__multiply_vectors_by_factors__(means, std_arrayset)
+      self.__multiply_vectors_by_factors__(variances, std_arrayset ** 2)
 
     # Initializes the GMM
     self.m_ubm.means = means
@@ -109,14 +108,28 @@ class UBMGMMTool:
     self.m_ubm.set_variance_thresholds(self.m_config.variance_threshold)
 
     # Trains the GMM
+    print " -> Training GMM"
     trainer = bob.trainer.ML_GMMTrainer(self.m_config.update_means, self.m_config.update_variances, self.m_config.update_weights)
     trainer.convergence_threshold = self.m_config.convergence_threshold
     trainer.max_iterations = self.m_config.iterg_train
-    trainer.train(self.m_ubm, ar)
+    trainer.train(self.m_ubm, arrayset)
 
     # Saves the UBM to file
     print "Saving model to file", projector_file
     self.m_ubm.save(bob.io.HDF5File(projector_file, "w"))
+ 
+
+  def train_projector(self, train_files, projector_file):
+    """Computes the Universal Background Model from the training ("world") data"""
+
+    print "Training UBM model with %d training files" % len(train_files)
+    
+    # Loads the data into an Arrayset
+    arrayset = bob.io.Arrayset()
+    for k in sorted(train_files.keys()):
+      arrayset.extend(bob.io.load(str(train_files[k])))
+
+    self._train_projector_using_arrayset(arrayset, projector_file)
     
 
   #######################################################
@@ -140,37 +153,39 @@ class UBMGMMTool:
     self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
 
 
-  def project(self, feature):
-    """Computes GMM statistics against a UBM"""
-    
-    feature = bob.io.Arrayset(feature)
+  def _project_using_arrayset(self, arrayset):
     # Accumulates statistics
     self.m_gmm_stats.init()
-    self.m_ubm.acc_statistics(feature, self.m_gmm_stats)
+    self.m_ubm.acc_statistics(arrayset, self.m_gmm_stats)
 
     # return the resulting statistics
     return self.m_gmm_stats
 
 
-  def enrol(self, enrol_features):
-    """Enrols a GMM using MAP adaptation"""
+  def project(self, feature_array):
+    """Computes GMM statistics against a UBM, given an input 2D numpy.ndarray of feature vectors"""
     
-    # Loads the data into an Arrayset
-    ar = bob.io.Arrayset()
-    for feature in enrol_features:
-      ar.extend(feature)
+    arrayset = bob.io.Arrayset(feature_array)
+    return self._project_using_arrayset(arrayset)
 
-    # Creates a GMM from the UBM
+  def _enrol_using_arrayset(self,arrayset):
     gmm = bob.machine.GMMMachine(self.m_ubm)
     gmm.set_variance_thresholds(self.m_config.variance_threshold)
-
-    # Trains the GMM
-    self.m_trainer.train(gmm, ar)
-
-    # return the resulting gmm    
+    self.m_trainer.train(gmm, arrayset)
     return gmm
 
-  
+  def enrol(self, feature_arrays):
+    """Enrols a GMM using MAP adaptation, given a list of 2D numpy.ndarray's of feature vectors"""
+    
+    # Load the data into an Arrayset
+    arrayset = bob.io.Arrayset()
+    for feature_array in feature_arrays:
+      arrayset.extend(feature_array)
+
+    # Use the Arrayset to train a GMM and return it
+    return self._enrol_using_arrayset(arrayset)
+
+    
   ######################################################
   ################ Feature comparison ##################
   def read_model(self, model_file):
