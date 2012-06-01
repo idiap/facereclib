@@ -15,51 +15,58 @@ class FileSelectorZT:
     self.m_db_options = db 
     self.m_db = db.db
     
+  def __options__(self, name):
+    """Returnes the options specified by the database, if available"""
+    if hasattr(self.m_db_options, name):
+      return eval('self.m_db_options.'+name)
+    else:
+      return {}
+    
   ### Original images and preprocessing
   def original_image_list(self):
     """Returns the list of original images that can be used for image preprocessing"""
-    return self.m_db.files(directory=self.m_config.img_input_dir, extension=self.m_config.img_input_ext, protocol=self.m_config.protocol, **self.m_db_options.all_files_options)
+    return self.m_db.files(directory=self.m_config.img_input_dir, extension=self.m_config.img_input_ext, protocol=self.m_config.protocol, **self.__options__('all_files_options'))
     
   def eye_position_list(self):
     """Returns the list of eye positions, if any (else None)"""
     if not hasattr(self.m_config, 'pos_input_dir') or self.m_config.pos_input_dir == None:
       return None
 
-    return self.m_db.files(directory=self.m_config.pos_input_dir, extension=self.m_config.pos_input_ext, protocol=self.m_config.protocol, **self.m_db_options.all_files_options)
+    return self.m_db.files(directory=self.m_config.pos_input_dir, extension=self.m_config.pos_input_ext, protocol=self.m_config.protocol, **self.__options__('all_files_options'))
     
   def preprocessed_image_list(self):
     """Returns the list of preprocessed images and assures that the normalized image path is existing"""
     utils.ensure_dir(self.m_config.preprocessed_dir)
-    return self.m_db.files(directory=self.m_config.preprocessed_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.m_db_options.all_files_options)
+    return self.m_db.files(directory=self.m_config.preprocessed_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.__options__('all_files_options'))
 
   def feature_list(self):
     """Returns the list of features and assures that the feature path is existing"""
     utils.ensure_dir(self.m_config.features_dir)
-    return self.m_db.files(directory=self.m_config.features_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.m_db_options.all_files_options)
+    return self.m_db.files(directory=self.m_config.features_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.__options__('all_files_options'))
 
   ### Training and projecting features
   def training_image_list(self):
     """Returns the list of images that should be used for extractor training"""
-    return self.m_db.files(directory=self.m_config.preprocessed_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.m_db_options.world_extractor_options)  
+    return self.m_db.files(directory=self.m_config.preprocessed_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.__options__('world_extractor_options'))  
 
   def training_feature_list(self):
     """Returns the list of features that should be used for projector training"""
-    return self.m_db.files(directory=self.m_config.features_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.m_db_options.world_projector_options)  
+    return self.m_db.files(directory=self.m_config.features_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.__options__('world_projector_options'))  
 
   def training_feature_list_by_models(self, dir_type):
     """Returns the list of training features, which is split up by the client ids."""
     # get the type of directory that is required
     if dir_type == 'preprocessed': 
       cur_dir = self.m_config.preprocessed_dir 
-      cur_world_options = self.m_config.world_extractor_options
+      cur_world_options = self.__options__('world_extractor_options')
     elif dir_type == 'features': 
       cur_dir = self.m_config.features_dir 
-      cur_world_options = self.m_config.world_projector_options
+      cur_world_options = self.__options__('world_projector_options')
     elif dir_type == 'projected': 
       cur_dir = self.m_config.projected_dir
-      cur_world_options = self.m_config.world_enroler_options
+      cur_world_options = self.__options__('world_enroler_options')
     # iterate over all training model ids
-    train_models = self.m_db.models(groups='world', protocol=self.m_config.protocol)
+    train_models = self.m_db.models(groups='world', protocol=self.m_config.protocol, **self.__options__('features_by_clients_options'))
     training_filenames = {}
     for m in train_models:
       # collect training features for current model id
@@ -83,7 +90,7 @@ class FileSelectorZT:
   def projected_list(self):
     """Returns the list of projected features and assures that the projected feature path is existing"""
     utils.ensure_dir(self.m_config.projected_dir)
-    return self.m_db.files(directory=self.m_config.projected_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.m_db_options.all_files_options)
+    return self.m_db.files(directory=self.m_config.projected_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.__options__('all_files_options'))
     
   ### Enrolment
   def enroler_file(self):

@@ -229,7 +229,7 @@ class ToolChainZT:
         train_files = self.m_file_selector.training_feature_list_by_models('projected' if use_projected_features else 'features')
   
         # perform training
-        print "Training Enroler '%s' using %d training files: " %(enroler_file, len(train_files))
+        print "Training Enroler '%s' using %d identities: " %(enroler_file, len(train_files))
         tool.train_enroler(train_files, str(enroler_file))
 
 
