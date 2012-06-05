@@ -24,7 +24,7 @@ class UBMGMMVideoTool(UBMGMMTool):
     arrayset = bob.io.Arrayset()
     for k in sorted(train_files.keys()):
       frame_container = utils.VideoFrameContainer(str(train_files[k]))
-      for data in frame_container.frames_data():
+      for data in self.m_config.frame_selector_for_train(frame_container):
         arrayset.extend(data)
 
     self._train_projector_using_arrayset(arrayset, projector_file)

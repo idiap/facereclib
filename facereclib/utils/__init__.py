@@ -131,6 +131,15 @@ class VideoFrameContainer:
         self._frames.append((frame_id, data))
       del f
 
+  def frame(self,n):
+    """Returns the 2-tuple (frame_id, data) for the frame with the (n+1)'th lowest frame_id."""
+    sorted_frames = sorted(self._frames, key=lambda x: x[0])
+    return sorted_frames[n]
+
+  def frame_data(self,n):
+    """Returns the contents of the frame with the (n+1)'th lowest frame_id."""
+    return self.frame(n)[1]
+
   def frames(self):
     """Generator that returns the 2-tuple (frame_id, data),
     for each frame sorted by ascending frame_id."""
