@@ -65,7 +65,7 @@ class UBMGMMTool:
 
   def _train_projector_using_arrayset(self, arrayset, projector_file):
 
-    print " -> %d feature vectors" % len(arrayset)
+    print " -> Training with %d feature vectors" % len(arrayset)
 
     # Computes input size
     input_size = arrayset.shape[0]
@@ -154,6 +154,7 @@ class UBMGMMTool:
 
 
   def _project_using_arrayset(self, arrayset):
+    print " -> Projecting %d feature vectors" % len(arrayset)
     # Accumulates statistics
     self.m_gmm_stats.init()
     self.m_ubm.acc_statistics(arrayset, self.m_gmm_stats)
@@ -169,6 +170,7 @@ class UBMGMMTool:
     return self._project_using_arrayset(arrayset)
 
   def _enrol_using_arrayset(self,arrayset):
+    print " -> Enrolling with %d feature vectors" % len(arrayset)
     gmm = bob.machine.GMMMachine(self.m_ubm)
     gmm.set_variance_thresholds(self.m_config.variance_threshold)
     self.m_trainer.train(gmm, arrayset)

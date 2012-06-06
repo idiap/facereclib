@@ -16,10 +16,9 @@ update_variances = True
 norm_KMeans = True
 
 ##############
-frame_selector_for_train = facereclib.frame_selection.AllFrameSelector()
-
-# use only the first N frames from each video for UBM training
-#frame_selector_for_train = facereclib.frame_selection.FirstNFrameSelector(5)
+frame_selector_for_train   = facereclib.frame_selection.FirstNFrameSelector(1) # Frames for UBM training
+frame_selector_for_enrol   = facereclib.frame_selection.AllFrameSelector()     # Frames for enrolment
+frame_selector_for_project = facereclib.frame_selection.AllFrameSelector()     # Frames for scoring (via GMMStats)
 ##############
 
 # 3/ GMM Enrolment and scoring

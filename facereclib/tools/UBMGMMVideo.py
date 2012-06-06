@@ -39,7 +39,7 @@ class UBMGMMVideoTool(UBMGMMTool):
     
     # Collect all feature vectors across all frames in a single array set
     arrayset = bob.io.Arrayset()
-    for data in frame_container.frames_data():
+    for data in self.m_config.frame_selector_for_project(frame_container):
       arrayset.extend(data)
     return self._project_using_arrayset(arrayset)
     
@@ -50,7 +50,7 @@ class UBMGMMVideoTool(UBMGMMTool):
     # Load the data into an Arrayset
     arrayset = bob.io.Arrayset()
     for frame_container in frame_containers:
-      for data in frame_container.frames_data():
+      for data in self.m_config.frame_selector_for_enrol(frame_container):
         arrayset.extend(data)
 
     # Use the Arrayset to train a GMM and return it
