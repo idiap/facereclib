@@ -109,9 +109,8 @@ class VideoFrameContainer:
   """A class for reading, manipulating and saving video content. 
   A VideoFrameContainer contains data for each of several frames. The data for a frame may represent e.g. a still image, or features extracted from an image. When loaded from or saved to a HDF5 file format, the contents are as follows: 
       /data/<frame_id>, where each <frame_id> is an integer
+      /quality/<frame_id> (optional), where each <frame_id> is an integer, stores a vector of quality measures
   """
-  # TODO later: Implement support for reading/writing accompanying quality vectors per frame, i.e.:
-  #    /quality/<frame_id> (optional), where each <frame_id> is an integer
 
   def __init__(self, filename = None):
     self._frames = []
@@ -124,43 +123,34 @@ class VideoFrameContainer:
         # Resolve frame_id
         m = re.match('/data/([0-9]*)', path)
         if not m: raise Exception('Failed to read frame_id')
-        frame_id = m.group(0)
+        frame_id = m.group(1)
 
         # Read frame
         data = f.read(path)
-        self._frames.append((frame_id, data))
+        # - read corresponding quality vector if provided
+        if f.has_group('/quality') and f.has_key('/quality/' + str(frame_id)):
+          quality = f.read('/quality/' + str(frame_id))
+        else:
+          quality = None
+
+        self._frames.append((frame_id, data, quality))
+
       del f
 
-  def frame(self,n):
-    """Returns the 2-tuple (frame_id, data) for the frame with the (n+1)'th lowest frame_id."""
-    sorted_frames = sorted(self._frames, key=lambda x: x[0])
-    return sorted_frames[n]
-
-  def frame_data(self,n):
-    """Returns the contents of the frame with the (n+1)'th lowest frame_id."""
-    return self.frame(n)[1]
-
   def frames(self):
-    """Generator that returns the 2-tuple (frame_id, data),
-    for each frame sorted by ascending frame_id."""
-    for frame in sorted(self._frames, key=lambda x: x[0]):
+    """Generator that returns the 3-tuple (frame_id, data, quality) for each frame."""
+    for frame in self._frames:
       yield frame
 
-  def frames_data(self):
-    """Generator that returns the contents of each frame,
-    sorted by ascending frame_id."""
-    for frame in sorted(self._frames, key=lambda x: x[0]):
-      yield frame[1]
-
-  def add_frame(self,frame_id,frame):
-    self._frames.append((frame_id,frame))
+  def add_frame(self,frame_id,frame,quality=None):
+    self._frames.append((frame_id,frame,quality))
 
   def save(self,f):
     """ Save to the specified HDF5File """
     f.create_group('/data')
-    f.cd('/data/')
-    for frame in self._frames:
-      frame_id = frame[0]
-      data = frame[1]
-      f.set(str(frame_id), data)
+    f.create_group('/quality')
+    for (frame_id, data, quality) in self._frames:
+      f.set('/data/' + str(frame_id), data)
+      if quality is not None:
+        f.set('/quality/' + str(frame_id), quality)
 

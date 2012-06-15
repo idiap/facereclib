@@ -31,9 +31,9 @@ class DCTBlocksVideo(DCTBlocks):
     """Returns local DCT features computed from each frame in the input VideoFrameContainer"""
 
     output_frame_container = utils.VideoFrameContainer()
-    for (frame_id, image) in frame_container.frames():
+    for (frame_id, image, quality) in frame_container.frames():
       frame_dcts = DCTBlocks._dct_features(self,image)
-      output_frame_container.add_frame(frame_id,frame_dcts)
+      output_frame_container.add_frame(frame_id,frame_dcts,quality)
 
     return output_frame_container 
 

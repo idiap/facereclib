@@ -97,7 +97,7 @@ class TanTriggsVideo:
 
     # Process each frame
     output_frame_container = utils.VideoFrameContainer()
-    for (frame_id, image) in frame_container.frames():
+    for (frame_id, image, quality) in frame_container.frames():
       
       # Convert to grayscale if it seems necessary
       if(image.ndim == 3):
@@ -106,7 +106,7 @@ class TanTriggsVideo:
       # Perform Tan-Triggs and store result
       self.m_tan_image = numpy.ndarray(image.shape, numpy.float64)
       self.m_tan(image, self.m_tan_image)
-      output_frame_container.add_frame(frame_id,self.m_tan_image)
+      output_frame_container.add_frame(frame_id,self.m_tan_image,quality)
       
     # Save output image    
     f = bob.io.HDF5File(output_file, "w")
