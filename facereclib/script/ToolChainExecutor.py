@@ -31,7 +31,7 @@ class ToolChainExecutor:
     self.__generate_configuration__()
     
     # generate the tools that we will need
-    self.m_preprocessor = self.m_preprocessor_config.preprocessor(self.m_feature_extractor_config)
+    self.m_preprocessor = self.m_preprocessor_config.preprocessor(self.m_preprocessor_config)
     self.m_feature_extractor = self.m_feature_extractor_config.feature_extractor(self.m_feature_extractor_config)
     self.m_tool = self.m_tool_config.tool(self.m_tool_config)
     
