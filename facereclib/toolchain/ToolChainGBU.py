@@ -188,8 +188,10 @@ class ToolChainGBU:
   
 
 
-  def __read_feature__(self, feature_file, tool):
+  def __read_feature__(self, feature_file, tool = None):
     """This function reads the model from file. Overload this function if your model is no numpy.ndarray."""
+    if not tool:
+      tool = self.m_tool
     if hasattr(tool, 'read_feature'):
       return tool.read_feature(feature_file)
     else:
@@ -216,13 +218,12 @@ class ToolChainGBU:
 
 
 
-  def enrol_models(self, tool, indices = None, force=False):
+  def enrol_models(self, tool, extractor, indices = None, force=False):
     """Enrol the models for 'dev' and 'eval' groups, for both models and T-Norm-models.
        This function by default used the projected features to compute the models.
        If you need unprojected features for the model, please define a variable with the name 
        use_unprojected_features_for_model_enrol"""
     
-    self.m_tool = tool
     # read the projector file, if needed
     if hasattr(tool,'load_projector'):
       # read the feature extraction model
@@ -231,8 +232,10 @@ class ToolChainGBU:
       # read the model enrolment file
       tool.load_enroler(self.m_file_selector.enroler_file())
       
-
+    # use projected or unprojected features for model enrollment?
     use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enrol')
+    # which tool to use to read the features...
+    self.m_tool = tool if use_projected_features else extractor
 
     # enrol models
     model_ids = self.m_file_selector.model_ids()
@@ -253,7 +256,7 @@ class ToolChainGBU:
         enrol_features = []
         for enrol_file in enrol_files.itervalues():
           # processes one file
-          feature = self.__read_feature__(str(enrol_file), tool)
+          feature = self.__read_feature__(str(enrol_file))
           enrol_features.append(feature)
         
         model = tool.enrol(enrol_features)

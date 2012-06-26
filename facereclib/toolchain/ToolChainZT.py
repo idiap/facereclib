@@ -206,8 +206,10 @@ class ToolChainZT:
   
 
 
-  def __read_feature__(self, feature_file, tool):
-    """This function reads the feature from file. It uses the tool.read_feature() function, if available, otherwise it uses bob.io.load()"""
+  def __read_feature__(self, feature_file, tool = None):
+    """This function reads the feature from file. It uses the self.m_tool.read_feature() function, if available, otherwise it uses bob.io.load()"""
+    if not tool:
+      tool = self.m_tool
     if hasattr(tool, 'read_feature'):
       return tool.read_feature(feature_file)
     else:
@@ -234,13 +236,12 @@ class ToolChainZT:
 
 
 
-  def enrol_models(self, tool, compute_zt_norm, indices = None, groups = ['dev', 'eval'], types = ['N','T'], force=False):
+  def enrol_models(self, tool, extractor, compute_zt_norm, indices = None, groups = ['dev', 'eval'], types = ['N','T'], force=False):
     """Enrol the models for 'dev' and 'eval' groups, for both models and T-Norm-models.
        This function by default used the projected features to compute the models.
        If you need unprojected features for the model, please define a variable with the name 
        use_unprojected_features_for_model_enrol"""
     
-    self.m_tool = tool
     # read the projector file, if needed
     if hasattr(tool,'load_projector'):
       # read the feature extraction model
@@ -248,9 +249,11 @@ class ToolChainZT:
     if hasattr(tool, 'load_enroler'):
       # read the model enrolment file
       tool.load_enroler(self.m_file_selector.enroler_file())
-      
-
+    
+    # use projected or unprojected features for model enrollment?
     use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enrol')
+    # which tool to use to read the features...
+    self.m_tool = tool if use_projected_features else extractor
 
     # Create Models
     if 'N' in types:
@@ -274,7 +277,7 @@ class ToolChainZT:
             enrol_features = []
             for k in sorted(enrol_files.keys()):
               # processes one file
-              feature = self.__read_feature__(str(enrol_files[k]), tool)
+              feature = self.__read_feature__(str(enrol_files[k]))
               enrol_features.append(feature)
             
             model = tool.enrol(enrol_features)
@@ -304,7 +307,7 @@ class ToolChainZT:
             for k in sorted(enrol_files.keys()):
               # processes one file
               
-              feature = self.__read_feature__(str(enrol_files[k]), tool)
+              feature = self.__read_feature__(str(enrol_files[k]))
               enrol_features.append(feature)
               
             model = tool.enrol(enrol_features)

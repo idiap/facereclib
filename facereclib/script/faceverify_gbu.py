@@ -53,7 +53,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_enroler_training and hasattr(self.m_tool, 'train_enroler'):
       self.m_tool_chain.train_enroler(self.m_tool, force = self.m_args.force)
     if not self.m_args.skip_model_enrolment:
-      self.m_tool_chain.enrol_models(self.m_tool, force = self.m_args.force)
+      self.m_tool_chain.enrol_models(self.m_tool, self.m_feature_extractor, force = self.m_args.force)
     # score computation
     if not self.m_args.skip_score_computation:
       self.m_tool_chain.compute_scores(self.m_tool, preload_probes = self.m_args.preload_probes, force = self.m_args.force)
@@ -223,7 +223,8 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # enrol models
     if self.m_args.enrol_models:
       self.m_tool_chain.enrol_models(
-          self.m_tool, 
+          self.m_tool,
+          self.m_feature_extractor,
           indices = self.indices(self.m_file_selector.model_ids(), self.m_grid_config.number_of_models_per_enrol_job), 
           force = self.m_args.force)
         
@@ -259,7 +260,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   
   #######################################################################################
   ############################ other options ############################################
-  other_group.add_argument('-f', '--force', action='store_true',
+  other_group.add_argument('-F', '--force', action='store_true',
       help = 'Force to erase former data if already exist')
   other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')

@@ -2,7 +2,7 @@
 
 import facereclib
 
-preprocessor = facereclib.preprocessing.TanTriggs
+preprocessor = facereclib.preprocessing.TanTriggsVideo
 
 # Cropping
 CROP_EYES_D = 33
@@ -18,9 +18,4 @@ SIGMA1 = 2.
 SIZE = 5
 THRESHOLD = 10.
 ALPHA = 0.1
-
-
-
-# Linearization of the image to a vector
-feature_extractor = facereclib.features.Linearize
 

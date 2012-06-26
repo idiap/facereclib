@@ -23,6 +23,7 @@ class ToolChainExecutor:
     # load configuration files specified on command line
     self.m_database_config = imp.load_source('database', args.database)
     self.m_tool_config = imp.load_source('tool_chain', args.tool)
+    self.m_preprocessor_config =  imp.load_source('preprocessor', args.preprocessor)
     self.m_feature_extractor_config = imp.load_source('feature_extractor', args.features)
     if args.grid:
       self.m_grid_config = imp.load_source('grid', args.grid)
@@ -30,7 +31,7 @@ class ToolChainExecutor:
     self.__generate_configuration__()
     
     # generate the tools that we will need
-    self.m_preprocessor = self.m_feature_extractor_config.preprocessor(self.m_feature_extractor_config)
+    self.m_preprocessor = self.m_preprocessor_config.preprocessor(self.m_feature_extractor_config)
     self.m_feature_extractor = self.m_feature_extractor_config.feature_extractor(self.m_feature_extractor_config)
     self.m_tool = self.m_tool_config.tool(self.m_tool_config)
     
@@ -45,8 +46,10 @@ class ToolChainExecutor:
         help = 'The database configuration file')
     config_group.add_argument('-t', '--tool-chain', type = str, dest = 'tool', required = True, metavar = 'FILE', 
         help = 'The tool chain configuration file')
-    config_group.add_argument('-p', '--features-extraction', metavar = 'FILE', type = str, dest='features', 
-        help = 'Configuration script for preprocessing the images and extracting the features')
+    config_group.add_argument('-p', '--preprocessing', metavar = 'FILE', type = str, dest = 'preprocessor', required = True,
+        help = 'Configuration script for image preprocessing')
+    config_group.add_argument('-f', '--features', metavar = 'FILE', type = str, dest='features', required = True,
+        help = 'Configuration script for extracting the features')
     config_group.add_argument('-g', '--grid', metavar = 'FILE', type = str, 
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine')
     
