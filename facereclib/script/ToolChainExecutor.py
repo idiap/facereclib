@@ -150,17 +150,17 @@ class ToolChainExecutor:
     
     user_name = os.environ['USER']
     if self.m_args.user_dir:
-      self.m_configuration.base_output_USER_dir = self.m_args.user_dir
+      self.m_configuration.base_output_USER_dir = os.path.join(self.m_args.user_dir, self.m_args.sub_dir)
     else:
-      self.m_configuration.base_output_USER_dir = "/idiap/user/%s/%s/%s" % (user_name, self.m_database_config.name, self.m_args.sub_dir)
+      self.m_configuration.base_output_USER_dir = os.path.join("/idiap/user", user_name, self.m_database_config.name, self.m_args.sub_dir)
   
     if self.m_args.temp_dir:
-      self.m_configuration.base_output_TEMP_dir = self.m_args.temp_dir
+      self.m_configuration.base_output_TEMP_dir = os.path.join(self.m_args.temp_dir, self.m_args.sub_dir)
     else:
       if not self.m_args.grid:
-        self.m_configuration.base_output_TEMP_dir = "/scratch/%s/%s/%s" % (user_name, self.m_database_config.name, self.m_args.sub_dir)
+        self.m_configuration.base_output_TEMP_dir = os.path.join("/scratch", user_name, self.m_database_config.name, self.m_args.sub_dir)
       else:
-        self.m_configuration.base_output_TEMP_dir = "/idiap/temp/%s/%s/%s" % (user_name, self.m_database_config.name, self.m_args.sub_dir)
+        self.m_configuration.base_output_TEMP_dir = os.path.join("/idiap/temp", user_name, self.m_database_config.name, self.m_args.sub_dir)
 
     self.m_configuration.extractor_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.extractor_file)
     self.m_configuration.projector_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.projector_file) 
