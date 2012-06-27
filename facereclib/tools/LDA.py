@@ -81,7 +81,6 @@ class LDATool:
     print "Training LinearMachine using LDA"
     t = bob.trainer.FisherLDATrainer()
     self.m_machine, __eig_vals = t.train(data)
-    print self.m_machine.input_subtract
     
     if self.m_pca_subpace_size:
       # compute combined PCA/LDA projection matrix
