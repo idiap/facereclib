@@ -86,7 +86,10 @@ def directory_parameters(args, dirs):
   last_dir = '.'  
   # add directory parameters
   if dirs['preprocessing'] != '':
-    parameters.extend(['--preprocessed-image-directory', os.path.join(dirs['preprocessing'], 'preprocessed')])
+    if args.preprocessed_image_dir:
+      parameters.extend(['--preprocessed-image-directory', os.path.join(args.preprocessed_image_dir, dirs['preprocessing'], 'preprocessed'), skips[1][0]])
+    else:
+      parameters.extend(['--preprocessed-image-directory', os.path.join(dirs['preprocessing'], 'preprocessed')])
     last_dir = dirs['preprocessing'] 
   if dirs['features'] != '':
     parameters.extend(['--features-directory', os.path.join(dirs['features'], 'features')]) 
@@ -275,6 +278,9 @@ def main():
   
   test_group.add_argument('-F', '--submit-call-file', type=str, default = 'call.txt',
       help = 'Name of the file where to write the executed command into')
+  
+  test_group.add_argument('-X', '--preprocessed-image-dir', type=str,
+      help = 'Relative directory where the preprocessed images are located; implies --skip-preprocessing')
 
   test_group.add_argument('--dry-run', action='store_true',
       help = 'Only generate call files, but do not execute them')
