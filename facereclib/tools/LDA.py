@@ -12,6 +12,8 @@ class LDATool:
   def __init__(self, setup):
     """Initializes the LDA tool with the given configuration"""
     self.m_config = setup
+    self.m_pca_subpace_size = setup.pca_subspace if hasattr(setup, 'pca_subspace') else None
+    self.m_lda_subspace_size = setup.lda_subspace if hasattr(setup, 'lda_subspace') else None
     self.m_machine = None
     self.m_distance_function = self.m_config.distance_function
     
@@ -35,18 +37,63 @@ class LDATool:
 
     # Returns the list of Arraysets
     return data
+  
+  def __train_pca__(self, training_set):
+    """Trains and returns a LinearMachine that is trained using PCA"""
+    data = bob.io.Arrayset()
+    for client in training_set:
+      for feature in client:
+        # Appends in the arrayset
+        data.append(feature)
+
+    print "Training LinearMachine using PCA (SVD)"
+    t = bob.trainer.SVDPCATrainer()
+    machine, __eig_vals = t.train(data)
+    # limit number of pcs
+    machine.resize(machine.shape[0], self.m_pca_subpace_size)
+    return machine
+
+  
+  def __perform_pca__(self, machine, training_set):
+    """Perform PCA on data""" 
+    data = []
+    for client in training_set:
+      client_data = bob.io.Arrayset()
+      for feature in client:
+        # project data
+        projected_feature = numpy.ndarray(machine.shape[1], numpy.float64)
+        machine(feature, projected_feature)
+        # overwrite data in training set
+        client_data.append(projected_feature)
+      data.append(client_data)
+    return data
     
 
   def train_projector(self, training_files, projector_file):
     """Generates the LDA projection matrix from the given features (that are sorted by identity)"""
     # Initializes an arrayset for the data
     data = self.__read_data__(training_files)
+    
+    if self.m_pca_subpace_size:
+      pca_machine = self.__train_pca__(data)
+      data = self.__perform_pca__(pca_machine, data)
 
     print "Training LinearMachine using LDA"
     t = bob.trainer.FisherLDATrainer()
     self.m_machine, __eig_vals = t.train(data)
-    # do not resize the machine; we will take all possible eigen vectors
-    #self.m_machine.resize(self.m_machine.shape[0], self.m_config.n_outputs)
+    print self.m_machine.input_subtract
+    
+    if self.m_pca_subpace_size:
+      # compute combined PCA/LDA projection matrix
+      combined_matrix = numpy.dot(pca_machine.weights, self.m_machine.weights)
+      # set new weigth matrix (and new mean vector) of novel machine
+      self.m_machine = bob.machine.LinearMachine(combined_matrix)
+      self.m_machine.input_subtract = pca_machine.input_subtract
+
+    # resize the machine if desired
+    if self.m_lda_subspace_size:
+      self.m_machine.resize(self.m_machine.shape[0], self.m_lda_subspace_size)
+    
     self.m_machine.save(bob.io.HDF5File(projector_file, "w"))
 
 
