@@ -93,7 +93,7 @@ class ToolChainGBU:
       else:
         # train model
         if hasattr(extractor, 'use_training_images_sorted_by_identity'):
-          train_files = self.m_file_selector.training_feature_list_by_models('preprocessed')
+          train_files = self.m_file_selector.training_feature_list_by_clients('preprocessed')
           print "Training Extractor '%s' using %d identities: " %(extractor_file, len(train_files))
         else:
           train_files = self.m_file_selector.training_feature_list('preprocessed')
@@ -143,7 +143,7 @@ class ToolChainGBU:
       else:
         # train projector
         if hasattr(tool, 'use_training_features_sorted_by_identity'):
-          train_files = self.m_file_selector.training_feature_list_by_models('features')
+          train_files = self.m_file_selector.training_feature_list_by_clients('features')
           print "Training Projector '%s' using %d identities: " %(projector_file, len(train_files))
         else:
           train_files = self.m_file_selector.training_feature_list('features')
@@ -210,7 +210,7 @@ class ToolChainGBU:
         if hasattr(tool, 'load_projector'):
           tool.load_projector(self.m_file_selector.projector_file())
         # training models
-        train_files = self.m_file_selector.training_feature_list_by_models('projected' if use_projected_features else 'features')
+        train_files = self.m_file_selector.training_feature_list_by_clients('projected' if use_projected_features else 'features')
   
         # perform training
         print "Training Enroler '%s' using %d identities: " %(enroler_file, len(train_files))
