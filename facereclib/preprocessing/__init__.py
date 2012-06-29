@@ -24,4 +24,5 @@ class NullPreprocessor:
 
 from FaceCrop import FaceCrop, StaticFaceCrop
 from TanTriggs import TanTriggs, StaticTanTriggs, TanTriggsVideo
-
+from HistogramEqualization import HistogramEqualization
+from SelfQuotientImage import SelfQuotientImage

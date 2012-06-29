@@ -62,7 +62,9 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.compute_scores(self.m_tool, not self.m_args.no_zt_norm, groups = self.m_args.groups, preload_probes = self.m_args.preload_probes, force = self.m_args.force)
       if not self.m_args.no_zt_norm:
         self.m_tool_chain.zt_norm(groups = self.m_args.groups)
-    self.m_tool_chain.concatenate(not self.m_args.no_zt_norm, groups = self.m_args.groups)
+    # concatenation of scores
+    if not self.m_args.skip_concatenation:
+      self.m_tool_chain.concatenate(not self.m_args.no_zt_norm, groups = self.m_args.groups)
   
     
   def add_jobs_to_grid(self, external_dependencies):
