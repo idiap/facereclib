@@ -19,12 +19,14 @@
 
 import bob
 import numpy
+from .. import utils
 
 class HistogramEqualization:
   """Crops the face according to the eye positions (if given), and performs histogram equalization on the resulting image"""
 
   def __init__(self, config):
     self.m_config = config
+    self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     # prepare image normalization
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, config.CROP_H, config.CROP_W, config.CROP_OH, config.CROP_OW)
     self.m_fen_image = numpy.ndarray((config.CROP_H, config.CROP_W), numpy.float64) 
@@ -53,8 +55,7 @@ class HistogramEqualization:
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale
-    if(image.ndim == 3):
-      image = bob.ip.rgb_to_gray(image)
+    image = utils.gray_channel(image, self.m_color_channel)
 
     if eye_pos == None:
       he_image = self.__equalize_histogram__(image)

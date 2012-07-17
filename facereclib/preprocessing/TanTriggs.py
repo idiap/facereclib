@@ -21,11 +21,13 @@ import bob
 import numpy
 from .. import utils
 
+
 class TanTriggs:
   """Crops the face and applies Tan-Triggs algorithm"""
 
   def __init__(self, config):
     self.m_config = config
+    self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     # prepare image normalization
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, config.CROP_H, config.CROP_W, config.CROP_OH, config.CROP_OW)
     self.m_fen_image = numpy.ndarray((config.CROP_H, config.CROP_W), numpy.float64) 
@@ -36,8 +38,7 @@ class TanTriggs:
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale
-    if(image.ndim == 3):
-      image = bob.ip.rgb_to_gray(image)
+    image = utils.gray_channel(image, self.m_color_channel)
       
     # perform image normalization
     if eye_pos == None:
@@ -59,6 +60,7 @@ class StaticTanTriggs:
 
   def __init__(self, config):
     self.m_config = config
+    self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     # prepare image normalization
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, config.CROP_H, config.CROP_W, config.CROP_OH, config.CROP_OW)
     self.m_fen_image = numpy.ndarray((config.CROP_H, config.CROP_W), numpy.float64) 
@@ -69,8 +71,7 @@ class StaticTanTriggs:
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale
-    if(image.ndim == 3):
-      image = bob.ip.rgb_to_gray(image)
+    image = utils.gray_channel(image, self.m_color_channel)
       
     # perform image normalization
     self.m_fen(image, self.m_fen_image, self.m_config.RIGHT_EYE[0], self.m_config.RIGHT_EYE[1], self.m_config.LEFT_EYE[0], self.m_config.LEFT_EYE[1])
@@ -87,6 +88,7 @@ class TanTriggsVideo:
 
   def __init__(self, config):
     self.m_config = config
+    self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     # prepare image normalization
     self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
 
@@ -100,8 +102,7 @@ class TanTriggsVideo:
     for (frame_id, image, quality) in frame_container.frames():
       
       # Convert to grayscale if it seems necessary
-      if(image.ndim == 3):
-        image = bob.ip.rgb_to_gray(image)
+      image = utils.gray_channel(image, self.m_color_channel)
         
       # Perform Tan-Triggs and store result
       self.m_tan_image = numpy.ndarray(image.shape, numpy.float64)

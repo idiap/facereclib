@@ -21,33 +21,18 @@ import bob
 import numpy
 from .. import utils
 
-class SelfQuotientImage:
+class INormLBP:
   """Crops the face according to the eye positions (if given), and performs histogram equalization on the resulting image"""
 
   def __init__(self, config):
     self.m_config = config
     self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
-    # prepare image normalization
-    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, config.CROP_H, config.CROP_W, config.CROP_OH, config.CROP_OW)
-    self.m_fen_image = numpy.ndarray((config.CROP_H, config.CROP_W), numpy.float64) 
+    # prepare image normalization; add two pixels of rim that will be cut off by the algorithm
+    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, config.CROP_H + 4, config.CROP_W + 4, config.CROP_OH + 2, config.CROP_OW + 2)
+    self.m_fen_image = numpy.ndarray((config.CROP_H + 4, config.CROP_W + 4), numpy.float64) 
+    # lbp extraction
+    self.m_lgb_extractor = bob.ip.LBP8R(config.RADIUS, config.CIRCULAR, config.TO_AVERAGE, config.ADD_AVERAGE_BIT, config.UNIFORM, config.ROT_INV, 0)
 
-  def __self_qoutient__(self, image):
-    """Computes the self-quotient image of the given input image."""
-    blurred_image = numpy.ndarray(image.shape, dtype=numpy.float64)
-    gauss = bob.ip.Gaussian(self.m_config.size, self.m_config.size, self.m_config.sigma, self.m_config.sigma)
-    gauss(image, blurred_image)
-    
-    # assert that we do not divide by zero
-    blurred_image[blurred_image < 1.] = 1.
-    
-    # TODO: Check if the multiplication with 100 is correct 
-    # and/or has an impact on the verification results 
-    sq_image = image / blurred_image * 100.
-    
-    # TODO: Use the log10 of the sq_image instead of multiplying by 100? 
-    
-    return sq_image
-    
 
   def __call__(self, input_file, output_file, eye_pos = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
@@ -56,12 +41,13 @@ class SelfQuotientImage:
     image = utils.gray_channel(image, self.m_color_channel)
 
     if eye_pos == None:
-      sq_image = self.__self_qoutient__(image)
+      inorm_image = self.m_lgb_extractor(image)
     else:
       # perform image normalization
       self.m_fen(image, self.m_fen_image, eye_pos[1], eye_pos[0], eye_pos[3], eye_pos[2])
-      sq_image = self.__self_qoutient__(self.m_fen_image)
+      inorm_image = self.m_lgb_extractor(self.m_fen_image)
       
     # simply save the image to file
-    bob.io.save(sq_image, output_file)
+    inorm_image = inorm_image.astype(numpy.float64)
+    bob.io.save(inorm_image, output_file)
 

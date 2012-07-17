@@ -4,6 +4,10 @@ import facereclib
 
 preprocessor = facereclib.preprocessing.HistogramEqualization
 
+# color channel 
+color_channel = 'gray'
+
+
 # Cropping
 CROP_H = 80
 CROP_W = CROP_H * 4 / 5
