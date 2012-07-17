@@ -12,6 +12,7 @@ class LGBPHSTool:
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
     # nothing to be done here
     self.m_distance_function = setup.distance_function
+    self.m_factor =  -1. if setup.is_distance_function else 1
   
   def enrol(self, enrol_features):
     """Enroling model by taking the average of all features"""
@@ -26,6 +27,6 @@ class LGBPHSTool:
     
   def score(self, model, probe):
     """Computes the score as the histogram intersection"""
-    return self.m_distance_function(model.flatten(), probe.flatten())
+    return self.m_factor * self.m_distance_function(model.flatten(), probe.flatten()) 
 
 
