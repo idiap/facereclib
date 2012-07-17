@@ -15,7 +15,7 @@ class BICTool:
   def __init__(self, setup):
     self.m_cfg = setup
     self.m_distance_function = setup.distance_function
-    self.m_maximum_pair_count = setup.maximum_pair_count
+    self.m_maximum_pair_count = setup.maximum_pair_count if hasattr(setup, 'maximum_pair_count') else None
     self.m_use_dffs = setup.USE_DFFS if hasattr(setup, 'USE_DFFS') else False
     if hasattr(setup, 'M_I') and hasattr(setup, 'M_E'):
       self.m_M_I = setup.M_E
@@ -61,9 +61,11 @@ class BICTool:
     # limit the number of pairs by random selection 
     if self.m_maximum_pair_count != None:
       if len(intra_pairs) > self.m_maximum_pair_count:
+        print "Limiting intrapersonal pairs from", len(intra_pairs), "to", self.m_maximum_pair_count
         numpy.random.shuffle(intra_pairs)
         intra_pairs = intra_pairs[:self.m_maximum_pair_count]
       if len(extra_pairs) > self.m_maximum_pair_count:
+        print "Limiting extrapersonal pairs from", len(extra_pairs), "to", self.m_maximum_pair_count
         numpy.random.shuffle(extra_pairs)
         extra_pairs = extra_pairs[:self.m_maximum_pair_count]
     
