@@ -66,8 +66,9 @@ class FileSelectorZT:
       cur_dir = self.m_config.projected_dir
       cur_world_options = self.__options__('world_enroler_options')
     # iterate over all training clients
-    features_by_clients_options = self.__options__('features_by_clients_options')
-    features_by_clients_options.update(cur_world_options)
+    features_by_clients_options = {}
+    if 'subworld' in cur_world_options: features_by_clients_options['subworld'] = cur_world_options['subworld']
+    features_by_clients_options.update(self.__options__('features_by_clients_options'))
     train_clients = self.m_db.clients(groups='world', protocol=self.m_config.protocol, **features_by_clients_options)
     training_filenames = {}
     for m in train_clients:

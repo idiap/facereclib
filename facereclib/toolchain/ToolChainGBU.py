@@ -27,11 +27,13 @@ class ToolChainGBU:
       # this is most probably a numpy.ndarray that can be saved by bob.io.save
       bob.io.save(data, str(filename))
       
-  def __save_model__(self, data, filename):
+  def __save_model__(self, data, filename, tool=None):
     utils.ensure_dir(os.path.dirname(filename))
-      # Tool has a save_model function, so use this one
-    if hasattr(self.m_tool, 'save_model'):
-      self.m_tool.save_model(data, filename)
+    if tool == None:
+      tool = self.m_tool
+    # Tool has a save_model function, so use this one
+    if hasattr(tool, 'save_model'):
+      tool.save_model(data, str(filename))
     elif hasattr(data, 'save'):
       # this is some class that supports saving itself
       data.save(bob.io.HDF5File(str(filename), "w"))
@@ -179,7 +181,7 @@ class ToolChainGBU:
           
           if not self.__check_file__(projected_file, force):
             # load feature
-            feature = self.__read_feature__(str(feature_file), extractor)
+            feature = self.__read_feature__(feature_file, extractor)
             # project feature
             projected = tool.project(feature)
             # write it
@@ -193,9 +195,9 @@ class ToolChainGBU:
     if not tool:
       tool = self.m_tool
     if hasattr(tool, 'read_feature'):
-      return tool.read_feature(feature_file)
+      return tool.read_feature(str(feature_file))
     else:
-      return bob.io.load(feature_file)
+      return bob.io.load(str(feature_file))
   
   def train_enroler(self, tool, force=False):
     """Traines the model enrolment stage using the projected features"""
@@ -261,23 +263,23 @@ class ToolChainGBU:
         
         model = tool.enrol(enrol_features)
         # save the model
-        self.__save_model__(model, model_file)
+        self.__save_model__(model, model_file, tool)
 
 
 
   def __read_model__(self, model_file):
     """This function reads the model from file. Overload this function if your model is no numpy.ndarray."""
     if hasattr(self.m_tool, 'read_model'):
-      return self.m_tool.read_model(model_file)
+      return self.m_tool.read_model(str(model_file))
     else:
-      return bob.io.load(model_file)
+      return bob.io.load(str(model_file))
     
   def __read_probe__(self, probe_file):
     """This function reads the probe from file. Overload this function if your probe is no numpy.ndarray."""
     if hasattr(self.m_tool, 'read_probe'):
-      return self.m_tool.read_probe(probe_file)
+      return self.m_tool.read_probe(str(probe_file))
     else:
-      return bob.io.load(probe_file)
+      return bob.io.load(str(probe_file))
 
   def compute_scores(self, tool, force = False, indices = None, preload_probes = False):
     """Computes the scores between target and query"""

@@ -203,12 +203,15 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                   name = "score-Z-%s"%group,
                   dependencies = score_deps[group]) 
           concat_deps[group].extend([job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group], job_ids['score_%s_Z'%group]])
-          
+      else:
+        concat_deps[group] = []
+
       # concatenate results   
-      job_ids['concat_%s'%group] = self.submit_grid_job(
-              '--concatenate --group=%s'%group,
-              name = "concat-%s"%group,
-              dependencies = concat_deps[group])
+      if not self.m_args.skip_concatenation:
+        job_ids['concat_%s'%group] = self.submit_grid_job(
+                '--concatenate --group=%s'%group,
+                name = "concat-%s"%group,
+                dependencies = concat_deps[group])
         
     # return the job ids, in case anyone wants to know them
     return job_ids 
@@ -419,6 +422,10 @@ def main():
   """Executes the main function"""
   # do the command line parsing
   args = parse_args()
+  # verify that the input files exist
+  for f in (args.database, args.preprocessor, args.features, args.tool):
+    if not os.path.exists(str(f)):
+      raise ValueError("The given file '%s' does not exist."%f)
   # perform face verification test
   face_verify(args)
         

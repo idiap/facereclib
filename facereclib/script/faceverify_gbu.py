@@ -57,7 +57,8 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # score computation
     if not self.m_args.skip_score_computation:
       self.m_tool_chain.compute_scores(self.m_tool, preload_probes = self.m_args.preload_probes, force = self.m_args.force)
-    self.m_tool_chain.concatenate()
+    if not self.m_args.skip_concatenation:
+      self.m_tool_chain.concatenate()
     
 
   def add_jobs_to_grid(self, external_dependencies, perform_training = True):
@@ -166,11 +167,12 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               **self.m_grid_config.score_queue)
       deps.append(job_ids['score'])
       
-    # concatenate results   
-    job_ids['concatenate'] = self.submit_grid_job(
-            '--concatenate' + default_opt, 
-            dependencies = deps, 
-            name = "concat")
+    # concatenate results
+    if not self.m_args.skip_concatenation:
+      job_ids['concatenate'] = self.submit_grid_job(
+              '--concatenate' + default_opt, 
+              dependencies = deps, 
+              name = "concat")
         
     # return the job ids, in case anyone wants to know them
     return job_ids 
@@ -366,6 +368,9 @@ def main():
   """Executes the main function"""
   # do the command line parsing
   args = parse_args()
+  for f in (args.database, args.preprocessor, args.features, args.tool):
+    if not os.path.exists(str(f)):
+      raise ValueError("The given file '%s' does not exist."%f)
   # perform face verification test
   face_verify(args)
         

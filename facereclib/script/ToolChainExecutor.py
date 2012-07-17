@@ -42,13 +42,13 @@ class ToolChainExecutor:
     #######################################################################################
     ############## options that are required to be specified #######################
     config_group = parser.add_argument_group('\nConfiguration files that need to be specified on the command line')
-    config_group.add_argument('-d', '--database', metavar = 'FILE', type = str, default = None,
+    config_group.add_argument('-d', '--database', metavar = 'FILE', type = str, required = True, 
         help = 'The database configuration file')
     config_group.add_argument('-t', '--tool-chain', type = str, dest = 'tool', required = True, metavar = 'FILE', 
         help = 'The tool chain configuration file')
     config_group.add_argument('-p', '--preprocessing', metavar = 'FILE', type = str, dest = 'preprocessor', required = True,
         help = 'Configuration script for image preprocessing')
-    config_group.add_argument('-f', '--features', metavar = 'FILE', type = str, dest='features', required = True,
+    config_group.add_argument('-f', '--features', metavar = 'FILE', type = str, required = True,
         help = 'Configuration script for extracting the features')
     config_group.add_argument('-g', '--grid', metavar = 'FILE', type = str, 
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine')
@@ -106,6 +106,8 @@ class ToolChainExecutor:
         help = 'Skip the model enrolment step')
     skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
         help = 'Skip the score computation step')
+    skip_group.add_argument('--skip-concatenation', '--nocat', action='store_true', dest='skip_concatenation',
+        help = 'Skip the score concatenation step')
                         
     return (config_group, dir_group, file_group, sub_dir_group, other_group, skip_group)
   
