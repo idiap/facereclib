@@ -28,8 +28,10 @@ class FaceCrop:
     self.m_config = config
     self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     # prepare image normalization
-    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, config.CROP_H, config.CROP_W, config.CROP_OH, config.CROP_OW)
-    self.m_fen_image = numpy.ndarray((config.CROP_H, config.CROP_W), numpy.float64) 
+    real_h = config.CROP_H + 2 * config.OFFSET
+    real_w = config.CROP_W + 2 * config.OFFSET
+    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
+    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
 
   def __call__(self, input_file, output_file, eye_pos = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
@@ -53,8 +55,10 @@ class StaticFaceCrop:
     self.m_config = config
     self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     # prepare image normalization
-    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, config.CROP_H, config.CROP_W, config.CROP_OH, config.CROP_OW)
-    self.m_fen_image = numpy.ndarray((config.CROP_H, config.CROP_W), numpy.float64) 
+    real_h = config.CROP_H + 2 * config.OFFSET
+    real_w = config.CROP_W + 2 * config.OFFSET
+    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
+    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
 
   def __call__(self, input_file, output_file, eye_pos = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""

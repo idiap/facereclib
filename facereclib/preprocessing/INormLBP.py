@@ -28,8 +28,10 @@ class INormLBP:
     self.m_config = config
     self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     # prepare image normalization; add two pixels of rim that will be cut off by the algorithm
-    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, config.CROP_H + 4, config.CROP_W + 4, config.CROP_OH + 2, config.CROP_OW + 2)
-    self.m_fen_image = numpy.ndarray((config.CROP_H + 4, config.CROP_W + 4), numpy.float64) 
+    real_h = config.CROP_H + 2 * config.OFFSET
+    real_w = config.CROP_W + 2 * config.OFFSET
+    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
+    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
     # lbp extraction
     self.m_lgb_extractor = bob.ip.LBP8R(config.RADIUS, config.CIRCULAR, config.TO_AVERAGE, config.ADD_AVERAGE_BIT, config.UNIFORM, config.ROT_INV, 0)
 
