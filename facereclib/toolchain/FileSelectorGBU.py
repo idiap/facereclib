@@ -74,7 +74,7 @@ class FileSelectorGBU:
     return self.m_db.files(directory=cur_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.__options__('training', 'world_extractor_options'))  
 
 
-  def training_feature_list_by_models(self, dir_type):
+  def training_feature_list_by_clients(self, dir_type):
     """Returns the list of training features, which is split up by the client ids."""
     # get the type of directory that is required
     if dir_type == 'preprocessed': 

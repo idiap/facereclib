@@ -7,10 +7,10 @@ import numpy
 
 
 class PCATool:
-  """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
+  """Tool for computing eigenfaces"""
 
   def __init__(self, setup):
-    """Initializes the local UBM-GMM tool chain with the given file selector object"""
+    """Initializes the PCA tool with the given setup"""
     self.m_config = setup
     self.m_machine = None
     self.m_distance_function = self.m_config.distance_function
@@ -35,7 +35,7 @@ class PCATool:
 
 
   def load_projector(self, projector_file):
-    """Reads the UBM model from file"""
+    """Reads the PCA projection matrix from file"""
     # read PCA projector
     self.m_machine = bob.machine.LinearMachine(bob.io.HDF5File(projector_file))
     # Allocates an array for the projected data

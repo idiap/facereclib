@@ -27,11 +27,13 @@ class ToolChainGBU:
       # this is most probably a numpy.ndarray that can be saved by bob.io.save
       bob.io.save(data, str(filename))
       
-  def __save_model__(self, data, filename):
+  def __save_model__(self, data, filename, tool=None):
     utils.ensure_dir(os.path.dirname(filename))
-      # Tool has a save_model function, so use this one
-    if hasattr(self.m_tool, 'save_model'):
-      self.m_tool.save_model(data, filename)
+    if tool == None:
+      tool = self.m_tool
+    # Tool has a save_model function, so use this one
+    if hasattr(tool, 'save_model'):
+      tool.save_model(data, str(filename))
     elif hasattr(data, 'save'):
       # this is some class that supports saving itself
       data.save(bob.io.HDF5File(str(filename), "w"))
@@ -93,7 +95,7 @@ class ToolChainGBU:
       else:
         # train model
         if hasattr(extractor, 'use_training_images_sorted_by_identity'):
-          train_files = self.m_file_selector.training_feature_list_by_models('preprocessed')
+          train_files = self.m_file_selector.training_feature_list_by_clients('preprocessed')
           print "Training Extractor '%s' using %d identities: " %(extractor_file, len(train_files))
         else:
           train_files = self.m_file_selector.training_feature_list('preprocessed')
@@ -143,7 +145,7 @@ class ToolChainGBU:
       else:
         # train projector
         if hasattr(tool, 'use_training_features_sorted_by_identity'):
-          train_files = self.m_file_selector.training_feature_list_by_models('features')
+          train_files = self.m_file_selector.training_feature_list_by_clients('features')
           print "Training Projector '%s' using %d identities: " %(projector_file, len(train_files))
         else:
           train_files = self.m_file_selector.training_feature_list('features')
@@ -179,7 +181,7 @@ class ToolChainGBU:
           
           if not self.__check_file__(projected_file, force):
             # load feature
-            feature = self.__read_feature__(str(feature_file), extractor)
+            feature = self.__read_feature__(feature_file, extractor)
             # project feature
             projected = tool.project(feature)
             # write it
@@ -188,12 +190,14 @@ class ToolChainGBU:
   
 
 
-  def __read_feature__(self, feature_file, tool):
+  def __read_feature__(self, feature_file, tool = None):
     """This function reads the model from file. Overload this function if your model is no numpy.ndarray."""
+    if not tool:
+      tool = self.m_tool
     if hasattr(tool, 'read_feature'):
-      return tool.read_feature(feature_file)
+      return tool.read_feature(str(feature_file))
     else:
-      return bob.io.load(feature_file)
+      return bob.io.load(str(feature_file))
   
   def train_enroler(self, tool, force=False):
     """Traines the model enrolment stage using the projected features"""
@@ -208,7 +212,7 @@ class ToolChainGBU:
         if hasattr(tool, 'load_projector'):
           tool.load_projector(self.m_file_selector.projector_file())
         # training models
-        train_files = self.m_file_selector.training_feature_list_by_models('projected' if use_projected_features else 'features')
+        train_files = self.m_file_selector.training_feature_list_by_clients('projected' if use_projected_features else 'features')
   
         # perform training
         print "Training Enroler '%s' using %d identities: " %(enroler_file, len(train_files))
@@ -216,13 +220,12 @@ class ToolChainGBU:
 
 
 
-  def enrol_models(self, tool, indices = None, force=False):
+  def enrol_models(self, tool, extractor, indices = None, force=False):
     """Enrol the models for 'dev' and 'eval' groups, for both models and T-Norm-models.
        This function by default used the projected features to compute the models.
        If you need unprojected features for the model, please define a variable with the name 
        use_unprojected_features_for_model_enrol"""
     
-    self.m_tool = tool
     # read the projector file, if needed
     if hasattr(tool,'load_projector'):
       # read the feature extraction model
@@ -231,8 +234,10 @@ class ToolChainGBU:
       # read the model enrolment file
       tool.load_enroler(self.m_file_selector.enroler_file())
       
-
+    # use projected or unprojected features for model enrollment?
     use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enrol')
+    # which tool to use to read the features...
+    self.m_tool = tool if use_projected_features else extractor
 
     # enrol models
     model_ids = self.m_file_selector.model_ids()
@@ -253,28 +258,28 @@ class ToolChainGBU:
         enrol_features = []
         for enrol_file in enrol_files.itervalues():
           # processes one file
-          feature = self.__read_feature__(str(enrol_file), tool)
+          feature = self.__read_feature__(str(enrol_file))
           enrol_features.append(feature)
         
         model = tool.enrol(enrol_features)
         # save the model
-        self.__save_model__(model, model_file)
+        self.__save_model__(model, model_file, tool)
 
 
 
   def __read_model__(self, model_file):
     """This function reads the model from file. Overload this function if your model is no numpy.ndarray."""
     if hasattr(self.m_tool, 'read_model'):
-      return self.m_tool.read_model(model_file)
+      return self.m_tool.read_model(str(model_file))
     else:
-      return bob.io.load(model_file)
+      return bob.io.load(str(model_file))
     
   def __read_probe__(self, probe_file):
     """This function reads the probe from file. Overload this function if your probe is no numpy.ndarray."""
     if hasattr(self.m_tool, 'read_probe'):
-      return self.m_tool.read_probe(probe_file)
+      return self.m_tool.read_probe(str(probe_file))
     else:
-      return bob.io.load(probe_file)
+      return bob.io.load(str(probe_file))
 
   def compute_scores(self, tool, force = False, indices = None, preload_probes = False):
     """Computes the scores between target and query"""

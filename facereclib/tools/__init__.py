@@ -11,7 +11,9 @@ from UBMGMMVideo import UBMGMMVideoTool
 from JFA import JFATool
 from ISV import ISVTool
 from PCA import PCATool
+from LDA import LDATool
 from PLDA import PLDATool
+from BIC import BICTool
 
 
 import numpy

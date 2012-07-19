@@ -37,16 +37,16 @@ class LGBPHS:
     if self.m_split == None:
       start = j * self.m_n_bins * self.m_n_blocks
       for b in range(self.m_n_blocks):
-        lgbphs_array[start + b * self.m_n_bins : start + (b+1) * self.m_n_bins] = lgbphs_blocks[b]
+        lgbphs_array[start + b * self.m_n_bins : start + (b+1) * self.m_n_bins] = lgbphs_blocks[b][:]
     elif self.m_split == 'blocks':
       for b in range(self.m_n_blocks):
-        lgbphs_array[b, j * self.m_n_bins : (j+1) * self.m_n_bins] = lgbphs_blocks[b]
+        lgbphs_array[b, j * self.m_n_bins : (j+1) * self.m_n_bins] = lgbphs_blocks[b][:]
     elif self.m_split == 'wavelets':
       for b in range(self.m_n_blocks):
-        lgbphs_array[j, b * self.m_n_bins : (b+1) * self.m_n_bins] = lgbphs_blocks[b]
+        lgbphs_array[j, b * self.m_n_bins : (b+1) * self.m_n_bins] = lgbphs_blocks[b][:]
     elif self.m_split == 'both':
       for b in range(self.m_n_blocks):
-        lgbphs_array[j * self.m_n_blocks + b, 0 : self.m_n_bins] = lgbphs_blocks[b]
+        lgbphs_array[j * self.m_n_blocks + b, 0 : self.m_n_bins] = lgbphs_blocks[b][:]
     
     
   
@@ -83,7 +83,9 @@ class LGBPHS:
         shape = (jet_length, self.m_n_bins * self.m_n_blocks)
       elif self.m_split == 'both':
         shape = (jet_length * self.m_n_blocks, self.m_n_bins)
-      
+      else:
+        raise ValueError("The split parameter must be one of ['blocks', 'wavelets', 'both'] or None")
+     
       # create new array if not done yet
       if lgbphs_array == None:
         lgbphs_array = numpy.ndarray(shape, 'float64')

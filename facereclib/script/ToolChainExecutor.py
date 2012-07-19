@@ -23,6 +23,7 @@ class ToolChainExecutor:
     # load configuration files specified on command line
     self.m_database_config = imp.load_source('database', args.database)
     self.m_tool_config = imp.load_source('tool_chain', args.tool)
+    self.m_preprocessor_config =  imp.load_source('preprocessor', args.preprocessor)
     self.m_feature_extractor_config = imp.load_source('feature_extractor', args.features)
     if args.grid:
       self.m_grid_config = imp.load_source('grid', args.grid)
@@ -30,7 +31,7 @@ class ToolChainExecutor:
     self.__generate_configuration__()
     
     # generate the tools that we will need
-    self.m_preprocessor = self.m_feature_extractor_config.preprocessor(self.m_feature_extractor_config)
+    self.m_preprocessor = self.m_preprocessor_config.preprocessor(self.m_preprocessor_config)
     self.m_feature_extractor = self.m_feature_extractor_config.feature_extractor(self.m_feature_extractor_config)
     self.m_tool = self.m_tool_config.tool(self.m_tool_config)
     
@@ -41,12 +42,14 @@ class ToolChainExecutor:
     #######################################################################################
     ############## options that are required to be specified #######################
     config_group = parser.add_argument_group('\nConfiguration files that need to be specified on the command line')
-    config_group.add_argument('-d', '--database', metavar = 'FILE', type = str, default = None,
+    config_group.add_argument('-d', '--database', metavar = 'FILE', type = str, required = True, 
         help = 'The database configuration file')
     config_group.add_argument('-t', '--tool-chain', type = str, dest = 'tool', required = True, metavar = 'FILE', 
         help = 'The tool chain configuration file')
-    config_group.add_argument('-p', '--features-extraction', metavar = 'FILE', type = str, dest='features', 
-        help = 'Configuration script for preprocessing the images and extracting the features')
+    config_group.add_argument('-p', '--preprocessing', metavar = 'FILE', type = str, dest = 'preprocessor', required = True,
+        help = 'Configuration script for image preprocessing')
+    config_group.add_argument('-f', '--features', metavar = 'FILE', type = str, required = True,
+        help = 'Configuration script for extracting the features')
     config_group.add_argument('-g', '--grid', metavar = 'FILE', type = str, 
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine')
     
@@ -103,6 +106,8 @@ class ToolChainExecutor:
         help = 'Skip the model enrolment step')
     skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
         help = 'Skip the score computation step')
+    skip_group.add_argument('--skip-concatenation', '--nocat', action='store_true', dest='skip_concatenation',
+        help = 'Skip the score concatenation step')
                         
     return (config_group, dir_group, file_group, sub_dir_group, other_group, skip_group)
   
@@ -147,17 +152,17 @@ class ToolChainExecutor:
     
     user_name = os.environ['USER']
     if self.m_args.user_dir:
-      self.m_configuration.base_output_USER_dir = self.m_args.user_dir
+      self.m_configuration.base_output_USER_dir = os.path.join(self.m_args.user_dir, self.m_args.sub_dir)
     else:
-      self.m_configuration.base_output_USER_dir = "/idiap/user/%s/%s/%s" % (user_name, self.m_database_config.name, self.m_args.sub_dir)
+      self.m_configuration.base_output_USER_dir = os.path.join("/idiap/user", user_name, self.m_database_config.name, self.m_args.sub_dir)
   
     if self.m_args.temp_dir:
-      self.m_configuration.base_output_TEMP_dir = self.m_args.temp_dir
+      self.m_configuration.base_output_TEMP_dir = os.path.join(self.m_args.temp_dir, self.m_args.sub_dir)
     else:
       if not self.m_args.grid:
-        self.m_configuration.base_output_TEMP_dir = "/scratch/%s/%s/%s" % (user_name, self.m_database_config.name, self.m_args.sub_dir)
+        self.m_configuration.base_output_TEMP_dir = os.path.join("/scratch", user_name, self.m_database_config.name, self.m_args.sub_dir)
       else:
-        self.m_configuration.base_output_TEMP_dir = "/idiap/temp/%s/%s/%s" % (user_name, self.m_database_config.name, self.m_args.sub_dir)
+        self.m_configuration.base_output_TEMP_dir = os.path.join("/idiap/temp", user_name, self.m_database_config.name, self.m_args.sub_dir)
 
     self.m_configuration.extractor_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.extractor_file)
     self.m_configuration.projector_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.projector_file) 

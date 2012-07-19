@@ -19,39 +19,26 @@ def ensure_dir(dirname):
     # Check that the directory exists
     if os.path.isdir(dirname): pass
     else: raise
+    
 
-def sub_dictionary(input_dict, nb_unit_per_subdict, index):
-  """Splits a dictionary into subdictionaries of fixed size
-     and returns the index subdictionary"""
-  sdict = {}
-  count = -1
-  start_index=nb_unit_per_subdict*index
-  stop_index=start_index+nb_unit_per_subdict-1
-  for k in sorted(input_dict.keys()):
-    count += 1
-    if(count<start_index): continue
-    if(count>stop_index):  break
-    sdict[k] = input_dict[k]
-  return sdict
-
-def split_dictionary(input_dict, nb_unit_per_subdict):
-  """Splits a dictionary into a list of subdictionaries"""  
-  res = []
-  sdict = {}
-  to_append = False
-  for k in sorted(input_dict.keys()):
-    sdict[k] = input_dict[k] 
-    to_append = True
-    # checks if the subdictionary is full
-    if(len(sdict) == nb_unit_per_subdict):
-      res.append(sdict)
-      to_append = False
-      sdict = {}
-
-  if(to_append == True):
-    res.append(sdict)
+def gray_channel(image, channel = 'gray'):
+  """Returns the desired channel of the given image. Currently, gray, red, green and blue channels are supported."""
+  if image.ndim == 2:
+    if channel != 'gray':
+      raise ValueError("There is no rule to extract a " + channel + " image from a gray level image!")
+    return image
   
-  return res 
+  if channel == 'gray':
+    return bob.ip.rgb_to_gray(image)
+  if channel == 'red':
+    return image[0,:,:]
+  if channel == 'green':
+    return image[1,:,:]
+  if channel == 'blue':
+    return image[2,:,:]
+    
+  raise ValueError("The image channel " + channel + " is not known or not yet implemented")
+    
 
 
 def convertScoreToList(scores, probes):

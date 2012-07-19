@@ -4,12 +4,17 @@ import facereclib
 
 preprocessor = facereclib.preprocessing.TanTriggs
 
+# color channel 
+color_channel = 'gray'
+
+
 # Cropping
-CROP_EYES_D = 33
 CROP_H = 80
-CROP_W = 64
-CROP_OH = 16
-CROP_OW = 32
+CROP_W = CROP_H * 4 / 5
+CROP_EYES_D = CROP_W / 2 + 1
+CROP_OH = CROP_H / 5
+CROP_OW = CROP_W / 2
+OFFSET = 0
 
 # Tan Triggs
 GAMMA = 0.2
@@ -18,9 +23,4 @@ SIGMA1 = 2.
 SIZE = 5
 THRESHOLD = 10.
 ALPHA = 0.1
-
-
-
-# Linearization of the image to a vector
-feature_extractor = facereclib.features.Linearize
 

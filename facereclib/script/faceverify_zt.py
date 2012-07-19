@@ -56,13 +56,15 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_enroler_training and hasattr(self.m_tool, 'train_enroler'):
       self.m_tool_chain.train_enroler(self.m_tool, force = self.m_args.force)
     if not self.m_args.skip_model_enrolment:
-      self.m_tool_chain.enrol_models(self.m_tool, not self.m_args.no_zt_norm, groups = self.m_args.groups, force = self.m_args.force)
+      self.m_tool_chain.enrol_models(self.m_tool, self.m_feature_extractor, not self.m_args.no_zt_norm, groups = self.m_args.groups, force = self.m_args.force)
     # score computation
     if not self.m_args.skip_score_computation:
       self.m_tool_chain.compute_scores(self.m_tool, not self.m_args.no_zt_norm, groups = self.m_args.groups, preload_probes = self.m_args.preload_probes, force = self.m_args.force)
       if not self.m_args.no_zt_norm:
         self.m_tool_chain.zt_norm(groups = self.m_args.groups)
-    self.m_tool_chain.concatenate(not self.m_args.no_zt_norm, groups = self.m_args.groups)
+    # concatenation of scores
+    if not self.m_args.skip_concatenation:
+      self.m_tool_chain.concatenate(not self.m_args.no_zt_norm, groups = self.m_args.groups)
   
     
   def add_jobs_to_grid(self, external_dependencies):
@@ -201,12 +203,15 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                   name = "score-Z-%s"%group,
                   dependencies = score_deps[group]) 
           concat_deps[group].extend([job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group], job_ids['score_%s_Z'%group]])
-          
+      else:
+        concat_deps[group] = []
+
       # concatenate results   
-      job_ids['concat_%s'%group] = self.submit_grid_job(
-              '--concatenate --group=%s'%group,
-              name = "concat-%s"%group,
-              dependencies = concat_deps[group])
+      if not self.m_args.skip_concatenation:
+        job_ids['concat_%s'%group] = self.submit_grid_job(
+                '--concatenate --group=%s'%group,
+                name = "concat-%s"%group,
+                dependencies = concat_deps[group])
         
     # return the job ids, in case anyone wants to know them
     return job_ids 
@@ -257,7 +262,8 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     if self.m_args.enrol_models:
       if self.m_args.model_type == 'N':
         self.m_tool_chain.enrol_models(
-            self.m_tool, 
+            self.m_tool,
+            self.m_feature_extractor,
             not self.m_args.no_zt_norm, 
             indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job), 
             groups = [self.m_args.group], 
@@ -266,7 +272,8 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
       else:
         self.m_tool_chain.enrol_models(
-            self.m_tool, 
+            self.m_tool,
+            self.m_feature_extractor,
             not self.m_args.no_zt_norm, 
             indices = self.indices(self.m_file_selector.tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job), 
             groups = [self.m_args.group], 
@@ -332,7 +339,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   ############################ other options ############################################
   other_group.add_argument('-z', '--no-zt-norm', action='store_true', dest = 'no_zt_norm',
       help = 'DISABLE the computation of ZT norms')
-  other_group.add_argument('-f', '--force', action='store_true',
+  other_group.add_argument('-F', '--force', action='store_true',
       help = 'Force to erase former data if already exist')
   other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
@@ -415,6 +422,10 @@ def main():
   """Executes the main function"""
   # do the command line parsing
   args = parse_args()
+  # verify that the input files exist
+  for f in (args.database, args.preprocessor, args.features, args.tool):
+    if not os.path.exists(str(f)):
+      raise ValueError("The given file '%s' does not exist."%f)
   # perform face verification test
   face_verify(args)
         
