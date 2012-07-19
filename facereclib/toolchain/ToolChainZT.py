@@ -73,30 +73,21 @@ class ToolChainZT:
 
     # read eye files
     # - note: the resulting value of eye_files may be None
-    eye_files = self.m_file_selector.eye_position_list()
+    annotation_list = self.m_file_selector.annotation_list()
 
     for k in keys:
       image_file = image_files[k]
       preprocessed_image_file = preprocessed_image_files[k]
 
       if not self.__check_file__(preprocessed_image_file, force):
-        eye_positions = None
-        if eye_files != None:
+        annotations = None
+        if annotation_list != None:
           # read eyes position file
-          eye_file = eye_files[k]
-          annots = [int(j.strip()) for j in open(eye_file).read().split()]
-          if self.m_file_selector.m_db_options.first_annot == 0: 
-            eye_positions = annots[0:4]
-          else: 
-            eye_positions = annots[1:5]
-            
-          # sanity check
-          if eye_positions[0] > eye_positions[2]:
-            print "WARNING! Eye positions in", str(eye_file), "might be incorrect"
+          annotations = utils.read_annotations(annotation_list[k], self.m_file_selector.m_db_options.annotation_type)
 
         # call the image preprocessor
         utils.ensure_dir(os.path.dirname(preprocessed_image_file))
-        preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file), eye_positions)
+        preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file), annotations)
 
 
   

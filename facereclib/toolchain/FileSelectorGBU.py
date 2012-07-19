@@ -36,14 +36,15 @@ class FileSelectorGBU:
     opts=self.__options__(set, 'all_files_options')
     return self.m_db.files(directory=self.m_config.img_input_dir, extension=self.m_config.img_input_ext, protocol=self.m_config.protocol, **opts)
     
-  def eye_position_list(self, set):
-    """Returns the list of eye positions"""
+  def annotation_list(self, set):
+    """Returns the list of annotations as dict from type ('reye', 'leye') to position (y,x)"""
     opts=self.__options__(set, 'all_files_options')
+    del opts['type']
     # query the DB
-    objects = self.m_db.objects(**opts)
+    objects = self.m_db.annotations(**opts)
     eyes={}
     for k,v in objects.iteritems():
-      eyes[k] = v[2]
+      eyes[k] = v[1]
     return eyes
    
   def preprocessed_image_list(self, set):

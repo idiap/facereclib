@@ -36,19 +36,20 @@ class TanTriggs:
     self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
     self.m_tan_image = numpy.ndarray((real_h, real_w), numpy.float64)
 
-  def __call__(self, input_file, output_file, eye_pos = None):
+  def __call__(self, input_file, output_file, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale
     image = utils.gray_channel(image, self.m_color_channel)
       
     # perform image normalization
-    if eye_pos == None:
+    if annotations == None:
       self.m_fen_image = image
       if self.m_tan_image.shape != image.shape:
         self.m_tan_image =  numpy.ndarray(image.shape, numpy.float64)
     else: 
-      self.m_fen(image, self.m_fen_image, eye_pos[1], eye_pos[0], eye_pos[3], eye_pos[2])
+      assert 'leye' in annotations and 'reye' in annotations
+      self.m_fen(image, self.m_fen_image, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
       
     # perform Tan-Triggs
     self.m_tan(self.m_fen_image, self.m_tan_image)
@@ -71,7 +72,7 @@ class StaticTanTriggs:
     self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
     self.m_tan_image = numpy.ndarray((real_h, real_w), numpy.float64)
 
-  def __call__(self, input_file, output_file, eye_pos = None):
+  def __call__(self, input_file, output_file, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale
@@ -96,8 +97,8 @@ class TanTriggsVideo:
     # prepare image normalization
     self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
 
-  def __call__(self, input_file, output_file, eye_pos = None):
-    """For each frame in the VideoFrameContainer (read from input_file) applies the Tan-Triggs algorithm, then writes the resulting VideoFrameContainer to output_file. NOTE: eye_pos is ignored even if specified."""
+  def __call__(self, input_file, output_file, annotations = None):
+    """For each frame in the VideoFrameContainer (read from input_file) applies the Tan-Triggs algorithm, then writes the resulting VideoFrameContainer to output_file. NOTE: annotations is ignored even if specified."""
     # Read input
     frame_container = utils.VideoFrameContainer(str(input_file))
 

@@ -15,7 +15,7 @@ class NullPreprocessor:
   def __init__(self, config):
     self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     
-  def __call__(self, input_file, output_file, eye_pos = None):
+  def __call__(self, input_file, output_file, annotations = None):
     image = bob.io.load(str(input_file))
     # convert to grayscale
     image = utils.gray_channel(image, self.m_color_channel)

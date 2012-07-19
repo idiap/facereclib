@@ -3,6 +3,8 @@
 # Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
 # Roy Wallace <roy.wallace@idiap.ch>
 
+from annotations import read_annotations
+
 import os
 import bob
 import re

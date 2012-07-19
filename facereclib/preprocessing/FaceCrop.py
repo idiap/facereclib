@@ -33,18 +33,19 @@ class FaceCrop:
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
     self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
 
-  def __call__(self, input_file, output_file, eye_pos = None):
+  def __call__(self, input_file, output_file, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale
     image = utils.gray_channel(image, self.m_color_channel)
 
-    if eye_pos == None:
+    if annotations == None:
       # simply save the image to file
       bob.io.save(image, output_file)
     else:
+      assert 'leye' in annotations and 'reye' in annotations
       # perform image normalization
-      self.m_fen(image, self.m_fen_image, eye_pos[1], eye_pos[0], eye_pos[3], eye_pos[2])
+      self.m_fen(image, self.m_fen_image, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
       # save output image    
       bob.io.save(self.m_fen_image, output_file)
 
@@ -60,7 +61,7 @@ class StaticFaceCrop:
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
     self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
 
-  def __call__(self, input_file, output_file, eye_pos = None):
+  def __call__(self, input_file, output_file, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale

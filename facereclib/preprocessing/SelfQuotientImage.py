@@ -51,17 +51,18 @@ class SelfQuotientImage:
     return sq_image
     
 
-  def __call__(self, input_file, output_file, eye_pos = None):
+  def __call__(self, input_file, output_file, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale
     image = utils.gray_channel(image, self.m_color_channel)
 
-    if eye_pos == None:
+    if annotations == None:
       sq_image = self.__self_qoutient__(image)
     else:
+      assert 'leye' in annotations and 'reye' in annotations
       # perform image normalization
-      self.m_fen(image, self.m_fen_image, eye_pos[1], eye_pos[0], eye_pos[3], eye_pos[2])
+      self.m_fen(image, self.m_fen_image, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
       sq_image = self.__self_qoutient__(self.m_fen_image)
       
     # simply save the image to file
