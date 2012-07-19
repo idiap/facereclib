@@ -63,7 +63,7 @@ class ToolChainGBU:
       # get the file lists
       image_files = self.m_file_selector.original_image_list(set)
       # read eye files
-      eye_positions = self.m_file_selector.eye_position_list(set)
+      annotation_list = self.m_file_selector.annotation_list(set)
       preprocessed_image_files = self.m_file_selector.preprocessed_image_list(set)
 
       # select a subset of keys to iterate    
@@ -77,12 +77,12 @@ class ToolChainGBU:
       for k in keys:
         image_file = image_files[k]
         preprocessed_image_file = preprocessed_image_files[k]
-        eye_position = eye_positions[k]
+        annotations = annotation_list[k]
   
         if not self.__check_file__(preprocessed_image_file, force):
           # read eyes position file
           utils.ensure_dir(os.path.dirname(preprocessed_image_file))
-          preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file), eye_position)
+          preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file), annotations)
               
 
 

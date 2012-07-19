@@ -12,5 +12,5 @@ img_input_ext = ".ppm"
 pos_input_dir = "/idiap/user/mguenther/annotations/XM2VTS/"
 pos_input_ext = ".pos"
 
-first_annot = 0
+annotation_type = 'eyecenter'
 

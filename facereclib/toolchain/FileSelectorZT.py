@@ -27,8 +27,8 @@ class FileSelectorZT:
     """Returns the list of original images that can be used for image preprocessing"""
     return self.m_db.files(directory=self.m_config.img_input_dir, extension=self.m_config.img_input_ext, protocol=self.m_config.protocol, **self.__options__('all_files_options'))
     
-  def eye_position_list(self):
-    """Returns the list of eye positions, if any (else None)"""
+  def annotation_list(self):
+    """Returns the list of annotation files, if any (else None)"""
     if not hasattr(self.m_config, 'pos_input_dir') or self.m_config.pos_input_dir == None:
       return None
 

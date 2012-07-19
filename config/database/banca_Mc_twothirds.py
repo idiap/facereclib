@@ -12,7 +12,7 @@ img_input_ext = ".pgm"
 pos_input_dir = "/idiap/group/vision/visidiap/databases/groundtruth/banca/english/eyecenter/"
 pos_input_ext = ".pos"
 
-first_annot = 0
+annotation_type = 'eyecenter'
 all_files_options = {}
 world_extractor_options = {}
 world_projector_options = { 'subworld': "twothirds" }

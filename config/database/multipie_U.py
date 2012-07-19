@@ -12,7 +12,7 @@ img_input_ext = ".png"
 pos_input_dir = "/idiap/group/biometric/annotations/multipie/"
 pos_input_ext = ".pos"
 
-first_annot = 1
+annotation_type = 'multipie'
 all_files_options = { 'expressions': 'neutral' }
 world_extractor_options = { 'expressions': 'neutral' }
 world_projector_options = { 'expressions': 'neutral', 'world_sampling': 3, 'world_first': True } 
