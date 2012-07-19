@@ -83,8 +83,7 @@ class ISVTool (UBMGMMTool):
     
   
   def enrol(self, enrol_features):
-    """Enrols a GMM using MAP adaptation"""
-    
+    """Performs ISV enrolment"""
     self.m_trainer.enrol(enrol_features, self.m_config.n_iter_enrol)
     # return the resulting gmm    
     return self.m_machine

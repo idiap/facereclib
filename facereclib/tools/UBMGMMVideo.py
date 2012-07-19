@@ -4,7 +4,7 @@
 
 import bob
 import numpy
-from UBMGMM import UBMGMMTool
+from . import UBMGMMTool
 from .. import utils
 
 class UBMGMMVideoTool(UBMGMMTool):
@@ -34,12 +34,15 @@ class UBMGMMVideoTool(UBMGMMTool):
     return utils.VideoFrameContainer(str(feature_file))
 
 
-  def project(self, frame_container):
+  def project(self, frame_container, frame_selector = None):
     """Computes GMM statistics against a UBM, given an input VideoFrameContainer"""
     
+    if frame_selector is None:
+      frame_selector = self.m_config.frame_selector_for_project
+
     # Collect all feature vectors across all frames in a single array set
     arrayset = bob.io.Arrayset()
-    for data in self.m_config.frame_selector_for_project(frame_container):
+    for data in frame_selector(frame_container):
       arrayset.extend(data)
     return self._project_using_arrayset(arrayset)
     
