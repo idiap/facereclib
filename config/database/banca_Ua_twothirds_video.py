@@ -16,6 +16,5 @@ img_input_ext = ".hdf5"
 pos_input_dir = None # None because hdf5 files in img_input_dir are pre-cropped with Omniperception annotations
 pos_input_ext = None
 
-first_annot = 0
 world_projector_options = { 'subworld': "twothirds" }
 

@@ -13,7 +13,4 @@ pos_input_dir = "/idiap/group/vision/visidiap/databases/groundtruth/banca/englis
 pos_input_ext = ".pos"
 
 annotation_type = 'eyecenter'
-all_files_options = {}
-world_extractor_options = {}
 world_projector_options = { 'subworld': "twothirds" }
-world_enroler_options = {}
