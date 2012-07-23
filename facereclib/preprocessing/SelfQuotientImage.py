@@ -31,7 +31,9 @@ class SelfQuotientImage:
     real_h = config.CROP_H + 2 * config.OFFSET
     real_w = config.CROP_W + 2 * config.OFFSET
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
-    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
+    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64)
+    self.m_sqi = bob.ip.SelfQuotientImage(sigma = config.sigma)
+    self.m_sq_image = numpy.ndarray((real_h, real_w), numpy.float64) 
 
   def __self_qoutient__(self, image):
     """Computes the self-quotient image of the given input image."""
@@ -58,13 +60,15 @@ class SelfQuotientImage:
     image = utils.gray_channel(image, self.m_color_channel)
 
     if annotations == None:
-      sq_image = self.__self_qoutient__(image)
+      sq_image = self.m_sqi(image)
+      # save the image to file
+      bob.io.save(sq_image, output_file)
     else:
       assert 'leye' in annotations and 'reye' in annotations
       # perform image normalization
       self.m_fen(image, self.m_fen_image, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
-      sq_image = self.__self_qoutient__(self.m_fen_image)
+      self.m_sqi(self.m_fen_image, self.m_sq_image)
+      # save the image to file
+      bob.io.save(self.m_sq_image, output_file)
       
-    # simply save the image to file
-    bob.io.save(sq_image, output_file)
 

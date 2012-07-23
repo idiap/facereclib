@@ -18,5 +18,4 @@ OFFSET = 0
 
 
 # self quotient image
-size = 10
 sigma = 5.
