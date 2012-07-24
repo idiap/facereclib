@@ -27,7 +27,6 @@ def read_annotations(file_name, annotation_type):
   if not file_name:
     return None
   
-  
   if not os.path.exists(file_name):
     raise FileNotFoundException("The annotation file '%s' was not found"%file_name)
   f = open(file_name, 'r')
@@ -43,22 +42,41 @@ def read_annotations(file_name, annotation_type):
     annotations['leye'] = (int(positions[3]),int(positions[2]))
     
   elif str(annotation_type) == 'multipie':
-    # TODO: use positions from:  /idiap/group/biometric/databases/multipie/README.txt
     # multiple lines, one header line, each line contains one position
-    count = int(f.readline()) 
+    # use position names from:  /idiap/group/biometric/databases/multipie/README.txt
+    # see also annotation examples in /idiap/group/biometric/databases/multipie/annotations_examples
+    
+    # Left and right is always being seen from the subjects perspective. 
+    # the abbreviations are:
+    # - 'l...', 'r...': left and right object (usually the eyes only)
+    # - '...l', '...r': left and part of the object (usually the mouth)
+    # - '...t', '...b': top and bottom part of the object (usually the mouth)
+    # - '...o', '...i': outer and inner label of the object (eyes and eyebrows)
+    # example: 'reyei': label of the *i*nner corner of the *r*ight *eye*
+    count = int(f.readline())
+    
+    if count == 6:
+      # profile annotations
+      labels = ['eye', 'nose', 'mouth', 'lipt', 'lipb', 'chin']
+    elif count == 8:
+      # half profile annotations
+      labels = ['reye', 'leye', 'nose', 'mouthr', 'mouthl', 'lipt', 'lipb', 'chin']
+    elif count == 16:
+      # frontal image annotations
+      labels = ['reye', 'leye', 'reyeo', 'reyei', 'leyei', 'leyeo', 'nose', 'mouthr', 'mouthl', 'lipt', 'lipb', 'chin', 'rbrowo', 'rbrowi', 'lbrowi', 'lbrowo']
+    elif count == 2:
+      labels = ['reye', 'leye']
+      print "WARNING! Labels of file '%s' are incomplete"%file_name
+    else:
+      raise ValueError("The number %d of annotations in file '%s' is not handled."%(count, file_name))
+      
     for i in range(count):
       line = f.readline()
       positions = line.split()
       assert len(positions) == 2
       if i == 0:
         # first line is the right eye
-        annotations['reye'] = (int(positions[1]),int(positions[0]))
-      elif i == 1:
-        # second line is the left eye
-        annotations['leye'] = (int(positions[1]),int(positions[0]))
-      else:
-        # enumerate all other annotations
-        annotations['key%d'%(i-1)] = (int(positions[1]),int(positions[0]))
+        annotations[labels[i]] = (int(positions[1]),int(positions[0]))
 
   elif str(annotation_type) == 'scface':
     # multiple lines, no header line, each line contains one position
