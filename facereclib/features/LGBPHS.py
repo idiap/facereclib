@@ -11,8 +11,12 @@ class LGBPHS:
   def __init__(self, setup):
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
     # Initializes LBPHS processor
+    real_h = setup.BLOCK_H + 2 * setup.RADIUS
+    real_w = setup.BLOCK_W + 2 * setup.RADIUS
+    real_oh = setup.OVERLAP_H + 2 * setup.RADIUS
+    real_ow = setup.OVERLAP_W + 2 * setup.RADIUS
     self.m_lgbphs_extractor = bob.ip.LBPHSFeatures(
-          setup.BLOCK_H, setup.BLOCK_W, setup.OVERLAP_H, setup.OVERLAP_W, 
+          real_h, real_w, real_oh, real_ow, 
           setup.RADIUS, setup.P_N, setup.CIRCULAR,
           setup.TO_AVERAGE, setup.ADD_AVERAGE_BIT, setup.UNIFORM, setup.ROT_INV
     )

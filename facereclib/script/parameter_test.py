@@ -164,8 +164,13 @@ def execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs,
     faceverify_script = faceverify_lfw
     face_verify_executable = "faceverify_lfw.py"
     
+    
   # write executed call to file
   index = parameters.index('--submit-db-file')
+
+  if args.failures_only and not os.path.exists(os.path.join(os.path.dirname(parameters[index+1]), 'failure.db')):
+    return []
+
   out_file = os.path.join(os.path.dirname(parameters[index+1]), args.submit_call_file)
   f = open(out_file, 'w')
   f.write(os.path.join(os.path.realpath(os.path.dirname(sys.argv[0])), face_verify_executable) + ' ')
@@ -281,6 +286,9 @@ def main():
   
   test_group.add_argument('-X', '--preprocessed-image-dir', type=str,
       help = 'Relative directory where the preprocessed images are located; implies --skip-preprocessing')
+      
+  test_group.add_argument('-Q', '--failures-only', action='store_true',
+      help = 'Only start the experiments that failed the last time (i.e., if there is a failure.db in the directory)')
 
   test_group.add_argument('--dry-run', action='store_true',
       help = 'Only generate call files, but do not execute them')

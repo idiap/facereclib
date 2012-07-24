@@ -31,6 +31,11 @@ class BICTool:
     for i in range(feature_1.shape[0]):
       sim[i] = self.m_distance_function(feature_1[i], feature_2[i])
     return sim
+    
+  def __limit__(self, count, length):
+    """Computes a quasi-random index list with the length from the given count of elements."""
+    increase = float(length)/float(count)
+    return [int((i +.5)*increase) for i in range(count)]
 
   def __intra_extra_pairs__(self, train_files):
     """Computes intrapersonal and extrapersonal pairs of features from given training files"""
@@ -62,12 +67,10 @@ class BICTool:
     if self.m_maximum_pair_count != None:
       if len(intra_pairs) > self.m_maximum_pair_count:
         print "Limiting intrapersonal pairs from", len(intra_pairs), "to", self.m_maximum_pair_count
-        numpy.random.shuffle(intra_pairs)
-        intra_pairs = intra_pairs[:self.m_maximum_pair_count]
+        intra_pairs = [intra_pairs[i] for i in self.__limit__(self.m_maximum_pair_count, len(intra_pairs))]
       if len(extra_pairs) > self.m_maximum_pair_count:
         print "Limiting extrapersonal pairs from", len(extra_pairs), "to", self.m_maximum_pair_count
-        numpy.random.shuffle(extra_pairs)
-        extra_pairs = extra_pairs[:self.m_maximum_pair_count]
+        extra_pairs = [extra_pairs[i] for i in self.__limit__(self.m_maximum_pair_count, len(extra_pairs))]
     
     return (intra_pairs, extra_pairs)
     
