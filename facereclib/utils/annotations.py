@@ -74,9 +74,7 @@ def read_annotations(file_name, annotation_type):
       line = f.readline()
       positions = line.split()
       assert len(positions) == 2
-      if i == 0:
-        # first line is the right eye
-        annotations[labels[i]] = (int(positions[1]),int(positions[0]))
+      annotations[labels[i]] = (int(positions[1]),int(positions[0]))
 
   elif str(annotation_type) == 'scface':
     # multiple lines, no header line, each line contains one position
