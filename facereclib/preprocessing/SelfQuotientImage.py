@@ -32,26 +32,9 @@ class SelfQuotientImage:
     real_w = config.CROP_W + 2 * config.OFFSET
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
     self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64)
+    self.m_fen_mask = numpy.ndarray((real_h, real_w), numpy.bool)
     self.m_sqi = bob.ip.SelfQuotientImage(sigma = config.sigma)
     self.m_sq_image = numpy.ndarray((real_h, real_w), numpy.float64) 
-
-  def __self_qoutient__(self, image):
-    """Computes the self-quotient image of the given input image."""
-    blurred_image = numpy.ndarray(image.shape, dtype=numpy.float64)
-    gauss = bob.ip.Gaussian(self.m_config.size, self.m_config.size, self.m_config.sigma, self.m_config.sigma)
-    gauss(image, blurred_image)
-    
-    # assert that we do not divide by zero
-    blurred_image[blurred_image < 1.] = 1.
-    
-    # TODO: Check if the multiplication with 100 is correct 
-    # and/or has an impact on the verification results 
-    sq_image = image / blurred_image * 100.
-    
-    # TODO: Use the log10 of the sq_image instead of multiplying by 100? 
-    
-    return sq_image
-    
 
   def __call__(self, input_file, output_file, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
@@ -66,8 +49,11 @@ class SelfQuotientImage:
     else:
       assert 'leye' in annotations and 'reye' in annotations
       # perform image normalization
-      self.m_fen(image, self.m_fen_image, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
+      mask = numpy.ndarray(image.shape, numpy.bool)
+      mask.fill(True)
+      self.m_fen(image, mask, self.m_fen_image, self.m_fen_mask, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
       self.m_sqi(self.m_fen_image, self.m_sq_image)
+      self.m_sq_image[self.m_fen_mask == False] = 0.
       # save the image to file
       bob.io.save(self.m_sq_image, output_file)
       

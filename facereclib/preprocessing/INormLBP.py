@@ -34,6 +34,7 @@ class INormLBP:
     real_ow = config.CROP_OW + config.OFFSET + config.RADIUS
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, real_oh, real_ow)
     self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
+    self.m_fen_mask = numpy.ndarray((real_h, real_w), numpy.bool)
     # lbp extraction
     self.m_lgb_extractor = bob.ip.LBP8R(config.RADIUS, config.CIRCULAR, config.TO_AVERAGE, config.ADD_AVERAGE_BIT, config.UNIFORM, config.ROT_INV, 0)
 
@@ -48,9 +49,13 @@ class INormLBP:
       inorm_image = self.m_lgb_extractor(image)
     else:
       assert 'leye' in annotations and 'reye' in annotations
+      mask = numpy.ndarray(image.shape, numpy.bool)
+      mask.fill(True)
       # perform image normalization
-      self.m_fen(image, self.m_fen_image, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
+      self.m_fen(image, mask, self.m_fen_image, self.m_fen_mask, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
       inorm_image = self.m_lgb_extractor(self.m_fen_image)
+      # I am not sure if 0 is the right value here...
+      inorm_image[self.m_fen_mask[2:-2,2:-2] == False] = 0
       
     # simply save the image to file
     inorm_image = inorm_image.astype(numpy.float64)

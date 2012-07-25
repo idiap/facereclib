@@ -31,7 +31,8 @@ class FaceCrop:
     real_h = config.CROP_H + 2 * config.OFFSET
     real_w = config.CROP_W + 2 * config.OFFSET
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
-    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
+    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64)
+    self.m_fen_mask = numpy.ndarray((real_h, real_w), numpy.bool)
 
   def __call__(self, input_file, output_file, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
@@ -44,8 +45,12 @@ class FaceCrop:
       bob.io.save(image, output_file)
     else:
       assert 'leye' in annotations and 'reye' in annotations
+      mask = numpy.ndarray(image.shape, numpy.bool)
+      mask.fill(True)
       # perform image normalization
-      self.m_fen(image, self.m_fen_image, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
+      self.m_fen(image, mask, self.m_fen_image, self.m_fen_mask, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
+      # assure that pixels from the masked area are 0
+      self.m_fen_image[self.m_fen_mask == False] = 0.
       # save output image    
       bob.io.save(self.m_fen_image, output_file)
 
@@ -60,15 +65,20 @@ class StaticFaceCrop:
     real_w = config.CROP_W + 2 * config.OFFSET
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
     self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
+    self.m_fen_mask = numpy.ndarray((real_h, real_w), numpy.bool)
 
   def __call__(self, input_file, output_file, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
     image = bob.io.load(str(input_file))
     # convert to grayscale
     image = utils.gray_channel(image, self.m_color_channel)
+    mask = numpy.ndarray(image.shape, numpy.bool)
+    mask.fill(True)
 
     # simply save the image to file
-    self.m_fen(image, self.m_fen_image, self.m_config.RIGHT_EYE[0], self.m_config.RIGHT_EYE[1], self.m_config.LEFT_EYE[0], self.m_config.LEFT_EYE[1])
+    self.m_fen(image, mask, self.m_fen_image, self.m_fen_mask, self.m_config.RIGHT_EYE[0], self.m_config.RIGHT_EYE[1], self.m_config.LEFT_EYE[0], self.m_config.LEFT_EYE[1])
+    # assure that pixels from the masked area are 0
+    self.m_fen_image[self.m_fen_mask == False] = 0.
     # save output image    
     bob.io.save(self.m_fen_image, output_file)
 

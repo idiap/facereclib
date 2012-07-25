@@ -33,6 +33,7 @@ class TanTriggs:
     real_w = config.CROP_W + 2 * config.OFFSET
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
     self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
+    self.m_fen_mask = numpy.ndarray((real_h, real_w), numpy.bool) 
     self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
     self.m_tan_image = numpy.ndarray((real_h, real_w), numpy.float64)
 
@@ -44,18 +45,20 @@ class TanTriggs:
       
     # perform image normalization
     if annotations == None:
-      self.m_fen_image = image
-      if self.m_tan_image.shape != image.shape:
-        self.m_tan_image =  numpy.ndarray(image.shape, numpy.float64)
+      tan_image = numpy.ndarray(image.shape, numpy.float64)
+      self.m_tan(image, tan_image)
+      # save output image    
+      bob.io.save(tan_image, output_file)
     else: 
       assert 'leye' in annotations and 'reye' in annotations
-      self.m_fen(image, self.m_fen_image, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
-      
-    # perform Tan-Triggs
-    self.m_tan(self.m_fen_image, self.m_tan_image)
-    
-    # save output image    
-    bob.io.save(self.m_tan_image, output_file)
+      mask = numpy.ndarray(image.shape, numpy.bool)
+      mask.fill(True)
+      self.m_fen(image, mask, self.m_fen_image, self.m_fen_mask, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
+      # perform Tan-Triggs
+      self.m_tan(self.m_fen_image, self.m_tan_image)
+      self.m_tan_image[self.m_fen_mask == False] = 0.
+      # save output image    
+      bob.io.save(self.m_tan_image, output_file)
     
     
 class StaticTanTriggs:
@@ -69,6 +72,7 @@ class StaticTanTriggs:
     real_w = config.CROP_W + 2 * config.OFFSET
     self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
     self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
+    self.m_fen_mask = numpy.ndarray((real_h, real_w), numpy.bool) 
     self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
     self.m_tan_image = numpy.ndarray((real_h, real_w), numpy.float64)
 
@@ -77,12 +81,15 @@ class StaticTanTriggs:
     image = bob.io.load(str(input_file))
     # convert to grayscale
     image = utils.gray_channel(image, self.m_color_channel)
+    mask = numpy.ndarray(image.shape, numpy.bool)
+    mask.fill(True)
       
     # perform image normalization
-    self.m_fen(image, self.m_fen_image, self.m_config.RIGHT_EYE[0], self.m_config.RIGHT_EYE[1], self.m_config.LEFT_EYE[0], self.m_config.LEFT_EYE[1])
+    self.m_fen(image, mask, self.m_fen_image, self.m_fen_mask, self.m_config.RIGHT_EYE[0], self.m_config.RIGHT_EYE[1], self.m_config.LEFT_EYE[0], self.m_config.LEFT_EYE[1])
       
     # perform Tan-Triggs
     self.m_tan(self.m_fen_image, self.m_tan_image)
+    self.m_tan_image[self.m_fen_mask == False] = 0.
     
     # save output image    
     bob.io.save(self.m_tan_image, output_file)
