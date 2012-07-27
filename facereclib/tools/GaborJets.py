@@ -12,7 +12,7 @@ class GaborJetTool:
     # graph machine for enroling models and comparing graphs
     self.m_graph_machine = bob.machine.GaborGraphMachine()
     # jet comparison function
-    self.m_similarity_function = setup.jet_similarity_function
+    self.m_similarity_function = bob.machine.GaborJetSimilarity(setup.similarity_type, setup.gabor_wavelet_transform) if hasattr(setup, 'gabor_wavelet_transform') else  bob.machine.GaborJetSimilarity(setup.similarity_type)
     self.m_average_model = setup.extract_averaged_model
 
     
