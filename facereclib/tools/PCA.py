@@ -13,7 +13,8 @@ class PCATool:
     """Initializes the PCA tool with the given setup"""
     self.m_config = setup
     self.m_machine = None
-    self.m_distance_function = self.m_config.distance_function
+    self.m_distance_function = setup.distance_function
+    self.m_factor = -1 if not hasattr(setup, 'is_distance_function') or setup.is_distance_function else 1.
     
 
   def train_projector(self, training_features, projector_file):
@@ -67,7 +68,7 @@ class PCATool:
   def score(self, model, probe):
     """Computes the distance of the model to the probe using the distance function taken from the config file"""
     # return the negative distance (as a similarity measure)
-    return - self.m_distance_function(model, probe)
+    return self.m_factor * self.m_distance_function(model, probe)
 
     
 

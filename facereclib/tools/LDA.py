@@ -15,7 +15,8 @@ class LDATool:
     self.m_pca_subpace_size = setup.pca_subspace if hasattr(setup, 'pca_subspace') else None
     self.m_lda_subspace_size = setup.lda_subspace if hasattr(setup, 'lda_subspace') else None
     self.m_machine = None
-    self.m_distance_function = self.m_config.distance_function
+    self.m_distance_function = setup.distance_function
+    self.m_factor = -1 if not hasattr(setup, 'is_distance_function') or setup.is_distance_function else 1.
     
     # declare that this LDA tool requires training data separated by identity 
     self.use_training_features_sorted_by_identity = True
@@ -23,11 +24,14 @@ class LDATool:
   def __read_data__(self, training_files):
     data = []
     for client in sorted(training_files.keys()):
+      print client
       # Arrayset for this client
       client_data = bob.io.Arrayset()
       client_files = training_files[client]
       # at least two files per client are required!
-      assert len(client_files) > 1
+      if len(client_files) < 2:
+        print "Skipping", len(client_files)
+        continue
       for k in sorted(client_files.keys()):
         # Loads the file
         feature = bob.io.load( str(client_files[k]) )
@@ -129,7 +133,7 @@ class LDATool:
   def score(self, model, probe):
     """Computes the distance of the model to the probe using the distance function taken from the config file"""
     # return the negative distance (as a similarity measure)
-    return - self.m_distance_function(model, probe)
+    return self.m_factor * self.m_distance_function(model, probe)
 
     
 
