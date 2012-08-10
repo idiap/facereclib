@@ -62,7 +62,7 @@ class FaceCrop:
         
     elif annotations == None:
       # simply return the image
-      return image
+      return image.astype(numpy.float64)
     else:
       
       assert ('leye' in annotations and 'reye' in annotations) or ('eye' in annotations and 'mouth' in annotations)
