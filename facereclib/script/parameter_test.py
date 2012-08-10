@@ -255,6 +255,40 @@ def execute_recursively(args, config, index, current_setup, dirs, preprocess_fil
     
 #  print "Leaving step", steps[index], "\n"
 
+def execute_parallel(args, config, preprocess_file, feature_file, tool_file):
+  job_ids = {}
+  dependency_level = 0
+  for index in range(len(steps)):
+    if hasattr(config, steps[index]):
+      setup = getattr(config, steps[index])
+      for keyword in setup:
+        first = True
+        for dir, replacement in setup[keyword].iteritems():
+          dep_level = dependency_level if first else index
+          dirs = {}
+          for i in range(index):
+            dirs[steps[i]] = '.'
+          for i in range(index, len(steps)):
+            dirs[steps[i]] = os.path.join(keyword, dir)
+          # replace the keyword with the current replacement
+          new_preprocess_file = write_config_file(args, preprocess_file, os.path.join(dirs[steps[index]], 'preprocessing'), keyword, replacement)
+          new_feature_file = write_config_file(args, feature_file, os.path.join(dirs[steps[index]], 'feature'), keyword, replacement)
+          new_tool_file = write_config_file(args, tool_file, os.path.join(dirs[steps[index]], 'tool'), keyword, replacement)
+
+          # execute the job
+          new_job_ids = execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs, get_skips(dep_level), get_deps(job_ids, dep_level))
+          first = False
+          
+          # genarate new dependencies
+          print "integrating job ids:", new_job_ids
+          print "into old job ids:", job_ids
+          job_ids.update(new_job_ids)
+          print "The registered job ids are now:", job_ids
+
+        dependency_level = index
+          
+  
+
 def main():
   """Main entry point for the parameter test. Try --help to see the parameters that can be specified."""
   # set up command line parser
@@ -290,6 +324,9 @@ def main():
   test_group.add_argument('-Q', '--failures-only', action='store_true',
       help = 'Only start the experiments that failed the last time (i.e., if there is a failure.db in the directory)')
 
+  test_group.add_argument('-u', '--uncorrelated', action='store_true',
+      help = 'Execute the single tests uncorrelated.')
+
   test_group.add_argument('--dry-run', action='store_true',
       help = 'Only generate call files, but do not execute them')
 
@@ -317,13 +354,16 @@ def main():
   global fake_job_id
   fake_job_id = 0
   
-  i = 0
-  while i < len(steps)-1:
-    # test if the config file for the given step is there
-    if hasattr(config, steps[i]):
-      execute_recursively(args, config, i, next_level(config,i), dirs, args.preprocessing, args.features, args.tool, 0)
-      break
-    i += 1
+  if args.uncorrelated:
+    execute_parallel(args, config, args.preprocessing, args.features, args.tool)
+  else:
+    i = 0
+    while i < len(steps)-1:
+      # test if the config file for the given step is there
+      if hasattr(config, steps[i]):
+        execute_recursively(args, config, i, next_level(config,i), dirs, args.preprocessing, args.features, args.tool, 0)
+        break
+      i += 1
 
   print "\nDone. The number of executed tasks is:", task_count, "which is split up into", job_count, "single jobs"
 
