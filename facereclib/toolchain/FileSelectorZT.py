@@ -53,27 +53,18 @@ class FileSelectorZT:
     """Returns the list of features that should be used for projector training"""
     return self.m_db.files(directory=self.m_config.features_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups='world', **self.__options__('world_projector_options'))  
 
-  def training_feature_list_by_clients(self, dir_type, step):
+  def training_feature_list_by_clients(self, dir_type):
     """Returns the list of training features, which is split up by the client ids."""
     # get the type of directory that is required
     if dir_type == 'preprocessed': 
       cur_dir = self.m_config.preprocessed_dir 
+      cur_world_options = self.__options__('world_extractor_options')
     elif dir_type == 'features': 
       cur_dir = self.m_config.features_dir 
+      cur_world_options = self.__options__('world_projector_options')
     elif dir_type == 'projected': 
       cur_dir = self.m_config.projected_dir
-
-    # if requested, define the subset of training data to be used for this step
-    if step == 'train_extractor':
-      print "==> getting training_feature_list_by_clients for step: train_extractor" # TODO: remove debug
-      cur_world_options = self.__options__('world_extractor_options')
-    elif step == 'train_projector':
-      print "==> getting training_feature_list_by_clients for step: train_projector" # TODO: remove debug
-      cur_world_options = self.__options__('world_projector_options')
-    elif step == 'train_enroler':
-      print "==> getting training_feature_list_by_clients for step: train_enroler" # TODO: remove debug
       cur_world_options = self.__options__('world_enroler_options')
-
     # iterate over all training clients
     features_by_clients_options = {}
     if 'subworld' in cur_world_options: features_by_clients_options['subworld'] = cur_world_options['subworld']

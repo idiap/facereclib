@@ -39,8 +39,7 @@ class DCTBlocks:
 
 
   def _dct_features(self, prep, norm_before = True, norm_after = True, add_xy = False):
-    # REVERT TO bob-1.0.4 block_shape = bob.ip.get_block_3d_output_shape(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
-    block_shape = bob.ip.get_block_shape(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
+    block_shape = bob.ip.get_block_3d_output_shape(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
     blocks = numpy.ndarray(block_shape, 'float64')
     bob.ip.block(prep, blocks, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
 
@@ -76,11 +75,9 @@ class DCTBlocks:
     
     TMP_tensor = numpy.ndarray((n_blocks, TMP_tensor_max), 'float64')
     
-    # REVERT TO bob-1.0.4
     #nBlocks = bob.ip.get_n_blocks(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
-    ## Note: nBlocks = ( n_blocks_h, n_blocks_w, block_h, block_w)
-    #nBlocks = bob.ip.get_block_4d_output_shape(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
-    nBlocks = bob.ip.get_n_blocks(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
+    # Note: nBlocks = ( n_blocks_h, n_blocks_w, block_h, block_w)
+    nBlocks = bob.ip.get_block_4d_output_shape(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
     for by in range(nBlocks[0]):
       for bx in range(nBlocks[1]):
         bi = bx + by * nBlocks[1]
