@@ -20,80 +20,46 @@
 import bob
 import numpy
 from .. import utils
+from .FaceCrop import FaceCrop
 
-
-class TanTriggs:
-  """Crops the face and applies Tan-Triggs algorithm"""
-
-  def __init__(self, config):
-    self.m_config = config
-    self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
-    # prepare image normalization
-    real_h = config.CROP_H + 2 * config.OFFSET
-    real_w = config.CROP_W + 2 * config.OFFSET
-    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
-    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
-    self.m_fen_mask = numpy.ndarray((real_h, real_w), numpy.bool) 
-    self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
-    self.m_tan_image = numpy.ndarray((real_h, real_w), numpy.float64)
-
-  def __call__(self, input_file, output_file, annotations = None):
-    """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
-    image = bob.io.load(str(input_file))
-    # convert to grayscale
-    image = utils.gray_channel(image, self.m_color_channel)
-      
-    # perform image normalization
-    if annotations == None:
-      tan_image = numpy.ndarray(image.shape, numpy.float64)
-      self.m_tan(image, tan_image)
-      # save output image    
-      bob.io.save(tan_image, output_file)
-    else: 
-      assert 'leye' in annotations and 'reye' in annotations
-      mask = numpy.ndarray(image.shape, numpy.bool)
-      mask.fill(True)
-      self.m_fen(image, mask, self.m_fen_image, self.m_fen_mask, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
-      # perform Tan-Triggs
-      self.m_tan(self.m_fen_image, self.m_tan_image)
-      self.m_tan_image[self.m_fen_mask == False] = 0.
-      # save output image    
-      bob.io.save(self.m_tan_image, output_file)
-    
-    
-class StaticTanTriggs:
-  """Crops the face to FIXED eye positions and applies Tan-Triggs algorithm"""
+class TanTriggs (FaceCrop):
+  """Crops the face and applies Tan&Triggs algorithm"""
 
   def __init__(self, config):
-    self.m_config = config
-    self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
-    # prepare image normalization
-    real_h = config.CROP_H + 2 * config.OFFSET
-    real_w = config.CROP_W + 2 * config.OFFSET
-    self.m_fen = bob.ip.FaceEyesNorm(config.CROP_EYES_D, real_h, real_w, config.CROP_OH + config.OFFSET, config.CROP_OW + config.OFFSET)
-    self.m_fen_image = numpy.ndarray((real_h, real_w), numpy.float64) 
-    self.m_fen_mask = numpy.ndarray((real_h, real_w), numpy.bool) 
-    self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
-    self.m_tan_image = numpy.ndarray((real_h, real_w), numpy.float64)
+    # call base class constructor
+    FaceCrop.__init__(self, config)
+    self.m_tan_triggs = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
+    self.m_tan_triggs_image = numpy.ndarray(self.m_image.shape, numpy.float64)
+
+
+  def tan_triggs(self, image):
+    """Performs the Tan&Triggs normalization to the given image"""
+    # create image in desired shape, if necessary
+    if self.m_tan_triggs_image.shape != image.shape:
+      self.m_tan_triggs_image = numpy.ndarray(image.shape, numpy.float64)
+    
+    # perform Tan&Triggs normalization
+    self.m_tan_triggs(image, self.m_tan_triggs_image)
+    
+    return self.m_tan_triggs_image
+
 
   def __call__(self, input_file, output_file, annotations = None):
-    """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
-    image = bob.io.load(str(input_file))
-    # convert to grayscale
-    image = utils.gray_channel(image, self.m_color_channel)
-    mask = numpy.ndarray(image.shape, numpy.bool)
-    mask.fill(True)
-      
-    # perform image normalization
-    self.m_fen(image, mask, self.m_fen_image, self.m_fen_mask, self.m_config.RIGHT_EYE[0], self.m_config.RIGHT_EYE[1], self.m_config.LEFT_EYE[0], self.m_config.LEFT_EYE[1])
-      
-    # perform Tan-Triggs
-    self.m_tan(self.m_fen_image, self.m_tan_image)
-    self.m_tan_image[self.m_fen_mask == False] = 0.
+    """Reads the input image, normalizes it according to the eye positions, performs Tan&Triggs normalization, and writes the resulting image"""
+    # crop the face using the base class method
+    image = self.crop_face(input_file, annotations)
     
-    # save output image    
-    bob.io.save(self.m_tan_image, output_file)
+    # perform Tan&Triggs normalization
+    tan_triggs_image = self.tan_triggs(image)
     
+    if annotations != None:
+      # set the positions that were masked during face cropping to 0
+      tan_triggs_image[self.m_mask == False] = 0.
+      
+    # save the image to file
+    bob.io.save(tan_triggs_image, output_file)
+
+
     
 class TanTriggsVideo:
   """Applies the Tan-Triggs algorithm to each frame in a video"""

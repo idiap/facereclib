@@ -22,8 +22,8 @@ class NullPreprocessor:
     image = image.astype(numpy.float64)
     bob.io.save(image, output_file)
 
-from FaceCrop import FaceCrop, StaticFaceCrop
-from TanTriggs import TanTriggs, StaticTanTriggs, TanTriggsVideo
+from FaceCrop import FaceCrop
+from TanTriggs import TanTriggs, TanTriggsVideo
 from HistogramEqualization import HistogramEqualization
 from SelfQuotientImage import SelfQuotientImage
 from INormLBP import INormLBP

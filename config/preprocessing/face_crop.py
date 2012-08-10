@@ -15,3 +15,6 @@ CROP_OH = CROP_H / 5.
 CROP_OW = CROP_W / 2. - 0.5
 OFFSET = 0
 
+EYE_POS = (16, 20)
+MOUTH_POS = (52, 20)
+

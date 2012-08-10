@@ -65,13 +65,10 @@ class FileSelectorZT:
 
     # if requested, define the subset of training data to be used for this step
     if step == 'train_extractor':
-      print "==> getting training_feature_list_by_clients for step: train_extractor" # TODO: remove debug
       cur_world_options = self.__options__('world_extractor_options')
     elif step == 'train_projector':
-      print "==> getting training_feature_list_by_clients for step: train_projector" # TODO: remove debug
       cur_world_options = self.__options__('world_projector_options')
     elif step == 'train_enroler':
-      print "==> getting training_feature_list_by_clients for step: train_enroler" # TODO: remove debug
       cur_world_options = self.__options__('world_enroler_options')
 
     # iterate over all training clients

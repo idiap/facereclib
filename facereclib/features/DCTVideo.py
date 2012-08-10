@@ -16,21 +16,21 @@ class DCTBlocksVideo(DCTBlocks):
 
 
   def read(self, filename):
-    """Read VideoFrameContainer containing preprocessed frames"""
-    frame_container = utils.VideoFrameContainer(str(filename))
+    """Read video.FrameContainer containing preprocessed frames"""
+    frame_container = utils.video.FrameContainer(str(filename))
     return frame_container
 
 
   def read_feature(self, filename):
-    """Read VideoFrameContainer containing features extracted from each frame"""
-    frame_container = utils.VideoFrameContainer(str(filename))
+    """Read video.FrameContainer containing features extracted from each frame"""
+    frame_container = utils.video.FrameContainer(str(filename))
     return frame_container
 
 
   def __call__(self, frame_container):
-    """Returns local DCT features computed from each frame in the input VideoFrameContainer"""
+    """Returns local DCT features computed from each frame in the input video.FrameContainer"""
 
-    output_frame_container = utils.VideoFrameContainer()
+    output_frame_container = utils.video.FrameContainer()
     for (frame_id, image, quality) in frame_container.frames():
       frame_dcts = DCTBlocks._dct_features(self,image)
       output_frame_container.add_frame(frame_id,frame_dcts,quality)

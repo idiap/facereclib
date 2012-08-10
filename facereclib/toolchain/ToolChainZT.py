@@ -386,7 +386,7 @@ class ToolChainZT:
         print "Score file '%s' already exists." % (score_file)
       else:
         # get the probe split
-        probe_objects = self.m_file_selector.probe_files_for_model(model_id,group, self.m_use_projected_dir)
+        probe_objects = self.m_file_selector.probe_files_for_model(model_id, group, self.m_use_projected_dir)
         model = self.__read_model__(self.m_file_selector.model_file(model_id, group))
         if preload_probes:
           # select the probe files for this model from all probes

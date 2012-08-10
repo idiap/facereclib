@@ -4,6 +4,7 @@
 # Roy Wallace <roy.wallace@idiap.ch>
 
 from annotations import read_annotations
+import video
 
 import os
 import bob
@@ -92,54 +93,4 @@ def probes_used_extract_scores(full_scores, same_probes):
       c+=1
   return model_scores 
 
-######
-
-class VideoFrameContainer:
-  """A class for reading, manipulating and saving video content. 
-  A VideoFrameContainer contains data for each of several frames. The data for a frame may represent e.g. a still image, or features extracted from an image. When loaded from or saved to a HDF5 file format, the contents are as follows: 
-      /data/<frame_id>, where each <frame_id> is an integer
-      /quality/<frame_id> (optional), where each <frame_id> is an integer, stores a vector of quality measures
-  """
-
-  def __init__(self, filename = None):
-    self._frames = []
-    if filename:
-      # Read content (frames) from HDF5File
-      f = bob.io.HDF5File(filename, "r")
-      f.cd('/data/')
-      for path in f.paths():
-
-        # Resolve frame_id
-        m = re.match('/data/([0-9]*)', path)
-        if not m: raise Exception('Failed to read frame_id')
-        frame_id = int(m.group(1))
-
-        # Read frame
-        data = f.read(path)
-        # - read corresponding quality vector if provided
-        if f.has_group('/quality') and f.has_key('/quality/' + str(frame_id)):
-          quality = f.read('/quality/' + str(frame_id))
-        else:
-          quality = None
-
-        self._frames.append((frame_id, data, quality))
-
-      del f
-
-  def frames(self):
-    """Generator that returns the 3-tuple (frame_id, data, quality) for each frame."""
-    for frame in self._frames:
-      yield frame
-
-  def add_frame(self,frame_id,frame,quality=None):
-    self._frames.append((frame_id,frame,quality))
-
-  def save(self,f):
-    """ Save to the specified HDF5File """
-    f.create_group('/data')
-    f.create_group('/quality')
-    for (frame_id, data, quality) in self._frames:
-      f.set('/data/' + str(frame_id), data)
-      if quality is not None:
-        f.set('/quality/' + str(frame_id), quality)
 
