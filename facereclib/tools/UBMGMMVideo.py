@@ -23,9 +23,11 @@ class UBMGMMVideoTool(UBMGMMTool):
     # Loads the data into an Arrayset
     arrayset = bob.io.Arrayset()
     for k in sorted(train_files.keys()):
+      print "-> UBMGMMVideoTool.train_projector processing train_file: " + str(train_files[k]) # TODO: remove debug
       frame_container = utils.VideoFrameContainer(str(train_files[k]))
-      for data in self.m_config.frame_selector_for_train(frame_container):
+      for data in self.m_config.frame_selector_for_train_projector(frame_container):
         arrayset.extend(data)
+    print "-> UBMGMMVideoTool.train_projector ready to train using " + str(len(arrayset)) + " vectors" # TODO: remove debug
 
     self._train_projector_using_arrayset(arrayset, projector_file)
    
@@ -44,6 +46,7 @@ class UBMGMMVideoTool(UBMGMMTool):
     arrayset = bob.io.Arrayset()
     for data in frame_selector(frame_container):
       arrayset.extend(data)
+    print "-> UBMGMMVideoTool.project ready to project using " + str(len(arrayset)) + " vectors" # TODO: remove debug
     return self._project_using_arrayset(arrayset)
     
 
@@ -55,6 +58,7 @@ class UBMGMMVideoTool(UBMGMMTool):
     for frame_container in frame_containers:
       for data in self.m_config.frame_selector_for_enrol(frame_container):
         arrayset.extend(data)
+    print "-> UBMGMMVideoTool.enrol ready to enrol using " + str(len(arrayset)) + " vectors" # TODO: remove debug
 
     # Use the Arrayset to train a GMM and return it
     return self._enrol_using_arrayset(arrayset)

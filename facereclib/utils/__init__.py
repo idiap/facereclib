@@ -112,7 +112,7 @@ class VideoFrameContainer:
         # Resolve frame_id
         m = re.match('/data/([0-9]*)', path)
         if not m: raise Exception('Failed to read frame_id')
-        frame_id = m.group(1)
+        frame_id = int(m.group(1))
 
         # Read frame
         data = f.read(path)

@@ -101,7 +101,7 @@ class ToolChainZT:
       else:
         # train model
         if hasattr(extractor, 'use_training_images_sorted_by_identity'):
-          train_files = self.m_file_selector.training_feature_list_by_clients('preprocessed')
+          train_files = self.m_file_selector.training_feature_list_by_clients('preprocessed', 'train_extractor')
           print "Training Extractor '%s' using %d identities: " %(extractor_file, len(train_files))
         else:
           train_files = self.m_file_selector.training_image_list() 
@@ -154,7 +154,7 @@ class ToolChainZT:
       else:
         # train projector
         if hasattr(tool, 'use_training_features_sorted_by_identity'):
-          train_files = self.m_file_selector.training_feature_list_by_clients('features')
+          train_files = self.m_file_selector.training_feature_list_by_clients('features', 'train_projector')
           print "Training Projector '%s' using %d identities: " %(projector_file, len(train_files))
         else:
           train_files = self.m_file_selector.training_feature_list() 
@@ -221,7 +221,7 @@ class ToolChainZT:
         if hasattr(tool, 'load_projector'):
           tool.load_projector(self.m_file_selector.projector_file())
         # training models
-        train_files = self.m_file_selector.training_feature_list_by_clients('projected' if use_projected_features else 'features')
+        train_files = self.m_file_selector.training_feature_list_by_clients('projected' if use_projected_features else 'features', 'train_enroler')
   
         # perform training
         print "Training Enroler '%s' using %d identities: " %(enroler_file, len(train_files))

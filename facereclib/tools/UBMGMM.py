@@ -154,7 +154,7 @@ class UBMGMMTool:
 
 
   def _project_using_arrayset(self, arrayset):
-#    print " -> Projecting %d feature vectors" % len(arrayset)
+    print " -> Projecting %d feature vectors" % len(arrayset)
     # Accumulates statistics
     self.m_gmm_stats.init()
     self.m_ubm.acc_statistics(arrayset, self.m_gmm_stats)

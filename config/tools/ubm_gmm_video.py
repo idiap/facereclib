@@ -27,9 +27,9 @@ scoring_function = bob.machine.linear_scoring
 
 ##############
 
-frame_selector_for_train   = facereclib.frame_selection.FirstNFrameSelector(1) # Frames for UBM training
-frame_selector_for_enrol   = facereclib.frame_selection.AllFrameSelector()     # Frames for enrolment
-frame_selector_for_project = facereclib.frame_selection.AllFrameSelector()     # Frames for scoring (via GMMStats)
+frame_selector_for_train_projector  = facereclib.frame_selection.FirstNFrameSelector(1) # Frames for UBM training
+frame_selector_for_enrol            = facereclib.frame_selection.AllFrameSelector()     # Frames for enrolment
+frame_selector_for_project          = facereclib.frame_selection.AllFrameSelector()     # Frames for scoring (via GMMStats)
 
 ##############
 
