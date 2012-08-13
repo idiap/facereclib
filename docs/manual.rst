@@ -51,7 +51,7 @@ These two commands will automatically download all desired packages (`local.bob.
 
 * ``--database``: The configuration file for the database
 * ``--preprocessing``: The configuration file for image preprocessing
-* ``--features-extraction``: The configuration file for feature extraction
+* ``--features``: The configuration file for feature extraction
 * ``--tool-chain``: The configuration file for the face verification tool chain
   
 If you want to run the experiments in the Idiap GRID, you simply can specify:

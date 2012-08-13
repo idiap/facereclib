@@ -58,7 +58,7 @@ class LGBPHS:
     """Extracts the local Gabor binary pattern histogram sequence from the given image"""
     # perform GWT on image
     if self.m_trafo_image == None or self.m_trafo_image.shape[1:2] != image.shape:
-      # create jet image
+      # create trafo image
       self.m_trafo_image = self.m_gwt.empty_trafo_image(image)
       
     # convert image to complex

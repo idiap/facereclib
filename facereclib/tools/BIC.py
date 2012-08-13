@@ -18,7 +18,7 @@ class BICTool:
     self.m_maximum_pair_count = setup.maximum_pair_count if hasattr(setup, 'maximum_pair_count') else None
     self.m_use_dffs = setup.USE_DFFS if hasattr(setup, 'USE_DFFS') else False
     if hasattr(setup, 'M_I') and hasattr(setup, 'M_E'):
-      self.m_M_I = setup.M_E
+      self.m_M_I = setup.M_I
       self.m_M_E = setup.M_E
       self.m_bic_machine = bob.machine.BICMachine(self.m_use_dffs)
     else:
