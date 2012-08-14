@@ -19,6 +19,7 @@
 
 import bob
 import numpy
+import math
 from .. import utils
 
 from .FaceCrop import FaceCrop
@@ -30,7 +31,8 @@ class SelfQuotientImage (FaceCrop):
     # call base class function
     FaceCrop.__init__(self, config)
     
-    self.m_self_quotient = bob.ip.SelfQuotientImage(sigma2 = config.sigma)
+    size = max(1, int(3. * math.sqrt(config.sigma)))
+    self.m_self_quotient = bob.ip.SelfQuotientImage(size_min = size, sigma2 = config.sigma)
     self.m_self_quotient_image = numpy.ndarray(self.m_image.shape, numpy.float64)
     
   def self_quotient(self, image):

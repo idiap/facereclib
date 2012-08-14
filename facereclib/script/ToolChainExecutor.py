@@ -245,7 +245,8 @@ class ToolChainExecutor:
       return job.id()
     else:
       self.m_fake_job_id += 1
-      print 'would have submitted job with id:', self.m_fake_job_id, "as", use_cmd, "\nwith dependencies", dependencies
+      print 'would have submitted job with id ', self.m_fake_job_id, "as:"
+      print ' '.join(use_cmd[2:]), "\nwith dependencies", dependencies
       return self.m_fake_job_id
     
 

@@ -28,7 +28,7 @@ def read_annotations(file_name, annotation_type):
     return None
   
   if not os.path.exists(file_name):
-    raise FileNotFoundException("The annotation file '%s' was not found"%file_name)
+    raise IOError("The annotation file '%s' was not found"%file_name)
   f = open(file_name, 'r')
 
   annotations = {}

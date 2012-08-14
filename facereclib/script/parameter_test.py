@@ -81,7 +81,7 @@ def write_config_file(args, infile_name, sub_dir, keyword, value):
 
 def directory_parameters(args, dirs):
   """This function generates the faceverify parameters that define the directories, where the data is stored. 
-     The directories are set such that data is reused whenever possible, but disjoined if needed."""
+     The directories are set such that data is reused whenever possible, but disjoint if needed."""
   parameters = []
   last_dir = '.'  
   # add directory parameters
@@ -168,8 +168,12 @@ def execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs,
   # write executed call to file
   index = parameters.index('--submit-db-file')
 
-  if args.failures_only and not os.path.exists(os.path.join(os.path.dirname(parameters[index+1]), 'failure.db')):
-    return []
+  if args.non_existent_only:
+    index2 = parameters.index('--sub-directory')
+    path = os.path.realpath(os.path.join(args.non_existent_only, parameters[index2+1], os.path.dirname(parameters[index+1])))
+    if os.path.exists(path):
+      print "Skipping path '" + path + "' since the results already exist."
+      return []
 
   out_file = os.path.join(os.path.dirname(parameters[index+1]), args.submit_call_file)
   f = open(out_file, 'w')
@@ -182,10 +186,15 @@ def execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs,
     job_ids = []
     print "Wrote call to file", out_file, "without executing the file"
   else:
-    verif_args = faceverify_script.parse_args(parameters)
-  
-    # execute the face verification  
-    job_ids = faceverify_script.face_verify(verif_args, external_dependencies = deps, external_fake_job_id = fake_job_id)
+    try:
+      verif_args = faceverify_script.parse_args(parameters)
+    
+      # execute the face verification  
+      job_ids = faceverify_script.face_verify(verif_args, external_dependencies = deps, external_fake_job_id = fake_job_id)
+    except Exception as e:
+      print "\nWARNING: The execution of job '" + out_file + "' was rejected! Reason:"
+      print '"', e, '"\n'
+      job_ids = []
     global job_count
     job_count += len(job_ids) 
     fake_job_id += 100
@@ -232,7 +241,7 @@ def execute_recursively(args, config, index, current_setup, dirs, preprocess_fil
 #    print "\nEntering step", steps[index], "for recursive calls"
 #    print "executing recursively on step '%s' with dependency step '%s'"%(steps[index], steps[dependency_level])
     # read out the current level of recursion
-    keyword = current_setup.keys()[0]
+    keyword = sorted(current_setup.keys())[0]
     replacements = current_setup[keyword]
     remaining_setup = remove_keyword(keyword, current_setup)
     
@@ -261,7 +270,7 @@ def execute_parallel(args, config, preprocess_file, feature_file, tool_file):
   for index in range(len(steps)):
     if hasattr(config, steps[index]):
       setup = getattr(config, steps[index])
-      for keyword in setup:
+      for keyword in sorted(setup.keys()):
         first = True
         for dir, replacement in setup[keyword].iteritems():
           dep_level = dependency_level if first else index
@@ -277,9 +286,10 @@ def execute_parallel(args, config, preprocess_file, feature_file, tool_file):
 
           # execute the job
           new_job_ids = execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs, get_skips(dep_level), get_deps(job_ids, dep_level))
-          first = False
+          if len(new_job_ids):
+            first = False
           
-          # genarate new dependencies
+          # generate new dependencies
           print "integrating job ids:", new_job_ids
           print "into old job ids:", job_ids
           job_ids.update(new_job_ids)
@@ -321,8 +331,8 @@ def main():
   test_group.add_argument('-X', '--preprocessed-image-dir', type=str,
       help = 'Relative directory where the preprocessed images are located; implies --skip-preprocessing')
       
-  test_group.add_argument('-Q', '--failures-only', action='store_true',
-      help = 'Only start the experiments that failed the last time (i.e., if there is a failure.db in the directory)')
+  test_group.add_argument('-Q', '--non-existent-only', type=str,
+      help = 'Only start the experiments that have not been executed successfully (i.e., where the given output directory does not exist yet)')
 
   test_group.add_argument('-u', '--uncorrelated', action='store_true',
       help = 'Execute the single tests uncorrelated.')
@@ -334,7 +344,7 @@ def main():
   # These are the parameters that are forwarded to the face verify script. Use -- to separate the parameter
   verif_group = parser.add_argument_group('Parameters for the face verification script')
   verif_group.add_argument('parameters', nargs = argparse.REMAINDER,
-      help = "Parameters directly passed to the face verify script. It should at least include the -d (and the -g) option. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify_[zt,gbu].py --help' for a complete list of options.")
+      help = "Parameters directly passed to the face verify script. It should at least include the -d (and the -g) option. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify_[zt,gbu,lfw].py --help' for a complete list of options.")
   
   # parse arguments 
   args = parser.parse_args()
@@ -358,7 +368,7 @@ def main():
     execute_parallel(args, config, args.preprocessing, args.features, args.tool)
   else:
     i = 0
-    while i < len(steps)-1:
+    while i < len(steps):
       # test if the config file for the given step is there
       if hasattr(config, steps[i]):
         execute_recursively(args, config, i, next_level(config,i), dirs, args.preprocessing, args.features, args.tool, 0)

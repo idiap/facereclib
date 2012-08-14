@@ -11,6 +11,8 @@ class DCTBlocks:
   """Extracts DCT blocks"""
   def __init__(self, config):
     self.m_config = config
+    if config.BLOCK_H < config.OVERLAP_H or config.BLOCK_W < config.OVERLAP_W:
+      raise ValueError("The overlap is bigger than the block size. This won't work. Please check your setup!")
 
   def _normalize_blocks(self, src):
     for i in range(src.shape[0]):
