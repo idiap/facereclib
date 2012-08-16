@@ -33,6 +33,9 @@ class LGBPHS:
     self.m_trafo_image = None
     self.m_split = setup.SPLIT
     self.m_use_phases = setup.USE_PHASES
+    self.m_sparse = setup.SPARSE if hasattr(setup, 'SPARSE') else False
+    if self.m_sparse and self.m_split:
+      raise ValueError("Sparse histograms cannot be split! Check your setup!")
   
   
   def __fill__(self, lgbphs_array, lgbphs_blocks, j):
@@ -52,7 +55,16 @@ class LGBPHS:
       for b in range(self.m_n_blocks):
         lgbphs_array[j * self.m_n_blocks + b, 0 : self.m_n_bins] = lgbphs_blocks[b][:]
     
-    
+  def __sparsify__(self, array):
+    assert len(array.shape) == 1 
+    indices = []
+    values = []
+    for i in range(array.shape[0]):
+      if array[i] != 0.:
+        indices.append(i)
+        values.append(array[i])
+
+    return numpy.array([indices, values], dtype = numpy.float64)
   
   def __call__(self, image):
     """Extracts the local Gabor binary pattern histogram sequence from the given image"""
@@ -107,6 +119,5 @@ class LGBPHS:
         
 
     # return the concatenated list of all histograms
-    return lgbphs_array
+    return self.__sparsify__(lgbphs_array) if self.m_sparse else lgbphs_array
 
-    
