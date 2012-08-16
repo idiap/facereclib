@@ -11,6 +11,8 @@ class LGBPHS:
   def __init__(self, setup):
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
     # Initializes LBPHS processor
+    if setup.BLOCK_H < setup.OVERLAP_H or setup.BLOCK_W < setup.OVERLAP_W:
+      raise ValueError("The overlap is bigger than the block size. This won't work. Please check your setup!")
     real_h = setup.BLOCK_H + 2 * setup.RADIUS
     real_w = setup.BLOCK_W + 2 * setup.RADIUS
     real_oh = setup.OVERLAP_H + 2 * setup.RADIUS

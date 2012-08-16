@@ -14,6 +14,8 @@ class LDATool:
     self.m_config = setup
     self.m_pca_subpace_size = setup.pca_subspace if hasattr(setup, 'pca_subspace') else None
     self.m_lda_subspace_size = setup.lda_subspace if hasattr(setup, 'lda_subspace') else None
+    if self.m_pca_subspace and self.m_lda_subspace and self.m_pca_subspace < self.m_lda_subspace:
+      raise ValueError("The LDA subspace is larger than the PCA subspace size. This won't work properly. Please check your setup!")
     self.m_machine = None
     self.m_distance_function = setup.distance_function
     self.m_factor = -1 if not hasattr(setup, 'is_distance_function') or setup.is_distance_function else 1.
