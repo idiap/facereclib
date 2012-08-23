@@ -115,7 +115,7 @@ class ToolChainExecutor:
   required_command_line_options = staticmethod(required_command_line_options)
 
 
-  def set_common_parameters(self, calling_file, parameters, fake_job_id = 0):
+  def set_common_parameters(self, calling_file, parameters, fake_job_id = 0, temp_dir = None):
     """Sets the parameters that the grid jobs require to be called.
     Just hand over all parameters of the faceverify script, and this function will do the rest.
     Please call this function before submitting jobs to the grid
@@ -135,7 +135,7 @@ class ToolChainExecutor:
     self.m_executable = os.path.join(self.m_bin_dir, os.path.basename(calling_file))
     # generate job manager and set the temp dir
     self.m_job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_db)
-    self.m_temp_dir = self.m_configuration.base_output_TEMP_dir
+    self.m_temp_dir = temp_dir if temp_dir else self.m_configuration.base_output_TEMP_dir
 
 
   def protocol_specific_configuration(self):
@@ -245,8 +245,8 @@ class ToolChainExecutor:
       return job.id()
     else:
       self.m_fake_job_id += 1
-      print 'would have submitted job with id ', self.m_fake_job_id, "as:"
-      print ' '.join(use_cmd[2:]), "\nwith dependencies", dependencies
+      print 'would have submitted job', name, 'with id', self.m_fake_job_id, 'as:'
+      print ' '.join(use_cmd[2:]), '\nwith dependencies', dependencies
       return self.m_fake_job_id
 
 

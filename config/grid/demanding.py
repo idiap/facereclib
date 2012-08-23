@@ -10,11 +10,11 @@ number_of_images_per_job = 1000
 preprocessing_queue = {}
 
 # number of features that one job should extract
-number_of_features_per_job = 100
+number_of_features_per_job = 1000
 extraction_queue = {}
 
 # number of features that one job should project
-number_of_projections_per_job = 20
+number_of_projections_per_job = 1000
 projection_queue = {}
 
 # number of models that should be enroled by one enrol job
