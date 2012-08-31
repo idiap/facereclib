@@ -9,6 +9,7 @@ from DCTVideo import DCTBlocksVideo
 from LGBPHS import LGBPHS
 from GridGraph import GridGraph
 from Eigenface import Eigenface
+from SIFTKeypoints import SIFTKeypoints
 
 
 import numpy
