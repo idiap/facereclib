@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import bob
+import xbob.db.banca
 
 # 0/ The database to use
 name = 'banca'
-db = bob.db.banca.Database()
+db = xbob.db.banca.Database()
 protocol = 'Mc'
 
 img_input_dir = "/idiap/home/rwallace/work/databases/banca-video/output/frames/" # hdf5 files, each containing cropped frames

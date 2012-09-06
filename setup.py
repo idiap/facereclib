@@ -19,15 +19,26 @@ setup(
         'faceverify_gbu.py = facereclib.script.faceverify_gbu:main',
         'faceverify_lfw.py = facereclib.script.faceverify_lfw:main',
         'faceverify_pose.py = facereclib.script.faceverify_pose:main',
-        'parameter_test.py = facereclib.script.parameter_test:main'
+        'parameter_test.py = facereclib.script.parameter_test:main',
+        'baselines.py = facereclib.script.baselines:main'
         ],
       },
 
     #long_description=open('doc/install.rst').read(),
 
     install_requires=[
-        "argparse", # better option parsing
+        "setuptools", # for whatever
         "gridtk",   # SGE job submission at Idiap
-        "bob",      # base signal proc./machine learning library
+        "bob >= 1.1.0a0",      # base signal proc./machine learning library
+        # databases
+        "xbob.db.arface",
+        "xbob.db.banca",
+        "xbob.db.frgc",
+        "xbob.db.lfw",
+        "xbob.db.gbu",
+        "xbob.db.mobio",
+        "xbob.db.multipie",
+        "xbob.db.scface",
+        "xbob.db.xm2vts"
     ],
 )

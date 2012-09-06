@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import bob
+import xbob.db.scface
 
 # setup for SCface database
 name = 'scface'
-db = bob.db.scface.Database()
+db = xbob.db.scface.Database()
 protocol = 'combined'
 
 img_input_dir = "/idiap/group/biometric/databases/scface/images/"
@@ -13,5 +13,5 @@ pos_input_dir = "/idiap/group/biometric/databases/scface/groundtruths/"
 pos_input_ext = ".pos"
 
 annotation_type = 'scface'
-world_projector_options = { 'subworld': "twothirds" } 
+world_projector_options = { 'subworld': "twothirds" }
 

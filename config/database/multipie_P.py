@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import bob
+import xbob.db.multipie
 
 # setup for Multi-PIE database
 name = 'multipie'
-db = bob.db.multipie.Database()
+db = xbob.db.multipie.Database()
 protocol = 'P'
 
 img_input_dir = "/idiap/resource/database/Multi-Pie/data/"

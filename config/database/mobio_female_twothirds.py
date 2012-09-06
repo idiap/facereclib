@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import bob
+import xbob.db.mobio
 
 # setup for MoBio database
 name = 'mobio'
-db = bob.db.mobio.Database()
+db = xbob.db.mobio.Database()
 protocol = 'female'
 
 img_input_dir = "/idiap/group/biometric/databases/mobio/still/images/selected-images/"

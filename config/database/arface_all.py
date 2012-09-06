@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import bob
+import xbob.db.arface
 
 # 0/ The database to use
 name = 'arface'
-db = bob.db.arface.Database()
+db = xbob.db.arface.Database()
 protocol = 'all'
 
 img_input_dir = "/idiap/resource/database/AR_Face/images"
