@@ -15,6 +15,7 @@ from PCA import PCATool
 from LDA import LDATool
 from PLDA import PLDATool
 from BIC import BICTool
+from PCAPLDA import PCAPLDATool
 
 
 import numpy
