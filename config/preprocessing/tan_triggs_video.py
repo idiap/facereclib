@@ -11,4 +11,3 @@ SIGMA1 = 2.
 SIZE = 5
 THRESHOLD = 10.
 ALPHA = 0.1
-

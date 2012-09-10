@@ -2,7 +2,7 @@
 
 import facereclib
 
-preprocessor = facereclib.preprocessing.HistogramEqualization
+preprocessor = facereclib.preprocessing.FaceCrop
 
 # color channel
 COLOR_CHANNEL = 'gray'
@@ -20,5 +20,5 @@ LEFT_EYE_POS  = (CROPPED_IMAGE_HEIGHT / 5, CROPPED_IMAGE_WIDTH / 4 * 3)
 EYE_POS = (16, 20)
 MOUTH_POS = (52, 20)
 
-# Offset as will be required by the feature extraction -- here: None
-OFFSET = 0
+# Offset as will be required by the feature extraction -- here: the radius of the LBP
+OFFSET = 2

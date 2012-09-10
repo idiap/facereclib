@@ -4,16 +4,25 @@ import facereclib
 
 preprocessor = facereclib.preprocessing.TanTriggs
 
-# color channel 
-color_channel = 'gray'
+# color channel
+COLOR_CHANNEL = 'gray'
 
 # Cropping
-CROP_H = 80
-CROP_W = CROP_H * 4 / 5
-CROP_EYES_D = CROP_W / 2. + 1.
-CROP_OH = CROP_H / 5.
-CROP_OW = CROP_W / 2. - 0.5
+CROPPED_IMAGE_HEIGHT = 80
+CROPPED_IMAGE_WIDTH  = CROPPED_IMAGE_HEIGHT * 4 / 5
+
+# eye positions for frontal images
+RIGHT_EYE_POS = (CROPPED_IMAGE_HEIGHT / 5, CROPPED_IMAGE_WIDTH / 4 - 1)
+LEFT_EYE_POS  = (CROPPED_IMAGE_HEIGHT / 5, CROPPED_IMAGE_WIDTH / 4 * 3)
+
+# eye and mouth position for profile images
+# (only appropriate for left profile images; change them for right profiles)
+EYE_POS = (16, 20)
+MOUTH_POS = (52, 20)
+
+# Offset as will be required by the feature extraction -- here: None
 OFFSET = 0
+
 
 # Tan Triggs
 GAMMA = 0.2

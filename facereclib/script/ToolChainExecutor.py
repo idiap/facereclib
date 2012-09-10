@@ -170,8 +170,10 @@ class ToolChainExecutor:
     self.m_configuration.features_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.features_dir)
     self.m_configuration.projected_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.projected_dir)
 
-    self.m_configuration.default_extension = ".hdf5"
-    self.m_configuration.annotation_extension = ".pos"
+    if not hasattr(self.m_configuration, "default_extension"):
+      self.m_configuration.default_extension = ".hdf5"
+    if not hasattr(self.m_configuration, "annotation_extension"):
+      self.m_configuration.annotation_extension = ".pos"
 
 
     # call configurations for the specific protocol
