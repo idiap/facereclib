@@ -7,14 +7,10 @@ name = 'multipie'
 db = xbob.db.multipie.Database()
 protocol = 'P110'
 
-img_input_dir = "/idiap/resource/database/Multi-Pie/data/"
-img_input_ext = ".png"
-pos_input_dir = "/idiap/group/biometric/annotations/multipie/"
-pos_input_ext = ".pos"
-
+image_directory = "/idiap/resource/database/Multi-Pie/data/"
+image_extension = ".png"
+annotation_directory = "/idiap/group/biometric/annotations/multipie/"
 annotation_type = 'multipie'
-all_files_options = { 'expressions': 'neutral' }
-world_extractor_options = { 'expressions': 'neutral' }
-world_projector_options = { 'expressions': 'neutral', 'world_sampling': 3, 'world_first': True }
-world_enroler_options = { 'expressions': 'neutral' }
+
+projector_training_options = { 'world_sampling': 3, 'world_first': True }
 

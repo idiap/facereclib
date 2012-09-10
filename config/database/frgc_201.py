@@ -7,10 +7,8 @@ name = 'frgc'
 db = xbob.db.frgc.Database()
 protocol = '2.0.1'
 
-img_input_dir = "/idiap/resource/database/frgc/FRGC-2.0-dist"
-img_input_ext = ".jpg"
-pos_input_dir = "/idiap/user/mguenther/annotations/FRGC"
-pos_input_ext = ".pos"
-
+image_directory = "/idiap/resource/database/frgc/FRGC-2.0-dist"
+image_extension = ".jpg"
+annotation_directory = "/idiap/user/mguenther/annotations/FRGC"
 annotation_type = 'named'
 

@@ -7,10 +7,8 @@ name = 'arface'
 db = xbob.db.arface.Database()
 protocol = 'all'
 
-img_input_dir = "/idiap/resource/database/AR_Face/images"
-img_input_ext = ".ppm"
-pos_input_dir = "/idiap/user/mguenther/annotations/ARface"
-pos_input_ext = ".pos"
-
+image_directory = "/idiap/resource/database/AR_Face/images"
+image_extension = ".ppm"
+annotation_directory = "/idiap/user/mguenther/annotations/ARface"
 annotation_type = 'eyecenter'
 

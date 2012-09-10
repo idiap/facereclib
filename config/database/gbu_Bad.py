@@ -7,13 +7,12 @@ name = 'gbu'
 db = xbob.db.gbu.Database()
 protocol = 'Bad'
 
-img_input_dir = '/idiap/resource/database/MBGC-V1'
-img_input_ext = '.jpg'
-pos_input_dir = '/idiap/user/mguenther/annotations/GBU'
-pos_input_ext = '.pos'
+image_directory = "/idiap/resource/database/MBGC-V1"
+image_extension = ".jpg"
+annotation_directory = "/idiap/user/mguenther/annotations/GBU"
 annotation_type = 'named'
 
 all_files_options = { 'subworld': 'x2' }
-world_extractor_options = { 'subworld': 'x2' }
-world_projector_options = { 'subworld': 'x2' }
-world_enroler_options = { 'subworld': 'x2' }
+extractor_training_options = { 'subworld': 'x2' }
+projector_training_options = { 'subworld': 'x2' }
+enroler_training_options = { 'subworld': 'x2' }

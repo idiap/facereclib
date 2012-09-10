@@ -48,9 +48,9 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
               configuration.__dict__[varname][k] = v[:]
 
       set_single(type, configuration, 'all_files_options')
-      set_single(type, configuration, 'world_extractor_options')
-      set_single(type, configuration, 'world_projector_options')
-      set_single(type, configuration, 'world_enroler_options')
+      set_single(type, configuration, 'extractor_training_options')
+      set_single(type, configuration, 'projector_training_options')
+      set_single(type, configuration, 'enroler_training_options')
 
     for p in args.protocols:
       self.m_database_configs[p] = imp.load_source(p, args.database)

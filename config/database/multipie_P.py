@@ -7,16 +7,10 @@ name = 'multipie'
 db = xbob.db.multipie.Database()
 protocol = 'P'
 
-img_input_dir = "/idiap/resource/database/Multi-Pie/data/"
-img_input_ext = ".png"
-pos_input_dir = "/idiap/user/mguenther/annotations/multipie/"
-pos_input_ext = ".pos"
-
+image_directory = "/idiap/resource/database/Multi-Pie/data/"
+image_extension = ".png"
+annotation_directory = "/idiap/user/mguenther/annotations/multipie/"
 annotation_type = 'multipie'
-all_files_options = {}
-world_extractor_options = {}
-world_projector_options = {}
-world_enroler_options = {}
 
 
 keywords = {

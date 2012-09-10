@@ -7,10 +7,8 @@ name = 'xm2vts'
 db = xbob.db.xm2vts.Database()
 protocol = 'lp1'
 
-img_input_dir = "/idiap/resource/database/xm2vtsdb/images/"
-img_input_ext = ".ppm"
-pos_input_dir = "/idiap/user/mguenther/annotations/XM2VTS/"
-pos_input_ext = ".pos"
-
+image_directory = "/idiap/resource/database/xm2vtsdb/images/"
+image_extension = ".ppm"
+annotation_directory = "/idiap/user/mguenther/annotations/XM2VTS/"
 annotation_type = 'eyecenter'
 

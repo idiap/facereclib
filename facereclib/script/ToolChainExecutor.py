@@ -21,7 +21,7 @@ class ToolChainExecutor:
     # remember command line arguments
     self.m_args = args
     # load configuration files specified on command line
-    self.m_database_config = imp.load_source('database', args.database)
+    self.m_configuration = imp.load_source('database', args.database)
     self.m_tool_config = imp.load_source('tool_chain', args.tool)
     self.m_preprocessor_config =  imp.load_source('preprocessor', args.preprocessor)
     self.m_feature_extractor_config = imp.load_source('feature_extractor', args.features)
@@ -146,23 +146,21 @@ class ToolChainExecutor:
   def __generate_configuration__(self):
     """generates the configuration based on configuration files
     and command line arguments"""
-    # copy database configuration
-    self.m_configuration = self.m_database_config
-    # add command line based arguments
 
+    # add command line based arguments
     user_name = os.environ['USER']
     if self.m_args.user_dir:
       self.m_configuration.base_output_USER_dir = os.path.join(self.m_args.user_dir, self.m_args.sub_dir)
     else:
-      self.m_configuration.base_output_USER_dir = os.path.join("/idiap/user", user_name, self.m_database_config.name, self.m_args.sub_dir)
+      self.m_configuration.base_output_USER_dir = os.path.join("/idiap/user", user_name, self.m_configuration.name, self.m_args.sub_dir)
 
     if self.m_args.temp_dir:
       self.m_configuration.base_output_TEMP_dir = os.path.join(self.m_args.temp_dir, self.m_args.sub_dir)
     else:
       if not self.m_args.grid:
-        self.m_configuration.base_output_TEMP_dir = os.path.join("/scratch", user_name, self.m_database_config.name, self.m_args.sub_dir)
+        self.m_configuration.base_output_TEMP_dir = os.path.join("/scratch", user_name, self.m_configuration.name, self.m_args.sub_dir)
       else:
-        self.m_configuration.base_output_TEMP_dir = os.path.join("/idiap/temp", user_name, self.m_database_config.name, self.m_args.sub_dir)
+        self.m_configuration.base_output_TEMP_dir = os.path.join("/idiap/temp", user_name, self.m_configuration.name, self.m_args.sub_dir)
 
     self.m_configuration.extractor_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.extractor_file)
     self.m_configuration.projector_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.projector_file)
@@ -171,6 +169,9 @@ class ToolChainExecutor:
     self.m_configuration.preprocessed_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.preprocessed_dir)
     self.m_configuration.features_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.features_dir)
     self.m_configuration.projected_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.projected_dir)
+
+    self.m_configuration.default_extension = ".hdf5"
+    self.m_configuration.annotation_extension = ".pos"
 
 
     # call configurations for the specific protocol

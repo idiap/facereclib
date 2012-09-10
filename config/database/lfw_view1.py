@@ -7,10 +7,10 @@ name = 'lfw'
 db = xbob.db.lfw.Database()
 protocol = 'view1'
 
-img_input_dir = '/idiap/resource/database/lfw/all_images'
-img_input_ext = '.jpg'
+image_directory = '/idiap/resource/database/lfw/all_images'
+image_extension = '.jpg'
 
-world_extractor_options = { 'subworld' : 'twofolds' }
-world_projector_options = {'subworld' : 'twofolds' }
-world_enroler_options = { 'subworld' : 'twofolds' }
+extractor_training_options = { 'subworld' : 'twofolds' }
+projector_training_options = {'subworld' : 'twofolds' }
+enroler_training_options = { 'subworld' : 'twofolds' }
 
