@@ -4,6 +4,7 @@
 
 import bob
 import numpy
+import sys
 
 
 class UBMGMMTool:
@@ -14,8 +15,8 @@ class UBMGMMTool:
     """Initializes the local UBM-GMM tool chain with the given file selector object"""
     self.m_config = setup
     self.m_ubm = None
-    if hasattr(self.m_config, 'scoring_function'):
-      self.m_scoring_function = self.m_config.scoring_function
+    if hasattr(setup, 'scoring_function'):
+      self.m_scoring_function = setup.scoring_function
 
     self.use_unprojected_features_for_model_enroll = True
 
@@ -54,7 +55,7 @@ class UBMGMMTool:
 
 
   def __multiply_vectors_by_factors__(self, matrix, vector):
-    """Used to unnormalise some data"""
+    """Used to unnormalize some data"""
     for i in range(0, matrix.shape[0]):
       for j in range(0, matrix.shape[1]):
         matrix[i, j] *= vector[j]
@@ -71,8 +72,8 @@ class UBMGMMTool:
     input_size = arrayset.shape[0]
 
     # Normalizes the Arrayset if required
-    print " -> Normalising the arrayset"
-    if not self.m_config.norm_KMeans:
+    print " -> Normalizing the arrayset"
+    if not self.m_config.NORMALIZE_BEFORE_K_MEANS:
       normalized_arrayset = arrayset
     else:
       (normalized_arrayset,std_arrayset) = self.__normalize_std_arrayset__(arrayset)
@@ -80,24 +81,24 @@ class UBMGMMTool:
 
     # Creates the machines (KMeans and GMM)
     print " -> Creating machines"
-    kmeans = bob.machine.KMeansMachine(self.m_config.n_gaussians, input_size)
-    self.m_ubm = bob.machine.GMMMachine(self.m_config.n_gaussians, input_size)
+    kmeans = bob.machine.KMeansMachine(self.m_config.GAUSSIANS, input_size)
+    self.m_ubm = bob.machine.GMMMachine(self.m_config.GAUSSIANS, input_size)
 
     # Creates the KMeansTrainer
     kmeans_trainer = bob.trainer.KMeansTrainer()
-    kmeans_trainer.convergence_threshold = self.m_config.convergence_threshold
-    kmeans_trainer.max_iterations = self.m_config.iterk
+    kmeans_trainer.convergence_threshold = self.m_config.GMM_TRAINING_THRESHOLD
+    kmeans_trainer.max_iterations = self.m_config.K_MEANS_TRAINING_ITERATIONS
 
     # Trains using the KMeansTrainer
-    print " -> Training kmeans"
+    print " -> Training K-Means"
     kmeans_trainer.train(kmeans, normalized_arrayset)
 
     [variances, weights] = kmeans.get_variances_and_weights_for_each_cluster(normalized_arrayset)
     means = kmeans.means
 
     # Undoes the normalization
-    print " -> Undoing normalisation"
-    if self.m_config.norm_KMeans:
+    print " -> Undoing normalization"
+    if self.m_config.NORMALIZE_BEFORE_K_MEANS:
       self.__multiply_vectors_by_factors__(means, std_arrayset)
       self.__multiply_vectors_by_factors__(variances, std_arrayset ** 2)
 
@@ -105,13 +106,13 @@ class UBMGMMTool:
     self.m_ubm.means = means
     self.m_ubm.variances = variances
     self.m_ubm.weights = weights
-    self.m_ubm.set_variance_thresholds(self.m_config.variance_threshold)
+    self.m_ubm.set_variance_thresholds(self.m_config.GMM_VARIANCE_THRESHOLD)
 
     # Trains the GMM
     print " -> Training GMM"
-    trainer = bob.trainer.ML_GMMTrainer(self.m_config.update_means, self.m_config.update_variances, self.m_config.update_weights)
-    trainer.convergence_threshold = self.m_config.convergence_threshold
-    trainer.max_iterations = self.m_config.iterg_train
+    trainer = bob.trainer.ML_GMMTrainer(self.m_config.UPDATE_MEANS, self.m_config.UPDATE_VARIANCES, self.m_config.UPDATE_WEIGTHS)
+    trainer.convergence_threshold = self.m_config.GMM_TRAINING_THRESHOLD
+    trainer.max_iterations = self.m_config.GMM_TRAINING_ITERATIONS
     trainer.train(self.m_ubm, arrayset)
 
     # Saves the UBM to file
@@ -139,14 +140,14 @@ class UBMGMMTool:
     """Reads the UBM model from file"""
     # read UBM
     self.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(projector_file))
-    self.m_ubm.set_variance_thresholds(self.m_config.variance_threshold)
+    self.m_ubm.set_variance_thresholds(self.m_config.GMM_VARIANCE_THRESHOLD)
     # prepare MAP_GMM_Trainer
-    if self.m_config.responsibilities_threshold == 0.:
-      self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_config.relevance_factor, True, False, False)
+    if self.m_config.RESPONSIBILITY_THRESHOLD > 0.:
+      self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_config.RELEVANCE_FACTOR, True, False, False, self.m_config.RESPONSIBILITY_THRESHOLD)
     else:
-      self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_config.relevance_factor, True, False, False, self.m_config.responsibilities_threshold)
-    self.m_trainer.convergence_threshold = self.m_config.convergence_threshold
-    self.m_trainer.max_iterations = self.m_config.iterg_enroll
+      self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_config.RELEVANCE_FACTOR, True, False, False)
+    self.m_trainer.convergence_threshold = self.m_config.GMM_TRAINING_THRESHOLD
+    self.m_trainer.max_iterations = self.m_config.GMM_ENROLL_ITERATIONS
     self.m_trainer.set_prior_gmm(self.m_ubm)
 
     # Initializes GMMStats object
@@ -154,7 +155,8 @@ class UBMGMMTool:
 
 
   def _project_using_arrayset(self, arrayset):
-    print " -> Projecting %d feature vectors" % len(arrayset)
+    print "\r -> Projecting %d feature vectors" % len(arrayset),
+    sys.stdout.flush()
     # Accumulates statistics
     self.m_gmm_stats.init()
     self.m_ubm.acc_statistics(arrayset, self.m_gmm_stats)
@@ -172,12 +174,12 @@ class UBMGMMTool:
   def _enroll_using_arrayset(self,arrayset):
     print " -> Enrolling with %d feature vectors" % len(arrayset)
     gmm = bob.machine.GMMMachine(self.m_ubm)
-    gmm.set_variance_thresholds(self.m_config.variance_threshold)
+    gmm.set_variance_thresholds(self.m_config.GMM_VARIANCE_THRESHOLD)
     self.m_trainer.train(gmm, arrayset)
     return gmm
 
   def enroll(self, feature_arrays):
-    """Enrols a GMM using MAP adaptation, given a list of 2D numpy.ndarray's of feature vectors"""
+    """Enrolls a GMM using MAP adaptation, given a list of 2D numpy.ndarray's of feature vectors"""
 
     # Load the data into an Arrayset
     arrayset = bob.io.Arrayset()

@@ -11,8 +11,8 @@ def command_line_arguments():
 
   parser.add_argument('-a', '--algorithms', choices = all_algorithms, default = ('eigenface',), nargs = '+', help = "Select one (or more) algorithms that you want to execute")
   parser.add_argument('--all', action = 'store_true', help = "Select all algorithms")
-  parser.add_argument('-d', '--database', choices = ('banca', 'mobio', 'multipie', 'frgc', 'arface', 'gbu', 'lfw', 'xm2vts', 'scface'), default = 'banca', help = "The database on which the baseline algorithm is executed")
-  parser.add_argument('-p', '--protocol', default = 'P', help = "The protocol for the desired database")
+  parser.add_argument('-d', '--database', choices = ('atnt', 'banca', 'mobio', 'multipie', 'frgc', 'arface', 'gbu', 'lfw', 'xm2vts', 'scface'), default = 'atnt', help = "The database on which the baseline algorithm is executed")
+  parser.add_argument('-p', '--protocol', default = 'None', help = "The protocol for the desired database")
   parser.add_argument('-s', '--share-preprocessing', action = 'store_true', help = "Share the preprocessed image directory?\nWARNING! When using this option and the --grid option, please let the first algorithm finish, until you start the next one")
 
   parser.add_argument('-g', '--grid', action = 'store_true', help = "Execute the algorithm in the SGE grid")
@@ -155,6 +155,8 @@ def main():
       grid      = os.path.join(config_dir, "grid", setup[2])
       if len(setup) > 3:
         preprocessing = os.path.join(config_dir, "preprocessing", setup[3])
+        if args.share_preprocessing:
+          print "IGNORING --share-preprocessing option for alogrithm '%s' since it requires a special setup"%algorithm
 
 
       sub_directory = os.path.join("baselines", algorithm)

@@ -2,30 +2,18 @@
 
 import facereclib
 
+# copy the settings of the UBM/GMM tool
+import os
+execfile(os.path.join(os.path.dirname(__file__), 'ubm_gmm.py'))
+
 tool = facereclib.tools.JFATool
 
-# 2/ GMM Training
-n_gaussians = 512
-iterk = 500
-iterg_train = 500
-end_acc = 0.0005
-var_thd = 0.0005
-update_weights = True
-update_means = True
-update_variances = True
-norm_KMeans = True
+# JFA Training
+SUBSPACE_DIMENSION_OF_U = 2 # U subspace dimension
+SUBSPACE_DIMENSION_OF_V = 2 # V subspace dimension
+JFA_TRAINING_ITERATIONS = 10 # Number of EM iterations for the JFA training
+JFA_TRAINING_THRESHOLD = 0.0005 # Same as for GMM
 
-# 3/ JFA Training
-ru = 2 # Already set above
-rv = 2 # Already set above
-relevance_factor = 4
-n_iter_train = 10
-n_iter_enrol = 1
-
-# 4/ JFA Enrolment and scoring
-iterg_enrol = 1
-convergence_threshold = 0.0005
-variance_threshold = 0.0005
-responsibilities_threshold = 0
-
-
+# JFA Enrollment and scoring
+JFA_ENROLL_ITERATIONS = 1 # Number of iterations for the enrollment phase
+JFA_VARIANCE_THRESHOLD = 0.0005 # Same as for GMM

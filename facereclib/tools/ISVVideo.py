@@ -35,7 +35,7 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
     print "-> ISVVideoTool.train_enroller"
     ########## (same as ISVTool.train_enroller)
     # create a JFABasemachine with the UBM from the base class
-    self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_config.ru)
+    self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_config.SUBSPACE_DIMENSION_OF_U)
     self.m_jfabase.ubm = self.m_ubm
 
     ########## calculate GMM stats from video.FrameContainers, using frame_selector_for_train_enroller
@@ -44,14 +44,14 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
       gmm_stats_client = []
       for j in sorted(train_files[k].keys()): # loop over videos of client k
         frame_container = utils.video.FrameContainer(str(train_files[k][j]))
-        this_gmm_stats = UBMGMMVideoTool.project(self,frame_container,self.m_config.frame_selector_for_train_enroller)
+        this_gmm_stats = UBMGMMVideoTool.project(self,frame_container,self.m_config.frame_selector_for_enroller_training)
         gmm_stats_client.append(this_gmm_stats)
       gmm_stats.append(gmm_stats_client)
     print "--> got gmm_stats for " + str(len(gmm_stats)) + " clients"
 
     ########## (same as ISVTool.train_enroller)
     t = bob.trainer.JFABaseTrainer(self.m_jfabase)
-    t.train_isv(gmm_stats, self.m_config.n_iter_train, self.m_config.relevance_factor)
+    t.train_isv(gmm_stats, self.m_config.JFA_TRAINING_ITERATIONS, self.m_config.RELEVANCE_FACTOR)
 
     # Save the JFA base AND the UBM into the same file
     self.m_jfabase.save(bob.io.HDF5File(enroller_file, "w"))
@@ -65,7 +65,7 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
     print "--> got " + str(len(enroll_features)) + " enroll_features"
 
     ########## (same as ISVTool.enroll)
-    self.m_trainer.enroll(enroll_features, self.m_config.n_iter_enroll)
+    self.m_trainer.enroll(enroll_features, self.m_config.JFA_ENROLL_ITERATIONS)
     return self.m_machine
 
   def read_feature(self, feature_file):

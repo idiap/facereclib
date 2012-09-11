@@ -24,7 +24,7 @@ class UBMGMMVideoTool(UBMGMMTool):
     arrayset = bob.io.Arrayset()
     for k in sorted(train_files.keys()):
       frame_container = utils.video.FrameContainer(str(train_files[k]))
-      for data in self.m_config.frame_selector_for_train_projector(frame_container):
+      for data in self.m_config.frame_selector_for_projector_training(frame_container):
         arrayset.extend(data)
 
     self._train_projector_using_arrayset(arrayset, projector_file)
@@ -38,7 +38,7 @@ class UBMGMMVideoTool(UBMGMMTool):
     """Computes GMM statistics against a UBM, given an input video.FrameContainer"""
 
     if frame_selector is None:
-      frame_selector = self.m_config.frame_selector_for_project
+      frame_selector = self.m_config.frame_selector_for_projection
 
     # Collect all feature vectors across all frames in a single array set
     arrayset = bob.io.Arrayset()

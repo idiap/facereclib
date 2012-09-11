@@ -32,6 +32,7 @@ setup(
         "bob >= 1.1.0a0",      # base signal proc./machine learning library
         # databases
         "xbob.db.arface",
+        "xbob.db.atnt",
         "xbob.db.banca",
         "xbob.db.frgc",
         "xbob.db.lfw",

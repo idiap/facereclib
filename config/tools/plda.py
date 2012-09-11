@@ -4,17 +4,16 @@ import facereclib
 
 tool = facereclib.tools.PLDATool
 
-n_inputs = 200
-acc = 1e-3
-n_iter = 200
+PLDA_TRAINING_ITERATIONS = 200 # Maximum number of iterations for the EM loop
+PLDA_TRAINING_THRESHOLD = 1e-3 # Threshold for ending the EM loop
 
-nf=16
-ng=16
-seed=0
-initFmethod=1
-initFratio=1
-initGmethod=1
-initGratio=1
-initSmethod=3
-initSratio=1
+SUBSPACE_DIMENSION_OF_F = 16 # Size of subspace F
+SUBSPACE_DIMENSION_OF_G = 16 # Size of subspace G
 
+INIT_SEED = 0 # seed for initializing
+INIT_F_METHOD = 1
+INIT_F_RATIO = 1
+INIT_G_METHOD = 1
+INIT_G_RATIO = 1
+INIT_S_METHOD = 3 #
+INIT_S_RATIO = 1

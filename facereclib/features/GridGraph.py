@@ -37,12 +37,12 @@ class GridGraph:
       raise "The setup of the Grid graph is unknown."
 
     self.m_jet_image = None
-    self.m_normalize_jets = setup.normalize_jets
-    if isinstance(setup.extract_phases, bool):
-      self.m_extract_phases = setup.extract_phases
+    self.m_normalize_jets = setup.NORMALIZE_GABOR_JETS
+    if isinstance(setup.EXTRACT_GABOR_PHASES, bool):
+      self.m_extract_phases = setup.EXTRACT_GABOR_PHASES
       self.m_inline_phases = False
     else:
-      self.m_extract_phases = setup.extract_phases == 'inline'
+      self.m_extract_phases = setup.EXTRACT_GABOR_PHASES == 'inline'
       self.m_inline_phases = self.m_extract_phases
 
     # preallocate memory for the face graph

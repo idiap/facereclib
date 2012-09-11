@@ -11,7 +11,7 @@ class PCATool:
 
   def __init__(self, setup):
     """Initializes the PCA tool with the given setup"""
-    self.m_subspace_dim = setup.SUBSPACE_DIMENSIONS
+    self.m_subspace_dim = setup.SUBSPACE_DIMENSION
     self.m_machine = None
     self.m_distance_function = setup.distance_function
     self.m_factor = -1 if not hasattr(setup, 'IS_DISTANCE_FUNCTION') or setup.IS_DISTANCE_FUNCTION else 1.

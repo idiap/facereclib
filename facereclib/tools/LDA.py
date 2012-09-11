@@ -11,9 +11,8 @@ class LDATool:
 
   def __init__(self, setup):
     """Initializes the LDA tool with the given configuration"""
-    self.m_config = setup
-    self.m_pca_subpace_size = setup.pca_subspace if hasattr(setup, 'pca_subspace') else None
-    self.m_lda_subspace_size = setup.lda_subspace if hasattr(setup, 'lda_subspace') else None
+    self.m_pca_subspace = setup.PCA_SUBSPACE_DIMENSION if hasattr(setup, 'PCA_SUBSPACE_DIMENSION') else None
+    self.m_lda_subspace = setup.LDA_SUBSPACE_DIMENSION if hasattr(setup, 'LDA_SUBSPACE_DIMENSION') else None
     if self.m_pca_subspace and self.m_lda_subspace and self.m_pca_subspace < self.m_lda_subspace:
       raise ValueError("The LDA subspace is larger than the PCA subspace size. This won't work properly. Please check your setup!")
     self.m_machine = None
@@ -26,7 +25,6 @@ class LDATool:
   def __read_data__(self, training_files):
     data = []
     for client in sorted(training_files.keys()):
-      print client
       # Arrayset for this client
       client_data = bob.io.Arrayset()
       client_files = training_files[client]
@@ -56,7 +54,7 @@ class LDATool:
     t = bob.trainer.SVDPCATrainer()
     machine, __eig_vals = t.train(data)
     # limit number of pcs
-    machine.resize(machine.shape[0], self.m_pca_subpace_size)
+    machine.resize(machine.shape[0], self.m_pca_subspace)
     return machine
 
 
@@ -80,7 +78,7 @@ class LDATool:
     # Initializes an arrayset for the data
     data = self.__read_data__(training_files)
 
-    if self.m_pca_subpace_size:
+    if self.m_pca_subspace:
       pca_machine = self.__train_pca__(data)
       data = self.__perform_pca__(pca_machine, data)
 
@@ -88,7 +86,7 @@ class LDATool:
     t = bob.trainer.FisherLDATrainer()
     self.m_machine, __eig_vals = t.train(data)
 
-    if self.m_pca_subpace_size:
+    if self.m_pca_subspace:
       # compute combined PCA/LDA projection matrix
       combined_matrix = numpy.dot(pca_machine.weights, self.m_machine.weights)
       # set new weigth matrix (and new mean vector) of novel machine
@@ -96,8 +94,8 @@ class LDATool:
       self.m_machine.input_subtract = pca_machine.input_subtract
 
     # resize the machine if desired
-    if self.m_lda_subspace_size:
-      self.m_machine.resize(self.m_machine.shape[0], self.m_lda_subspace_size)
+    if self.m_lda_subspace:
+      self.m_machine.resize(self.m_machine.shape[0], self.m_lda_subspace)
 
     self.m_machine.save(bob.io.HDF5File(projector_file, "w"))
 

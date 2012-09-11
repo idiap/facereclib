@@ -12,12 +12,13 @@ class LGBPHSTool:
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
     # nothing to be done here
     self.m_distance_function = setup.distance_function
-    self.m_factor =  -1. if setup.is_distance_function else 1
-    self.m_sparse = setup.SPARSE if hasattr(setup, 'SPARSE') else False
+    self.m_factor =  -1. if setup.IS_DISTANCE_FUNCTION else 1
+    self.m_sparse = setup.USE_SPARSE_HISTOGRAM if hasattr(setup, 'USE_SPARSE_HISTOGRAM') else False
 
   def enroll(self, enroll_features):
     """Enrolling model by taking the average of all features"""
-    if self.m_sparse:
+    sparse = len(enroll_features) > 0 and enroll_features[0].shape[0] == 2
+    if self.m_sparse or sparse:
       # get all indices for the sparse model
       values = {}
       # assert that we got sparse features
@@ -57,7 +58,8 @@ class LGBPHSTool:
 
   def score(self, model, probe):
     """Computes the score using the specified histogram measure; returns a similarity value (bigger -> better)"""
-    if self.m_sparse:
+    sparse = probe.shape[0] == 2
+    if self.m_sparse or sparse:
       return self.m_factor * self.m_distance_function(model[0,:], model[1,:], probe[0,:], probe[1,:])
     else:
       return self.m_factor * self.m_distance_function(model.flatten(), probe.flatten())
