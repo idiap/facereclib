@@ -68,8 +68,8 @@ class FileSelectorZT:
       cur_world_options = self.__options__('extractor_training_options')
     elif step == 'train_projector':
       cur_world_options = self.__options__('extractor_training_options')
-    elif step == 'train_enroler':
-      cur_world_options = self.__options__('enroler_training_options')
+    elif step == 'train_enroller':
+      cur_world_options = self.__options__('enroller_training_options')
 
     # iterate over all training clients
     features_by_clients_options = {}
@@ -102,18 +102,18 @@ class FileSelectorZT:
     return self.m_db.files(directory=self.m_config.projected_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.__options__('all_files_options'))
 
   ### Enrolment
-  def enroler_file(self):
-    """Returns the name of the file that includes the model trained for enrolment"""
-    utils.ensure_dir(os.path.dirname(self.m_config.enroler_file))
-    return self.m_config.enroler_file
+  def enroller_file(self):
+    """Returns the name of the file that includes the model trained for enrollment"""
+    utils.ensure_dir(os.path.dirname(self.m_config.enroller_file))
+    return self.m_config.enroller_file
 
 
   def model_ids(self, group):
     """Returns the sorted list of model ids from the given group"""
     return sorted(self.m_db.models(protocol=self.m_config.protocol, groups=group))
 
-  def enrol_files(self, model_id, group, use_projected_dir):
-    """Returns the list of model features used for enrolment of the given model_id from the given group"""
+  def enroll_files(self, model_id, group, use_projected_dir):
+    """Returns the list of model features used for enrollment of the given model_id from the given group"""
     used_dir = self.m_config.projected_dir if use_projected_dir else self.m_config.features_dir
     return self.m_db.files(directory=used_dir, extension=self.m_config.default_extension, groups=group, protocol=self.m_config.protocol, model_ids=(model_id,), purposes='enrol')
 
@@ -128,8 +128,8 @@ class FileSelectorZT:
     """Returns the sorted list of T-Norm-model ids from the given group"""
     return sorted(self.m_db.tmodels(protocol=self.m_config.protocol, groups=group))
 
-  def tenrol_files(self, model_id, group, use_projected_dir):
-    """Returns the list of T-model features used for enrolment of the given model_id from the given group"""
+  def tenroll_files(self, model_id, group, use_projected_dir):
+    """Returns the list of T-model features used for enrollment of the given model_id from the given group"""
     used_dir = self.m_config.projected_dir if use_projected_dir else self.m_config.features_dir
     return self.m_db.tfiles(directory=used_dir, extension=self.m_config.default_extension, groups=group, protocol=self.m_config.protocol, model_ids=(model_id,))
 

@@ -20,9 +20,9 @@ class PLDATool:
 
 
   def __load_data_by_client__(self, training_files):
-    """Loads the data (arrays) from a list of list of filenames, 
+    """Loads the data (arrays) from a list of list of filenames,
     one list for each client, and put them in a list of Arraysets."""
-    
+
     # Initializes an arrayset for the data
     data = []
     for client in sorted(training_files.keys()):
@@ -43,10 +43,10 @@ class PLDATool:
     """Generates the PLDA base model from a list of Arraysets (one per identity),
        and a set of training parameters.
        Returns the trained PLDABaseMachine."""
-       
+
     # read data
     data = self.__load_data_by_client__(training_features)
-    
+
     # create trainer
     t = bob.trainer.PLDABaseTrainer(self.m_config.nf, self.m_config.ng, self.m_config.acc, self.m_config.n_iter, False)
     t.seed = self.m_config.seed
@@ -60,7 +60,7 @@ class PLDATool:
     # train machine
     self.m_plda_base_machine = bob.machine.PLDABaseMachine(self.m_config.n_inputs, self.m_config.nf, self.m_config.ng)
     t.train(self.m_plda_base_machine, data)
-    
+
     # write machine to file
     self.m_plda_base_machine.save(bob.io.HDF5File(str(projector_file), "w"))
 
@@ -72,9 +72,9 @@ class PLDATool:
     self.m_plda_machine = bob.machine.PLDAMachine(self.m_plda_base_machine)
     self.m_plda_trainer = bob.trainer.PLDATrainer(self.m_plda_machine)
 
-  def enrol(self, enrol_features):
-    """Enrols the model by computing an average of the given input vectors"""
-    self.m_plda_trainer.enrol(bob.io.Arrayset(enrol_features))
+  def enroll(self, enroll_features):
+    """Enrolls the model by computing an average of the given input vectors"""
+    self.m_plda_trainer.enrol(bob.io.Arrayset(enroll_features))
     return self.m_plda_machine
 
   def read_model(self, model_file):
@@ -84,10 +84,10 @@ class PLDATool:
     # attach base machine
     plda_machine.plda_base = self.m_plda_base_machine
     return plda_machine
-    
+
   def score(self, model, probe):
     """Computes the PLDA score for the given model and probe"""
     return model.forward(probe)
 
-    
+
 

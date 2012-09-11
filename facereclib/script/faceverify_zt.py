@@ -51,11 +51,11 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.train_projector(self.m_tool, force = self.m_args.force)
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
       self.m_tool_chain.project_features(self.m_tool, force = self.m_args.force, extractor = self.m_feature_extractor)
-    # model enrolment
-    if not self.m_args.skip_enroler_training and hasattr(self.m_tool, 'train_enroler'):
-      self.m_tool_chain.train_enroler(self.m_tool, force = self.m_args.force)
-    if not self.m_args.skip_model_enrolment:
-      self.m_tool_chain.enrol_models(self.m_tool, self.m_feature_extractor, not self.m_args.no_zt_norm, groups = self.m_args.groups, force = self.m_args.force)
+    # model enrollment
+    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+      self.m_tool_chain.train_enroller(self.m_tool, force = self.m_args.force)
+    if not self.m_args.skip_model_enrollment:
+      self.m_tool_chain.enroll_models(self.m_tool, self.m_feature_extractor, not self.m_args.no_zt_norm, groups = self.m_args.groups, force = self.m_args.force)
     # score computation
     if not self.m_args.skip_score_computation:
       self.m_tool_chain.compute_scores(self.m_tool, not self.m_args.no_zt_norm, groups = self.m_args.groups, preload_probes = self.m_args.preload_probes, force = self.m_args.force)
@@ -122,42 +122,42 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               **self.m_grid_config.projection_queue)
       deps.append(job_ids['feature_projection'])
 
-    # model enrolment training
-    if not self.m_args.skip_enroler_training and hasattr(self.m_tool, 'train_enroler'):
-      job_ids['enrolment_training'] = self.submit_grid_job(
-              '--train-enroler',
+    # model enrollment training
+    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+      job_ids['enrollment_training'] = self.submit_grid_job(
+              '--train-enroller',
               name = "e-training",
               dependencies = deps,
               **self.m_grid_config.training_queue)
-      deps.append(job_ids['enrolment_training'])
+      deps.append(job_ids['enrollment_training'])
 
-    # enrol models
-    enrol_deps_n = {}
-    enrol_deps_t = {}
+    # enroll models
+    enroll_deps_n = {}
+    enroll_deps_t = {}
     score_deps = {}
     concat_deps = {}
     for group in self.m_args.groups:
-      enrol_deps_n[group] = deps[:]
-      enrol_deps_t[group] = deps[:]
-      if not self.m_args.skip_model_enrolment:
-        job_ids['enrol_%s_N'%group] = self.submit_grid_job(
-                '--enrol-models --group=%s --model-type=N'%group,
-                name = "enrol-N-%s"%group,
+      enroll_deps_n[group] = deps[:]
+      enroll_deps_t[group] = deps[:]
+      if not self.m_args.skip_model_enrollment:
+        job_ids['enroll_%s_N'%group] = self.submit_grid_job(
+                '--enroll-models --group=%s --model-type=N'%group,
+                name = "enroll-N-%s"%group,
                 list_to_split = self.m_file_selector.model_ids(group),
-                number_of_files_per_job = self.m_grid_config.number_of_models_per_enrol_job,
+                number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
                 dependencies = deps,
-                **self.m_grid_config.enrol_queue)
-        enrol_deps_n[group].append(job_ids['enrol_%s_N'%group])
+                **self.m_grid_config.enroll_queue)
+        enroll_deps_n[group].append(job_ids['enroll_%s_N'%group])
 
         if not self.m_args.no_zt_norm:
-          job_ids['enrol_%s_T'%group] = self.submit_grid_job(
-                  '--enrol-models --group=%s --model-type=T'%group,
-                  name = "enrol-T-%s"%group,
+          job_ids['enroll_%s_T'%group] = self.submit_grid_job(
+                  '--enroll-models --group=%s --model-type=T'%group,
+                  name = "enroll-T-%s"%group,
                   list_to_split = self.m_file_selector.tmodel_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_enrol_job,
+                  number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
                   dependencies = deps,
-                  **self.m_grid_config.enrol_queue)
-          enrol_deps_t[group].append(job_ids['enrol_%s_T'%group])
+                  **self.m_grid_config.enroll_queue)
+          enroll_deps_t[group].append(job_ids['enroll_%s_T'%group])
 
       # compute A,B,C, and D scores
       if not self.m_args.skip_score_computation:
@@ -166,7 +166,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                 name = "score-A-%s"%group,
                 list_to_split = self.m_file_selector.model_ids(group),
                 number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
-                dependencies = enrol_deps_n[group],
+                dependencies = enroll_deps_n[group],
                 **self.m_grid_config.score_queue)
         concat_deps[group] = [job_ids['score_%s_A'%group]]
 
@@ -176,7 +176,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                   name = "score-B-%s"%group,
                   list_to_split = self.m_file_selector.model_ids(group),
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
-                  dependencies = enrol_deps_n[group],
+                  dependencies = enroll_deps_n[group],
                   **self.m_grid_config.score_queue)
 
           job_ids['score_%s_C'%group] = self.submit_grid_job(
@@ -184,7 +184,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                   name = "score-C-%s"%group,
                   list_to_split = self.m_file_selector.tmodel_ids(group),
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
-                  dependencies = enrol_deps_t[group],
+                  dependencies = enroll_deps_t[group],
                   **self.m_grid_config.score_queue)
 
           job_ids['score_%s_D'%group] = self.submit_grid_job(
@@ -192,7 +192,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                   name = "score-D-%s"%group,
                   list_to_split = self.m_file_selector.tmodel_ids(group),
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
-                  dependencies = enrol_deps_t[group],
+                  dependencies = enroll_deps_t[group],
                   **self.m_grid_config.score_queue)
 
           # compute zt-norm
@@ -251,30 +251,30 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
           force = self.m_args.force,
           extractor = self.m_feature_extractor)
 
-    # train model enroler
-    if self.m_args.train_enroler:
-      self.m_tool_chain.train_enroler(
+    # train model enroller
+    if self.m_args.train_enroller:
+      self.m_tool_chain.train_enroller(
           self.m_tool,
           force = self.m_args.force)
 
-    # enrol models
-    if self.m_args.enrol_models:
+    # enroll models
+    if self.m_args.enroll_models:
       if self.m_args.model_type == 'N':
-        self.m_tool_chain.enrol_models(
+        self.m_tool_chain.enroll_models(
             self.m_tool,
             self.m_feature_extractor,
             not self.m_args.no_zt_norm,
-            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job),
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
             groups = [self.m_args.group],
             types = ['N'],
             force = self.m_args.force)
 
       else:
-        self.m_tool_chain.enrol_models(
+        self.m_tool_chain.enroll_models(
             self.m_tool,
             self.m_feature_extractor,
             not self.m_args.no_zt_norm,
-            indices = self.indices(self.m_file_selector.tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job),
+            indices = self.indices(self.m_file_selector.tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
             groups = [self.m_args.group],
             types = ['T'],
             force = self.m_args.force)
@@ -359,9 +359,9 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = argparse.SUPPRESS) #'Perform feature extraction training'
   parser.add_argument('--feature-projection', action='store_true', dest = 'projection',
       help = argparse.SUPPRESS) #'Perform feature projection'
-  parser.add_argument('--train-enroler', action='store_true', dest = 'train_enroler',
-      help = argparse.SUPPRESS) #'Perform enrolment training'
-  parser.add_argument('--enrol-models', action='store_true', dest = 'enrol_models',
+  parser.add_argument('--train-enroller', action='store_true', dest = 'train_enroller',
+      help = argparse.SUPPRESS) #'Perform enrollment training'
+  parser.add_argument('--enroll-models', action='store_true', dest = 'enroll_models',
       help = argparse.SUPPRESS) #'Generate the given range of models from the features'
   parser.add_argument('--model-type', type = str, choices = ['N', 'T'], metavar = 'TYPE',
       help = argparse.SUPPRESS) #'Which type of models to generate (Normal or TModels)'

@@ -9,13 +9,13 @@ from .. import utils
 
 class ToolChainZT:
   """This class includes functionalities for a default tool chain to produce verification scores"""
-  
+
   def __init__(self, file_selector):
     """Initializes the tool chain object with the current file selector"""
     self.m_file_selector = file_selector
-    
+
   def __save_feature__(self, data, filename):
-    """Saves the given feature to the given file""" 
+    """Saves the given feature to the given file"""
     utils.ensure_dir(os.path.dirname(filename))
     if hasattr(self.m_tool, 'save_feature'):
       # Tool has a save_feature function, so use this one
@@ -26,7 +26,7 @@ class ToolChainZT:
     else:
       # this is most probably a numpy.ndarray that can be saved by bob.io.save
       bob.io.save(data, str(filename))
-      
+
   def __save_model__(self, data, filename, tool = None):
     utils.ensure_dir(os.path.dirname(filename))
     if tool == None:
@@ -40,7 +40,7 @@ class ToolChainZT:
     else:
       # this is most probably a numpy.ndarray that can be saved by bob.io.save
       bob.io.save(data, str(filename))
- 
+
   def __check_file__(self, filename, force, expected_file_size = 1):
     """Checks if the file exists and has size greater or equal to expected_file_size.
     If the file is to small, or if the force option is set to true, the file is removed.
@@ -53,16 +53,16 @@ class ToolChainZT:
       else:
         return True
     return False
-    
+
 
 
   def preprocess_images(self, preprocessor, indices=None, force=False):
     """Preprocesses the images with the given preprocessing tool"""
-    # get the file lists      
+    # get the file lists
     image_files = self.m_file_selector.original_image_list()
     preprocessed_image_files = self.m_file_selector.preprocessed_image_list()
 
-    # select a subset of keys to iterate    
+    # select a subset of keys to iterate
     keys = sorted(image_files.keys())
     if indices != None:
       keys = keys[indices[0]:indices[1]]
@@ -90,8 +90,8 @@ class ToolChainZT:
         preprocessed_image = preprocessor(str(image_file), str(preprocessed_image_file), annotations)
 
 
-  
-  
+
+
   def train_extractor(self, extractor, force = False):
     """Trains the feature extractor, if it requires training"""
     if hasattr(extractor,'train'):
@@ -104,12 +104,12 @@ class ToolChainZT:
           train_files = self.m_file_selector.training_feature_list_by_clients('preprocessed', 'train_extractor')
           print "Training Extractor '%s' using %d identities: " %(extractor_file, len(train_files))
         else:
-          train_files = self.m_file_selector.training_image_list() 
+          train_files = self.m_file_selector.training_image_list()
           print "Training Extractor '%s' using %d training files: " %(extractor_file, len(train_files))
         extractor.train(train_files, extractor_file)
 
-    
-  
+
+
   def extract_features(self, extractor, indices = None, force=False):
     """Extracts the features using the given extractor"""
     self.m_tool = extractor
@@ -128,7 +128,7 @@ class ToolChainZT:
     for k in keys:
       image_file = image_files[k]
       feature_file = feature_files[k]
-      
+
       if not self.__check_file__(feature_file, force):
         # load image
         if hasattr(extractor,'read'):
@@ -142,13 +142,13 @@ class ToolChainZT:
         # Save feature
         self.__save_feature__(feature, str(feature_file))
 
-      
+
 
   def train_projector(self, tool, force=False):
     """Train the feature extraction process with the preprocessed images of the world group"""
     if hasattr(tool,'train_projector'):
       projector_file = self.m_file_selector.projector_file()
-      
+
       if self.__check_file__(projector_file, force, 1000):
         print "Projector '%s' already exists." % projector_file
       else:
@@ -157,12 +157,12 @@ class ToolChainZT:
           train_files = self.m_file_selector.training_feature_list_by_clients('features', 'train_projector')
           print "Training Projector '%s' using %d identities: " %(projector_file, len(train_files))
         else:
-          train_files = self.m_file_selector.training_feature_list() 
+          train_files = self.m_file_selector.training_feature_list()
           print "Training Projector '%s' using %d training files: " %(projector_file, len(train_files))
-  
+
         # perform training
         tool.train_projector(train_files, str(projector_file))
- 
+
 
 
   def project_features(self, tool, extractor, indices = None, force=False):
@@ -173,7 +173,7 @@ class ToolChainZT:
     if hasattr(tool, 'project'):
       if hasattr(tool, 'load_projector'):
         tool.load_projector(self.m_file_selector.projector_file())
-      
+
       feature_files = self.m_file_selector.feature_list()
       projected_files = self.m_file_selector.projected_list()
       # extract the features
@@ -186,7 +186,7 @@ class ToolChainZT:
       for k in keys:
         feature_file = feature_files[k]
         projected_file = projected_files[k]
-        
+
         if not self.__check_file__(projected_file, force):
           # load feature
           #feature = bob.io.load(str(feature_file))
@@ -196,7 +196,7 @@ class ToolChainZT:
           # write it
           utils.ensure_dir(os.path.dirname(projected_file))
           self.__save_feature__(projected, projected_file)
-  
+
 
 
   def __read_feature__(self, feature_file, tool = None):
@@ -207,44 +207,44 @@ class ToolChainZT:
       return tool.read_feature(str(feature_file))
     else:
       return bob.io.load(str(feature_file))
-  
-  def train_enroler(self, tool, force=False):
-    """Traines the model enrolment stage using the projected features"""
+
+  def train_enroller(self, tool, force=False):
+    """Trains the model enrollment stage using the projected features"""
     self.m_tool = tool
-    use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enrol')
-    if hasattr(tool, 'train_enroler'):
-      enroler_file = self.m_file_selector.enroler_file()
-      
-      if self.__check_file__(enroler_file, force, 1000):
-        print "Enroler '%s' already exists." % enroler_file
+    use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enroll')
+    if hasattr(tool, 'train_enroller'):
+      enroller_file = self.m_file_selector.enroller_file()
+
+      if self.__check_file__(enroller_file, force, 1000):
+        print "Enroller '%s' already exists." % enroller_file
       else:
         if hasattr(tool, 'load_projector'):
           tool.load_projector(self.m_file_selector.projector_file())
         # training models
-        train_files = self.m_file_selector.training_feature_list_by_clients('projected' if use_projected_features else 'features', 'train_enroler')
-  
+        train_files = self.m_file_selector.training_feature_list_by_clients('projected' if use_projected_features else 'features', 'train_enroller')
+
         # perform training
-        print "Training Enroler '%s' using %d identities: " %(enroler_file, len(train_files))
-        tool.train_enroler(train_files, str(enroler_file))
+        print "Training Enroller '%s' using %d identities: " %(enroller_file, len(train_files))
+        tool.train_enroller(train_files, str(enroller_file))
 
 
 
-  def enrol_models(self, tool, extractor, compute_zt_norm, indices = None, groups = ['dev', 'eval'], types = ['N','T'], force=False):
-    """Enrol the models for 'dev' and 'eval' groups, for both models and T-Norm-models.
+  def enroll_models(self, tool, extractor, compute_zt_norm, indices = None, groups = ['dev', 'eval'], types = ['N','T'], force=False):
+    """Enroll the models for 'dev' and 'eval' groups, for both models and T-Norm-models.
        This function by default used the projected features to compute the models.
-       If you need unprojected features for the model, please define a variable with the name 
-       use_unprojected_features_for_model_enrol"""
-    
+       If you need unprojected features for the model, please define a variable with the name
+       use_unprojected_features_for_model_enroll"""
+
     # read the projector file, if needed
     if hasattr(tool,'load_projector'):
       # read the feature extraction model
       tool.load_projector(self.m_file_selector.projector_file())
-    if hasattr(tool, 'load_enroler'):
-      # read the model enrolment file
-      tool.load_enroler(self.m_file_selector.enroler_file())
-    
+    if hasattr(tool, 'load_enroller'):
+      # read the model enrollment file
+      tool.load_enroller(self.m_file_selector.enroller_file())
+
     # use projected or unprojected features for model enrollment?
-    use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enrol')
+    use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enroll')
     # which tool to use to read the features...
     self.m_tool = tool if use_projected_features else extractor
 
@@ -253,27 +253,27 @@ class ToolChainZT:
       for group in groups:
         model_ids = self.m_file_selector.model_ids(group)
 
-        if indices != None: 
+        if indices != None:
           model_ids = model_ids[indices[0]:indices[1]]
           print "Splitting of index range", indices, "to",
-  
-        print "enrol models of group", group
+
+        print "enroll models of group", group
         for model_id in model_ids:
           # Path to the model
           model_file = self.m_file_selector.model_file(model_id, group)
 
           # Removes old file if required
           if not self.__check_file__(model_file, force):
-            enrol_files = self.m_file_selector.enrol_files(model_id, group, use_projected_features)
-            
+            enroll_files = self.m_file_selector.enroll_files(model_id, group, use_projected_features)
+
             # load all files into memory
-            enrol_features = []
-            for k in sorted(enrol_files.keys()):
+            enroll_features = []
+            for k in sorted(enroll_files.keys()):
               # processes one file
-              feature = self.__read_feature__(str(enrol_files[k]))
-              enrol_features.append(feature)
-            
-            model = tool.enrol(enrol_features)
+              feature = self.__read_feature__(str(enroll_files[k]))
+              enroll_features.append(feature)
+
+            model = tool.enroll(enroll_features)
             # save the model
             self.__save_model__(model, model_file, tool)
 
@@ -282,28 +282,28 @@ class ToolChainZT:
       for group in groups:
         model_ids = self.m_file_selector.tmodel_ids(group)
 
-        if indices != None: 
+        if indices != None:
           model_ids = model_ids[indices[0]:indices[1]]
           print "Splitting of index range", indices, "to",
-  
-        print "enrol T-models of group", group
+
+        print "enroll T-models of group", group
         for model_id in model_ids:
           # Path to the model
           model_file = self.m_file_selector.tmodel_file(model_id, group)
 
           # Removes old file if required
           if not self.__check_file__(model_file, force):
-            enrol_files = self.m_file_selector.tenrol_files(model_id, group, use_projected_features)
+            enroll_files = self.m_file_selector.tenroll_files(model_id, group, use_projected_features)
 
             # load all files into memory
-            enrol_features = []
-            for k in sorted(enrol_files.keys()):
+            enroll_features = []
+            for k in sorted(enroll_files.keys()):
               # processes one file
-              
-              feature = self.__read_feature__(str(enrol_files[k]))
-              enrol_features.append(feature)
-              
-            model = tool.enrol(enrol_features)
+
+              feature = self.__read_feature__(str(enroll_files[k]))
+              enroll_features.append(feature)
+
+            model = tool.enroll(enroll_features)
             # save model
             self.__save_model__(model, model_file, tool)
 
@@ -315,7 +315,7 @@ class ToolChainZT:
       return self.m_tool.read_model(str(model_file))
     else:
       return bob.io.load(str(model_file))
-    
+
   def __read_probe__(self, probe_file):
     """This function reads the probe from file. Overload this function if your probe is no numpy.ndarray."""
     if hasattr(self.m_tool, 'read_probe'):
@@ -337,7 +337,7 @@ class ToolChainZT:
       i += 1
     # Returns the scores
     return scores
-    
+
   def __scores_preloaded__(self, model, probes):
     """Compute simple scores for the given model"""
     scores = numpy.ndarray((1,len(probes)), 'float64')
@@ -352,8 +352,8 @@ class ToolChainZT:
       i += 1
     # Returns the scores
     return scores
-    
-    
+
+
   def __probe_split__(self, selected_probe_objects, probes):
     sel = 0
     res = {}
@@ -364,7 +364,7 @@ class ToolChainZT:
 
     # return the split database
     return res
-    
+
 
   def __scores_a__(self, model_ids, group, compute_zt_norm, force, preload_probes):
     """Computes A scores"""
@@ -395,11 +395,11 @@ class ToolChainZT:
           a = self.__scores_preloaded__(model, current_probes)
         else:
           a = self.__scores__(model, probe_objects)
-  
+
         if compute_zt_norm:
           # write A matrix only when you want to compute zt norm afterwards
           bob.io.save(a, self.m_file_selector.a_file(model_id, group))
-  
+
         # Saves to text file
         scores_list = utils.convertScoreToList(numpy.reshape(a,a.size), probe_objects)
         f_nonorm = open(self.m_file_selector.no_norm_file(model_id, group), 'w')
@@ -461,7 +461,7 @@ class ToolChainZT:
         else:
           c = self.__scores__(tmodel, probe_objects)
         bob.io.save(c, score_file)
-      
+
   def __scores_d__(self, tmodel_ids, group, force, preload_probes):
     # probe files:
     zprobe_objects = self.m_file_selector.zprobe_files(group, self.m_use_projected_dir)
@@ -492,7 +492,7 @@ class ToolChainZT:
         else:
           d = self.__scores__(tmodel, zprobe_objects)
         bob.io.save(d, self.m_file_selector.d_file(tmodel_id, group))
-  
+
         tclient_id = [self.m_file_selector.m_config.db.get_client_id_from_model_id(tmodel_id)]
         d_same_value_tm = bob.machine.ztnorm_same_value(tclient_id, zprobe_ids)
         bob.io.save(d_same_value_tm, score_file)
@@ -503,12 +503,12 @@ class ToolChainZT:
     # save tool for internal use
     self.m_tool = tool
     self.m_use_projected_dir = hasattr(tool, 'project')
-    
+
     # load the projector, if needed
     if hasattr(tool,'load_projector'):
       tool.load_projector(self.m_file_selector.projector_file())
-    if hasattr(tool,'load_enroler'):
-      tool.load_enroler(self.m_file_selector.enroler_file())
+    if hasattr(tool,'load_enroller'):
+      tool.load_enroller(self.m_file_selector.enroller_file())
 
     for group in groups:
       print "----- computing scores for group '%s' -----" % group
@@ -519,42 +519,42 @@ class ToolChainZT:
 
       # compute A scores
       if 'A' in types:
-        if indices != None: 
+        if indices != None:
           model_ids_short = model_ids[indices[0]:indices[1]]
         else:
           model_ids_short = model_ids
         print "computing A scores"
         self.__scores_a__(model_ids_short, group, compute_zt_norm, force, preload_probes)
-      
+
       if compute_zt_norm:
         # compute B scores
         if 'B' in types:
-          if indices != None: 
+          if indices != None:
             model_ids_short = model_ids[indices[0]:indices[1]]
           else:
             model_ids_short = model_ids
           print "computing B scores"
           self.__scores_b__(model_ids_short, group, force, preload_probes)
-        
+
         # compute C scores
         if 'C' in types:
-          if indices != None: 
+          if indices != None:
             tmodel_ids_short = tmodel_ids[indices[0]:indices[1]]
           else:
             tmodel_ids_short = tmodel_ids
           print "computing C scores"
           self.__scores_c__(tmodel_ids_short, group, force, preload_probes)
-        
+
         # compute D scores
         if 'D' in types:
-          if indices != None: 
+          if indices != None:
             tmodel_ids_short = tmodel_ids[indices[0]:indices[1]]
           else:
             tmodel_ids_short = tmodel_ids
           print "computing D scores"
           self.__scores_d__(tmodel_ids_short, group, force, preload_probes)
-      
-      
+
+
 
   def __scores_c_normalize__(self, model_ids, tmodel_ids, group):
     """Compute normalized probe scores using Tmodel scores"""
@@ -593,7 +593,7 @@ class ToolChainZT:
     # Saves to files
     bob.io.save(d_for_all, self.m_file_selector.d_matrix_file(group))
     bob.io.save(d_same_value, self.m_file_selector.d_same_value_matrix_file(group))
-  
+
 
 
   def zt_norm(self, groups = ['dev', 'eval']):
@@ -621,7 +621,7 @@ class ToolChainZT:
         a = bob.io.load(self.m_file_selector.a_file(model_id, group))
         b = bob.io.load(self.m_file_selector.b_file(model_id, group))
         c = bob.io.load(self.m_file_selector.c_file_for_model(model_id, group))
-        
+
         # compute zt scores
         ztscores_m = bob.machine.ztnorm(a, b, c, d, d_same_value)
 

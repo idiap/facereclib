@@ -25,7 +25,7 @@ class FileSelectorGBU:
     else:
       opts['groups'] = 'dev'
       if set == 'target':
-        opts['purposes']='enrol'
+        opts['purposes']='enroll'
       else:
         opts['purposes']='probe'
     return opts
@@ -86,7 +86,7 @@ class FileSelectorGBU:
       cur_world_options = self.__options__('training', 'projector_training_options')
     elif dir_type == 'projected':
       cur_dir = self.m_config.projected_dir
-      cur_world_options = self.__options__('training', 'enroler_training_options')
+      cur_world_options = self.__options__('training', 'enroller_training_options')
     # in this case, we need the type 'multi' (the default)
     # since we want to get several files per client
     del cur_world_options['type']
@@ -112,17 +112,17 @@ class FileSelectorGBU:
     utils.ensure_dir(os.path.dirname(self.m_config.projector_file))
     return self.m_config.projector_file
 
-  def enroler_file(self):
+  def enroller_file(self):
     """Returns the name of the file that includes the model trained for enrollment"""
-    utils.ensure_dir(os.path.dirname(self.m_config.enroler_file))
-    return self.m_config.enroler_file
+    utils.ensure_dir(os.path.dirname(self.m_config.enroller_file))
+    return self.m_config.enroller_file
 
 
   def model_ids(self):
     """Returns the list of model indices (one model per file)"""
     return self.m_db.models(type='gbu', groups='dev', protocol=self.m_config.protocol)
 
-  def enrol_files(self, model_id, use_projected_dir):
+  def enroll_files(self, model_id, use_projected_dir):
     """Returns the list of model features (in this case, only one feature per model) used for enrollment of the given model_id from the given group"""
     used_dir = self.m_config.projected_dir if use_projected_dir else self.m_config.features_dir
     return self.m_db.files(directory=used_dir, extension=self.m_config.default_extension, groups='dev', purposes='enrol', protocol = self.m_config.protocol, model_ids=(model_id,), type='gbu')

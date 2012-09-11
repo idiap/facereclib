@@ -11,18 +11,18 @@ from .. import utils
 
 # The different steps of the preprocessing chain.
 # Use these keywords to change parameters of the specific part
-steps = ['preprocessing', 'features', 'projection', 'enrol', 'scores']
+steps = ['preprocessing', 'features', 'projection', 'enroll', 'scores']
 
 # Parts that could be skipped when the dependecies are on the indexed level
-skips = [[''], 
-         ['--skip-preprocessing'], 
+skips = [[''],
+         ['--skip-preprocessing'],
          ['--skip-feature-extraction-training', '--skip-feature-extraction'],
          ['--skip-projection-training', '--skip-projection'],
-         ['--skip-enroler-training', '--skip-model-enrolment']
+         ['--skip-enroller-training', '--skip-model-enrollment']
         ]
 
-# The keywords to parse the job ids to get the according dependencies right 
-dkeys  = ['DUMMY', 'preprocessing', 'feature_extraction', 'feature_projection', 'enrol']
+# The keywords to parse the job ids to get the according dependencies right
+dkeys  = ['DUMMY', 'preprocessing', 'feature_extraction', 'feature_projection', 'enroll']
 
 
 def next_level(config, index):
@@ -46,13 +46,13 @@ def write_config_file(args, infile_name, sub_dir, keyword, value):
   utils.ensure_dir(os.path.dirname(outfile_name))
 #  print "\nWriting configuration file '%s'\n"%outfile_name
   outfile = open(outfile_name, 'w')
-  
+
   replacement_count = 0
-  
+
   value_skips = len(value.split('\n')) - 1
   skip_lines = 0
-  
-  # iterate through the file    
+
+  # iterate through the file
   for line in infile:
     if line.find(keyword) == 0:
       # replace the lines by the new values
@@ -64,7 +64,7 @@ def write_config_file(args, infile_name, sub_dir, keyword, value):
         skip_lines -= 1
       else:
         outfile.writelines(line)
-  
+
 #  if not replacement_count:
 #    # add the line when it was not replacable before
 #    print "Warning! Could not find the keyword '%s' in the given script '%s'! Adding new line at the end!"%(keyword, infile_name)
@@ -73,53 +73,53 @@ def write_config_file(args, infile_name, sub_dir, keyword, value):
   # close files
   infile.close()
   outfile.close()
-  
-  
+
+
   # return the name of the written config file
   return outfile_name
 
 
 def directory_parameters(args, dirs):
-  """This function generates the faceverify parameters that define the directories, where the data is stored. 
+  """This function generates the faceverify parameters that define the directories, where the data is stored.
      The directories are set such that data is reused whenever possible, but disjoint if needed."""
   parameters = []
-  last_dir = '.'  
+  last_dir = '.'
   # add directory parameters
   if dirs['preprocessing'] != '':
     if args.preprocessed_image_dir:
       parameters.extend(['--preprocessed-image-directory', os.path.join(args.preprocessed_image_dir, dirs['preprocessing'], 'preprocessed'), skips[1][0]])
     else:
       parameters.extend(['--preprocessed-image-directory', os.path.join(dirs['preprocessing'], 'preprocessed')])
-    last_dir = dirs['preprocessing'] 
+    last_dir = dirs['preprocessing']
   if dirs['features'] != '':
-    parameters.extend(['--features-directory', os.path.join(dirs['features'], 'features')]) 
-    parameters.extend(['--extractor-file', os.path.join(dirs['features'], 'Extractor.hdf5')]) 
-    last_dir = dirs['features'] 
+    parameters.extend(['--features-directory', os.path.join(dirs['features'], 'features')])
+    parameters.extend(['--extractor-file', os.path.join(dirs['features'], 'Extractor.hdf5')])
+    last_dir = dirs['features']
   if dirs['projection'] != '':
-    parameters.extend(['--projected-directory', os.path.join(dirs['projection'], 'projected')]) 
-    parameters.extend(['--projector-file', os.path.join(dirs['projection'], 'Projector.hdf5')]) 
-    last_dir = dirs['projection'] 
-  if dirs['enrol'] != '':
+    parameters.extend(['--projected-directory', os.path.join(dirs['projection'], 'projected')])
+    parameters.extend(['--projector-file', os.path.join(dirs['projection'], 'Projector.hdf5')])
+    last_dir = dirs['projection']
+  if dirs['enroll'] != '':
     if args.protocol == 'zt':
-      parameters.extend(['--models-directories', os.path.join(dirs['enrol'], 'N-Models'), os.path.join(dirs['enrol'], 'T-Models')]) 
+      parameters.extend(['--models-directories', os.path.join(dirs['enroll'], 'N-Models'), os.path.join(dirs['enroll'], 'T-Models')])
     elif args.protocol == 'gbu' or args.protocol == 'lfw':
-      parameters.extend(['--model-directory', os.path.join(dirs['enrol'], 'models')]) 
-    parameters.extend(['--enroler-file', os.path.join(dirs['enrol'], 'Enroler.hdf5')]) 
-    last_dir = dirs['enrol'] 
+      parameters.extend(['--model-directory', os.path.join(dirs['enroll'], 'models')])
+    parameters.extend(['--enroller-file', os.path.join(dirs['enroll'], 'Enroler.hdf5')])
+    last_dir = dirs['enroll']
   if dirs['scores'] != '':
     parameters.extend(['--score-sub-dir', dirs['scores']])
-    last_dir = dirs['scores'] 
-    
+    last_dir = dirs['scores']
+
   # add directory for the submitted db
   dbfile = os.path.join(args.db_dir, last_dir, 'submitted.db')
   utils.ensure_dir(os.path.dirname(dbfile))
   parameters.extend(['--submit-db-file', dbfile])
-  
-  return parameters 
+
+  return parameters
 
 
 def get_deps(job_ids, index):
-  """Returns the dependencies for the given level from the given job ids""" 
+  """Returns the dependencies for the given level from the given job ids"""
   # get the dependencies
   deps = []
   for k in sorted(job_ids.keys()):
@@ -127,9 +127,9 @@ def get_deps(job_ids, index):
       if k.find(dkeys[i]) != -1:
         deps.append(job_ids[k])
 
-  print "Dependencies for the job at step '%s' are:"%steps[index], deps 
+  print "Dependencies for the job at step '%s' are:"%steps[index], deps
   return deps
-  
+
 
 def get_skips(index):
   """Returns the skip parameters for the given level"""
@@ -163,8 +163,8 @@ def execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs,
   elif args.protocol == 'lfw':
     faceverify_script = faceverify_lfw
     face_verify_executable = "faceverify_lfw.py"
-    
-    
+
+
   # write executed call to file
   index = parameters.index('--submit-db-file')
 
@@ -181,22 +181,22 @@ def execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs,
   for p in parameters:
     f.write(p + ' ')
   f.close()
-  
+
   if args.dry_run:
     job_ids = []
     print "Wrote call to file", out_file, "without executing the file"
   else:
     try:
       verif_args = faceverify_script.parse_args(parameters)
-    
-      # execute the face verification  
+
+      # execute the face verification
       job_ids = faceverify_script.face_verify(verif_args, external_dependencies = deps, external_fake_job_id = fake_job_id)
     except Exception as e:
       print "\nWARNING: The execution of job '" + out_file + "' was rejected! Reason:"
       print '"', e, '"\n'
       job_ids = []
     global job_count
-    job_count += len(job_ids) 
+    job_count += len(job_ids)
     fake_job_id += 100
   return job_ids
 
@@ -227,7 +227,7 @@ def execute_recursively(args, config, index, current_setup, dirs, preprocess_fil
       if hasattr(config, steps[i]):
         execute_recursively(args, config, i, next_level(config, i), dirs, preprocess_file, feature_file, tool_file, dependency_level)
         return
-      
+
     if i == len(steps)-1:
       # we are at the lowest level, execute jobs
       new_job_ids = execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs, get_skips(dependency_level), get_deps(job_ids, dependency_level))
@@ -236,7 +236,7 @@ def execute_recursively(args, config, index, current_setup, dirs, preprocess_fil
       print "into old job ids:", job_ids
       job_ids.update(new_job_ids)
       print "The registered job ids are now:", job_ids
-        
+
   else:
 #    print "\nEntering step", steps[index], "for recursive calls"
 #    print "executing recursively on step '%s' with dependency step '%s'"%(steps[index], steps[dependency_level])
@@ -244,11 +244,11 @@ def execute_recursively(args, config, index, current_setup, dirs, preprocess_fil
     keyword = sorted(current_setup.keys())[0]
     replacements = current_setup[keyword]
     remaining_setup = remove_keyword(keyword, current_setup)
-    
+
 #    print remaining_setup
-    
-    # The first job is dependent on the given dependency level, 
-    # while the following jobs are dependent on this level only 
+
+    # The first job is dependent on the given dependency level,
+    # while the following jobs are dependent on this level only
     first = True
     dir = dirs[steps[index]]
     # iterate through the replacements
@@ -261,7 +261,7 @@ def execute_recursively(args, config, index, current_setup, dirs, preprocess_fil
       new_tool_file = write_config_file(args, tool_file, os.path.join(dirs[steps[index]], 'tool'), keyword, replacements[sub])
       execute_recursively(args, config, index, remaining_setup, dirs, new_preprocess_file, new_feature_file, new_tool_file, dependency_level if first else index)
       first = False
-    
+
 #  print "Leaving step", steps[index], "\n"
 
 def execute_parallel(args, config, preprocess_file, feature_file, tool_file):
@@ -288,7 +288,7 @@ def execute_parallel(args, config, preprocess_file, feature_file, tool_file):
           new_job_ids = execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs, get_skips(dep_level), get_deps(job_ids, dep_level))
           if len(new_job_ids):
             first = False
-          
+
           # generate new dependencies
           print "integrating job ids:", new_job_ids
           print "into old job ids:", job_ids
@@ -296,41 +296,41 @@ def execute_parallel(args, config, preprocess_file, feature_file, tool_file):
           print "The registered job ids are now:", job_ids
 
         dependency_level = index
-          
-  
+
+
 
 def main():
   """Main entry point for the parameter test. Try --help to see the parameters that can be specified."""
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__,
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  
+
   test_group = parser.add_argument_group('Parameters for the parameter tests')
-  
+
   test_group.add_argument('-p', '--preprocessing', type = str, required = True, metavar = 'FILE',
       help = 'The preprocessing config file to use')
   test_group.add_argument('-f', '--features', type = str, required = True, metavar = 'FILE',
       help = 'The feature extraction config file to use')
-  test_group.add_argument('-t', '--tool', type = str, required = True, metavar = 'FILE', 
+  test_group.add_argument('-t', '--tool', type = str, required = True, metavar = 'FILE',
       help = 'The tool you want to use')
   test_group.add_argument('-P', '--protocol', type = str, choices = ['zt', 'gbu', 'lfw'], default = 'zt',
       help = 'The protocol you want to use')
-  
+
   test_group.add_argument('-c', '--config-file', type = str, dest = 'config', required = True, metavar = 'FILE',
       help = 'The configuration file explaining what to replace by what')
 
   test_group.add_argument('-C', '--config-dir', type = str, default = '.',
       help = 'Directory where the automatically generated config files should be written into')
-  
+
   test_group.add_argument('-S', '--submit-db-dir', type = str, dest='db_dir', default = '.',
       help = 'Directory where the submitted.db files should be written into')
-  
+
   test_group.add_argument('-F', '--submit-call-file', type=str, default = 'call.txt',
       help = 'Name of the file where to write the executed command into')
-  
+
   test_group.add_argument('-X', '--preprocessed-image-dir', type=str,
       help = 'Relative directory where the preprocessed images are located; implies --skip-preprocessing')
-      
+
   test_group.add_argument('-Q', '--non-existent-only', type=str,
       help = 'Only start the experiments that have not been executed successfully (i.e., where the given output directory does not exist yet)')
 
@@ -340,13 +340,13 @@ def main():
   test_group.add_argument('--dry-run', action='store_true',
       help = 'Only generate call files, but do not execute them')
 
-  
+
   # These are the parameters that are forwarded to the face verify script. Use -- to separate the parameter
   verif_group = parser.add_argument_group('Parameters for the face verification script')
   verif_group.add_argument('parameters', nargs = argparse.REMAINDER,
       help = "Parameters directly passed to the face verify script. It should at least include the -d (and the -g) option. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify_[zt,gbu,lfw].py --help' for a complete list of options.")
-  
-  # parse arguments 
+
+  # parse arguments
   args = parser.parse_args()
 
   # read the configuration file
@@ -355,7 +355,7 @@ def main():
   dirs = {}
   for t in steps:
     dirs[t] = '.'
-   
+
   global task_count
   task_count = 0
   global job_count
@@ -363,7 +363,7 @@ def main():
   # fake job id is used in dry run only
   global fake_job_id
   fake_job_id = 0
-  
+
   if args.uncorrelated:
     execute_parallel(args, config, args.preprocessing, args.features, args.tool)
   else:

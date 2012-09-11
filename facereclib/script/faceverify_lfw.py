@@ -60,10 +60,10 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
       self.m_tool_chain.project_features(self.m_tool, force = self.m_args.force, extractor = self.m_feature_extractor)
     # model enrollment
-    if not self.m_args.skip_enroler_training and hasattr(self.m_tool, 'train_enroler'):
-      self.m_tool_chain.train_enroler(self.m_tool, force = self.m_args.force)
-    if not self.m_args.skip_model_enrolment:
-      self.m_tool_chain.enrol_models(self.m_tool, self.m_feature_extractor, compute_zt_norm = False, force = self.m_args.force)
+    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+      self.m_tool_chain.train_enroller(self.m_tool, force = self.m_args.force)
+    if not self.m_args.skip_model_enrollment:
+      self.m_tool_chain.enroll_models(self.m_tool, self.m_feature_extractor, compute_zt_norm = False, force = self.m_args.force)
     # score computation
     if not self.m_args.skip_score_computation:
       self.m_tool_chain.compute_scores(self.m_tool, compute_zt_norm = False, preload_probes = self.m_args.preload_probes, force = self.m_args.force)
@@ -128,28 +128,28 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
               **self.m_grid_config.projection_queue)
       deps.append(job_ids['feature_projection'])
 
-    # model enrolment training
-    if not self.m_args.skip_enroler_training and hasattr(self.m_tool, 'train_enroler'):
-      job_ids['enrolment_training'] = self.submit_grid_job(
-              '--train-enroler' + default_opt,
+    # model enrollment training
+    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+      job_ids['enrollment_training'] = self.submit_grid_job(
+              '--train-enroller' + default_opt,
               dependencies = deps,
               name="e-train-%s"%protocol,
               **self.m_grid_config.training_queue)
-      deps.append(job_ids['enrolment_training'])
+      deps.append(job_ids['enrollment_training'])
 
-    # enrol models
+    # enroll models
     groups = ['dev'] if protocol=='view1' else self.m_args.groups
-    if not self.m_args.skip_model_enrolment:
+    if not self.m_args.skip_model_enrollment:
       for group in groups:
-        job_ids['enrol-%s'%group] = self.submit_grid_job(
-                '--enrol-models --group %s'%group + default_opt,
+        job_ids['enroll-%s'%group] = self.submit_grid_job(
+                '--enroll-models --group %s'%group + default_opt,
                 list_to_split = self.m_file_selector.model_ids(group),
-                number_of_files_per_job = self.m_grid_config.number_of_models_per_enrol_job,
+                number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
                 dependencies = deps,
-                name = "enrol-%s-%s"%(protocol,group),
-                **self.m_grid_config.enrol_queue)
+                name = "enroll-%s-%s"%(protocol,group),
+                **self.m_grid_config.enroll_queue)
       for group in groups:
-        deps.append(job_ids['enrol-%s'%group])
+        deps.append(job_ids['enroll-%s'%group])
 
     # compute scores
     if not self.m_args.skip_score_computation:
@@ -217,20 +217,20 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
           indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_projections_per_job),
           force = self.m_args.force)
 
-    # train model enroler
-    if self.m_args.train_enroler:
-      self.m_tool_chain.train_enroler(
+    # train model enroller
+    if self.m_args.train_enroller:
+      self.m_tool_chain.train_enroller(
           self.m_tool,
           force = self.m_args.force)
 
-    # enrol models
-    if self.m_args.enrol_models:
-      self.m_tool_chain.enrol_models(
+    # enroll models
+    if self.m_args.enroll_models:
+      self.m_tool_chain.enroll_models(
           self.m_tool,
           self.m_feature_extractor,
           groups = (self.m_args.group,),
           compute_zt_norm = False,
-          indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job),
+          indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
           force = self.m_args.force)
 
     # compute scores
@@ -357,9 +357,9 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = argparse.SUPPRESS) #'Perform feature extraction training'
   parser.add_argument('--feature-projection', action='store_true', dest = 'projection',
       help = argparse.SUPPRESS) #'Perform feature projection'
-  parser.add_argument('--train-enroler', action='store_true',
-      help = argparse.SUPPRESS) #'Perform enrolment training'
-  parser.add_argument('--enrol-models', action='store_true',
+  parser.add_argument('--train-enroller', action='store_true',
+      help = argparse.SUPPRESS) #'Perform enrollment training'
+  parser.add_argument('--enroll-models', action='store_true',
       help = argparse.SUPPRESS) #'Generate the given range of models from the features'
   parser.add_argument('--compute-scores', action='store_true',
       help = argparse.SUPPRESS) #'Compute scores for the given range of models'

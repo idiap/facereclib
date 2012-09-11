@@ -17,9 +17,9 @@ extraction_queue = {}
 number_of_projections_per_job = 100
 projection_queue = {}
 
-# number of models that should be enroled by one enrol job
-number_of_models_per_enrol_job = 2
-enrol_queue = {}
+# number of models that should be enrolled by one enroll job
+number_of_models_per_enroll_job = 2
+enroll_queue = {}
 
 # number of models that one score computation should use
 number_of_models_per_score_job = 1

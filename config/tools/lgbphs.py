@@ -7,5 +7,5 @@ tool = facereclib.tools.LGBPHSTool
 
 # distance function
 distance_function = bob.math.histogram_intersection
-is_distance_function = False
+IS_DISTANCE_FUNCTION = False
 

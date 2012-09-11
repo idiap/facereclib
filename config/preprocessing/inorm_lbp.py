@@ -26,7 +26,7 @@ OFFSET = 0
 
 # LBP, always using 8 neighbors
 RADIUS = 2
-IS_UNIFORM = True
+IS_UNIFORM = False
 IS_CIRCULAR = True
 IS_ROTATION_INVARIANT = False
 COMPARE_TO_AVERAGE = False

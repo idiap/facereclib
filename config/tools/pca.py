@@ -5,6 +5,6 @@ import bob
 
 tool = facereclib.tools.PCATool
 
-n_outputs = 300
+SUBSPACE_DIMENSION = 300
 
 distance_function = bob.math.euclidean_distance

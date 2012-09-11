@@ -5,5 +5,5 @@ import facereclib
 # compute eigenfaces using the training database
 feature_extractor = facereclib.features.Eigenface
 
-n_outputs = 100
+SUBSPACE_DIMENSION = 100
 

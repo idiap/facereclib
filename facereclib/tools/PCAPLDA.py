@@ -22,9 +22,9 @@ class PCAPLDATool:
 
 
   def __load_data_by_client__(self, training_files):
-    """Loads the data (arrays) from a list of list of filenames, 
+    """Loads the data (arrays) from a list of list of filenames,
     one list for each client, and put them in a list of Arraysets."""
-    
+
     # Initializes an arrayset for the data
     data = []
     for client in sorted(training_files.keys()):
@@ -56,7 +56,7 @@ class PCAPLDATool:
     return machine
 
   def __perform_pca_client__(self, machine, client):
-    """Perform PCA on an Arrayset""" 
+    """Perform PCA on an Arrayset"""
     client_data = bob.io.Arrayset()
     for feature in client:
       # project data
@@ -67,26 +67,26 @@ class PCAPLDATool:
     return client_data
 
   def __perform_pca__(self, machine, training_set):
-    """Perform PCA on data""" 
+    """Perform PCA on data"""
     data = []
     for client in training_set:
       client_data = self.__perform_pca_client__(machine, client)
       data.append(client_data)
     return data
- 
+
 
   def train_projector(self, training_features, projector_file):
     """Generates the PLDA base model from a list of Arraysets (one per identity),
        and a set of training parameters.
        Returns the trained PLDABaseMachine."""
-       
+
     # read data
     data = self.__load_data_by_client__(training_features)
 
     if self.m_pca_subpace_size:
       self.m_pca_machine = self.__train_pca__(data)
       data = self.__perform_pca__(self.m_pca_machine, data)
-    
+
     # create trainer
     t = bob.trainer.PLDABaseTrainer(self.m_config.nf, self.m_config.ng, self.m_config.acc, self.m_config.n_iter, False)
     t.seed = self.m_config.seed
@@ -100,7 +100,7 @@ class PCAPLDATool:
     # train machine
     self.m_plda_base_machine = bob.machine.PLDABaseMachine(self.m_config.n_inputs, self.m_config.nf, self.m_config.ng)
     t.train(self.m_plda_base_machine, data)
-    
+
     # write machine to file
     proj_hdf5file = bob.io.HDF5File(str(projector_file), "w")
     if self.m_pca_subpace_size:
@@ -126,10 +126,10 @@ class PCAPLDATool:
     self.m_plda_machine = bob.machine.PLDAMachine(self.m_plda_base_machine)
     self.m_plda_trainer = bob.trainer.PLDATrainer(self.m_plda_machine)
 
-  def enrol(self, enrol_features):
-    """Enrols the model by computing an average of the given input vectors"""
-    enrol_features_projected = self.__perform_pca_client__(self.m_pca_machine, enrol_features)
-    self.m_plda_trainer.enrol(enrol_features_projected)
+  def enroll(self, enroll_features):
+    """Enrolls the model by computing an average of the given input vectors"""
+    enroll_features_projected = self.__perform_pca_client__(self.m_pca_machine, enroll_features)
+    self.m_plda_trainer.enrol(enroll_features_projected)
     #self.m_plda_trainer.enrol(bob.io.Arrayset(enrol_features))
     return self.m_plda_machine
 
@@ -140,10 +140,10 @@ class PCAPLDATool:
     # attach base machine
     plda_machine.plda_base = self.m_plda_base_machine
     return plda_machine
-    
+
   def score(self, model, probe):
     """Computes the PLDA score for the given model and probe"""
-    # Project probe 
+    # Project probe
     projected_probe = numpy.ndarray(self.m_pca_machine.shape[1], numpy.float64)
     self.m_pca_machine(probe, projected_probe)
     return model.forward(projected_probe)

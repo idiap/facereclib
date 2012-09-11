@@ -70,8 +70,8 @@ class ToolChainExecutor:
         help = 'Name of the file to write the feature extractor into')
     file_group.add_argument('--projector-file', type = str, metavar = 'FILE', default = 'Projector.hdf5',
         help = 'Name of the file to write the feature projector into')
-    file_group.add_argument('--enroler-file' , type = str, metavar = 'FILE', default = 'Enroler.hdf5',
-        help = 'Name of the file to write the model enroler into')
+    file_group.add_argument('--enroller-file' , type = str, metavar = 'FILE', default = 'Enroler.hdf5',
+        help = 'Name of the file to write the model enroller into')
     file_group.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_db',
         help = 'The db file in which the submitted jobs will be written (only valid with the --grid option)')
 
@@ -100,10 +100,10 @@ class ToolChainExecutor:
         help = 'Skip the feature extraction training')
     skip_group.add_argument('--skip-projection', '--nopro', action='store_true', dest='skip_projection',
         help = 'Skip the feature projection')
-    skip_group.add_argument('--skip-enroler-training', '--noenrt', action='store_true', dest='skip_enroler_training',
-        help = 'Skip the training of the model enrolment')
-    skip_group.add_argument('--skip-model-enrolment', '--noenr', action='store_true', dest='skip_model_enrolment',
-        help = 'Skip the model enrolment step')
+    skip_group.add_argument('--skip-enroller-training', '--noenrt', action='store_true', dest='skip_enroller_training',
+        help = 'Skip the training of the model enrollment')
+    skip_group.add_argument('--skip-model-enrollment', '--noenr', action='store_true', dest='skip_model_enrollment',
+        help = 'Skip the model enrollment step')
     skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
         help = 'Skip the score computation step')
     skip_group.add_argument('--skip-concatenation', '--nocat', action='store_true', dest='skip_concatenation',
@@ -111,7 +111,7 @@ class ToolChainExecutor:
 
     return (config_group, dir_group, file_group, sub_dir_group, other_group, skip_group)
 
-  # make this methos static.
+  # make this method static.
   required_command_line_options = staticmethod(required_command_line_options)
 
 
@@ -140,7 +140,7 @@ class ToolChainExecutor:
 
   def protocol_specific_configuration(self):
     """Overload this function to set up configurations that are
-    sepcific for your verification protocol"""
+    specific for your verification protocol"""
     raise NotImplementedError
 
   def __generate_configuration__(self):
@@ -164,7 +164,7 @@ class ToolChainExecutor:
 
     self.m_configuration.extractor_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.extractor_file)
     self.m_configuration.projector_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.projector_file)
-    self.m_configuration.enroler_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.enroler_file)
+    self.m_configuration.enroller_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.enroller_file)
 
     self.m_configuration.preprocessed_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.preprocessed_dir)
     self.m_configuration.features_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.features_dir)

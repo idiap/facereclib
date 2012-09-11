@@ -11,22 +11,22 @@ from . import UBMGMMTool
 class ISVTool (UBMGMMTool):
   """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
 
-  
+
   def __init__(self, setup):
     """Initializes the local UBM-GMM tool with the given file selector object"""
     # call base class constructor
     UBMGMMTool.__init__(self, setup)
-    
-    del self.use_unprojected_features_for_model_enrol
+
+    del self.use_unprojected_features_for_model_enroll
 
 
   def __load_gmm_stats__(self, l_files):
     """Loads a dictionary of GMM statistics from a list of filenames"""
-    gmm_stats = [] 
-    for k in l_files: 
-      # Processes one file 
-      stats = bob.machine.GMMStats( bob.io.HDF5File(str(l_files[k])) ) 
-      # Appends in the list 
+    gmm_stats = []
+    for k in l_files:
+      # Processes one file
+      stats = bob.machine.GMMStats( bob.io.HDF5File(str(l_files[k])) )
+      # Appends in the list
       gmm_stats.append(stats)
     return gmm_stats
 
@@ -35,19 +35,26 @@ class ISVTool (UBMGMMTool):
     """Loads a list of lists of GMM statistics from a list of dictionaries of filenames
        There is one list for each identity"""
     # Initializes a python list for the GMMStats
-    gmm_stats = [] 
-    for k in sorted(ld_files.keys()): 
+    gmm_stats = []
+    for k in sorted(ld_files.keys()):
       # Loads the list of GMMStats for the given client
       gmm_stats_c = self.__load_gmm_stats__(ld_files[k])
-      # Appends to the main list 
+      # Appends to the main list
       gmm_stats.append(gmm_stats_c)
     return gmm_stats
 
-    
+
+  # Here, we just need to load the UBM from the projector file.
+  def load_projector(self, projector_file):
+    """Reads the UBM model from file"""
+    # read UBM
+    self.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(projector_file))
+    self.m_ubm.set_variance_thresholds(self.m_config.variance_threshold)
+
 
   #######################################################
   ################ ISV training #########################
-  def train_enroler(self, train_files, enroler_file):
+  def train_enroller(self, train_files, enroller_file):
     # create a JFABasemachine with the UBM from the base class
     self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_config.ru)
     self.m_jfabase.ubm = self.m_ubm
@@ -59,16 +66,16 @@ class ISVTool (UBMGMMTool):
     t.train_isv(gmm_stats, self.m_config.n_iter_train, self.m_config.relevance_factor)
 
     # Save the JFA base AND the UBM into the same file
-    self.m_jfabase.save(bob.io.HDF5File(enroler_file, "w"))
+    self.m_jfabase.save(bob.io.HDF5File(enroller_file, "w"))
 
-   
+
 
   #######################################################
-  ################## JFA model enrol ####################
-  def load_enroler(self, enroler_file):
+  ################## JFA model enroll ####################
+  def load_enroller(self, enroller_file):
     """Reads the UBM model from file"""
     # now, load the JFA base, if it is included in the file
-    self.m_jfabase = bob.machine.JFABaseMachine(bob.io.HDF5File(enroler_file))
+    self.m_jfabase = bob.machine.JFABaseMachine(bob.io.HDF5File(enroller_file))
     # add UBM model from base class
     self.m_jfabase.ubm = self.m_ubm
 
@@ -78,14 +85,14 @@ class ISVTool (UBMGMMTool):
 
 
   def read_feature(self, feature_file):
-    """Reads the projected feature to be enroled as a model"""
-    return bob.machine.GMMStats(bob.io.HDF5File(str(feature_file))) 
-    
-  
-  def enrol(self, enrol_features):
-    """Performs ISV enrolment"""
-    self.m_trainer.enrol(enrol_features, self.m_config.n_iter_enrol)
-    # return the resulting gmm    
+    """Reads the projected feature to be enrolled as a model"""
+    return bob.machine.GMMStats(bob.io.HDF5File(str(feature_file)))
+
+
+  def enroll(self, enroll_features):
+    """Performs ISV enrollment"""
+    self.m_trainer.enrol(enroll_features, self.m_config.n_iter_enroll)
+    # return the resulting gmm
     return self.m_machine
 
 

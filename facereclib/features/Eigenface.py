@@ -7,14 +7,14 @@ import numpy
 
 class Eigenface:
   """Extracts grid graphs from the images"""
-  
+
   def __init__(self, setup):
     #   generate extractor machine
     self.m_config = setup
-    
+
   def __linearize__(self, image):
     return numpy.reshape(image, image.size)
-    
+
   def train(self, image_list, extractor_file):
     """Trains the eigenface extractor using the given list of training images"""
     # Initializes an arrayset for the data
@@ -29,16 +29,16 @@ class Eigenface:
     t = bob.trainer.SVDPCATrainer()
     self.m_machine, __eig_vals = t.train(data)
     # Machine: get shape, then resize
-    self.m_machine.resize(self.m_machine.shape[0], self.m_config.n_outputs)
+    self.m_machine.resize(self.m_machine.shape[0], self.m_config.SUBSPACE_DIMENSION)
     self.m_machine.save(bob.io.HDF5File(extractor_file, "w"))
-  
-  
+
+
   def load(self, extractor_file):
     # read PCA projector
     self.m_machine = bob.machine.LinearMachine(bob.io.HDF5File(extractor_file))
     # Allocates an array for the projected data
     self.m_projected_feature = numpy.ndarray(self.m_machine.shape[1], numpy.float64)
-    
+
   def __call__(self, image):
     """Projects the data using the stored covariance matrix"""
     # Projects the data

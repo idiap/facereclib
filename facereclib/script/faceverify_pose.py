@@ -50,7 +50,7 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
       set_single(type, configuration, 'all_files_options')
       set_single(type, configuration, 'extractor_training_options')
       set_single(type, configuration, 'projector_training_options')
-      set_single(type, configuration, 'enroler_training_options')
+      set_single(type, configuration, 'enroller_training_options')
 
     for p in args.protocols:
       self.m_database_configs[p] = imp.load_source(p, args.database)
@@ -99,7 +99,7 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
 
     configuration.extractor_file = os.path.join(configuration.base_output_TEMP_dir, type, self.m_args.extractor_file)
     configuration.projector_file = os.path.join(configuration.base_output_TEMP_dir, type, self.m_args.projector_file)
-    configuration.enroler_file = os.path.join(configuration.base_output_TEMP_dir, type, self.m_args.enroler_file)
+    configuration.enroller_file = os.path.join(configuration.base_output_TEMP_dir, type, self.m_args.enroller_file)
 
     configuration.preprocessed_dir = os.path.join(configuration.base_output_TEMP_dir, self.m_args.preprocessed_dir)
     configuration.features_dir = os.path.join(configuration.base_output_TEMP_dir, type, self.m_args.features_dir)
@@ -164,10 +164,10 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
     # else we can enroll only with the neutral faces only
     types = self.m_types if self.m_args.train_on_specific_protocols == 'together' else ['neutral']
     for type in types:
-      if not self.m_args.skip_enroler_training and hasattr(self.m_tools[type], 'train_enroler'):
-        self.m_tool_chains[type].train_enroler(self.m_tools[type], force = self.m_args.force)
-      if not self.m_args.skip_model_enrolment:
-        self.m_tool_chains[type].enrol_models(self.m_tools[type], self.m_feature_extractors[type], not self.m_args.no_zt_norm, groups = self.m_args.groups, force = self.m_args.force)
+      if not self.m_args.skip_enroller_training and hasattr(self.m_tools[type], 'train_enroller'):
+        self.m_tool_chains[type].train_enroller(self.m_tools[type], force = self.m_args.force)
+      if not self.m_args.skip_model_enrollment:
+        self.m_tool_chains[type].enroll_models(self.m_tools[type], self.m_feature_extractors[type], not self.m_args.no_zt_norm, groups = self.m_args.groups, force = self.m_args.force)
 
     # score computation
     if not self.m_args.skip_score_computation:
@@ -260,52 +260,52 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
           job_ids['%s_feature_projection'%type] = job_id
 
     # model enrollment training
-    if not self.m_args.skip_enroler_training:
+    if not self.m_args.skip_enroller_training:
       job_ids_et = []
       for type in self.m_types:
-        if hasattr(self.m_tools[type], 'train_enroler'):
+        if hasattr(self.m_tools[type], 'train_enroller'):
           job_id = self.submit_grid_job(
-                  '--train-enroler',
+                  '--train-enroller',
                   name = "%s-e-train"%type,
                   dependencies = deps[type],
                   **self.m_grid_config.training_queue)
           deps[type].append(job_id)
-          job_ids['%s_enrolment_training'%type] = job_id
+          job_ids['%s_enrollment_training'%type] = job_id
 
 
     # model enrollment
-    enrol_deps_n = {}
-    enrol_deps_t = {}
+    enroll_deps_n = {}
+    enroll_deps_t = {}
     for group in self.m_args.groups:
-      enrol_deps_n[group] = {'neutral':[]}
-      enrol_deps_t[group] = {'neutral':[]}
+      enroll_deps_n[group] = {'neutral':[]}
+      enroll_deps_t[group] = {'neutral':[]}
       for p in self.m_args.protocols:
-        enrol_deps_n[group][p] = deps[type][:]
-        enrol_deps_t[group][p] = deps[type][:]
+        enroll_deps_n[group][p] = deps[type][:]
+        enroll_deps_t[group][p] = deps[type][:]
 
     for group in self.m_args.groups:
-      if not self.m_args.skip_model_enrolment:
+      if not self.m_args.skip_model_enrollment:
         for type in self.m_types:
           job_id = self.submit_grid_job(
-                  '--enrol-models --protocol %s --group %s --model-type N'%(type, group),
+                  '--enroll-models --protocol %s --group %s --model-type N'%(type, group),
                   name = "%s-en-N-%s"%(type,group),
                   list_to_split = self.m_file_selectors[type].model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_enrol_job,
+                  number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
                   dependencies = deps[type],
-                  **self.m_grid_config.enrol_queue)
-          enrol_deps_n[group][type].append(job_id)
-          job_ids['%s_enrol_%s_N'%(type,group)] = job_id
+                  **self.m_grid_config.enroll_queue)
+          enroll_deps_n[group][type].append(job_id)
+          job_ids['%s_enroll_%s_N'%(type,group)] = job_id
 
           if not self.m_args.no_zt_norm:
             job_id = self.submit_grid_job(
-                    '--enrol-models --protocol %s --group %s --model-type T'%(type,group),
+                    '--enroll-models --protocol %s --group %s --model-type T'%(type,group),
                     name = "%s-en-T-%s"%(type,group),
                     list_to_split = self.m_file_selectors[type].tmodel_ids(group),
-                    number_of_files_per_job = self.m_grid_config.number_of_models_per_enrol_job,
+                    number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
                     dependencies = deps[type],
-                    **self.m_grid_config.enrol_queue)
-            enrol_deps_t[group][type].append(job_id)
-            job_ids['%s_enrol_%s_T'%(type,group)] = job_id
+                    **self.m_grid_config.enroll_queue)
+            enroll_deps_t[group][type].append(job_id)
+            job_ids['%s_enroll_%s_T'%(type,group)] = job_id
 
       # compute A, B, C, and D scores
       score_deps = {}
@@ -317,7 +317,7 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
                   name = "%s-sc-A-%s"%(p,group),
                   list_to_split = self.m_file_selectors[p].model_ids(group),
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
-                  dependencies = enrol_deps_n[group][p] + enrol_deps_n[group]['neutral'],
+                  dependencies = enroll_deps_n[group][p] + enroll_deps_n[group]['neutral'],
                   **self.m_grid_config.score_queue)
 
           job_ids['%s_score_%s_A'%(p,group)]  = job_id
@@ -330,7 +330,7 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
                     name = "%s-sc-B-%s"%(p,group),
                     list_to_split = self.m_file_selectors[p].model_ids(group),
                     number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
-                    dependencies = enrol_deps_n[group][p] + enrol_deps_n[group]['neutral'],
+                    dependencies = enroll_deps_n[group][p] + enroll_deps_n[group]['neutral'],
                     **self.m_grid_config.score_queue)
 
             job_ids['%s_score_%s_B'%(p,group)] = job_id
@@ -342,7 +342,7 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
                     name = "%s-sc-%s-%s"%(p,m,group),
                     list_to_split = self.m_file_selectors[p].tmodel_ids(group),
                     number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
-                    dependencies = enrol_deps_t[group][p] + enrol_deps_t[group]['neutral'],
+                    dependencies = enroll_deps_t[group][p] + enroll_deps_t[group]['neutral'],
                     **self.m_grid_config.score_queue)
 
               job_ids['%s_sc_%s_%s'%(p,group,m)] = job_id
@@ -408,29 +408,29 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
           extractor = self.m_feature_extractors[self.m_args.protocol])
 
     # train model enroller
-    if self.m_args.train_enroler:
-      self.m_tool_chains[self.m_args.protocol].train_enroler(
+    if self.m_args.train_enroller:
+      self.m_tool_chains[self.m_args.protocol].train_enroller(
           self.m_tools[self.m_args.protocol],
           force = self.m_args.force)
 
     # enroll models
-    if self.m_args.enrol_models:
+    if self.m_args.enroll_models:
       if self.m_args.model_type == 'N':
-        self.m_tool_chains[self.m_args.protocol].enrol_models(
+        self.m_tool_chains[self.m_args.protocol].enroll_models(
             self.m_tools[self.m_args.protocol],
             self.m_feature_extractors[self.m_args.protocol],
             not self.m_args.no_zt_norm,
-            indices = self.indices(self.m_file_selectors[self.m_args.protocol].model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job),
+            indices = self.indices(self.m_file_selectors[self.m_args.protocol].model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
             groups = [self.m_args.group],
             types = ['N'],
             force = self.m_args.force)
 
       else:
-        self.m_tool_chains[self.m_args.protocol].enrol_models(
+        self.m_tool_chains[self.m_args.protocol].enroll_models(
             self.m_tools[self.m_args.protocol],
             self.m_feature_extractors[self.m_args.protocol],
             not self.m_args.no_zt_norm,
-            indices = self.indices(self.m_file_selectors[self.m_args.protocol].tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enrol_job),
+            indices = self.indices(self.m_file_selectors[self.m_args.protocol].tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
             groups = [self.m_args.group],
             types = ['T'],
             force = self.m_args.force)
@@ -537,9 +537,9 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = argparse.SUPPRESS) #'Perform feature extraction training'
   parser.add_argument('--feature-projection', action='store_true', dest = 'projection',
       help = argparse.SUPPRESS) #'Perform feature projection'
-  parser.add_argument('--train-enroler', action='store_true',
-      help = argparse.SUPPRESS) #'Perform enrolment training'
-  parser.add_argument('--enrol-models', action='store_true',
+  parser.add_argument('--train-enroller', action='store_true',
+      help = argparse.SUPPRESS) #'Perform enrollment training'
+  parser.add_argument('--enroll-models', action='store_true',
       help = argparse.SUPPRESS) #'Generate the given range of models from the features'
   parser.add_argument('--model-type', type = str, choices = ['N', 'T'], metavar = 'TYPE',
       help = argparse.SUPPRESS) #'Which type of models to generate (Normal or TModels)'

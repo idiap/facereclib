@@ -7,24 +7,27 @@ import numpy
 
 class GaborJetTool:
   """Tool chain for computing Gabor jets, Gabor graphs, and Gabor graph comparisons"""
-  
+
   def __init__(self, setup):
-    # graph machine for enroling models and comparing graphs
+    # graph machine for enrolling models and comparing graphs
     self.m_graph_machine = bob.machine.GaborGraphMachine()
     # jet comparison function
-    self.m_similarity_function = bob.machine.GaborJetSimilarity(setup.similarity_type, setup.gabor_wavelet_transform) if hasattr(setup, 'gabor_wavelet_transform') else  bob.machine.GaborJetSimilarity(setup.similarity_type)
-    self.m_average_model = setup.extract_averaged_model
+    if hasattr(setup, 'gabor_wavelet_transform'):
+      self.m_similarity_function = bob.machine.GaborJetSimilarity(setup.GABOR_JET_SIMILARITY_TYPE, setup.gabor_wavelet_transform)
+    else:
+      self.m_similarity_function = bob.machine.GaborJetSimilarity(setup.GABOR_JET_SIMILARITY_TYPE)
+    self.m_average_model = setup.EXTRACT_AVERAGED_MODELS
 
-    
-  def enrol(self, enrol_features):
-    """Enrols the model by computing an average graph for each model"""
-    graph_count = len(enrol_features)
-    
-    c = 0 # counts the number of enrolment files
-    shape = list(enrol_features[0].shape)
+
+  def enroll(self, enroll_features):
+    """Enrolls the model by computing an average graph for each model"""
+    graph_count = len(enroll_features)
+
+    c = 0 # counts the number of enrollment files
+    shape = list(enroll_features[0].shape)
     shape.insert(0, graph_count)
     model = numpy.ndarray(tuple(shape), dtype=numpy.float64)
-    for graph in enrol_features:
+    for graph in enroll_features:
       if graph.shape != model.shape[1:]:
         raise Exception('Size mismatched')
 
@@ -39,15 +42,15 @@ class GaborJetTool:
       self.m_graph_machine.average(model, average)
       # return the average
       return average
-      
-    else: 
+
+    else:
       # return the generated model
       return model
 
-  
+
   def score(self, model, probe):
     """Computes the score of the probe and the model"""
     return self.m_graph_machine.similarity(model, probe, self.m_similarity_function)
-   
+
 
 
