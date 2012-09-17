@@ -33,6 +33,7 @@ setup(
         # databases
         "xbob.db.arface",
         "xbob.db.banca",
+        "xbob.db.faceverif_fl",
         "xbob.db.frgc",
         "xbob.db.lfw",
         "xbob.db.gbu",

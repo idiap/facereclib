@@ -28,3 +28,4 @@ from HistogramEqualization import HistogramEqualization
 from SelfQuotientImage import SelfQuotientImage
 from INormLBP import INormLBP
 from Keypoints import Keypoints
+from Cepstral import Cepstral
