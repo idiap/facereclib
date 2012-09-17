@@ -34,6 +34,7 @@ setup(
         "xbob.db.arface",
         "xbob.db.atnt",
         "xbob.db.banca",
+        "xbob.db.faceverif_fl",
         "xbob.db.frgc",
         "xbob.db.lfw",
         "xbob.db.gbu",
