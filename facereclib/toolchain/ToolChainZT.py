@@ -292,8 +292,8 @@ class ToolChainZT:
         train_features = self.__read_features_by_client__(train_files, reader)
 
         # perform training
-        utils.info("- Enrollment: training enroller '%s' using %d identities: " %(enroller_file, len(train_files)))
-        tool.train_enroller(train_files, str(enroller_file))
+        utils.info("- Enrollment: training enroller '%s' using %d identities: " %(enroller_file, len(train_features)))
+        tool.train_enroller(train_features, str(enroller_file))
 
 
 

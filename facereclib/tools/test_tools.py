@@ -117,13 +117,14 @@ class ToolTest(unittest.TestCase):
 
     # score
     sim = tool.score(model, feature2)
-    self.assertAlmostEqual(sim, 432000.)
+    self.assertAlmostEqual(sim, 33600.0)
 
 
   def test03_pca(self):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     config = self.config('pca.py')
+    config.SUBSPACE_DIMENSION = 10
     tool = config.tool(config)
 
     # train the projector
@@ -161,6 +162,8 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     config = self.config('pca+lda.py')
+    config.PCA_SUBSPACE_DIMENSION = 10
+    config.LDA_SUBSPACE_DIMENSION = 5
     tool = config.tool(config)
 
     # train the projector
@@ -328,9 +331,7 @@ class ToolTest(unittest.TestCase):
     # TODO: compare ISV enroller with reference
     #enroller_reference = bob.machine.JFABaseMachine(bob.io.HDF5File(t))
     #self.assertEqual(tool.m_jfabase, enroller_reference)
-
     os.remove(t)
-
 
     # enroll model with the projected feature
     model = tool.enroll([projected])
@@ -418,10 +419,57 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.25469123955)
 
 
-  def notest09_gmm_video(self):
+  def test09_plda(self):
+    # read input
+    feature = bob.io.load(self.input_dir('linearize.hdf5'))
+    config = self.config('pca+plda.py')
+    # reduce the complexity for test purposes
+    config.SUBSPACE_DIMENSION_PCA = 10
+    config.SUBSPACE_DIMENSION_OF_F = 2
+    config.SUBSPACE_DIMENSION_OF_G = 2
+    config.PLDA_TRAINING_ITERATIONS = 1
+    tool = config.tool(config)
+
+    # train the projector
+    t = tempfile.mkstemp('pca+plda.hdf5')[1]
+    tool.train_enroller(self.train_set_by_id(feature, count=20, a=0., b=255.), t)
+
+    if regenerate_refs:
+      import shutil
+      shutil.copy2(t, self.reference_dir('pca+plda_enroller.hdf5'))
+
+    # load the projector file
+    tool.load_enroller(self.reference_dir('pca+plda_enroller.hdf5'))
+
+    # compare the resulting machines
+    test_file = bob.io.HDF5File(t)
+    test_file.cd('/pca')
+    pca_machine = bob.machine.LinearMachine(test_file)
+    test_file.cd('/plda')
+    plda_machine = bob.machine.PLDABaseMachine(test_file)
+    # TODO: compare the PCA machines
+    #self.assertEqual(pca_machine, tool.m_pca_machine)
+    # TODO: compare the PLDA machines
+    #self.assertEqual(plda_machine, tool.m_plda_base_machine)
+    os.remove(t)
+
+    # enroll model
+    model = tool.enroll([feature])
+    if regenerate_refs:
+      model.save(bob.io.HDF5File(self.reference_dir('pca+plda_model.hdf5'), 'w'))
+    # TODO: compare the models with the reference
+    #reference_model = tool.read_model(self.reference_dir('pca+plda_model.hdf5'))
+    #self.assertEqual(model, reference_model)
+
+    # score
+    sim = tool.score(model, feature)
+    self.assertAlmostEqual(sim, 0.)
+
+
+  def notest10_gmm_video(self):
     raise SkipTest("This test is not yet implemented")
 
 
-  def notest10_isv_video(self):
+  def notest11_isv_video(self):
     raise SkipTest("This test is not yet implemented")
 

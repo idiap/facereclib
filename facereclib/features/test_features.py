@@ -103,6 +103,11 @@ class FeatureExtractionTest(unittest.TestCase):
   def test04_lgbphs(self):
     image = bob.io.load(self.input_dir('cropped.hdf5'))
     config = self.config('lgbphs.py')
+    # generate smaller features for test purposes
+    config.GABOR_DIRECTIONS = 4
+    config.GABOR_SCALES = 2
+    config.BLOCK_Y_OVERLAP = 0
+    config.BLOCK_X_OVERLAP = 0
 
     # generate extractor
     extractor = config.feature_extractor(config)
@@ -161,6 +166,7 @@ class FeatureExtractionTest(unittest.TestCase):
   def test07_eigenface(self):
     # first, read the config file
     config = self.config('eigenfaces.py')
+    config.SUBSPACE_DIMENSION = 5
     extractor = config.feature_extractor(config)
 
     # we read the test image (so that we have a length)

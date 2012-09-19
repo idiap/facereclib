@@ -17,10 +17,6 @@ class PLDATool:
     self.m_pca_subpace_size = setup.SUBSPACE_DIMENSION_PCA if hasattr(setup, 'SUBSPACE_DIMENSION_PCA') else None
     self.m_pca_machine = None
 
-    # overwrite the training image list generation from the file selector
-    # since PLDA needs training data to be split up into models
-    self.use_training_features_sorted_by_identity = True
-
 
   def __load_data_by_client__(self, training_features):
     """Loads the data (arrays) from a list of list of filenames,
@@ -76,7 +72,7 @@ class PLDATool:
     return data
 
 
-  def train_projector(self, training_features, projector_file):
+  def train_enroller(self, training_features, projector_file):
     """Generates the PLDA base model from a list of Arraysets (one per identity),
        and a set of training parameters. If PCA is requested, it is trained on the same data.
        Both the trained PLDABaseMachine and the PCA machine are written."""
@@ -122,7 +118,7 @@ class PLDATool:
     self.m_plda_base_machine.save(proj_hdf5file)
 
 
-  def load_projector(self, projector_file):
+  def load_enroller(self, projector_file):
     """Reads the PCA projection matrix and the PLDA model from file"""
     # read UBM
     proj_hdf5file = bob.io.HDF5File(projector_file)

@@ -6,7 +6,7 @@ import argparse
 
 from .. import utils
 
-all_algorithms = ('eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda')
+all_algorithms = ('eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda', 'bic')
 
 def command_line_arguments():
   parser = argparse.ArgumentParser(description="Execute baseline algorithms with default parameters", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -73,11 +73,16 @@ def isv():
   return (features, tool, grid)
 
 def plda():
-  features      = "eigenfaces.py"
-  tool          = "plda.py"
+  features      = "linearize.py"
+  tool          = "pca+plda.py"
   grid          = "demanding.py"
   return (features, tool, grid)
 
+def bic():
+  features      = "linearize.py"
+  tool          = "bic.py"
+  grid          = "demanding.py"
+  return (features, tool, grid)
 
 faceverify_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", ".."))
 bin_dir = os.path.join(faceverify_dir, "bin")

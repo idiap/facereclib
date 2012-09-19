@@ -92,7 +92,7 @@ class PreprocessingTest(unittest.TestCase):
 
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'self_quotient_cropped.hdf5')
-    self.execute(preprocessor, image, None, 'self_quotient.hdf5')
+#    self.execute(preprocessor, image, None, 'self_quotient.hdf5')
 
 
   def test04_inorm_lbp(self):
@@ -105,7 +105,7 @@ class PreprocessingTest(unittest.TestCase):
 
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'inorm_cropped.hdf5')
-    self.execute(preprocessor, image, None, 'inorm.hdf5')
+#    self.execute(preprocessor, image, None, 'inorm.hdf5')
 
 
   def test05_histogram(self):
@@ -118,7 +118,7 @@ class PreprocessingTest(unittest.TestCase):
 
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'histogram_cropped.hdf5')
-    self.execute(preprocessor, image, None, 'histogram.hdf5')
+#    self.execute(preprocessor, image, None, 'histogram.hdf5')
 
 
   def test06_key_points(self):
