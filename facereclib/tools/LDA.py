@@ -5,6 +5,7 @@
 import bob
 import numpy
 
+from .. import utils
 
 class LDATool:
   """Tool for computing linear discriminant analysis (so-called Fisher faces)"""
@@ -30,11 +31,11 @@ class LDATool:
       client_files = training_files[client]
       # at least two files per client are required!
       if len(client_files) < 2:
-        print "Skipping", len(client_files)
+        utils.warn("Skipping client with id %s since the number of client files is only %d" %(client, len(client_files)))
         continue
       for k in sorted(client_files.keys()):
         # Loads the file
-        feature = bob.io.load( str(client_files[k]) )
+        feature = client_files[k]
         # Appends in the arrayset; assure that the data is 1-dimensional
         client_data.append(numpy.reshape(feature, feature.size))
       data.append(client_data)
@@ -50,7 +51,7 @@ class LDATool:
         # Appends in the arrayset
         data.append(feature)
 
-    print "Training LinearMachine using PCA (SVD)"
+    utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
     machine, __eig_vals = t.train(data)
     # limit number of pcs
@@ -73,16 +74,16 @@ class LDATool:
     return data
 
 
-  def train_projector(self, training_files, projector_file):
+  def train_projector(self, training_features, projector_file):
     """Generates the LDA projection matrix from the given features (that are sorted by identity)"""
     # Initializes an arrayset for the data
-    data = self.__read_data__(training_files)
+    data = self.__read_data__(training_features)
 
     if self.m_pca_subspace:
       pca_machine = self.__train_pca__(data)
       data = self.__perform_pca__(pca_machine, data)
 
-    print "Training LinearMachine using LDA"
+    utils.info("  -> Training LinearMachine using LDA")
     t = bob.trainer.FisherLDATrainer()
     self.m_machine, __eig_vals = t.train(data)
 

@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from .logger import warn
 
 def read_annotations(file_name, annotation_type):
   """This function reads the given file of annotations.
@@ -66,7 +67,7 @@ def read_annotations(file_name, annotation_type):
       labels = ['reye', 'leye', 'reyeo', 'reyei', 'leyei', 'leyeo', 'nose', 'mouthr', 'mouthl', 'lipt', 'lipb', 'chin', 'rbrowo', 'rbrowi', 'lbrowi', 'lbrowo']
     elif count == 2:
       labels = ['reye', 'leye']
-      print "WARNING! Labels of file '%s' are incomplete"%file_name
+      warn("Labels of file '%s' are incomplete"%file_name)
     else:
       raise ValueError("The number %d of annotations in file '%s' is not handled."%(count, file_name))
 
@@ -118,6 +119,6 @@ def read_annotations(file_name, annotation_type):
     # WARNING! These labels might be WRONG
 
   if 'leye' in annotations and 'reye' in annotations and annotations['leye'][1] < annotations['reye'][1]:
-    print "Warning: the eye annotations in file '" + file_name + "' might be exchanged!"
+    warn("The eye annotations in file '%s' might be exchanged!" % file_name)
 
   return annotations

@@ -15,15 +15,15 @@ class UBMGMMVideoTool(UBMGMMTool):
     UBMGMMTool.__init__(self, setup)
 
 
-  def train_projector(self, train_files, projector_file):
+  def train_projector(self, train_features, projector_file):
     """Computes the Universal Background Model from the training ("world") data"""
 
-    print "Training UBM model with %d training files" % len(train_files)
+    utils.info("  -> Training UBM model with %d training files" % len(train_files))
 
     # Loads the data into an Arrayset
     arrayset = bob.io.Arrayset()
     for k in sorted(train_files.keys()):
-      frame_container = utils.video.FrameContainer(str(train_files[k]))
+      frame_container = train_features[k]
       for data in self.m_config.frame_selector_for_projector_training(frame_container):
         arrayset.extend(data)
 

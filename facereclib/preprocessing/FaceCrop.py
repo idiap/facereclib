@@ -39,9 +39,8 @@ class FaceCrop:
     self.m_mask = numpy.ndarray((real_h, real_w), numpy.bool)
 
 
-  def crop_face(self, input_file, annotations):
+  def crop_face(self, image, annotations):
     """Executes the face cropping on the given image and returns the cropped version of it"""
-    image = bob.io.load(str(input_file))
     # convert to the desired color channel
     image = utils.gray_channel(image, self.m_color_channel)
 
@@ -81,6 +80,6 @@ class FaceCrop:
       return self.m_image
 
 
-  def __call__(self, input_file, output_file, annotations = None):
+  def __call__(self, image, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, and writes the resulting image"""
-    bob.io.save(self.crop_face(input_file, annotations), output_file)
+    return self.crop_face(image, annotations)

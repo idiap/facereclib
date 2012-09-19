@@ -6,6 +6,8 @@ import bob
 import numpy
 import math
 
+from .. import utils
+
 class BICTool:
   """Computes the Intrapersonal/Extrapersonal classifier"""
 
@@ -37,14 +39,14 @@ class BICTool:
     increase = float(length)/float(count)
     return [int((i +.5)*increase) for i in range(count)]
 
-  def __intra_extra_pairs__(self, train_files):
+  def __intra_extra_pairs__(self, train_features):
     """Computes intrapersonal and extrapersonal pairs of features from given training files"""
     # first, load all features
     features = {}
-    for id in sorted(train_files.keys()):
+    for id in sorted(train_features.keys()):
       features[id] = []
-      for im in train_files[id]:
-        feature = bob.io.load(str(train_files[id][im]))
+      for im in train_features[id]:
+        feature = train_features[id][im]
         features[id].append(feature)
 
     # generate intrapersonal pairs
@@ -66,10 +68,10 @@ class BICTool:
     # limit the number of pairs by random selection
     if self.m_maximum_pair_count != None:
       if len(intra_pairs) > self.m_maximum_pair_count:
-        print "Limiting intrapersonal pairs from", len(intra_pairs), "to", self.m_maximum_pair_count
+        utils.info("  -> Limiting intrapersonal pairs from", len(intra_pairs), "to", self.m_maximum_pair_count)
         intra_pairs = [intra_pairs[i] for i in self.__limit__(self.m_maximum_pair_count, len(intra_pairs))]
       if len(extra_pairs) > self.m_maximum_pair_count:
-        print "Limiting extrapersonal pairs from", len(extra_pairs), "to", self.m_maximum_pair_count
+        utils.info("  -> Limiting extrapersonal pairs from", len(extra_pairs), "to", self.m_maximum_pair_count)
         extra_pairs = [extra_pairs[i] for i in self.__limit__(self.m_maximum_pair_count, len(extra_pairs))]
 
     return (intra_pairs, extra_pairs)
@@ -81,19 +83,19 @@ class BICTool:
       comparison_results.append(self.__compare__(f1, f2))
     return comparison_results
 
-  def train_enroller(self, train_files, enroller_file):
+  def train_enroller(self, train_features, enroller_file):
     """Trains the IEC Tool, i.e., computes intrapersonal and extrapersonal subspaces"""
 
     # compute intrapersonal and extrapersonal pairs
-    intra_pairs, extra_pairs = self.__intra_extra_pairs__(train_files)
+    intra_pairs, extra_pairs = self.__intra_extra_pairs__(train_features)
 
     # train the BIC Machine with these pairs
-    print "Computing", len(intra_pairs), "intrapersonal results"
+    utils.info("  -> Computing", len(intra_pairs), "intrapersonal results")
     intra_vectors = self.__trainset_for__(intra_pairs)
-    print "Computing", len(extra_pairs), "extrapersonal results"
+    utils.info("  -> Computing", len(extra_pairs), "extrapersonal results")
     extra_vectors = self.__trainset_for__(extra_pairs)
 
-    print "Training BIC machine"
+    utils.info("  -> Training BIC machine")
     trainer = bob.trainer.BICTrainer(self.m_M_I, self.m_M_E) if self.m_M_I != None else bob.trainer.BICTrainer()
     trainer.train(self.m_bic_machine, intra_vectors, extra_vectors)
 
@@ -132,6 +134,6 @@ class BICTool:
     # compute average score for the models
     s = 0
     for i in range(model.shape[0]):
-      s += self.__iec_score__(model[0], probe)
+      s += self.__iec_score__(model[i], probe)
 
     return s / model.shape[0]

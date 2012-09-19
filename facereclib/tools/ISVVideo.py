@@ -31,8 +31,8 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
     self.use_unprojected_features_for_model_enroll = True
 
   # Overrides ISVTool.train_enroller
-  def train_enroller(self, train_files, enroller_file):
-    print "-> ISVVideoTool.train_enroller"
+  def train_enroller(self, train_features, enroller_file):
+    utils.debug(" .... ISVVideoTool.train_enroller")
     ########## (same as ISVTool.train_enroller)
     # create a JFABasemachine with the UBM from the base class
     self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_config.SUBSPACE_DIMENSION_OF_U)
@@ -40,14 +40,15 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
 
     ########## calculate GMM stats from video.FrameContainers, using frame_selector_for_train_enroller
     gmm_stats = []
-    for k in sorted(train_files.keys()): # loop over clients
+    for k in sorted(train_features.keys()): # loop over clients
       gmm_stats_client = []
-      for j in sorted(train_files[k].keys()): # loop over videos of client k
-        frame_container = utils.video.FrameContainer(str(train_files[k][j]))
+      for j in sorted(train_features[k].keys()): # loop over videos of client k
+        frame_container = train_features[k][j]
         this_gmm_stats = UBMGMMVideoTool.project(self,frame_container,self.m_config.frame_selector_for_enroller_training)
         gmm_stats_client.append(this_gmm_stats)
       gmm_stats.append(gmm_stats_client)
-    print "--> got gmm_stats for " + str(len(gmm_stats)) + " clients"
+
+    utils.debug(" .... got gmm_stats for " + str(len(gmm_stats)) + " clients")
 
     ########## (same as ISVTool.train_enroller)
     t = bob.trainer.JFABaseTrainer(self.m_jfabase)
@@ -57,12 +58,12 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
     self.m_jfabase.save(bob.io.HDF5File(enroller_file, "w"))
 
   def enroll(self, frame_containers):
-    print "-> ISVVideoTool.enroll"
+    utils.debug(" .... ISVVideoTool.enroll")
     enroll_features = []
     for frame_container in frame_containers:
       this_enroll_features = UBMGMMVideoTool.project(self,frame_container,self.m_config.frame_selector_for_enroll)
       enroll_features.append(this_enroll_features)
-    print "--> got " + str(len(enroll_features)) + " enroll_features"
+    utils.debug(" .... got " + str(len(enroll_features)) + " enroll_features")
 
     ########## (same as ISVTool.enroll)
     self.m_trainer.enroll(enroll_features, self.m_config.JFA_ENROLL_ITERATIONS)

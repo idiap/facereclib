@@ -31,7 +31,7 @@ class SelfQuotientImage (FaceCrop):
     # call base class function
     FaceCrop.__init__(self, config)
 
-    size = max(1, int(3. * math.sqrt(config.sigma)))
+    size = max(1, int(3. * math.sqrt(config.VARIANCE)))
     self.m_self_quotient = bob.ip.SelfQuotientImage(size_min = size, sigma2 = config.VARIANCE)
     self.m_self_quotient_image = numpy.ndarray(self.m_image.shape, numpy.float64)
 
@@ -46,10 +46,10 @@ class SelfQuotientImage (FaceCrop):
     return self.m_self_quotient_image
 
 
-  def __call__(self, input_file, output_file, annotations = None):
+  def __call__(self, image, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, computes the self quotient image, and writes the resulting image"""
     # crop the face using the base class method
-    image = self.crop_face(input_file, annotations)
+    image = self.crop_face(image, annotations)
 
     # compute self quotient image
     self_quotient_image = self.self_quotient(image)
@@ -59,4 +59,4 @@ class SelfQuotientImage (FaceCrop):
       self_quotient_image[self.m_mask == False] = 0.
 
     # save the image to file
-    bob.io.save(self_quotient_image, output_file)
+    return self_quotient_image

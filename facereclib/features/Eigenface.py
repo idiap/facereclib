@@ -5,6 +5,8 @@
 import bob
 import numpy
 
+from .. import utils
+
 class Eigenface:
   """Extracts grid graphs from the images"""
 
@@ -20,12 +22,10 @@ class Eigenface:
     # Initializes an arrayset for the data
     data = bob.io.Arrayset()
     for k in sorted(image_list.keys()):
-      # Loads the file
-      feature = bob.io.load(str(image_list[k]))
       # Appends in the arrayset
-      data.append(self.__linearize__(feature))
+      data.append(self.__linearize__(image_list[k]))
 
-    print "Training LinearMachine using PCA (SVD)"
+    utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
     self.m_machine, __eig_vals = t.train(data)
     # Machine: get shape, then resize

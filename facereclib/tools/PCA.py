@@ -5,6 +5,7 @@
 import bob
 import numpy
 
+from .. import utils
 
 class PCATool:
   """Tool for computing eigenfaces"""
@@ -23,11 +24,11 @@ class PCATool:
     data = bob.io.Arrayset()
     for k in sorted(training_features.keys()):
       # Loads the file
-      feature = bob.io.load(str(training_features[k]))
+      feature = training_features[k]
       # Appends in the arrayset
       data.append(feature)
 
-    print "Training LinearMachine using PCA (SVD)"
+    utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
     self.m_machine, __eig_vals = t.train(data)
     # Machine: get shape, then resize

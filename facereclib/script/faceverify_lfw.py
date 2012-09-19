@@ -39,35 +39,104 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     # each fold might have its own feature extraction training and feature projection training,
     # so we have to overwrite the default directories
-    self.m_configuration.preprocessed_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.preprocessed_dir, 'view1' if self.m_configuration.protocol == 'view1' else 'view2')
-    self.m_configuration.features_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.features_dir, self.m_configuration.protocol)
-    self.m_configuration.projected_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.projected_dir, self.m_configuration.protocol)
+    self.m_configuration.preprocessed_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, 'view1' if self.m_configuration.protocol == 'view1' else 'view2', self.m_args.preprocessed_dir)
+    self.m_configuration.features_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_configuration.protocol, self.m_args.features_dir)
+    self.m_configuration.projected_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_configuration.protocol, self.m_args.projected_dir)
+
+    self.m_configuration.extractor_file = os.path.join(self.m_configuration.base_output_TEMP_dir, 'view1' if self.m_configuration.protocol == 'view1' else 'view2', self.m_args.extractor_file)
+    self.m_configuration.projector_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_configuration.protocol, self.m_args.projector_file)
+    self.m_configuration.enroller_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_configuration.protocol, self.m_args.enroller_file)
 
 
   def execute_tool_chain(self):
     """Executes the desired tool chain on the local machine"""
     # preprocessing
     if not self.m_args.skip_preprocessing:
-      self.m_tool_chain.preprocess_images(self.m_preprocessor, force = self.m_args.force)
+      if self.m_args.dry_run:
+        print "Would have preprocessed images for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.preprocess_images(
+              self.m_preprocessor,
+              force = self.m_args.force)
+
     # feature extraction
-    if not self.m_args.skip_feature_extraction_training and hasattr(self.m_feature_extractor, 'train'):
-      self.m_tool_chain.train_extractor(self.m_feature_extractor, force = self.m_args.force)
-    if not self.m_args.skip_feature_extraction:
-      self.m_tool_chain.extract_features(self.m_feature_extractor, force = self.m_args.force)
+    if not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
+      if self.m_args.dry_run:
+        print "Would have trained the extractor for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.train_extractor(
+              self.m_extractor,
+              self.m_preprocessor,
+              force = self.m_args.force)
+
+    if not self.m_args.skip_extraction:
+      if self.m_args.dry_run:
+        print "Would have extracted the features for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.extract_features(
+              self.m_extractor,
+              self.m_preprocessor,
+              force = self.m_args.force)
+
     # feature projection
-    if not self.m_args.skip_projection_training and hasattr(self.m_tool, 'train_projector'):
-      self.m_tool_chain.train_projector(self.m_tool, force = self.m_args.force)
+    if not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
+      if self.m_args.dry_run:
+        print "Would have trained the projector for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.train_projector(
+              self.m_tool,
+              self.m_extractor,
+              force = self.m_args.force)
+
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
-      self.m_tool_chain.project_features(self.m_tool, force = self.m_args.force, extractor = self.m_feature_extractor)
+      if self.m_args.dry_run:
+        print "Would have projected the features for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.project_features(
+              self.m_tool,
+              self.m_extractor,
+              force = self.m_args.force)
+
     # model enrollment
     if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
-      self.m_tool_chain.train_enroller(self.m_tool, force = self.m_args.force)
-    if not self.m_args.skip_model_enrollment:
-      self.m_tool_chain.enroll_models(self.m_tool, self.m_feature_extractor, compute_zt_norm = False, force = self.m_args.force)
+      if self.m_args.dry_run:
+        print "Would have trained the enroller for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.train_enroller(
+              self.m_tool,
+              self.m_extractor,
+              force = self.m_args.force)
+
+    if not self.m_args.skip_enrollment:
+      if self.m_args.dry_run:
+        print "Would have enrolled the models for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.enroll_models(
+              self.m_tool,
+              self.m_extractor,
+              groups = self.m_args.groups,
+              compute_zt_norm = False,
+              force = self.m_args.force)
+
     # score computation
     if not self.m_args.skip_score_computation:
-      self.m_tool_chain.compute_scores(self.m_tool, compute_zt_norm = False, preload_probes = self.m_args.preload_probes, force = self.m_args.force)
-    self.m_tool_chain.concatenate(compute_zt_norm = False)
+      if self.m_args.dry_run:
+        print "Would have computed the scores for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.compute_scores(
+              self.m_tool,
+              compute_zt_norm = False,
+              groups = self.m_args.groups,
+              preload_probes = self.m_args.preload_probes,
+              force = self.m_args.force)
+
+    if not self.m_args.skip_concatenation:
+      if self.m_args.dry_run:
+        print "Would have concatenated the scores for protocol %s ..." % self.m_protocol
+      else:
+        self.m_tool_chain.concatenate(compute_zt_norm = False)
+
+    # That's it. The final averaging of results will be done by the calling function
 
 
   def add_jobs_to_grid(self, external_dependencies, perform_preprocessing):
@@ -78,12 +147,13 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     deps = external_dependencies[:]
 
     protocol = self.m_configuration.protocol
+    pshort = protocol[0] + protocol[4]
     default_opt = ' --protocol %s'%protocol
     # image preprocessing; never has any dependencies.
     if not self.m_args.skip_preprocessing and perform_preprocessing:
       job_ids['preprocessing'] = self.submit_grid_job(
-              '--preprocess' + default_opt,
-              name = 'pre-%s'%protocol,
+              'preprocess' + default_opt,
+              name = 'pre-%s'%pshort,
               list_to_split = self.m_file_selector.original_image_list(),
               number_of_files_per_job = self.m_grid_config.number_of_images_per_job,
               dependencies = deps,
@@ -91,18 +161,18 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['preprocessing'])
 
     # feature extraction training
-    if not self.m_args.skip_feature_extraction_training and hasattr(self.m_feature_extractor, 'train'):
+    if not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
       job_ids['extraction_training'] = self.submit_grid_job(
-              '--feature-extraction-training' + default_opt,
-              name = 'f-train-%s'%protocol,
+              'train-extractor' + default_opt,
+              name = 'f-train-%s'%pshort,
               dependencies = deps,
               **self.m_grid_config.training_queue)
       deps.append(job_ids['extraction_training'])
 
-    if not self.m_args.skip_feature_extraction:
+    if not self.m_args.skip_extraction:
       job_ids['feature_extraction'] = self.submit_grid_job(
-              '--feature-extraction' + default_opt,
-              name = 'extr-%s'%protocol,
+              'extract' + default_opt,
+              name = 'extr-%s'%pshort,
               list_to_split = self.m_file_selector.preprocessed_image_list(),
               number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
               dependencies = deps,
@@ -110,43 +180,43 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['feature_extraction'])
 
     # feature projection training
-    if not self.m_args.skip_projection_training and hasattr(self.m_tool, 'train_projector'):
+    if not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
       job_ids['projector_training'] = self.submit_grid_job(
-              '--train-projector' + default_opt,
-              name = "p-train-%s"%protocol,
+              'train-projector' + default_opt,
+              name = "p-train-%s"%pshort,
               dependencies = deps,
               **self.m_grid_config.training_queue)
       deps.append(job_ids['projector_training'])
 
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
       job_ids['feature_projection'] = self.submit_grid_job(
-              '--feature-projection' + default_opt,
+              'project' + default_opt,
+              name="pro-%s"%pshort,
               list_to_split = self.m_file_selector.feature_list(),
               number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
               dependencies = deps,
-              name="pro-%s"%protocol,
               **self.m_grid_config.projection_queue)
       deps.append(job_ids['feature_projection'])
 
     # model enrollment training
     if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
       job_ids['enrollment_training'] = self.submit_grid_job(
-              '--train-enroller' + default_opt,
+              'train-enroller' + default_opt,
               dependencies = deps,
-              name="e-train-%s"%protocol,
+              name="e-train-%s"%pshort,
               **self.m_grid_config.training_queue)
       deps.append(job_ids['enrollment_training'])
 
     # enroll models
     groups = ['dev'] if protocol=='view1' else self.m_args.groups
-    if not self.m_args.skip_model_enrollment:
+    if not self.m_args.skip_enrollment:
       for group in groups:
         job_ids['enroll-%s'%group] = self.submit_grid_job(
-                '--enroll-models --group %s'%group + default_opt,
+                'enroll --group %s'%group + default_opt,
+                name = "enr-%s-%s"%(pshort,group),
                 list_to_split = self.m_file_selector.model_ids(group),
                 number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
                 dependencies = deps,
-                name = "enroll-%s-%s"%(protocol,group),
                 **self.m_grid_config.enroll_queue)
       for group in groups:
         deps.append(job_ids['enroll-%s'%group])
@@ -155,86 +225,91 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_score_computation:
       for group in groups:
         job_ids['score-%s'%group] = self.submit_grid_job(
-                '--compute-scores --group %s'%group + default_opt,
+                'compute-scores --group %s'%group + default_opt,
                 list_to_split = self.m_file_selector.model_ids(group),
                 number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
                 dependencies = deps,
-                name = "score-%s-%s"%(protocol,group),
+                name = "score-%s-%s"%(pshort,group),
                 **self.m_grid_config.score_queue)
       for group in groups:
         deps.append(job_ids['score-%s'%group])
 
     # concatenate results
-    job_ids['concatenate'] = self.submit_grid_job(
-            '--concatenate' + default_opt,
-            dependencies = deps,
-            name = "concat-%s"%protocol)
+    if not self.m_args.skip_concatenation:
+      job_ids['concatenate'] = self.submit_grid_job(
+              'concatenate' + default_opt,
+              dependencies = deps,
+              name = "concat-%s"%pshort)
 
     # return the job ids, in case anyone wants to know them
     return job_ids
 
   def add_average_job_to_grid(self, external_dependencies):
     """Adds the job to average the results of the runs"""
-    return {'average' : \
-        self.submit_grid_job(\
-              '--average-results --protocol view1',\
-              dependencies = external_dependencies,\
+    return {'average' :
+        self.submit_grid_job(
+              'average-results --protocol view1',  # The protocol is ignored by this function, but has to be specified.
+              dependencies = external_dependencies,
               name = "average")}
 
 
   def execute_grid_job(self):
     """This function executes the grid job that is specified on the command line."""
     # preprocess
-    if self.m_args.preprocess:
+    if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_images(
           self.m_preprocessor,
           indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid_config.number_of_images_per_job),
           force = self.m_args.force)
 
-    if self.m_args.feature_extraction_training:
+    elif self.m_args.sub_task == 'train-extractor':
       self.m_tool_chain.train_extractor(
-          self.m_feature_extractor,
+          self.m_extractor,
+          self.m_preprocessor,
           force = self.m_args.force)
 
     # extract features
-    if self.m_args.feature_extraction:
+    elif self.m_args.sub_task == 'extract':
       self.m_tool_chain.extract_features(
-          self.m_feature_extractor,
+          self.m_extractor,
+          self.m_preprocessor,
           indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
-    if self.m_args.train_projector:
+    elif self.m_args.sub_task == 'train-projector':
       self.m_tool_chain.train_projector(
           self.m_tool,
+          self.m_extractor,
           force = self.m_args.force)
 
     # project the features
-    if self.m_args.projection:
+    elif self.m_args.sub_task == 'project':
       self.m_tool_chain.project_features(
           self.m_tool,
-          extractor = self.m_feature_extractor,
+          self.m_extractor,
           indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_projections_per_job),
           force = self.m_args.force)
 
     # train model enroller
-    if self.m_args.train_enroller:
+    elif self.m_args.sub_task == 'train-enroller':
       self.m_tool_chain.train_enroller(
           self.m_tool,
+          self.m_extractor,
           force = self.m_args.force)
 
     # enroll models
-    if self.m_args.enroll_models:
+    elif self.m_args.sub_task == 'enroll':
       self.m_tool_chain.enroll_models(
           self.m_tool,
-          self.m_feature_extractor,
+          self.m_extractor,
           groups = (self.m_args.group,),
           compute_zt_norm = False,
           indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
           force = self.m_args.force)
 
     # compute scores
-    if self.m_args.compute_scores:
+    elif self.m_args.sub_task == 'compute-scores':
       self.m_tool_chain.compute_scores(
           self.m_tool,
           groups = (self.m_args.group,),
@@ -244,69 +319,76 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
           force = self.m_args.force)
 
     # concatenate
-    if self.m_args.concatenate:
+    elif self.m_args.sub_task == 'concatenate':
       self.m_tool_chain.concatenate(compute_zt_norm = False)
 
     # average
-    if self.m_args.average_results:
+    elif self.m_args.sub_task == 'average-results':
       self.average_results()
 
+    # Test if the keyword was processed
+    else:
+      raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors.")
+
   def __classification_result__(self, negatives, positives, threshold):
-    return (\
-        bob.measure.correctly_classified_negatives(negatives, threshold).sum(dtype=numpy.float64) +\
-        bob.measure.correctly_classified_positives(positives, threshold).sum(dtype=numpy.float64)\
+    return (
+        bob.measure.correctly_classified_negatives(negatives, threshold).sum(dtype=numpy.float64) +
+        bob.measure.correctly_classified_positives(positives, threshold).sum(dtype=numpy.float64)
       ) / float(len(positives) + len(negatives))
 
   def average_results(self):
     """Iterates over all the folds of the current view and computes the average result"""
     file = open(self.m_configuration.result_file, 'w')
     if 'view1' in self.m_args.views:
-      # process the single result of view 1
-      self.m_configuration.protocol = 'view1'
-      res_file = self.m_file_selector.no_norm_result_file('dev')
+      if self.m_args.dry_run:
+        print "Would have averaged the results from view1 ..."
+      else:
+        # process the single result of view 1
+        self.m_configuration.protocol = 'view1'
+        res_file = self.m_file_selector.no_norm_result_file('dev')
 
-      negatives, positives = bob.measure.load.split_four_column(res_file)
-      threshold = bob.measure.eer_threshold(negatives, positives)
+        negatives, positives = bob.measure.load.split_four_column(res_file)
+        threshold = bob.measure.eer_threshold(negatives, positives)
 
-      far, frr = bob.measure.farfrr(negatives, positives, threshold)
-      hter = (far + frr)/2.0
-
-      file.write("On view1 (dev set only):\n\nFAR = %f;\tFRR = %f;\tHTER = %f;\tthreshold = %f\n"%(far, frr, hter, threshold))
-      file.write("Classification Success:%f%%\n\n"%(self.__classification_result__(negatives, positives, threshold) * 100.))
-
-    if 'view2' in self.m_args.views:
-      file.write("On view2 (eval set only):\n\n")
-      # iterate over all folds of view 2
-      errors = numpy.ndarray((10,), numpy.float64)
-      for f in range(1,11):
-        # configure the file selector with the current protocol
-        self.m_protocol = 'fold%d'%f
-        self.protocol_specific_configuration()
-        dev_res_file = self.m_file_selector.no_norm_result_file('dev')
-        eval_res_file = self.m_file_selector.no_norm_result_file('eval')
-
-        # compute threshold on dev data
-        dev_negatives, dev_positives = bob.measure.load.split_four_column(dev_res_file)
-        threshold = bob.measure.eer_threshold(dev_negatives, dev_positives)
-
-        # compute FAR and FRR for eval data
-        eval_negatives, eval_positives = bob.measure.load.split_four_column(eval_res_file)
-
-        far, frr = bob.measure.farfrr(eval_negatives, eval_positives, threshold)
+        far, frr = bob.measure.farfrr(negatives, positives, threshold)
         hter = (far + frr)/2.0
 
-        file.write("On fold%d:\n\nFAR = %f;\tFRR = %f;\tHTER = %f;\tthreshold = %f\n"%(f, far, frr, hter, threshold))
-        result = self.__classification_result__(eval_negatives, eval_positives, threshold)
-        file.write("Classification Success:%f%%\n\n"%(result * 100.))
-        errors[f-1] = result
+        file.write("On view1 (dev set only):\n\nFAR = %.3f;\tFRR = %.3f;\tHTER = %.3f;\tthreshold = %.3f\n"%(far, frr, hter, threshold))
+        file.write("Classification Success: %.2f%%\n\n"%(self.__classification_result__(negatives, positives, threshold) * 100.))
 
-      # compute mean and std error
-      mean = numpy.mean(errors)
-      std = numpy.std(errors)
-      file.write("\nOverall classification success: %f (with std %f)\n"%(mean,std))
+    if 'view2' in self.m_args.views:
+      if self.m_args.dry_run:
+        print "Would have averaged the results from view2 ..."
+      else:
+        file.write("On view2 (eval set only):\n\n")
+        # iterate over all folds of view 2
+        errors = numpy.ndarray((10,), numpy.float64)
+        for f in range(1,11):
+          # configure the file selector with the current protocol
+          self.m_protocol = 'fold%d'%f
+          self.protocol_specific_configuration()
+          dev_res_file = self.m_file_selector.no_norm_result_file('dev')
+          eval_res_file = self.m_file_selector.no_norm_result_file('eval')
 
+          # compute threshold on dev data
+          dev_negatives, dev_positives = bob.measure.load.split_four_column(dev_res_file)
+          threshold = bob.measure.eer_threshold(dev_negatives, dev_positives)
 
+          # compute FAR and FRR for eval data
+          eval_negatives, eval_positives = bob.measure.load.split_four_column(eval_res_file)
 
+          far, frr = bob.measure.farfrr(eval_negatives, eval_positives, threshold)
+          hter = (far + frr)/2.0
+
+          file.write("On fold%d:\n\nFAR = %.3f;\tFRR = %.3f;\tHTER = %.3f;\tthreshold = %.3f\n"%(f, far, frr, hter, threshold))
+          result = self.__classification_result__(eval_negatives, eval_positives, threshold)
+          file.write("Classification Success: %.2f%%\n\n"%(result * 100.))
+          errors[f-1] = result
+
+        # compute mean and std error
+        mean = numpy.mean(errors)
+        std = numpy.std(errors)
+        file.write("\nOverall classification success: %f (with std %f)\n"%(mean,std))
 
 
 def parse_args(command_line_arguments = sys.argv[1:]):
@@ -334,39 +416,20 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = 'Force to erase former data if already exist')
   other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
-  other_group.add_argument('--views', type = str, nargs = '+', choices = ('view1', 'view2'), default = 'view1',
+  other_group.add_argument('--views', type = str, nargs = '+', choices = ('view1', 'view2'), default = ['view1'],
       help = 'The views to be used, by default only the "view1" is executed.')
-  other_group.add_argument('--groups', type = str, nargs = '+', choices = ('dev', 'eval'), default = ('dev','eval'),
+  other_group.add_argument('--groups', type = str, nargs = '+', choices = ('dev', 'eval'), default = ['dev'],
       help = 'The groups to compute the scores for.')
 
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
-  parser.add_argument('--execute-sub-task', action='store_true',
+  parser.add_argument('--sub-task',
+      choices = ('preprocess', 'train-extractor', 'extract', 'train-projector', 'project', 'train-enroller', 'enroll', 'compute-scores', 'concatenate', 'average-results'),
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
-  parser.add_argument('--preprocess', action='store_true',
-      help = argparse.SUPPRESS) #'Perform image preprocessing on the given range of images'
   parser.add_argument('--group', type=str, choices=['dev','eval'],
       help = argparse.SUPPRESS) #'The subset of the data for which the process should be executed'
   parser.add_argument('--protocol', type=str, choices=['view1','fold1','fold2','fold3','fold4','fold5','fold6','fold7','fold8','fold9','fold10'],
       help = argparse.SUPPRESS) #'The protocol which should be used in this sub-task'
-  parser.add_argument('--feature-extraction-training', action='store_true',
-      help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
-  parser.add_argument('--feature-extraction', action='store_true',
-      help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
-  parser.add_argument('--train-projector', action='store_true',
-      help = argparse.SUPPRESS) #'Perform feature extraction training'
-  parser.add_argument('--feature-projection', action='store_true', dest = 'projection',
-      help = argparse.SUPPRESS) #'Perform feature projection'
-  parser.add_argument('--train-enroller', action='store_true',
-      help = argparse.SUPPRESS) #'Perform enrollment training'
-  parser.add_argument('--enroll-models', action='store_true',
-      help = argparse.SUPPRESS) #'Generate the given range of models from the features'
-  parser.add_argument('--compute-scores', action='store_true',
-      help = argparse.SUPPRESS) #'Compute scores for the given range of models'
-  parser.add_argument('--concatenate', action='store_true',
-      help = argparse.SUPPRESS) #'Concatenates the results of all scores of the given group'
-  parser.add_argument('--average-results', action='store_true',
-      help = argparse.SUPPRESS) #'Concatenates the results of all scores of the given group'
 
   return parser.parse_args(command_line_arguments)
 
@@ -382,7 +445,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
   If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.
   If files should be re-generated, please specify the --force option (might be combined with the --skip-... options)"""
 
-  if args.execute_sub_task:
+  if args.sub_task:
     # execute the desired sub-task
     executor = ToolChainExecutorLFW(args, protocol=args.protocol)
     executor.execute_grid_job()

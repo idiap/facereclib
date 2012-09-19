@@ -4,6 +4,7 @@
 
 import bob
 import numpy
+from .. import utils
 
 class LGBPHSTool:
   """Tool chain for computing local Gabor binary pattern histogram sequences"""
@@ -13,12 +14,11 @@ class LGBPHSTool:
     # nothing to be done here
     self.m_distance_function = setup.distance_function
     self.m_factor =  -1. if setup.IS_DISTANCE_FUNCTION else 1
-    self.m_sparse = setup.USE_SPARSE_HISTOGRAM if hasattr(setup, 'USE_SPARSE_HISTOGRAM') else False
 
   def enroll(self, enroll_features):
     """Enrolling model by taking the average of all features"""
     sparse = len(enroll_features) > 0 and enroll_features[0].shape[0] == 2
-    if self.m_sparse or sparse:
+    if sparse:
       # get all indices for the sparse model
       values = {}
       # assert that we got sparse features
@@ -58,9 +58,11 @@ class LGBPHSTool:
 
   def score(self, model, probe):
     """Computes the score using the specified histogram measure; returns a similarity value (bigger -> better)"""
-    sparse = probe.shape[0] == 2
-    if self.m_sparse or sparse:
-      return self.m_factor * self.m_distance_function(model[0,:], model[1,:], probe[0,:], probe[1,:])
+    sparse = model.shape[0] == 2
+    if sparse:
+      # assure that the probe is sparse as well
+      sparse_probe = utils.histogram.sparsify(probe)
+      return self.m_factor * self.m_distance_function(model[0,:], model[1,:], sparse_probe[0,:], sparse_probe[1,:])
     else:
       return self.m_factor * self.m_distance_function(model.flatten(), probe.flatten())
 

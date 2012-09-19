@@ -5,6 +5,9 @@
 
 from annotations import read_annotations
 import video
+import histogram
+
+from logger import add_logger_command_line_option, set_verbosity_level, debug, info, warn, error
 
 import os
 import bob
@@ -13,7 +16,7 @@ import re
 def ensure_dir(dirname):
   """ Creates the directory dirname if it does not already exist,
       taking into account concurrent 'creation' on the grid.
-      An exception is thrown if a file (rather than a directory) already 
+      An exception is thrown if a file (rather than a directory) already
       exists. """
   try:
     # Tries to create the directory
@@ -22,7 +25,7 @@ def ensure_dir(dirname):
     # Check that the directory exists
     if os.path.isdir(dirname): pass
     else: raise
-    
+
 
 def gray_channel(image, channel = 'gray'):
   """Returns the desired channel of the given image. Currently, gray, red, green and blue channels are supported."""
@@ -30,7 +33,7 @@ def gray_channel(image, channel = 'gray'):
     if channel != 'gray':
       raise ValueError("There is no rule to extract a " + channel + " image from a gray level image!")
     return image
-  
+
   if channel == 'gray':
     return bob.ip.rgb_to_gray(image)
   if channel == 'red':
@@ -39,9 +42,9 @@ def gray_channel(image, channel = 'gray'):
     return image[1,:,:]
   if channel == 'blue':
     return image[2,:,:]
-    
+
   raise ValueError("The image channel " + channel + " is not known or not yet implemented")
-    
+
 
 
 def convertScoreToList(scores, probes):
@@ -74,7 +77,7 @@ def probes_used_generate_vector(probe_files_full, probe_files_model):
   import numpy as np
   C_probesUsed = np.ndarray((len(probe_files_full),), 'bool')
   C_probesUsed.fill(False)
-  c=0 
+  c=0
   for k in sorted(probe_files_full.keys()):
     if probe_files_model.has_key(k): C_probesUsed[c] = True
     c+=1
@@ -91,6 +94,6 @@ def probes_used_extract_scores(full_scores, same_probes):
       for j in range(0,full_scores.shape[0]):
         model_scores[j,c] = full_scores[j,i]
       c+=1
-  return model_scores 
+  return model_scores
 
 

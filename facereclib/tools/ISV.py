@@ -25,7 +25,7 @@ class ISVTool (UBMGMMTool):
     gmm_stats = []
     for k in l_files:
       # Processes one file
-      stats = bob.machine.GMMStats( bob.io.HDF5File(str(l_files[k])) )
+      stats = l_files[k]
       # Appends in the list
       gmm_stats.append(stats)
     return gmm_stats
@@ -56,13 +56,13 @@ class ISVTool (UBMGMMTool):
 
   #######################################################
   ################ ISV training #########################
-  def train_enroller(self, train_files, enroller_file):
+  def train_enroller(self, train_features, enroller_file):
     # create a JFABasemachine with the UBM from the base class
     self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_config.SUBSPACE_DIMENSION_OF_U)
     self.m_jfabase.ubm = self.m_ubm
 
     # load GMM stats from training files
-    gmm_stats = self.__load_gmm_stats_list__(train_files)
+    gmm_stats = self.__load_gmm_stats_list__(train_features)
 
     t = bob.trainer.JFABaseTrainer(self.m_jfabase)
     t.train_isv(gmm_stats, self.m_config.JFA_TRAINING_ITERATIONS, self.m_config.RELEVANCE_FACTOR)
@@ -106,9 +106,7 @@ class ISVTool (UBMGMMTool):
     machine.jfa_base = self.m_jfabase
     return machine
 
-  def read_probe(self, probe_file):
-    """Read the type of features that we require, namely GMMStats"""
-    return bob.machine.GMMStats(bob.io.HDF5File(probe_file))
+  read_probe = read_feature
 
   def score(self, model, probe):
     """Computes the score for the given model and the given probe using the scoring function from the config file"""

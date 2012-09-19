@@ -3,10 +3,12 @@
 # Roy Wallace <roy.wallace@idiap.ch>
 
 import bob
+import re
+import numpy
 
 class FrameContainer:
-  """A class for reading, manipulating and saving video content. 
-  A VideoFrameContainer contains data for each of several frames. The data for a frame may represent e.g. a still image, or features extracted from an image. When loaded from or saved to a HDF5 file format, the contents are as follows: 
+  """A class for reading, manipulating and saving video content.
+  A VideoFrameContainer contains data for each of several frames. The data for a frame may represent e.g. a still image, or features extracted from an image. When loaded from or saved to a HDF5 file format, the contents are as follows:
       /data/<frame_id>, where each <frame_id> is an integer
       /quality/<frame_id> (optional), where each <frame_id> is an integer, stores a vector of quality measures
   """
@@ -52,6 +54,14 @@ class FrameContainer:
       if quality is not None:
         f.set('/quality/' + str(frame_id), quality)
 
+  def __eq__(self, other):
+    """Equality operator between frame containers."""
+    if len(self._frames) != len(other._frames): return False
+    for i in range(len(self._frames)):
+      if self._frames[i][0] != other._frames[i][0]: return False
+      if (numpy.abs(self._frames[i][1] - other._frames[i][1]) > 1e-5).any(): return False
+      if (self._frames[i][2] != other._frames[i][2]).any(): return False
+    return True
 
 ###################################
 ### Frame selector classes ########
@@ -68,7 +78,7 @@ class AllFrameSelector:
 
 class FirstNFrameSelector:
   """Selects the first N frames of a video and discards the rest."""
-  
+
   def __init__(self, N):
     self._N = N
 

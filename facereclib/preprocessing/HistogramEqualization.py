@@ -34,15 +34,20 @@ class HistogramEqualization (FaceCrop):
 
   def equalize_histogram(self, image):
     """Calls bob function to do the actual histogram equalization"""
+
+    # create image in desired shape, if necessary
+    if self.m_histogram_image.shape != image.shape:
+      self.m_histogram_image = numpy.ndarray(image.shape, numpy.float64)
+
     bob.ip.histogram_equalization(image.astype(numpy.uint8), self.m_histogram_image)
 
     return self.m_histogram_image
 
 
-  def __call__(self, input_file, output_file, annotations = None):
+  def __call__(self, image, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, performs histogram equalization, and writes the resulting image"""
     # crop the face using the base class method
-    image = self.crop_face(input_file, annotations)
+    image = self.crop_face(image, annotations)
 
     # perform histogram equalization
     histogram_image = self.equalize_histogram(image)
@@ -52,5 +57,5 @@ class HistogramEqualization (FaceCrop):
       histogram_image[self.m_mask == False] = 0.
 
     # save the image to file
-    bob.io.save(histogram_image, output_file)
+    return histogram_image
 

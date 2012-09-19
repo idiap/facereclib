@@ -9,6 +9,7 @@ import copy
 
 import gridtk
 from .. import toolchain
+from .. import utils
 
 
 class ToolChainExecutor:
@@ -24,7 +25,7 @@ class ToolChainExecutor:
     self.m_configuration = imp.load_source('database', args.database)
     self.m_tool_config = imp.load_source('tool_chain', args.tool)
     self.m_preprocessor_config =  imp.load_source('preprocessor', args.preprocessor)
-    self.m_feature_extractor_config = imp.load_source('feature_extractor', args.features)
+    self.m_extractor_config = imp.load_source('extractor', args.features)
     if args.grid:
       self.m_grid_config = imp.load_source('grid', args.grid)
 
@@ -32,8 +33,10 @@ class ToolChainExecutor:
 
     # generate the tools that we will need
     self.m_preprocessor = self.m_preprocessor_config.preprocessor(self.m_preprocessor_config)
-    self.m_feature_extractor = self.m_feature_extractor_config.feature_extractor(self.m_feature_extractor_config)
+    self.m_extractor = self.m_extractor_config.feature_extractor(self.m_extractor_config)
     self.m_tool = self.m_tool_config.tool(self.m_tool_config)
+
+    utils.set_verbosity_level(args.verbose)
 
   def required_command_line_options(parser):
     """Initializes the minimum command line options that are
@@ -41,31 +44,31 @@ class ToolChainExecutor:
 
     #######################################################################################
     ############## options that are required to be specified #######################
-    config_group = parser.add_argument_group('\nConfiguration files that need to be specified on the command line')
+    config_group = parser.add_argument_group('\nConfiguration files that need to be specified on the command line.')
     config_group.add_argument('-d', '--database', metavar = 'FILE', type = str, required = True,
         help = 'The database configuration file')
-    config_group.add_argument('-t', '--tool-chain', type = str, dest = 'tool', required = True, metavar = 'FILE',
-        help = 'The tool chain configuration file')
+    config_group.add_argument('-t', '--tool', type = str, dest = 'tool', required = True, metavar = 'FILE',
+        help = 'The configuration file for the face recognition tool')
     config_group.add_argument('-p', '--preprocessing', metavar = 'FILE', type = str, dest = 'preprocessor', required = True,
         help = 'Configuration script for image preprocessing')
     config_group.add_argument('-f', '--features', metavar = 'FILE', type = str, required = True,
         help = 'Configuration script for extracting the features')
     config_group.add_argument('-g', '--grid', metavar = 'FILE', type = str,
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine')
+    config_group.add_argument('-b', '--sub-directory', metavar = 'DIR', type = str, dest = 'sub_dir', required = True,
+        help = 'The sub-directory where the files of the current experiment should be stored. Please specify a directory name with a name describing your experiment.')
 
     #######################################################################################
     ############## options to modify default directories or file names ####################
-    dir_group = parser.add_argument_group('\nDirectories that can be changed according to your requirements')
+    dir_group = parser.add_argument_group('\nDirectories that can be changed according to your requirements.')
     dir_group.add_argument('-T', '--temp-directory', metavar = 'DIR', type = str, dest = 'temp_dir',
-        help = 'The directory for temporary files; if not specified, /idiap/temp/$USER/database-name/sub-dir (or /scratch/$USER/database-name/sub-dir, when executed locally) is used')
+        help = 'The directory for temporary files; if not specified, /idiap/temp/$USER/database-name/sub-directory (or /scratch/$USER/database-name/sub-directory, when executed locally) is used')
     dir_group.add_argument('-U', '--user-directory', metavar = 'DIR', type = str, dest = 'user_dir',
-        help = 'The directory for temporary files; if not specified, /idiap/user/$USER/database-name/sub-dir is used')
-    dir_group.add_argument('-b', '--sub-directory', metavar = 'DIR', type = str, dest = 'sub_dir', default = 'default',
-        help = 'The sub-directory where the results of the current experiment should be stored.')
+        help = 'The directory for resulting score files; if not specified, /idiap/user/$USER/database-name/sub-directory is used')
     dir_group.add_argument('-s', '--score-sub-directory', metavar = 'DIR', type = str, dest = 'score_sub_dir', default = 'scores',
         help = 'The sub-directory where to write the scores to.')
 
-    file_group = parser.add_argument_group('\nName (maybe including a path relative to the --temp-dir) of files that will be generated. Note that not all files will be used by all tools')
+    file_group = parser.add_argument_group('\nName (maybe including a path relative to the --temp-directory) of files that will be generated. Note that not all files will be used by all tools.')
     file_group.add_argument('--extractor-file', type = str, metavar = 'FILE', default = 'Extractor.hdf5',
         help = 'Name of the file to write the feature extractor into')
     file_group.add_argument('--projector-file', type = str, metavar = 'FILE', default = 'Projector.hdf5',
@@ -75,7 +78,7 @@ class ToolChainExecutor:
     file_group.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_db',
         help = 'The db file in which the submitted jobs will be written (only valid with the --grid option)')
 
-    sub_dir_group = parser.add_argument_group('\nSubdirectories of certain parts of the toolchain. You can specify directories in case you want to reuse parts of the experiments (e.g. extracted features) in other experiments. Please note that these directories are relative to the --temp-dir')
+    sub_dir_group = parser.add_argument_group('\nSubdirectories of certain parts of the tool chain. You can specify directories in case you want to reuse parts of the experiments (e.g. extracted features) in other experiments. Please note that these directories are relative to the --temp-directory, but you can also specify absolute paths.')
     sub_dir_group.add_argument('--preprocessed-image-directory', type = str, metavar = 'DIR', default = 'preprocessed', dest = 'preprocessed_dir',
         help = 'Name of the directory of the preprocessed images')
     sub_dir_group.add_argument('--features-directory', type = str, metavar = 'DIR', default = 'features', dest = 'features_dir',
@@ -83,30 +86,31 @@ class ToolChainExecutor:
     sub_dir_group.add_argument('--projected-directory', type = str, metavar = 'DIR', default = 'projected', dest = 'projected_dir',
         help = 'Name of the directory where the projected data should be stored')
 
-    other_group = parser.add_argument_group('\nFlags that change the behaviour of the experiment')
+    other_group = parser.add_argument_group('\nFlags that change the behavior of the experiment.')
     other_group.add_argument('-q', '--dry-run', action='store_true', dest='dry_run',
-        help = 'Only report the grid commands that will be executed, but do not execute them')
+        help = 'Only report the commands that will be executed, but do not execute them')
+    utils.add_logger_command_line_option(other_group)
 
     #######################################################################################
     ################# options for skipping parts of the toolchain #########################
     skip_group = parser.add_argument_group('\nFlags that allow to skip certain parts of the experiments. This does only make sense when the generated files are already there (e.g. when reusing parts of other experiments)')
-    skip_group.add_argument('--skip-preprocessing', '--nopre', action='store_true', dest='skip_preprocessing',
+    skip_group.add_argument('--skip-preprocessing', '--nopre', action='store_true',
         help = 'Skip the image preprocessing step')
-    skip_group.add_argument('--skip-feature-extraction-training', '--nofet', action='store_true', dest='skip_feature_extraction_training',
+    skip_group.add_argument('--skip-extractor-training', '--noet', action='store_true',
         help = 'Skip the feature extraction training step')
-    skip_group.add_argument('--skip-feature-extraction', '--nofe', action='store_true', dest='skip_feature_extraction',
+    skip_group.add_argument('--skip-extraction', '--noe', action='store_true',
         help = 'Skip the feature extraction step')
-    skip_group.add_argument('--skip-projection-training', '--noprot', action='store_true', dest='skip_projection_training',
+    skip_group.add_argument('--skip-projector-training', '--noprot', action='store_true',
         help = 'Skip the feature extraction training')
-    skip_group.add_argument('--skip-projection', '--nopro', action='store_true', dest='skip_projection',
+    skip_group.add_argument('--skip-projection', '--nopro', action='store_true',
         help = 'Skip the feature projection')
-    skip_group.add_argument('--skip-enroller-training', '--noenrt', action='store_true', dest='skip_enroller_training',
+    skip_group.add_argument('--skip-enroller-training', '--noenrt', action='store_true',
         help = 'Skip the training of the model enrollment')
-    skip_group.add_argument('--skip-model-enrollment', '--noenr', action='store_true', dest='skip_model_enrollment',
+    skip_group.add_argument('--skip-enrollment', '--noenr', action='store_true',
         help = 'Skip the model enrollment step')
-    skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true', dest='skip_score_computation',
+    skip_group.add_argument('--skip-score-computation', '--nosc', action='store_true',
         help = 'Skip the score computation step')
-    skip_group.add_argument('--skip-concatenation', '--nocat', action='store_true', dest='skip_concatenation',
+    skip_group.add_argument('--skip-concatenation', '--nocat', action='store_true',
         help = 'Skip the score concatenation step')
 
     return (config_group, dir_group, file_group, sub_dir_group, other_group, skip_group)
@@ -118,8 +122,7 @@ class ToolChainExecutor:
   def set_common_parameters(self, calling_file, parameters, fake_job_id = 0, temp_dir = None):
     """Sets the parameters that the grid jobs require to be called.
     Just hand over all parameters of the faceverify script, and this function will do the rest.
-    Please call this function before submitting jobs to the grid
-    using the submit_jobs_to_grid function"""
+    Please call this function before submitting jobs to the grid using the submit_jobs_to_grid function"""
 
     # we want to have the executable with the name of this file, which is laying in the bin directory
     self.m_common_parameters = ''
@@ -214,7 +217,7 @@ class ToolChainExecutor:
     # create the command to be executed
     cmd = [
             self.m_executable,
-            '--execute-sub-task',
+            '--sub-task',
             command,
             self.m_common_parameters
           ]
@@ -244,7 +247,7 @@ class ToolChainExecutor:
           stdout=logdir, stderr=logdir, name=name, array=array,
           **kwargs)
 
-      print 'submitted:', job
+      utils.info('submitted:', job)
       return job.id()
     else:
       self.m_fake_job_id += 1

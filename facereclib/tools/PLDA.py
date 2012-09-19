@@ -4,7 +4,8 @@
 
 import bob
 import numpy
-import types
+
+from .. import utils
 
 
 class PLDATool:
@@ -21,19 +22,19 @@ class PLDATool:
     self.use_training_features_sorted_by_identity = True
 
 
-  def __load_data_by_client__(self, training_files):
+  def __load_data_by_client__(self, training_features):
     """Loads the data (arrays) from a list of list of filenames,
     one list for each client, and put them in a list of Arraysets."""
 
     # Initializes an arrayset for the data
     data = []
-    for client in sorted(training_files.keys()):
+    for client in sorted(training_features.keys()):
       # Arrayset for this client
       client_data = bob.io.Arrayset()
-      client_files = training_files[client]
-      for k in sorted(client_files.keys()):
+      client_features = training_features[client]
+      for k in sorted(client_features.keys()):
         # Loads the file
-        feature = bob.io.load( str(client_files[k]) )
+        feature = client_features[k]
         # Appends in the arrayset
         client_data.append(feature)
       data.append(client_data)
@@ -48,7 +49,7 @@ class PLDATool:
         # Appends in the arrayset
         data.append(feature)
 
-    print "Training LinearMachine using PCA (SVD)"
+    utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
     machine, __eig_vals = t.train(data)
     # limit number of pcs
@@ -87,7 +88,9 @@ class PLDATool:
       self.m_pca_machine = self.__train_pca__(data)
       data = self.__perform_pca__(self.m_pca_machine, data)
 
-    input_dimension = data.shape[1]
+    input_dimension = data[0].shape[0]
+
+    utils.info("  -> Training PLDA base machine")
     # create trainer
     t = bob.trainer.PLDABaseTrainer(
         self.m_config.SUBSPACE_DIMENSION_OF_F,

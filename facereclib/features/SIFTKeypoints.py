@@ -31,7 +31,7 @@ class SIFTKeypoints:
     self.m_magnif = config.MAGNIF
     # SIFT extractor
     self.m_sift_extract = bob.ip.VLSIFT(self.m_height, self.m_width, self.m_n_intervals, self.m_n_octaves, self.m_octave_min, self.m_peak_thres, self.m_edge_thres, self.m_magnif)
-    
+
   def __linearize_cut__(self, descr):
     l_vec = 128 # Length of the SIFT descriptors
     l_full = len(descr) * l_vec
@@ -42,13 +42,6 @@ class SIFTKeypoints:
       k=k+1
     return output
 
-  def read(self, filename):
-    """Read image and annotations stored in an HDF5 file"""
-    f = bob.io.HDF5File(str(filename))
-    image = f.read('image')
-    annotations = f.read('annotations')
-    return (image, annotations)
- 
   def __call__(self, img_annots):
     """Extract SIFT features given the image and the keypoints"""
     image = img_annots[0]
@@ -64,7 +57,7 @@ class SIFTKeypoints:
         else:
           kp[c*self.m_n_scales+x,:]=[annotations[k,0], annotations[k,1], self.m_sigmas[x], 0.]
       c=c+1
-    
+
     # Extracts and returns descriptors
     return self.__linearize_cut__(self.m_sift_extract(image, kp))
 

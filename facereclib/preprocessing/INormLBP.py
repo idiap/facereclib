@@ -56,10 +56,10 @@ class INormLBP (FaceCrop):
 
     return self.m_i_norm_image
 
-  def __call__(self, input_file, output_file, annotations = None):
+  def __call__(self, image, annotations = None):
     """Reads the input image, normalizes it according to the eye positions, computes I-Norm-LBP's, and writes the resulting image"""
     # crop the face using the base class method
-    image = self.crop_face(input_file, annotations)
+    image = self.crop_face(image, annotations)
 
     # compute I-Norm-LBP image
     i_norm_image = self.i_norm(image)
@@ -71,5 +71,5 @@ class INormLBP (FaceCrop):
       i_norm_image[self.m_mask[R:-R,R:-R] == False] = 0
 
     # save the image to file
-    bob.io.save(i_norm_image.astype(numpy.float64), output_file)
+    return i_norm_image.astype(numpy.float64)
 

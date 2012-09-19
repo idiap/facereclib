@@ -15,16 +15,9 @@ class DCTBlocksVideo(DCTBlocks):
     DCTBlocks.__init__(self, config)
 
 
-  def read(self, filename):
-    """Read video.FrameContainer containing preprocessed frames"""
-    frame_container = utils.video.FrameContainer(str(filename))
-    return frame_container
-
-
   def read_feature(self, filename):
     """Read video.FrameContainer containing features extracted from each frame"""
-    frame_container = utils.video.FrameContainer(str(filename))
-    return frame_container
+    return utils.video.FrameContainer(str(filename))
 
 
   def __call__(self, frame_container):
@@ -35,5 +28,5 @@ class DCTBlocksVideo(DCTBlocks):
       frame_dcts = DCTBlocks._dct_features(self,image)
       output_frame_container.add_frame(frame_id,frame_dcts,quality)
 
-    return output_frame_container 
+    return output_frame_container
 

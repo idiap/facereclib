@@ -4,7 +4,9 @@ import subprocess
 import os
 import argparse
 
-all_algorithms = ('eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv')
+from .. import utils
+
+all_algorithms = ('eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda')
 
 def command_line_arguments():
   parser = argparse.ArgumentParser(description="Execute baseline algorithms with default parameters", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -17,6 +19,7 @@ def command_line_arguments():
 
   parser.add_argument('-g', '--grid', action = 'store_true', help = "Execute the algorithm in the SGE grid")
   parser.add_argument('-x', '--dry-run', action = 'store_true', help = "Just print the commands, but do not execute them")
+  utils.add_logger_command_line_option(parser)
 
   parser.add_argument('-e', '--evaluate', action = 'store_true', help = "Evaluate the results of the algorithms (instead of running them)")
 
@@ -25,6 +28,8 @@ def command_line_arguments():
   args = parser.parse_args()
   if args.all:
     args.algorithms = all_algorithms
+
+  utils.set_verbosity_level(args.verbose)
 
   return args
 
@@ -67,6 +72,12 @@ def isv():
   grid          = "demanding.py"
   return (features, tool, grid)
 
+def plda():
+  features      = "eigenfaces.py"
+  tool          = "plda.py"
+  grid          = "demanding.py"
+  return (features, tool, grid)
+
 
 faceverify_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", ".."))
 bin_dir = os.path.join(faceverify_dir, "bin")
@@ -106,13 +117,13 @@ def main():
 
     # refresh if not yet done
     subprocess.call([jman, 'refresh'])
-    print "Cleaning up..."
+    utils.info("Cleaning up ...")
     subprocess.call([jman, 'delete', 'failure.db', '-rR'])
     subprocess.call([jman, 'delete', 'success.db', '-rR'])
 
     for algorithm in args.algorithms:
 
-      print "Evaluating algorithm '" + algorithm + "'"
+      utils.info("Evaluating algorithm '" + algorithm + "'")
       result_dir = os.path.join('/idiap/user', os.environ['USER'], args.database, 'baselines', algorithm, 'scores', args.protocol)
 
       folders = ('nonorm', 'ztnorm') if has_zt_norm else ('nonorm',)
@@ -120,13 +131,13 @@ def main():
         dev_file = os.path.join(result_dir, dir, 'scores-dev')
         eval_file = os.path.join(result_dir, dir, 'scores-eval') if has_eval else dev_file
         if not os.path.exists(dev_file) or not os.path.exists(eval_file):
-          print "The result file '" + dev_file + "' and/or '" + eval_file + "' does not exist,",
+          utils.warn("The result file '%s' and/or '%s' does not exist," % (dev_file, eval_file))
           if os.path.exists("failure.db"):
-            print "and there were errors."
+            utils.warn("... and there were errors.")
           elif os.path.exists("submitted.db"):
-            print "maybe the jobs still run."
+            utils.warn("... maybe the jobs still run.")
           else:
-            print "although they should. Did you use some non-standard faceverify arguments?"
+            utils.warn("... although they should. Did you use some non-standard faceverify arguments?")
           continue
 
         call = [
@@ -136,7 +147,8 @@ def main():
                  '-x'
                ]
 
-        print ' '.join(call)
+        utils.info("Executing command:")
+        utils.info(' '.join(call))
 
         if not args.dry_run:
           subprocess.call(call)
@@ -146,7 +158,7 @@ def main():
 
     for algorithm in args.algorithms:
 
-      print "Executing algorithm '" + algorithm + "'"
+      utils.info("Executing algorithm '%s'" % algorithm)
 
       # get the setup for the desired algorithm
       setup = eval(algorithm)()
@@ -156,7 +168,7 @@ def main():
       if len(setup) > 3:
         preprocessing = os.path.join(config_dir, "preprocessing", setup[3])
         if args.share_preprocessing:
-          print "IGNORING --share-preprocessing option for alogrithm '%s' since it requires a special setup"%algorithm
+          utils.warn("Ignoring --share-preprocessing option for alogrithm '%s' since it requires a special setup" % algorithm)
 
 
       sub_directory = os.path.join("baselines", algorithm)
@@ -167,18 +179,18 @@ def main():
                   "--database", database,
                   "--preprocessing", preprocessing,
                   "--features", features,
-                  "--tool-chain", tool,
+                  "--tool", tool,
                   '--sub-directory', sub_directory
                 ]
 
       if args.grid:
         command.extend(['--grid', grid])
 
-      if not has_zt_norm:
-        command.extend(['--no-zt-norm'])
+      if has_zt_norm:
+        command.extend(['--zt-norm'])
 
-      if not has_eval:
-        command.extend(['--groups', 'dev'])
+      if has_eval:
+        command.extend(['--groups', 'dev', 'eval'])
 
       if args.share_preprocessing and len(setup) == 3:
         command.extend(['--preprocessed-image-directory', '../preprocessed_images'])
@@ -186,7 +198,11 @@ def main():
       if args.parameters:
         command.extend(args.parameters[1:])
 
-      print ' '.join(command)
+      if args.verbose:
+        command.append("-" + "v"*args.verbose)
+
+      utils.info("Executing command:")
+      utils.info(' '.join(command))
       if not args.dry_run:
         subprocess.call(command)
 
