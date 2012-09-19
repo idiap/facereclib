@@ -198,7 +198,6 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.)
 
 
-
   def test05_bic(self):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
@@ -234,7 +233,35 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, feature)
     # compare to the weird reference score ...
-    self.assertAlmostEqual(sim, 3.753128680)
+    self.assertAlmostEqual(sim, 0.31276072)
+
+    # now, test without PCA
+    del config.INTRA_SUBSPACE_DIMENSION
+    del config.EXTRA_SUBSPACE_DIMENSION
+
+    tool = config.tool(config)
+
+    # train the enroller
+    t = tempfile.mkstemp('iec.hdf5')[1]
+    tool.train_enroller(self.train_set_by_id(feature, count=10, a=0., b=255.), t)
+
+    if regenerate_refs:
+      import shutil
+      shutil.copy2(t, self.reference_dir('iec_enroller.hdf5'))
+
+    # load the projector file
+    tool.load_enroller(self.reference_dir('iec_enroller.hdf5'))
+
+    # compare the resulting machines
+    new_machine = bob.machine.BICMachine(tool.m_use_dffs)
+    new_machine.load(bob.io.HDF5File(t))
+    self.assertEqual(tool.m_bic_machine, new_machine)
+    os.remove(t)
+
+    # score
+    sim = tool.score(model, feature)
+    # compare to the weird reference score ...
+    self.assertAlmostEqual(sim, 0.4070329180)
 
 
   def test06_gmm(self):
@@ -399,7 +426,6 @@ class ToolTest(unittest.TestCase):
     #enroller_reference = bob.machine.JFABaseMachine(bob.io.HDF5File(t))
     #self.assertEqual(tool.m_jfabase, enroller_reference)
     os.remove(t)
-
 
     # enroll model with the projected feature
     model = tool.enroll([projected])

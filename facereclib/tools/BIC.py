@@ -25,6 +25,8 @@ class BICTool:
       self.m_bic_machine = bob.machine.BICMachine(self.m_use_dffs)
     else:
       self.m_bic_machine = bob.machine.BICMachine(False)
+      self.m_M_I = None
+      self.m_M_E = None
 
   def __compare__(self, feature_1, feature_2):
     """Computes a vector of similarities"""
@@ -127,7 +129,6 @@ class BICTool:
 
     # apply the BIC machine
     return self.m_bic_machine(distance_vector)
-
 
   def score(self, model, probe):
     """Computes the IEC score for the given model and probe pair"""
