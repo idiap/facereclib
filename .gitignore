@@ -15,6 +15,7 @@ lib
 facereclib.egg-info
 .mr.developer.cfg
 src
+sphinx
 .project
 .pydevproject
 .settings
