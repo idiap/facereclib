@@ -26,7 +26,6 @@ import facereclib
 import bob
 from nose.plugins.skip import SkipTest
 
-# regenerate_refs = True
 regenerate_refs = False
 
 class PreprocessingTest(unittest.TestCase):
@@ -58,7 +57,7 @@ class PreprocessingTest(unittest.TestCase):
 
 
 
-  def notest01_face_crop(self):
+  def test01_face_crop(self):
     # read input
     image, annotation = self.input()
     config = self.config('face_crop.py')
@@ -70,7 +69,7 @@ class PreprocessingTest(unittest.TestCase):
     self.execute(preprocessor, image, annotation, 'cropped.hdf5')
 
 
-  def notest02_tan_triggs(self):
+  def test02_tan_triggs(self):
     # read input
     image, annotation = self.input()
     config = self.config('tan_triggs.py')
@@ -83,7 +82,7 @@ class PreprocessingTest(unittest.TestCase):
     self.execute(preprocessor, image, None, 'tan_triggs.hdf5')
 
 
-  def notest03_self_quotient(self):
+  def test03_self_quotient(self):
     # read input
     image, annotation = self.input()
     config = self.config('self_quotient.py')
@@ -96,7 +95,7 @@ class PreprocessingTest(unittest.TestCase):
     self.execute(preprocessor, image, None, 'self_quotient.hdf5')
 
 
-  def notest04_inorm_lbp(self):
+  def test04_inorm_lbp(self):
     # read input
     image, annotation = self.input()
     config = self.config('inorm_lbp.py')
@@ -109,7 +108,7 @@ class PreprocessingTest(unittest.TestCase):
     self.execute(preprocessor, image, None, 'inorm.hdf5')
 
 
-  def notest05_histogram(self):
+  def test05_histogram(self):
     # read input
     image, annotation = self.input()
     config = self.config('histogram_equalize.py')
@@ -122,7 +121,7 @@ class PreprocessingTest(unittest.TestCase):
     self.execute(preprocessor, image, None, 'histogram.hdf5')
 
 
-  def notest06_key_points(self):
+  def test06_key_points(self):
     # read input
     image, annotation = self.input()
     config = self.config('keypoints.py')
@@ -166,6 +165,6 @@ class PreprocessingTest(unittest.TestCase):
     self.assertEqual(preprocessed, reference)
 
 
-  def notest08_lfcc(self):
+  def test08_lfcc(self):
     # for now, I just raise a skip exception
     raise SkipTest("This test is not yet implemented.")

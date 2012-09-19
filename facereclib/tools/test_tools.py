@@ -27,8 +27,7 @@ import facereclib
 import bob
 from nose.plugins.skip import SkipTest
 
-regenerate_refs = True
-#regenerate_refs = False
+regenerate_refs = False
 
 class ToolTest(unittest.TestCase):
 
@@ -112,6 +111,7 @@ class ToolTest(unittest.TestCase):
     config = self.config('lgbphs.py')
     tool = config.tool(config)
 
+    # enroll model
     model = tool.enroll([feature1])
     self.compare(model, 'lgbphs_model.hdf5')
 
@@ -149,7 +149,7 @@ class ToolTest(unittest.TestCase):
     self.compare(projected, 'pca_feature.hdf5')
     self.assertTrue(len(projected.shape) == 1)
 
-    # enrol model
+    # enroll model
     model = tool.enroll([projected])
     self.compare(model, 'pca_model.hdf5')
     sim = tool.score(model, projected)
@@ -186,7 +186,7 @@ class ToolTest(unittest.TestCase):
     self.compare(projected, 'pca+lda_feature.hdf5')
     self.assertTrue(len(projected.shape) == 1)
 
-    # enrol model
+    # enroll model
     model = tool.enroll([projected])
     self.compare(model, 'pca+lda_model.hdf5')
 
@@ -218,20 +218,19 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_enroller(self.reference_dir('bic_enroller.hdf5'))
 
-    # TODO: compare BIC projector with reference
     # compare the resulting machines
-    #new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
-    #self.assertEqual(tool.m_machine.shape, new_machine.shape)
-    #self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
+    new_machine = bob.machine.BICMachine(tool.m_use_dffs)
+    new_machine.load(bob.io.HDF5File(t))
+    self.assertEqual(tool.m_bic_machine, new_machine)
     os.remove(t)
 
-    # enrol model
+    # enroll model
     model = tool.enroll([feature])
     self.compare(model, 'bic_model.hdf5')
 
     # score
     sim = tool.score(model, feature)
-    # compare to the weired reference score ...
+    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 3.753128680)
 
 
@@ -257,11 +256,9 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('gmm_projector.hdf5'))
 
-    # TODO: compare GMM projector with reference
-    # compare the resulting machines
-    #new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
-    #self.assertEqual(tool.m_machine.shape, new_machine.shape)
-    #self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
+    # compare GMM projector with reference
+    new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
+    self.assertEqual(tool.m_ubm, new_machine)
     os.remove(t)
 
     # project the feature
@@ -269,18 +266,18 @@ class ToolTest(unittest.TestCase):
     if regenerate_refs:
       projected.save(bob.io.HDF5File(self.reference_dir('gmm_feature.hdf5'), 'w'))
     probe = tool.read_probe(self.reference_dir('gmm_feature.hdf5'))
-    # TODO: compare the projected feature with the reference
+    self.assertEqual(projected, probe)
 
-    # enrol model with the unprojected feature
+    # enroll model with the unprojected feature
     model = tool.enroll([feature])
     if regenerate_refs:
       model.save(bob.io.HDF5File(self.reference_dir('gmm_model.hdf5'), 'w'))
     reference_model = tool.read_model(self.reference_dir('gmm_model.hdf5'))
-    # TODO: compare the GMM model with the reference
+    self.assertEqual(model, reference_model)
 
     # score with projected feature
     sim = tool.score(reference_model, probe)
-    # compare to the weired reference score ...
+    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 931.872015904)
 
 
@@ -307,19 +304,18 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('isv_projector.hdf5'))
 
-    # TODO: compare ISV projector with reference
-    # compare the resulting machines
-    #new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
-    #self.assertEqual(tool.m_machine.shape, new_machine.shape)
-    #self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
+    # compare ISV projector with reference
+    new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
+    self.assertEqual(tool.m_ubm, new_machine)
     os.remove(t)
 
     # project the feature
     projected = tool.project(feature)
     if regenerate_refs:
       projected.save(bob.io.HDF5File(self.reference_dir('isv_feature.hdf5'), 'w'))
-    # TODO: compare the projected feature with the reference
+    # compare the projected feature with the reference
     projected_reference = tool.read_feature(self.reference_dir('isv_feature.hdf5'))
+    self.assertEqual(projected, projected_reference)
 
     # train the enroller
     t = tempfile.mkstemp('ubm.hdf5')[1]
@@ -329,21 +325,28 @@ class ToolTest(unittest.TestCase):
       import shutil
       shutil.copy2(t, self.reference_dir('isv_enroller.hdf5'))
     tool.load_enroller(self.reference_dir('isv_enroller.hdf5'))
-    # TODO: compare ISV enroler with reference
+    # TODO: compare ISV enroller with reference
+    #enroller_reference = bob.machine.JFABaseMachine(bob.io.HDF5File(t))
+    #self.assertEqual(tool.m_jfabase, enroller_reference)
+
     os.remove(t)
 
 
-    # enrol model with the projected feature
+    # enroll model with the projected feature
     model = tool.enroll([projected])
     if regenerate_refs:
       model.save(bob.io.HDF5File(self.reference_dir('isv_model.hdf5'), 'w'))
     reference_model = tool.read_model(self.reference_dir('isv_model.hdf5'))
+    # compare the ISV model with the reference
+    self.assertEqual(model, reference_model)
+
+    # check that the read_probe function reads the correct values
     probe = tool.read_probe(self.reference_dir('isv_feature.hdf5'))
-    # TODO: compare the GMM model with the reference
+    self.assertEqual(probe, projected)
 
     # score with projected feature
-    sim = tool.score(reference_model, probe)
-    # compare to the weired reference score ...
+    sim = tool.score(model, probe)
+    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 0.0004443922153)
 
 
@@ -370,19 +373,18 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('jfa_projector.hdf5'))
 
-    # TODO: compare ISV projector with reference
-    # compare the resulting machines
-    #new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
-    #self.assertEqual(tool.m_machine.shape, new_machine.shape)
-    #self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
+    # compare JFA projector with reference
+    new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
+    self.assertEqual(tool.m_ubm, new_machine)
     os.remove(t)
 
     # project the feature
     projected = tool.project(feature)
     if regenerate_refs:
       projected.save(bob.io.HDF5File(self.reference_dir('jfa_feature.hdf5'), 'w'))
-    # TODO: compare the projected feature with the reference
+    # compare the projected feature with the reference
     projected_reference = tool.read_feature(self.reference_dir('jfa_feature.hdf5'))
+    self.assertEqual(projected, projected_reference)
 
     # train the enroller
     t = tempfile.mkstemp('ubm.hdf5')[1]
@@ -392,133 +394,34 @@ class ToolTest(unittest.TestCase):
       import shutil
       shutil.copy2(t, self.reference_dir('jfa_enroller.hdf5'))
     tool.load_enroller(self.reference_dir('jfa_enroller.hdf5'))
-    # TODO: compare ISV enroler with reference
+    # TODO: compare JFA enroller with reference
+    #enroller_reference = bob.machine.JFABaseMachine(bob.io.HDF5File(t))
+    #self.assertEqual(tool.m_jfabase, enroller_reference)
     os.remove(t)
 
 
-    # enrol model with the projected feature
+    # enroll model with the projected feature
     model = tool.enroll([projected])
     if regenerate_refs:
       model.save(bob.io.HDF5File(self.reference_dir('jfa_model.hdf5'), 'w'))
+    # assert that the model is ok
     reference_model = tool.read_model(self.reference_dir('jfa_model.hdf5'))
+    self.assertEqual(model, reference_model)
+
+    # check that the read_probe function reads the requested data
     probe = tool.read_probe(self.reference_dir('jfa_feature.hdf5'))
-    # TODO: compare the GMM model with the reference
+    self.assertEqual(probe, projected)
 
     # score with projected feature
-    sim = tool.score(reference_model, probe)
-    # compare to the weired reference score ...
+    sim = tool.score(model, probe)
+    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 0.25469123955)
 
 
-  def test09_gmm_video(self):
+  def notest09_gmm_video(self):
     raise SkipTest("This test is not yet implemented")
-    # read input
-    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
-    config = self.config('ubm_gmm.py')
-    # reduce the complexity for test purposes
-    config.GAUSSIANS = 2
-    config.K_MEANS_TRAINING_ITERATIONS = 1
-    config.GMM_TRAINING_ITERATIONS = 1
-
-    tool = config.tool(config)
-
-    # train the projector
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
-
-    if regenerate_refs:
-      import shutil
-      shutil.copy2(t, self.reference_dir('gmm_projector.hdf5'))
-
-    # load the projector file
-    tool.load_projector(self.reference_dir('gmm_projector.hdf5'))
-
-    # TODO: compare GMM projector with reference
-    # compare the resulting machines
-    #new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
-    #self.assertEqual(tool.m_machine.shape, new_machine.shape)
-    #self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
-    os.remove(t)
-
-    # project the feature
-    projected = tool.project(feature)
-    if regenerate_refs:
-      projected.save(bob.io.HDF5File(self.reference_dir('gmm_feature.hdf5'), 'w'))
-    probe = tool.read_probe(self.reference_dir('gmm_feature.hdf5'))
-    # TODO: compare the projected feature with the reference
-
-    # enrol model with the unprojected feature
-    model = tool.enroll([feature])
-    if regenerate_refs:
-      model.save(bob.io.HDF5File(self.reference_dir('gmm_model.hdf5'), 'w'))
-    reference_model = tool.read_model(self.reference_dir('gmm_model.hdf5'))
-    # TODO: compare the GMM model with the reference
-
-    # score with projected feature
-    sim = tool.score(reference_model, probe)
-    # compare to the weired reference score ...
-    self.assertAlmostEqual(sim, 931.872015904)
 
 
-  def test10_isv_video(self):
+  def notest10_isv_video(self):
     raise SkipTest("This test is not yet implemented")
-    # read input
-    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
-    config = self.config('isv.py')
-    # reduce the complexity for test purposes
-    config.GAUSSIANS = 2
-    config.K_MEANS_TRAINING_ITERATIONS = 1
-    config.GMM_TRAINING_ITERATIONS = 1
-
-    tool = config.tool(config)
-
-    # train the projector
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
-
-    if regenerate_refs:
-      import shutil
-      shutil.copy2(t, self.reference_dir('isv_projector.hdf5'))
-
-    # load the projector file
-    tool.load_projector(self.reference_dir('isv_projector.hdf5'))
-
-    # TODO: compare ISV projector with reference
-    # compare the resulting machines
-    #new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
-    #self.assertEqual(tool.m_machine.shape, new_machine.shape)
-    #self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
-    os.remove(t)
-
-    # project the feature
-    projected = tool.project(feature)
-    if regenerate_refs:
-      projected.save(bob.io.HDF5File(self.reference_dir('isv_feature.hdf5'), 'w'))
-    # TODO: compare the projected feature with the reference
-    projected_reference = tool.read_feature(self.reference_dir('isv_feature.hdf5'))
-
-    # train the enroller
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_enroller(self.train_gmm_stats(self.reference_dir('isv_feature.hdf5'), count=5, a=-5., b=5.), t)
-
-    if regenerate_refs:
-      import shutil
-      shutil.copy2(t, self.reference_dir('isv_enroller.hdf5'))
-    tool.load_enroller(self.reference_dir('isv_enroller.hdf5'))
-    # TODO: compare ISV enroler with reference
-    os.remove(t)
-
-
-    # enrol model with the unprojected feature
-    model = tool.enroll([projected])
-    if regenerate_refs:
-      model.save(bob.io.HDF5File(self.reference_dir('gmm_model.hdf5'), 'w'))
-    reference_model = tool.read_model(self.reference_dir('gmm_model.hdf5'))
-    probe = tool.read_probe(self.reference_dir('isv_feature.hdf5'))
-    # TODO: compare the GMM model with the reference
-
-    # score with projected feature
-    sim = tool.score(reference_model, probe)
-    # compare to the weired reference score ...
-    self.assertAlmostEqual(sim, 0.00045667812958)
 

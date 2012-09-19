@@ -62,7 +62,7 @@ class PCATool:
     # Normalizes the model
     model /= float(len(enroll_features))
 
-    # return enrollled model
+    # return enrolled model
     return model
 
 

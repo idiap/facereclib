@@ -27,7 +27,6 @@ import facereclib
 import bob
 from nose.plugins.skip import SkipTest
 
-#regenerate_refs = True
 regenerate_refs = False
 
 class FeatureExtractionTest(unittest.TestCase):
@@ -58,7 +57,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
 
 
-  def notest01_linearize(self):
+  def test01_linearize(self):
     # read input
     image = bob.io.load(self.input_dir('cropped.hdf5'))
     config = self.config('linearize.py')
@@ -71,7 +70,7 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertTrue(len(feature.shape) == 1)
 
 
-  def notest02_dct(self):
+  def test02_dct(self):
     # read input
     image = bob.io.load(self.input_dir('cropped.hdf5'))
     config = self.config('dct_blocks.py')
@@ -84,7 +83,7 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertEqual(len(feature.shape), 2)
 
 
-  def notest03_graphs(self):
+  def test03_graphs(self):
     image = bob.io.load(self.input_dir('cropped.hdf5'))
     config = self.config('grid_graph.py')
 
@@ -101,7 +100,7 @@ class FeatureExtractionTest(unittest.TestCase):
     feature = self.execute(extractor, image, 'graph_no_phase.hdf5')
     self.assertEqual(len(feature.shape), 2)
 
-  def notest04_lgbphs(self):
+  def test04_lgbphs(self):
     image = bob.io.load(self.input_dir('cropped.hdf5'))
     config = self.config('lgbphs.py')
 
@@ -145,7 +144,7 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertEqual(feature, reference)
 
 
-  def notest06_sift_key_points(self):
+  def test06_sift_key_points(self):
     # we need the preprocessor tool to actually read the data
     config = self.pre_config('keypoints.py')
     preprocessor = config.preprocessor(config)
@@ -159,7 +158,7 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertEqual(len(feature.shape), 1)
 
 
-  def notest07_eigenface(self):
+  def test07_eigenface(self):
     # first, read the config file
     config = self.config('eigenfaces.py')
     extractor = config.feature_extractor(config)

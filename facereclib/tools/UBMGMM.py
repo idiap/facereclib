@@ -115,7 +115,7 @@ class UBMGMMTool:
     trainer.train(self.m_ubm, arrayset)
 
     # Saves the UBM to file
-    utils.debug(" .... Saving model to file", projector_file)
+    utils.debug(" .... Saving model to file '%s'" % projector_file)
     self.m_ubm.save(bob.io.HDF5File(projector_file, "w"))
 
 

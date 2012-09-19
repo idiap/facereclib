@@ -68,10 +68,10 @@ class BICTool:
     # limit the number of pairs by random selection
     if self.m_maximum_pair_count != None:
       if len(intra_pairs) > self.m_maximum_pair_count:
-        utils.info("  -> Limiting intrapersonal pairs from", len(intra_pairs), "to", self.m_maximum_pair_count)
+        utils.info("  -> Limiting intrapersonal pairs from %d to %d" %(len(intra_pairs),self.m_maximum_pair_count))
         intra_pairs = [intra_pairs[i] for i in self.__limit__(self.m_maximum_pair_count, len(intra_pairs))]
       if len(extra_pairs) > self.m_maximum_pair_count:
-        utils.info("  -> Limiting extrapersonal pairs from", len(extra_pairs), "to", self.m_maximum_pair_count)
+        utils.info("  -> Limiting extrapersonal pairs from %d to %d" %(len(extra_pairs), self.m_maximum_pair_count))
         extra_pairs = [extra_pairs[i] for i in self.__limit__(self.m_maximum_pair_count, len(extra_pairs))]
 
     return (intra_pairs, extra_pairs)
@@ -90,9 +90,9 @@ class BICTool:
     intra_pairs, extra_pairs = self.__intra_extra_pairs__(train_features)
 
     # train the BIC Machine with these pairs
-    utils.info("  -> Computing", len(intra_pairs), "intrapersonal results")
+    utils.info("  -> Computing %d intrapersonal results" % len(intra_pairs))
     intra_vectors = self.__trainset_for__(intra_pairs)
-    utils.info("  -> Computing", len(extra_pairs), "extrapersonal results")
+    utils.info("  -> Computing %d extrapersonal results" % len(extra_pairs))
     extra_vectors = self.__trainset_for__(extra_pairs)
 
     utils.info("  -> Training BIC machine")

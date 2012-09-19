@@ -110,7 +110,7 @@ class JFATool (UBMGMMTool):
   read_probe = read_feature
 
   def score(self, model, probe):
-    """Computes the score for the given model and the given probe using the scoring function from the config file"""
+    """Computes the score for the given model and the given probe"""
     scores = numpy.ndarray((1,), 'float64')
     model.forward([probe], scores)
     return scores[0]
