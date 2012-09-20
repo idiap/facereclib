@@ -223,7 +223,7 @@ class ToolTest(unittest.TestCase):
     # compare the resulting machines
     new_machine = bob.machine.BICMachine(tool.m_use_dffs)
     new_machine.load(bob.io.HDF5File(t))
-    self.assertEqual(tool.m_bic_machine, new_machine)
+    self.assertTrue(tool.m_bic_machine.is_similar_to(new_machine))
     os.remove(t)
 
     # enroll model

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # FaceRecLib documentation build configuration file, created by
-# sphinx-quickstart on Wed Sep 19 19:19:22 2012.
+# sphinx-quickstart on Thu Sep 20 11:10:55 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -25,10 +25,12 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.doctest', 'sphinx.ext.todo', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.doctest', 'sphinx.ext.todo', 'sphinx.ext.intersphinx']
+
+todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
-#templates_path = ['_templates']
+# templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -64,7 +66,7 @@ release = '0.1.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['links.rst']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -85,6 +87,14 @@ pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
+
+# Included after all input documents
+rst_epilog = """
+.. Some variables
+.. |project| replace:: FaceRecLib
+.. |bobweb| replace:: https://www.idiap.ch/software/bob
+.. |current-year| date:: %Y
+"""
 
 
 # -- Options for HTML output ---------------------------------------------------
@@ -120,7 +130,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

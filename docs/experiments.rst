@@ -1,71 +1,29 @@
 .. vim: set fileencoding=utf-8 :
-.. Manuel Guenther <Manuel.Guenther@idiap.ch>
-.. Mon 23 04 2012
+.. author: Manuel Günther <manuel.guenther@idiap.ch>
+.. date: Thu Sep 20 11:58:57 CEST 2012
 
-============
- FaceRecLib
-============
+Running specialized experiments
+===============================
 
-The FaceRecLib toolkit is designed to run (face) verification/recognition experiments with the SGE grid infrastructure at Idiap.
-It is designed in a way that it should be easily possible to execute experiments combining different mixtures of:
+.. TODO::
 
-* Image databases and their according protocols
-* Image preprocessing
-* Feature extraction
-* Recognition/Verification tools
+  Check if all variables are still valid, and replace them if not.
 
-In any case, results of these experiments will directly be comparable when the same database is employed.
-
-Installation instructions
--------------------------
-
-To install the FaceRecLib, please check the latest version of it via:
-
-.. code-block:: sh
-
-  $ git clone /idiap/group/torch5spro/sandboxes/facereclib2.git
-  $ cd facereclib2
-
-For the facereclib to work, it requires `Bob`_ to be installed.
-At Idiap, you can either have your local Bob installation or use the global one located at:
-
-::
-
-  > /idiap/group/torch5spro/nightlies/last/install/<VERSION>-release
-
-where <VERSION> is your operating system version.
-
-The facereclib project is based on the `BuildOut`_ python linking system.
-If you want to use another version of Bob than the nightlies, you have to modify the delivered *buildout.cfg* by specifying the path to your Bob installation.
-
-Afterwards, execute the buildout script by typing:
-
-.. code-block:: sh
-
-  $ /remote/filer.gx/group.torch5spro/nightlies/externals/v3/ubuntu-10.04-x86_64/bin/python bootstrap.py
-  $ bin/buildout
-
-
-
-Running experiments
--------------------
-
-These two commands will automatically download all desired packages (`local.bob.recipe`_ and `gridtk`_) from GitHub and generate some scripts in the bin directory, including the script *bin/faceverify_zt.py*.
-This script can be used to employ face verification experiments.
+If you want to run experiments with a different setup, you can choose to use the ``bin/faceverify.py`` script.
 To use it you have to specify at least three command line parameters (see also the ``--help`` option):
 
 * ``--database``: The configuration file for the database
 * ``--preprocessing``: The configuration file for image preprocessing
 * ``--features``: The configuration file for feature extraction
-* ``--tool-chain``: The configuration file for the face verification tool chain
+* ``--tool``: The configuration file for the face verification algorithm
 
-If you want to run the experiments in the Idiap GRID, you simply can specify:
+If you want to run the experiments in the `Idiap`_ SGE grid, you simply can specify:
 
 * ``--grid``: The configuration file for the grid setup.
 
 If no grid configuration file is specified, the experiment is run sequentially on the local machine.
-For several databases, feature types, recognition algorithms, and grid requirements the facereclib provides these configuration files.
-They are located in the *config/...* directories.
+For several databases, feature types, recognition algorithms, and grid requirements the |project| provides these configuration files.
+They are located in the **config/...** directories.
 It is also save to design one experiment and re-use one configuration file for all options as long as the configuration file includes all desired information:
 
 * The database: ``name, db, protocol; img_input_dir, img_input_ext``; optional: ``pos_input_dir, pos_input_ext, first_annot; all_files_option, world_extractor_options, world_projector_options, world_enroler_options, features_by_clients_options``
@@ -100,7 +58,11 @@ Temporary files will by default be put to */scratch/$USER/<DATABASE>/<EXPERIMENT
 Experiment design
 -----------------
 
-To be very flexible, the tool chain in the FaceRecLib is designed in several stages:
+.. TODO::
+
+  Add and correct the current list of implemented tools
+
+To be very flexible, the tool chain in the |project| is designed in several stages:
 
 1. Image Preprocessing
 2. Feature Extraction
@@ -140,7 +102,7 @@ Currently, these different feature types are implemented:
 Feature Projection
 ~~~~~~~~~~~~~~~~~~
 Some provided tools need to process the features before they can be used for verification.
-In the FaceRecLib, this step is referenced as the **projection** step.
+In the |project|, this step is referenced as the **projection** step.
 Again, the projection might require training, which is executed using the extracted features from the training set.
 Afterward, all features are projected (using the the previously trained Projector).
 
@@ -161,7 +123,7 @@ Some of the models (the so-called T-Norm-Model) and some of the probe features (
 
 Command line options
 --------------------
-Additionally to the required command line options discussed above, there are several options to modify the behavior of the FaceRecLib experiments.
+Additionally to the required command line options discussed above, there are several options to modify the behavior of the |project| experiments.
 One set of command line options change the directory structure of the output:
 
 * ``--temp-directory``: Base directory where to write temporary files into (the default is */idiap/temp/$USER/<DATABASE>* when using the grid or */scratch/$USER/<DATABASE>* when executing jobs locally)
@@ -208,6 +170,11 @@ There are some more command line options that can be specified:
 
 The GBU database
 ----------------
+
+.. TODO::
+
+  remove this section since this script is outdated.
+
 There is another script *bin/faceverify_gbu.py* that executes experiments on the Good, Bad, and Ugly (GBU) database.
 In principle, most of the parameters from above can be used.
 One violation is that instead of the ``--models-directories`` option is replaced by only ``--model-directory``.
@@ -223,23 +190,16 @@ The LFW database
 ----------------
 For the `Labeled Faces in the Wild` (LFW) database, there is another script to calculate the experiments, strictly following the LFW protocols.
 
-.. warning::
+.. TODO::
 
-  TODO: Write the documentation of the LFW script.
+  Write the documentation of the LFW script.
 
 
 Parameter testing
 -----------------
 
-.. warning::
+.. TODO::
 
-  TODO: Write the documentation of the parameter testing script.
+  Write the documentation of the parameter testing script.
 
-
-
-.. _Bob: http://idiap.github.com/bob/
-.. _local.bob.recipe: https://github.com/idiap/local.bob.recipe
-.. _gridtk: https://github.com/idiap/gridtk
-.. _BuildOut: http://www.buildout.org/
-.. _NIST: http://www.nist.gov/itl/iad/ig/focs.cfm
-
+.. include:: links.rst
