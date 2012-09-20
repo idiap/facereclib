@@ -15,12 +15,12 @@ from SIFTKeypoints import SIFTKeypoints
 import numpy
 
 class Linearize:
-  """Extracts Eigenface feature by simply concatenating all pixels of the image into one long vector"""
-  
+  """Extracts pixel-based features by simply concatenating all pixels of the image into one long vector"""
+
   def __init__(self, setup):
     """Nothing to be done here."""
     pass
-    
+
   def __call__(self, image):
     """Takes a 2D image and linearizes it into a 1D vector"""
     return numpy.reshape(image, image.size)

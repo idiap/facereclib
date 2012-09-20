@@ -2,7 +2,7 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-"""Tool chain for computing verification scores"""
+"""Library for face recognition experiments"""
 
 import toolchain
 import features

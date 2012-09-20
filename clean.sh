@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 # Andre Anjos <andre.dos.anjos@gmail.com>
 # Mon 28 Jun 2010 15:43:17 CEST
 
@@ -8,5 +8,4 @@ fdel () {
 
 fdel . "*~"
 fdel . "*.pyc"
-fdel logs "*.e*"
-fdel logs "*.o*"
+
