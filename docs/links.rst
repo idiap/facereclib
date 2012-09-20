@@ -6,7 +6,10 @@
 
 .. _idiap: http://www.idiap.ch
 .. _github: www.github.com/idiap
-.. _bob: http://idiap.github.com/bob/
+.. _bob: http://www.idiap.ch/software/bob
+.. _idiap at github: http://www.github.com/bioidiap/facereclib
+.. _at&t database: http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
+.. _bob's github page: http://idiap.github.com/bob/
 .. _local.bob.recipe: https://github.com/idiap/local.bob.recipe
 .. _gridtk: https://github.com/idiap/gridtk
 .. _buildout: http://www.buildout.org/
