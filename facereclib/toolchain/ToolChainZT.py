@@ -105,7 +105,7 @@ class ToolChainZT:
 
 
   def preprocess_images(self, preprocessor, indices=None, force=False):
-    """Preprocesses the images with the given preprocessing tool"""
+    """Preprocesses the images with the given preprocessor"""
     # get the file lists
     image_files = self.m_file_selector.original_image_list()
     preprocessed_image_files = self.m_file_selector.preprocessed_image_list()
@@ -223,7 +223,7 @@ class ToolChainZT:
     return retval
 
   def train_projector(self, tool, extractor, force=False):
-    """Train the feature extraction process with the preprocessed images of the world group"""
+    """Train the feature projector with the extracted features of the world group"""
     if hasattr(tool,'train_projector'):
       projector_file = self.m_file_selector.projector_file()
 
@@ -276,7 +276,7 @@ class ToolChainZT:
 
 
   def train_enroller(self, tool, extractor, force=False):
-    """Trains the model enrollment stage using the projected features"""
+    """Trains the model enroller using the extracted or projected features"""
     use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enroll')
     reader = tool if use_projected_features else extractor
     if hasattr(tool, 'train_enroller'):
@@ -409,6 +409,7 @@ class ToolChainZT:
 
 
   def __probe_split__(self, selected_probe_objects, probes):
+    """Helper function required when probe files are preloaded"""
     sel = 0
     res = {}
     # iterate over all probe files
@@ -421,7 +422,7 @@ class ToolChainZT:
 
 
   def __scores_a__(self, model_ids, group, compute_zt_norm, force, preload_probes):
-    """Computes A scores"""
+    """Computes A scores. For non-ZT-norm, these are the only scores that are actually computed."""
     # preload the probe files for a faster access (and fewer network load)
     if preload_probes:
       utils.info("- Scoring: preloading probe files of group '%s'" % group)
@@ -494,7 +495,7 @@ class ToolChainZT:
         bob.io.save(b, score_file)
 
   def __scores_c__(self, tmodel_ids, group, force, preload_probes):
-    """Computed C scores"""
+    """Computes C scores"""
     # probe files:
     probe_objects = self.m_file_selector.probe_files(group, self.m_use_projected_dir)
 
@@ -523,6 +524,7 @@ class ToolChainZT:
         bob.io.save(c, score_file)
 
   def __scores_d__(self, tmodel_ids, group, force, preload_probes):
+    """Computes D scores"""
     # probe files:
     zprobe_objects = self.m_file_selector.zprobe_files(group, self.m_use_projected_dir)
     # preload the probe files for a faster access (and fewer network load)
@@ -560,7 +562,7 @@ class ToolChainZT:
 
 
   def compute_scores(self, tool, compute_zt_norm, force = False, indices = None, groups = ['dev', 'eval'], types = ['A', 'B', 'C', 'D'], preload_probes = False):
-    """Computes the scores for 'dev' and 'eval' groups"""
+    """Computes the scores for the given groups (by default 'dev' and 'eval')"""
     # save tool for internal use
     self.m_tool = tool
     self.m_use_projected_dir = hasattr(tool, 'project')
@@ -613,7 +615,7 @@ class ToolChainZT:
 
 
   def __scores_c_normalize__(self, model_ids, tmodel_ids, group):
-    """Compute normalized probe scores using Tmodel scores"""
+    """Compute normalized probe scores using T-model scores"""
     # read all tmodel scores
     c_for_all = None
     for tmodel_id in tmodel_ids:
@@ -633,6 +635,7 @@ class ToolChainZT:
       bob.io.save(c_for_model, self.m_file_selector.c_file_for_model(model_id, group))
 
   def __scores_d_normalize__(self, tmodel_ids, group):
+    """Compute normalized D scores for the given T-model ids"""
     # initialize D and D_same_value matrices
     d_for_all = None
     d_same_value = None
@@ -653,7 +656,7 @@ class ToolChainZT:
 
 
   def zt_norm(self, groups = ['dev', 'eval']):
-    """Computes ZT-Norm using the previously generated files"""
+    """Computes ZT-Norm using the previously generated A, B, C, and D files"""
     for group in groups:
       utils.info("- Scoring: computing ZT-norm for group '%s'" % group)
       # list of models
@@ -693,7 +696,7 @@ class ToolChainZT:
 
 
   def concatenate(self, compute_zt_norm, groups = ['dev', 'eval']):
-    """Concatenates all results into one score file"""
+    """Concatenates all results into one (or two) score files per group."""
     for group in groups:
       utils.info("- Scoring: concatenating score files for group '%s'" % group)
       # (sorted) list of models

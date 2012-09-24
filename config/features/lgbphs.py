@@ -7,11 +7,14 @@ import math
 # feature extraction
 feature_extractor = facereclib.features.LGBPHS
 
-# LBP
+# Block setup
 BLOCK_HEIGHT = 10
 BLOCK_WIDTH = 10
 BLOCK_Y_OVERLAP = 4
 BLOCK_X_OVERLAP = 4
+
+
+# LBP parameters
 RADIUS = 2
 NEIGHBOR_COUNT = 8
 IS_UNIFORM = True

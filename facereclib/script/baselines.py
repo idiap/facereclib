@@ -17,23 +17,25 @@ def command_line_arguments():
 
   # add parameters
   # - the algorithm to execute
-  parser.add_argument('-a', '--algorithms', choices = all_algorithms, default = ('eigenface',), nargs = '+', help = "Select one (or more) algorithms that you want to execute")
-  parser.add_argument('--all', action = 'store_true', help = "Select all algorithms")
+  parser.add_argument('-a', '--algorithms', choices = all_algorithms, default = ('eigenface',), nargs = '+', help = "Select one (or more) algorithms that you want to execute.")
+  parser.add_argument('--all', action = 'store_true', help = "Select all algorithms.")
   # - the image database to choose
-  parser.add_argument('-d', '--database', choices = ('atnt', 'banca', 'mobio', 'multipie', 'frgc', 'arface', 'gbu', 'lfw', 'xm2vts', 'scface'), default = 'atnt', help = "The database on which the baseline algorithm is executed")
-  parser.add_argument('-p', '--protocol', default = 'None', help = "The protocol for the desired database")
+  parser.add_argument('-d', '--database', choices = ('atnt', 'banca', 'mobio', 'multipie', 'frgc', 'arface', 'gbu', 'lfw', 'xm2vts', 'scface'), default = 'atnt', help = "The database on which the baseline algorithm is executed.")
+  parser.add_argument('-p', '--protocol', default = 'Default', help = "The protocol for the desired database.")
+  # - the directory to write
+  parser.add_argument('-f', '--directory', help = "The directory to write the data of the experiment into. If not specified, the default directories of the faceverify script are used (see bin/faceverify.py --help).")
   # - special option to share image preprocessing. This can be used to save some time.
-  parser.add_argument('-s', '--share-preprocessing', action = 'store_true', help = "Share the preprocessed image directory?\nWARNING! When using this option and the --grid option, please let the first algorithm finish, until you start the next one")
+  parser.add_argument('-s', '--share-preprocessing', action = 'store_true', help = "Share the preprocessed image directory?\nWARNING! When using this option and the --grid option, please let the first algorithm finish, until you start the next one.")
 
   # - use the Idiap grid -- option is only useful if you are at Idiap
-  parser.add_argument('-g', '--grid', action = 'store_true', help = "Execute the algorithm in the SGE grid")
+  parser.add_argument('-g', '--grid', action = 'store_true', help = "Execute the algorithm in the SGE grid.")
 
   # - just print?
-  parser.add_argument('-x', '--dry-run', action = 'store_true', help = "Just print the commands, but do not execute them")
+  parser.add_argument('-x', '--dry-run', action = 'store_true', help = "Just print the commands, but do not execute them.")
   utils.add_logger_command_line_option(parser)
 
   # - evaluate the algorithm (after it has finished)
-  parser.add_argument('-e', '--evaluate', action = 'store_true', help = "Evaluate the results of the algorithms (instead of running them)")
+  parser.add_argument('-e', '--evaluate', action = 'store_true', help = "Evaluate the results of the algorithms (instead of running them).")
 
   # - other parameters that are passed to the underlying script
   parser.add_argument('parameters', nargs = argparse.REMAINDER, help = "Parameters directly passed to the face verification script.")
@@ -149,8 +151,12 @@ def main():
 
       utils.info("Evaluating algorithm '" + algorithm + "'")
 
-      # this is the default result directory
-      result_dir = os.path.join('/idiap/user', os.environ['USER'], args.database, 'baselines', algorithm, 'scores', args.protocol)
+      if args.directory:
+        # append the directories
+        result_dir = os.path.join(args.directory, args.database, 'baselines', algorithm, 'scores', args.protocol)
+      else:
+        # this is the default result directory
+        result_dir = os.path.join('/idiap/user', os.environ['USER'], args.database, 'baselines', algorithm, 'scores', args.protocol)
 
       # sub-directories of the result directories that contain the score files
       folders = ('nonorm', 'ztnorm') if has_zt_norm else ('nonorm',)
@@ -162,7 +168,7 @@ def main():
 
         # check if the score files are already there (i.e., the experiments have finished)
         if not os.path.exists(dev_file) or not os.path.exists(eval_file):
-          utils.warn("The result file '%s' and/or '%s' does not exist," % (dev_file, eval_file))
+          utils.error("The result file '%s' and/or '%s' does not exist" % (dev_file, eval_file))
           if os.path.exists("failure.db"):
             utils.warn("... and there were errors.")
           elif os.path.exists("submitted.db"):
@@ -235,6 +241,10 @@ def main():
       # we share the preprocessed images if desired, so they don't have to be re-generated
       if args.share_preprocessing and len(setup) == 3:
         command.extend(['--preprocessed-image-directory', '../preprocessed_images'])
+
+      # set the directories, if desired; we set both directories to be identical.
+      if args.directory:
+        command.extend(['--temp-directory', os.path.join(args.directory, args.database), '--user-directory', os.path.join(args.directory, args.database)])
 
       # set the verbosity level
       if args.verbose:

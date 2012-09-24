@@ -18,15 +18,11 @@ NORMALIZE_GABOR_JETS = True
 EXTRACT_GABOR_PHASES = True
 
 
-# Grid graph parameters
-# Cropping
-CROPPED_IMAGE_HEIGHT = 80
-CROPPED_IMAGE_WIDTH  = CROPPED_IMAGE_HEIGHT * 4 / 5
+# copy the settings of the face_crop preprocessing; they are needed to limit the grid
+import os
+execfile(os.path.join(os.path.dirname(__file__), '..', 'preprocessing', 'face_crop.py'))
 
-# eye positions for frontal images
-RIGHT_EYE_POS = (CROPPED_IMAGE_HEIGHT / 5, CROPPED_IMAGE_WIDTH / 4 - 1)
-LEFT_EYE_POS  = (CROPPED_IMAGE_HEIGHT / 5, CROPPED_IMAGE_WIDTH / 4 * 3)
-
+# aligned grid graph parameters
 NODE_COUNT_BETWEEN_EYES = 4
 NODE_COUNT_ALONG_EYES = 2
 NODE_COUNT_ABOVE_EYES = 3

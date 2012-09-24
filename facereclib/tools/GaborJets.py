@@ -11,11 +11,19 @@ class GaborJetTool:
   def __init__(self, setup):
     # graph machine for enrolling models and comparing graphs
     self.m_graph_machine = bob.machine.GaborGraphMachine()
+    # the Gabor wavelet transform; used by (some of) the Gabor jet similarities
+    gabor_wavelet_transform = bob.ip.GaborWaveletTransform(
+          number_of_angles = setup.GABOR_DIRECTIONS,
+          number_of_scales = setup.GABOR_SCALES,
+          sigma = setup.GABOR_SIGMA,
+          k_max = setup.GABOR_MAXIMUM_FREQUENCY,
+          k_fac = setup.GABOR_FREQUENCY_STEP,
+          pow_of_k = setup.GABOR_POWER_OF_K,
+          dc_free = setup.GABOR_DC_FREE
+    )
     # jet comparison function
-    if hasattr(setup, 'gabor_wavelet_transform'):
-      self.m_similarity_function = bob.machine.GaborJetSimilarity(setup.GABOR_JET_SIMILARITY_TYPE, setup.gabor_wavelet_transform)
-    else:
-      self.m_similarity_function = bob.machine.GaborJetSimilarity(setup.GABOR_JET_SIMILARITY_TYPE)
+    self.m_similarity_function = bob.machine.GaborJetSimilarity(setup.GABOR_JET_SIMILARITY_TYPE, gabor_wavelet_transform)
+    # do model averaging?
     self.m_average_model = setup.EXTRACT_AVERAGED_MODELS
 
 

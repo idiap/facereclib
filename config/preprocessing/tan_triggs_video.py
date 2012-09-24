@@ -2,12 +2,8 @@
 
 import facereclib
 
-preprocessor = facereclib.preprocessing.TanTriggsVideo
+# copy the settings of the Tan & Triggs algorithm
+import os
+execfile(os.path.join(os.path.dirname(__file__), 'tan_triggs.py'))
 
-# Tan Triggs
-GAMMA = 0.2
-SIGMA0 = 1.
-SIGMA1 = 2.
-SIZE = 5
-THRESHOLD = 10.
-ALPHA = 0.1
+preprocessor = facereclib.preprocessing.TanTriggsVideo

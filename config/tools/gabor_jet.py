@@ -11,16 +11,9 @@ tool = facereclib.tools.GaborJetTool
 EXTRACT_AVERAGED_MODELS = False
 
 
-# Gabor wavelet transform setup (if required by the Gabor jet similarity function)
-GABOR_DIRECTIONS = 8
-GABOR_SCALES = 5
-GABOR_SIGMA = math.sqrt(2.) * math.pi
-GABOR_MAXIMUM_FREQUENCY = math.pi / 2.
-GABOR_FREQUENCY_STEP = math.sqrt(.5)
-GABOR_POWER_OF_K = 0
-GABOR_DC_FREE = True
-
-gabor_wavelet_transform = bob.ip.GaborWaveletTransform(number_of_scales=GABOR_SCALES, number_of_angles=GABOR_DIRECTIONS, sigma=GABOR_SIGMA, k_max=GABOR_MAXIMUM_FREQUENCY, k_fac=GABOR_FREQUENCY_STEP, pow_of_k=GABOR_POWER_OF_K, dc_free=GABOR_DC_FREE)
+# copy the settings of the grid graph feature extraction; the Gabor parameters are needed to initialize the Gabor jet similarity
+import os
+execfile(os.path.join(os.path.dirname(__file__), '..', 'features', 'grid_graph.py'))
 
 # Gabor jet comparison setup
 GABOR_JET_SIMILARITY_TYPE = bob.machine.gabor_jet_similarity_type.PHASE_DIFF_PLUS_CANBERRA

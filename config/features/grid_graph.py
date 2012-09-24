@@ -18,11 +18,11 @@ NORMALIZE_GABOR_JETS = True
 EXTRACT_GABOR_PHASES = True
 
 
-# Grid graph parameters
-# Cropping
-CROPPED_IMAGE_HEIGHT = 80
-CROPPED_IMAGE_WIDTH  = CROPPED_IMAGE_HEIGHT * 4 / 5
+# copy the settings of the face_crop preprocessing; they are needed to limit the grid
+import os
+execfile(os.path.join(os.path.dirname(__file__), '..', 'preprocessing', 'face_crop.py'))
 
+# Grid graph parameters
 FIRST_NODE = (6, 6)
 LAST_NODE = (CROPPED_IMAGE_HEIGHT - FIRST_NODE[0], CROPPED_IMAGE_WIDTH - FIRST_NODE[1])
 NODE_DISTANCE = (4, 4)

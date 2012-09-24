@@ -4,7 +4,7 @@ import xbob.db.atnt
 
 name = 'atnt'
 db = xbob.db.atnt.Database()
-protocol = 'None'
+protocol = 'Default'
 
 image_directory = "/idiap/group/biometric/databases/orl/"
 image_extension = ".pgm"

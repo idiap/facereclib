@@ -27,6 +27,8 @@ def add_logger_command_line_option(parser):
 
 def set_verbosity_level(level):
   """Sets the log level to 0: Error; 1: Warn; 2: Info; 3: Debug."""
+  if level not in range(0,4):
+    raise ValueError("The verbosity level %d does not exist. Please reduce the number of '--verbose' parameters in your call" % level)
   # set up the verbosity level of the logging system
   logger.setLevel({
       0: logging.ERROR,
