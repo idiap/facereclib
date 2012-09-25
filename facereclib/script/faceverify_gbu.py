@@ -102,7 +102,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.enroll_models(
               self.m_tool,
               self.m_extractor,
-              False, # no zt norm
+              compute_zt_norm = False,
               groups = ['dev'], # only dev group
               force = self.m_args.force)
 
@@ -113,7 +113,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       else:
         self.m_tool_chain.compute_scores(
               self.m_tool,
-              False, # no zt norm
+              compute_zt_norm = False,
               groups = ['dev'], # only dev group
               preload_probes = self.m_args.preload_probes,
               force = self.m_args.force)
@@ -123,7 +123,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
         print "Would have concatenated the scores for protocol %s ..." % self.m_configuration.protocol
       else:
         self.m_tool_chain.concatenate(
-              False, # no zt norm
+              compute_zt_norm = False,
               groups = ['dev']) # only dev group
 
 
@@ -292,7 +292,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
           self.m_tool,
           self.m_extractor,
           indices = self.indices(self.m_file_selector.model_ids('dev'), self.m_grid_config.number_of_models_per_enroll_job),
-          zt_norm = False,
+          compute_zt_norm = False,
           groups = ['dev'],
           force = self.m_args.force)
 
@@ -300,8 +300,8 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     elif self.m_args.sub_task == 'compute-scores':
       self.m_tool_chain.compute_scores(
           self.m_tool,
-          indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
-          zt_norm = False,
+          indices = self.indices(self.m_file_selector.model_ids('dev'), self.m_grid_config.number_of_models_per_score_job),
+          compute_zt_norm = False,
           groups = ['dev'],
           preload_probes = self.m_args.preload_probes,
           force = self.m_args.force)
@@ -309,7 +309,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # concatenate
     elif self.m_args.sub_task == 'concatenate':
       self.m_tool_chain.concatenate(
-          zt_norm = False,
+          compute_zt_norm = False,
           groups = ['dev'])
 
     # Test if the keyword was processed
