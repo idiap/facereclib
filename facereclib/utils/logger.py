@@ -18,16 +18,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import sys
-logger = logging.getLogger("bob")
-
-# this sets Bob's core logger to log to the stdout stream
-ch = logging.StreamHandler(sys.stdout)
-logger.addHandler(ch)
+import bob
 
 # this formats the logger to print the name of the logger, the time, the type of message and the message itself
-formatter = logging.Formatter("%(name)s@%(asctime)s|%(levelname)s: %(message)s")
-ch.setFormatter(formatter)
+# So, we have to set the formatter to all handlers registered in Bob
+formatter = logging.Formatter("%(name)s@%(asctime)s -- %(levelname)s: %(message)s")
+logger = logging.getLogger("bob")
+for handler in logger.handlers:
+  handler.setFormatter(formatter)
 
 # this defined our own logger as a child of Bob's logger,
 # so that we can distinguish logs of Bob and our own logs
