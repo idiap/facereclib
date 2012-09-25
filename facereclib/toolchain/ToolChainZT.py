@@ -114,7 +114,7 @@ class ToolChainZT:
     keys = sorted(image_files.keys())
     if indices != None:
       keys = keys[indices[0]:indices[1]]
-      utils.info("- Preprocessing: Splitting of index range %s" % indices)
+      utils.info("- Preprocessing: splitting of index range %s" % str(indices))
 
     utils.info("- Preprocessing: processing %d images from directory '%s' to directory '%s'" % (len(keys), self.m_file_selector.m_config.image_directory, self.m_file_selector.m_config.preprocessed_dir))
     # iterate through the images and perform normalization
@@ -124,10 +124,10 @@ class ToolChainZT:
     annotation_list = self.m_file_selector.annotation_list()
 
     for k in keys:
-      image = self.__read_original_image__(image_files[k], preprocessor)
       preprocessed_image_file = preprocessed_image_files[k]
 
       if not self.__check_file__(preprocessed_image_file, force):
+        image = self.__read_original_image__(image_files[k], preprocessor)
         annotations = None
         if annotation_list != None:
           # read eyes position file
@@ -145,7 +145,7 @@ class ToolChainZT:
       retval[k] = self.__read_image__(files[k], preprocessor)
     return retval
 
-  def read_images_by_client__(self, files, preprocessor):
+  def __read_images_by_client__(self, files, preprocessor):
     retval = {}
     for client in files.keys():
       # images for the client
@@ -188,7 +188,7 @@ class ToolChainZT:
     keys = sorted(image_files.keys())
     if indices != None:
       keys = keys[indices[0]:indices[1]]
-      utils.info("- Extraction: splitting of index range %s" % indices)
+      utils.info("- Extraction: splitting of index range %s" % str(indices))
 
     utils.info("- Extraction: extracting %d features from directory '%s' to directory '%s'" % (len(keys), self.m_file_selector.m_config.preprocessed_dir, self.m_file_selector.m_config.features_dir))
     for k in keys:
@@ -258,7 +258,7 @@ class ToolChainZT:
       keys = sorted(feature_files.keys())
       if indices != None:
         keys = keys[indices[0]:indices[1]]
-        utils.info("- Projection: splitting of index range %s" % indices)
+        utils.info("- Projection: splitting of index range %s" % str(indices))
 
       utils.info("- Projection: projecting %d images from directory '%s' to directory '%s'" % (len(keys), self.m_file_selector.m_config.features_dir, self.m_file_selector.m_config.projected_dir))
       for k in keys:
@@ -323,7 +323,7 @@ class ToolChainZT:
 
         if indices != None:
           model_ids = model_ids[indices[0]:indices[1]]
-          utils.info("- Enrollment: splitting of index range %s" % indices)
+          utils.info("- Enrollment: splitting of index range %s" % str(indices))
 
         utils.info("- Enrollment: enrolling models of group '%s'" % group)
         for model_id in model_ids:
@@ -352,7 +352,7 @@ class ToolChainZT:
 
         if indices != None:
           model_ids = model_ids[indices[0]:indices[1]]
-          utils.info("- Enrollment: splitting of index range %s" % indices)
+          utils.info("- Enrollment: splitting of index range %s" % str(indices))
 
         utils.info("- Enrollment: enrolling T-models of group '%s'" % group)
         for model_id in model_ids:

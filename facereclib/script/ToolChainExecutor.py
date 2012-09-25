@@ -241,17 +241,17 @@ class ToolChainExecutor:
     use_cmd = ['-S', os.path.join(self.m_bin_dir, 'python')]
     use_cmd.extend(cmd)
 
-    # submit the job to the job mamager
+    # submit the job to the job manager
     if not self.m_args.dry_run:
       job = self.m_job_manager.submit(use_cmd, deps=dependencies, cwd=True,
           stdout=logdir, stderr=logdir, name=name, array=array,
           **kwargs)
 
-      utils.info('submitted:', job)
+      utils.info('submitted: %s' % job)
       return job.id()
     else:
       self.m_fake_job_id += 1
-      print 'would have submitted job', name, 'with id', self.m_fake_job_id, 'as:'
+      print 'would have submitted job', name, 'with id', self.m_fake_job_id, 'using', array[1], 'parallel jobs as:'
       print ' '.join(use_cmd[2:]), '\nwith dependencies', dependencies
       return self.m_fake_job_id
 

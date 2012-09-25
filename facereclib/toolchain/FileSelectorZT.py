@@ -16,7 +16,7 @@ class FileSelectorZT:
     self.m_db = db.db
 
   def __options__(self, name):
-    """Returnes the options specified by the database, if available"""
+    """Returns the options specified by the database, if available"""
     if hasattr(self.m_db_options, name):
       return eval('self.m_db_options.'+name)
     else:
@@ -101,7 +101,7 @@ class FileSelectorZT:
     utils.ensure_dir(self.m_config.projected_dir)
     return self.m_db.files(directory=self.m_config.projected_dir, extension=self.m_config.default_extension, protocol=self.m_config.protocol, **self.__options__('all_files_options'))
 
-  ### Enrolment
+  ### Enrollment
   def enroller_file(self):
     """Returns the name of the file that includes the model trained for enrollment"""
     utils.ensure_dir(os.path.dirname(self.m_config.enroller_file))
@@ -110,7 +110,7 @@ class FileSelectorZT:
 
   def model_ids(self, group):
     """Returns the sorted list of model ids from the given group"""
-    return sorted(self.m_db.models(protocol=self.m_config.protocol, groups=group))
+    return sorted(self.m_db.models(protocol=self.m_config.protocol, groups=group, **self.__options__('models_options')))
 
   def enroll_files(self, model_id, group, use_projected_dir):
     """Returns the list of model features used for enrollment of the given model_id from the given group"""
@@ -126,7 +126,7 @@ class FileSelectorZT:
 
   def tmodel_ids(self, group):
     """Returns the sorted list of T-Norm-model ids from the given group"""
-    return sorted(self.m_db.tmodels(protocol=self.m_config.protocol, groups=group))
+    return sorted(self.m_db.tmodels(protocol=self.m_config.protocol, groups=group, **self.__options__('models_options')))
 
   def tenroll_files(self, model_id, group, use_projected_dir):
     """Returns the list of T-model features used for enrollment of the given model_id from the given group"""
@@ -211,9 +211,9 @@ class FileSelectorZT:
 
   def probe_files_for_model(self, model_id, group, use_projected_dir):
     """Returns the probe files used to compute the raw scores"""
-    return self.m_db.objects(directory=self.__probe_dir__(use_projected_dir), extension=self.m_config.default_extension, groups=group, protocol=self.m_config.protocol, purposes="probe", model_ids=(model_id,))
+    return self.m_db.objects(directory=self.__probe_dir__(use_projected_dir), extension=self.m_config.default_extension, groups=group, protocol=self.m_config.protocol, purposes="probe", model_ids=(model_id,), **self.__options__('models_options'))
 
   def zprobe_files_for_model(self, model_id, group, use_projected_dir):
     """Returns the probe files used to compute the Z-Norm"""
-    return self.m_db.zobjects(directory=self.__probe_dir__(use_projected_dir), extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups=group, model_ids=(model_id,))
+    return self.m_db.zobjects(directory=self.__probe_dir__(use_projected_dir), extension=self.m_config.default_extension, protocol=self.m_config.protocol, groups=group, model_ids=(model_id,), **self.__options__('models_options'))
 

@@ -286,20 +286,21 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
   def execute_grid_job(self):
     """Run the desired job of the ZT tool chain that is specified on command line"""
-    # preprocess
+    # preprocess the images
     if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_images(
           self.m_preprocessor,
           indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid_config.number_of_images_per_job),
           force = self.m_args.force)
 
+    # train the feature extractor
     elif self.m_args.sub_task == 'train-extractor':
       self.m_tool_chain.train_extractor(
           self.m_extractor,
           self.m_preprocessor,
           force = self.m_args.force)
 
-    # extract features
+    # extract the features
     elif self.m_args.sub_task == 'extract':
       self.m_tool_chain.extract_features(
           self.m_extractor,
@@ -322,14 +323,14 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
           indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_projections_per_job),
           force = self.m_args.force)
 
-    # train model enroller
+    # train the model enroller
     elif self.m_args.sub_task == 'train-enroller':
       self.m_tool_chain.train_enroller(
           self.m_tool,
           self.m_extractor,
           force = self.m_args.force)
 
-    # enroll models
+    # enroll the models
     elif self.m_args.sub_task == 'enroll':
       if self.m_args.model_type == 'N':
         self.m_tool_chain.enroll_models(

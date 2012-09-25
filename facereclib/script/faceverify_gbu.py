@@ -12,165 +12,229 @@ from .. import toolchain
 class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
 
   def __init__(self, args, protocol):
-    # select the protocol
-    self.m_protocol = protocol
-
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
 
+    # set (overwrite) the protocol
+    self.m_configuration.protocol = protocol
+
     # specify the file selector and tool chain objects to be used by this class (and its base class)
-    self.m_file_selector = toolchain.FileSelectorGBU(self.m_configuration, self.m_configuration)
-    self.m_tool_chain = toolchain.ToolChainGBU(self.m_file_selector)
+    self.m_file_selector = toolchain.FileSelectorZT(self.m_configuration, self.m_configuration)
+    self.m_tool_chain = toolchain.ToolChainZT(self.m_file_selector)
 
 
   def protocol_specific_configuration(self):
     """Special configuration for GBU protocol"""
-    self.m_configuration.image_directory = self.m_configuration.image_directory
-    self.m_configuration.protocol = self.m_protocol
-    self.m_configuration.model_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.model_dir, self.m_configuration.protocol)
+    # set the dictionary for the options to assure that we use the 'gbu' protocol type
+    self.m_configuration.__dict__['all_files_options'] = {'type' : 'gbu'}
+    self.m_configuration.__dict__['extractor_training_options'] = {'type' : 'gbu'}
+    self.m_configuration.__dict__['projector_training_options'] = {'type' : 'gbu'}
+    self.m_configuration.__dict__['enroller_training_options'] = {'type' : 'gbu'}
+    self.m_configuration.__dict__['models_options'] = {'type' : 'gbu'}
 
-    self.m_configuration.score_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.protocol)
+    self.m_configuration.models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.model_dir, self.m_configuration.protocol)
+    self.m_configuration.scores_nonorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.protocol)
 
 
-  def execute_tool_chain(self):
+  def execute_tool_chain(self, perform_training):
     """Executes the desired tool chain on the local machine"""
     # preprocessing
     if not self.m_args.skip_preprocessing:
-      self.m_tool_chain.preprocess_images(self.m_preprocessor, force = self.m_args.force)
+      if self.m_args.dry_run:
+        print "Would have preprocessed images for protocol %s ..." % self.m_configuration.protocol
+      else:
+        self.m_tool_chain.preprocess_images(
+              self.m_preprocessor,
+              force = self.m_args.force)
+
     # feature extraction
-    if not self.m_args.skip_feature_extraction_training and hasattr(self.m_feature_extractor, 'train'):
-      self.m_tool_chain.train_extractor(self.m_feature_extractor, force = self.m_args.force)
-    if not self.m_args.skip_feature_extraction:
-      self.m_tool_chain.extract_features(self.m_feature_extractor, force = self.m_args.force)
+    if perform_training and not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
+      if self.m_args.dry_run:
+        print "Would have trained the extractor ..."
+      else:
+        self.m_tool_chain.train_extractor(
+              self.m_extractor,
+              self.m_preprocessor,
+              force = self.m_args.force)
+
+    if not self.m_args.skip_extraction:
+      if self.m_args.dry_run:
+        print "Would have extracted the features for protocol %s ..." % self.m_configuration.protocol
+      else:
+        self.m_tool_chain.extract_features(
+              self.m_extractor,
+              self.m_preprocessor,
+              force = self.m_args.force)
+
     # feature projection
-    if not self.m_args.skip_projection_training and hasattr(self.m_tool, 'train_projector'):
-      self.m_tool_chain.train_projector(self.m_tool, force = self.m_args.force)
+    if perform_training and not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
+      if self.m_args.dry_run:
+        print "Would have trained the projector ..."
+      else:
+        self.m_tool_chain.train_projector(
+              self.m_tool,
+              self.m_extractor,
+              force = self.m_args.force)
+
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
-      self.m_tool_chain.project_features(self.m_tool, force = self.m_args.force, extractor = self.m_feature_extractor)
+      if self.m_args.dry_run:
+        print "Would have projected the features for protocol %s ..." % self.m_configuration.protocol
+      else:
+        self.m_tool_chain.project_features(
+              self.m_tool,
+              self.m_extractor,
+              force = self.m_args.force)
+
     # model enrollment
-    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
-      self.m_tool_chain.train_enroller(self.m_tool, force = self.m_args.force)
-    if not self.m_args.skip_model_enrollment:
-      self.m_tool_chain.enroll_models(self.m_tool, self.m_feature_extractor, force = self.m_args.force)
+    if perform_training and not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+      if self.m_args.dry_run:
+        print "Would have trained the enroller ..."
+      else:
+        self.m_tool_chain.train_enroller(
+              self.m_tool,
+              self.m_extractor,
+              force = self.m_args.force)
+
+    if not self.m_args.skip_enrollment:
+      if self.m_args.dry_run:
+        print "Would have enrolled the models for protocol %s ..." % self.m_configuration.protocol
+      else:
+        self.m_tool_chain.enroll_models(
+              self.m_tool,
+              self.m_extractor,
+              False, # no zt norm
+              groups = ['dev'], # only dev group
+              force = self.m_args.force)
+
     # score computation
     if not self.m_args.skip_score_computation:
-      self.m_tool_chain.compute_scores(self.m_tool, preload_probes = self.m_args.preload_probes, force = self.m_args.force)
+      if self.m_args.dry_run:
+        print "Would have computed the scores for protocol %s ..." % self.m_configuration.protocol
+      else:
+        self.m_tool_chain.compute_scores(
+              self.m_tool,
+              False, # no zt norm
+              groups = ['dev'], # only dev group
+              preload_probes = self.m_args.preload_probes,
+              force = self.m_args.force)
+
     if not self.m_args.skip_concatenation:
-      self.m_tool_chain.concatenate()
+      if self.m_args.dry_run:
+        print "Would have concatenated the scores for protocol %s ..." % self.m_configuration.protocol
+      else:
+        self.m_tool_chain.concatenate(
+              False, # no zt norm
+              groups = ['dev']) # only dev group
 
 
-  def add_jobs_to_grid(self, external_dependencies, perform_training = True):
+  def add_jobs_to_grid(self, external_dependencies, external_job_ids, perform_training):
     # collect job ids
     job_ids = {}
+    job_ids.update(external_job_ids)
 
     # if there are any external dependencies, we need to respect them
     deps = external_dependencies[:]
-    new_deps = []
     training_deps = external_dependencies[:]
 
-    sets = ['training','target','query'] if perform_training else ['target','query']
     default_opt = ' --protocol %s'%self.m_configuration.protocol
     # image preprocessing; never has any dependencies.
     if not self.m_args.skip_preprocessing:
-      for set in sets:
-        job_ids['preprocessing_%s'%set] = self.submit_grid_job(
-                '--preprocess --sub-set %s'%set + default_opt,
-                name = 'pre-%s'%set,
-                list_to_split = self.m_file_selector.original_image_list(set),
-                number_of_files_per_job = self.m_grid_config.number_of_images_per_job,
-                dependencies = [],
-                **self.m_grid_config.preprocessing_queue)
-        new_deps.append(job_ids['preprocessing_%s'%set])
+      # preprocessing must be done one after each other
+      #   since training files are identical for all protocols
+      preprocessing_deps = deps[:]
+      if 'preprocessing' in job_ids:
+        preprocessing_deps.append(job_ids['preprocessing'])
+      job_ids['preprocessing'] = self.submit_grid_job(
+              'preprocess' + default_opt,
+              name = 'pre-%s' % self.m_configuration.protocol,
+              list_to_split = self.m_file_selector.original_image_list(),
+              number_of_files_per_job = self.m_grid_config.number_of_images_per_job,
+              dependencies = preprocessing_deps,
+              **self.m_grid_config.preprocessing_queue)
+      deps.append(job_ids['preprocessing'])
       if perform_training:
-        training_deps.append(job_ids['preprocessing_training'])
-      deps.extend(new_deps)
-      new_deps = []
+        training_deps.append(job_ids['preprocessing'])
+
 
     # feature extraction training
-    if not self.m_args.skip_feature_extraction_training and perform_training and hasattr(self.m_feature_extractor, 'train'):
+    if perform_training and not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
       job_ids['extraction_training'] = self.submit_grid_job(
-              '--feature-extraction-training' + default_opt,
-              name = 'f-training',
+              'train-extractor' + default_opt,
+              name = 'f-train',
               dependencies = training_deps,
               **self.m_grid_config.training_queue)
       deps.append(job_ids['extraction_training'])
 
-    if not self.m_args.skip_feature_extraction:
-      for set in sets:
-        job_ids['feature_extraction_%s'%set] = self.submit_grid_job(
-                '--feature-extraction --sub-set %s'%set + default_opt,
-                name = 'extr-%s'%set,
-                list_to_split = self.m_file_selector.preprocessed_image_list(set),
-                number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
-                dependencies = deps,
-                **self.m_grid_config.extraction_queue)
-        new_deps.append(job_ids['feature_extraction_%s'%set])
+    if not self.m_args.skip_extraction:
+      job_ids['feature_extraction'] = self.submit_grid_job(
+              'extract' + default_opt,
+              name = 'extr-%s' % self.m_configuration.protocol,
+              list_to_split = self.m_file_selector.preprocessed_image_list(),
+              number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
+              dependencies = deps,
+              **self.m_grid_config.extraction_queue)
+      deps.append(job_ids['feature_extraction'])
       if perform_training:
-        training_deps.append(job_ids['feature_extraction_training'])
-      deps.extend(new_deps)
-      new_deps = []
+        training_deps.append(job_ids['feature_extraction'])
 
     # feature projection training
-    if not self.m_args.skip_projection_training and perform_training and hasattr(self.m_tool, 'train_projector'):
+    if perform_training and not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
       job_ids['projector_training'] = self.submit_grid_job(
-              '--train-projector' + default_opt,
-              name = "p-training",
+              'train-projector' + default_opt,
+              name = "p-train",
               dependencies = training_deps,
               **self.m_grid_config.training_queue)
       deps.append(job_ids['projector_training'])
 
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
-      for set in sets:
-        job_ids['feature_projection_%s'%set] = self.submit_grid_job(
-                '--feature-projection --sub-set %s'%set + default_opt,
-                list_to_split = self.m_file_selector.feature_list(set),
-                number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
-                dependencies = deps,
-                name="pro-%s"%set,
-                **self.m_grid_config.projection_queue)
-        new_deps.append(job_ids['feature_projection_%s'%set])
+      job_ids['feature_projection'] = self.submit_grid_job(
+              'project' + default_opt,
+              name="pro-%s" % self.m_configuration.protocol,
+              list_to_split = self.m_file_selector.feature_list(),
+              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              dependencies = deps,
+              **self.m_grid_config.projection_queue)
+      deps.append(job_ids['feature_projection'])
       if perform_training:
-        training_deps.append(job_ids['feature_projection_training'])
-      deps.extend(new_deps)
-      new_deps = []
+        training_deps.append(job_ids['feature_projection'])
 
     # model enrollment training
-    if not self.m_args.skip_enroller_training and perform_training and hasattr(self.m_tool, 'train_enroller'):
+    if perform_training and not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
       job_ids['enrollment_training'] = self.submit_grid_job(
-              '--train-enroller' + default_opt,
+              'train-enroller' + default_opt,
+              name="e-train",
               dependencies = training_deps,
-              name="e-training",
               **self.m_grid_config.training_queue)
       deps.append(job_ids['enrollment_training'])
 
     # enroll models
-    if not self.m_args.skip_model_enrollment:
+    if not self.m_args.skip_enrollment:
       job_ids['enroll'] = self.submit_grid_job(
-              '--enroll-models' + default_opt,
-              list_to_split = self.m_file_selector.model_ids(),
+              'enroll' + default_opt,
+              name = "enr-%s" % self.m_configuration.protocol,
+              list_to_split = self.m_file_selector.model_ids('dev'),
               number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
               dependencies = deps,
-              name = "enroll",
               **self.m_grid_config.enroll_queue)
       deps.append(job_ids['enroll'])
 
     # compute scores
     if not self.m_args.skip_score_computation:
       job_ids['score'] = self.submit_grid_job(
-              '--compute-scores' + default_opt,
-              list_to_split = self.m_file_selector.model_ids(),
+              'compute-scores' + default_opt,
+              name = "score-%s" % self.m_configuration.protocol,
+              list_to_split = self.m_file_selector.model_ids('dev'),
               number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
               dependencies = deps,
-              name = "score",
               **self.m_grid_config.score_queue)
       deps.append(job_ids['score'])
 
     # concatenate results
     if not self.m_args.skip_concatenation:
       job_ids['concatenate'] = self.submit_grid_job(
-              '--concatenate' + default_opt,
+              'concatenate' + default_opt,
               dependencies = deps,
-              name = "concat")
+              name = "concat-%s" % self.m_configuration.protocol)
 
     # return the job ids, in case anyone wants to know them
     return job_ids
@@ -178,68 +242,79 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
 
   def execute_grid_job(self):
     """This function executes the grid job that is specified on the command line."""
-    # preprocess
-    if self.m_args.preprocess:
+    # preprocess the images
+    if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_images(
           self.m_preprocessor,
-          sets = [self.m_args.sub_set],
-          indices = self.indices(self.m_file_selector.original_image_list(self.m_args.sub_set), self.m_grid_config.number_of_images_per_job),
+          indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid_config.number_of_images_per_job),
           force = self.m_args.force)
 
-    if self.m_args.feature_extraction_training:
+    # train the feature extractor
+    elif self.m_args.sub_task == 'train-extractor':
       self.m_tool_chain.train_extractor(
-          self.m_feature_extractor,
+          self.m_extractor,
+          self.m_preprocessor,
           force = self.m_args.force)
 
-    # extract features
-    if self.m_args.feature_extraction:
+    # extract the features
+    elif self.m_args.sub_task == 'extract':
       self.m_tool_chain.extract_features(
-          self.m_feature_extractor,
-          sets = [self.m_args.sub_set],
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(self.m_args.sub_set), self.m_grid_config.number_of_features_per_job),
+          self.m_extractor,
+          self.m_preprocessor,
+          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
-    if self.m_args.train_projector:
+    elif self.m_args.sub_task == 'train-projector':
       self.m_tool_chain.train_projector(
           self.m_tool,
+          self.m_extractor,
           force = self.m_args.force)
 
     # project the features
-    if self.m_args.projection:
+    elif self.m_args.sub_task == 'project':
       self.m_tool_chain.project_features(
           self.m_tool,
-          sets = [self.m_args.sub_set],
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(self.m_args.sub_set), self.m_grid_config.number_of_projections_per_job),
-          force = self.m_args.force,
-          extractor = self.m_feature_extractor)
-
-    # train model enroller
-    if self.m_args.train_enroller:
-      self.m_tool_chain.train_enroller(
-          self.m_tool,
+          self.m_extractor,
+          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_projections_per_job),
           force = self.m_args.force)
 
-    # enroll models
-    if self.m_args.enroll_models:
+    # train the model enroller
+    elif self.m_args.sub_task == 'train-enroller':
+      self.m_tool_chain.train_enroller(
+          self.m_tool,
+          self.m_extractor,
+          force = self.m_args.force)
+
+    # enroll the models
+    elif self.m_args.sub_task == 'enroll':
       self.m_tool_chain.enroll_models(
           self.m_tool,
-          self.m_feature_extractor,
-          indices = self.indices(self.m_file_selector.model_ids(), self.m_grid_config.number_of_models_per_enroll_job),
+          self.m_extractor,
+          indices = self.indices(self.m_file_selector.model_ids('dev'), self.m_grid_config.number_of_models_per_enroll_job),
+          zt_norm = False,
+          groups = ['dev'],
           force = self.m_args.force)
 
     # compute scores
-    if self.m_args.compute_scores:
+    elif self.m_args.sub_task == 'compute-scores':
       self.m_tool_chain.compute_scores(
           self.m_tool,
-          indices = self.indices(self.m_file_selector.model_ids(), self.m_grid_config.number_of_models_per_score_job),
+          indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
+          zt_norm = False,
+          groups = ['dev'],
           preload_probes = self.m_args.preload_probes,
           force = self.m_args.force)
 
     # concatenate
-    if self.m_args.concatenate:
-      self.m_tool_chain.concatenate()
+    elif self.m_args.sub_task == 'concatenate':
+      self.m_tool_chain.concatenate(
+          zt_norm = False,
+          groups = ['dev'])
 
+    # Test if the keyword was processed
+    else:
+      raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors.")
 
 
 def parse_args(command_line_arguments = sys.argv[1:]):
@@ -256,7 +331,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorGBU.required_command_line_options(parser)
 
   sub_dir_group.add_argument('--model-directory', type = str, metavar = 'DIR', dest='model_dir', default = 'models',
-      help = 'Subdirectories (of temp directory) where the models should be stored')
+      help = 'Subdirectories (of the --temp-directory) where the models should be stored')
 
   #######################################################################################
   ############################ other options ############################################
@@ -269,30 +344,11 @@ def parse_args(command_line_arguments = sys.argv[1:]):
 
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
-  parser.add_argument('--execute-sub-task', action='store_true',
+  parser.add_argument('--sub-task',
+      choices = ('preprocess', 'train-extractor', 'extract', 'train-projector', 'project', 'train-enroller', 'enroll', 'compute-scores', 'concatenate'),
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
-  parser.add_argument('--preprocess', action='store_true',
-      help = argparse.SUPPRESS) #'Perform image preprocessing on the given range of images'
-  parser.add_argument('--sub-set', type=str, choices=['training','target','query'],
-      help = argparse.SUPPRESS) #'The subset of the data for which the process should be executed'
   parser.add_argument('--protocol', type=str, choices=['Good','Bad','Ugly'],
       help = argparse.SUPPRESS) #'The protocol which should be used in this sub-task'
-  parser.add_argument('--feature-extraction-training', action='store_true',
-      help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
-  parser.add_argument('--feature-extraction', action='store_true',
-      help = argparse.SUPPRESS) #'Perform feature extraction for the given range of preprocessed images'
-  parser.add_argument('--train-projector', action='store_true',
-      help = argparse.SUPPRESS) #'Perform feature extraction training'
-  parser.add_argument('--feature-projection', action='store_true', dest = 'projection',
-      help = argparse.SUPPRESS) #'Perform feature projection'
-  parser.add_argument('--train-enroller', action='store_true',
-      help = argparse.SUPPRESS) #'Perform enrollment training'
-  parser.add_argument('--enroll-models', action='store_true',
-      help = argparse.SUPPRESS) #'Generate the given range of models from the features'
-  parser.add_argument('--compute-scores', action='store_true',
-      help = argparse.SUPPRESS) #'Compute scores for the given range of models'
-  parser.add_argument('--concatenate', action='store_true',
-      help = argparse.SUPPRESS) #'Concatenates the results of all scores of the given group'
 
   return parser.parse_args(command_line_arguments)
 
@@ -308,7 +364,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
   If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.
   If files should be re-generated, please specify the --force option (might be combined with the --skip-... options)"""
 
-  if args.execute_sub_task:
+  if args.sub_task:
     # execute the desired sub-task
     executor = ToolChainExecutorGBU(args, protocol=args.protocol)
     executor.execute_grid_job()
@@ -326,6 +382,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
 
     # for the first protocol, we do not have any own dependencies
     dependencies = external_dependencies
+    job_ids = {}
     resulting_dependencies = {}
     perform_training = True
     dry_run_init = external_fake_job_id
@@ -335,28 +392,24 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
       executor.set_common_parameters(calling_file = this_file, parameters = parameters, fake_job_id = dry_run_init)
 
       # add the jobs
-      new_dependencies = executor.add_jobs_to_grid(dependencies, perform_training = perform_training)
-      resulting_dependencies.update(new_dependencies)
+      new_job_ids = executor.add_jobs_to_grid(dependencies, job_ids, perform_training)
+      job_ids.update(new_job_ids)
 
-      # select the dependencies that executes training
-      if perform_training:
-        for k in new_dependencies.keys():
-          if "training" in k:
-            dependencies.append(new_dependencies[k])
-        # skip the training for the next protocol
-        perform_training = False
+      # skip the training for the next protocol
+      perform_training = False
 
       dry_run_init += 30
     # at the end of all protocols, return the list of dependencies
-    return resulting_dependencies
+    return job_ids
   else:
+    perform_training = True
     # not in a grid, use default tool chain sequentially
-
     for protocol in args.protocols:
       # generate executor for the current protocol
       executor = ToolChainExecutorGBU(args, protocol)
       # execute the tool chain locally
-      executor.execute_tool_chain()
+      executor.execute_tool_chain(perform_training)
+      perform_training = False
 
     # no dependencies since we executed the jobs locally
     return []
