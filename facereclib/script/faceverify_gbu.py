@@ -12,11 +12,11 @@ from .. import toolchain
 class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
 
   def __init__(self, args, protocol):
+    # remember the protocol
+    self.m_protocol = protocol
+
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
-
-    # set (overwrite) the protocol
-    self.m_configuration.protocol = protocol
 
     # specify the file selector and tool chain objects to be used by this class (and its base class)
     self.m_file_selector = toolchain.FileSelectorZT(self.m_configuration, self.m_configuration)
@@ -31,6 +31,9 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     self.m_configuration.__dict__['projector_training_options'] = {'type' : 'gbu'}
     self.m_configuration.__dict__['enroller_training_options'] = {'type' : 'gbu'}
     self.m_configuration.__dict__['models_options'] = {'type' : 'gbu'}
+
+    # set (overwrite) the protocol
+    self.m_configuration.protocol = self.m_protocol
 
     self.m_configuration.models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.model_dir, self.m_configuration.protocol)
     self.m_configuration.scores_nonorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.protocol)
@@ -163,6 +166,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               name = 'f-train',
               dependencies = training_deps,
               **self.m_grid_config.training_queue)
+    if 'extraction_training' in job_ids:
       deps.append(job_ids['extraction_training'])
 
     if not self.m_args.skip_extraction:
@@ -184,6 +188,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               name = "p-train",
               dependencies = training_deps,
               **self.m_grid_config.training_queue)
+    if 'projector_training' in job_ids:
       deps.append(job_ids['projector_training'])
 
     if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
@@ -205,6 +210,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               name="e-train",
               dependencies = training_deps,
               **self.m_grid_config.training_queue)
+    if 'enrollment_training' in job_ids:
       deps.append(job_ids['enrollment_training'])
 
     # enroll models
@@ -395,7 +401,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
       new_job_ids = executor.add_jobs_to_grid(dependencies, job_ids, perform_training)
       job_ids.update(new_job_ids)
 
-      # skip the training for the next protocol
+      # perform training only in the first round since the training set is identical for all algorithms
       perform_training = False
 
       dry_run_init += 30

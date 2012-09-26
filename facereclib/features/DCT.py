@@ -53,6 +53,14 @@ class DCTBlocks:
     else:
       real_DCT_coef = self.m_config.NUMBER_OF_DCT_COEFFICIENTS
 
+    # limit the number of coefficients, when block size is to small
+    max_coefs = self.m_config.BLOCK_HEIGHT * self.m_config.BLOCK_WIDTH
+    if real_DCT_coef > max_coefs:
+      real_DCT_coef = max_coefs
+      if add_xy:
+        self.m_config.NUMBER_OF_DCT_COEFFICIENTS = max_coefs + 2
+      else:
+        self.m_config.NUMBER_OF_DCT_COEFFICIENTS = max_coefs
 
     # Initializes cropper and destination array
     DCTF = bob.ip.DCTFeatures(self.m_config.BLOCK_HEIGHT, self.m_config.BLOCK_WIDTH, self.m_config.BLOCK_Y_OVERLAP, self.m_config.BLOCK_X_OVERLAP, real_DCT_coef)

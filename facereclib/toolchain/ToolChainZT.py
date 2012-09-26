@@ -583,6 +583,7 @@ class ToolChainZT:
       if 'A' in types:
         if indices != None:
           model_ids_short = model_ids[indices[0]:indices[1]]
+          utils.info("- Scoring: splitting of index range %s" % str(indices))
         else:
           model_ids_short = model_ids
         self.__scores_a__(model_ids_short, group, compute_zt_norm, force, preload_probes)
@@ -592,6 +593,7 @@ class ToolChainZT:
         if 'B' in types:
           if indices != None:
             model_ids_short = model_ids[indices[0]:indices[1]]
+            utils.info("- Scoring: splitting of index range %s" % str(indices))
           else:
             model_ids_short = model_ids
           self.__scores_b__(model_ids_short, group, force, preload_probes)
@@ -600,6 +602,7 @@ class ToolChainZT:
         if 'C' in types:
           if indices != None:
             tmodel_ids_short = tmodel_ids[indices[0]:indices[1]]
+            utils.info("- Scoring: splitting of index range %s" % str(indices))
           else:
             tmodel_ids_short = tmodel_ids
           self.__scores_c__(tmodel_ids_short, group, force, preload_probes)
@@ -608,6 +611,7 @@ class ToolChainZT:
         if 'D' in types:
           if indices != None:
             tmodel_ids_short = tmodel_ids[indices[0]:indices[1]]
+            utils.info("- Scoring: splitting of index range %s" % str(indices))
           else:
             tmodel_ids_short = tmodel_ids
           self.__scores_d__(tmodel_ids_short, group, force, preload_probes)
@@ -707,6 +711,8 @@ class ToolChainZT:
       for model_id in model_ids:
         model_file = self.m_file_selector.no_norm_file(model_id, group)
         if not os.path.exists(model_file):
+          f.close()
+          os.remove(self.m_file_selector.no_norm_result_file(group))
           raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
 
         res_file = open(model_file, 'r')
@@ -717,6 +723,12 @@ class ToolChainZT:
         f = open(self.m_file_selector.zt_norm_result_file(group), 'w')
         # Concatenates the scores
         for model_id in model_ids:
-          res_file = open(self.m_file_selector.zt_norm_file(model_id, group), 'r')
+          model_file = self.m_file_selector.zt_norm_file(model_id, group)
+          if not os.path.exists(model_file):
+            f.close()
+            os.remove(self.m_file_selector.zt_norm_result_file(group))
+            raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
+
+          res_file = open(model_file, 'r')
           f.write(res_file.read())
         f.close()
