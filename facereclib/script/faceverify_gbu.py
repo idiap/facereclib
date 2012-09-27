@@ -26,11 +26,11 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
   def protocol_specific_configuration(self):
     """Special configuration for GBU protocol"""
     # set the dictionary for the options to assure that we use the 'gbu' protocol type
-    self.m_configuration.__dict__['all_files_options'] = {'type' : 'gbu'}
-    self.m_configuration.__dict__['extractor_training_options'] = {'type' : 'gbu'}
-    self.m_configuration.__dict__['projector_training_options'] = {'type' : 'gbu'}
-    self.m_configuration.__dict__['enroller_training_options'] = {'type' : 'gbu'}
-    self.m_configuration.__dict__['models_options'] = {'type' : 'gbu'}
+    for option in ('all_files_options', 'extractor_training_options', 'projector_training_options', 'enroller_training_options', 'models_options'):
+      if hasattr(self.m_configuration, option):
+        self.m_configuration.__dict__[option].update({'type' : 'gbu', 'subworld' : self.m_args.training_set})
+      else:
+        self.m_configuration.__dict__[option] = {'type' : 'gbu', 'subworld' : self.m_args.training_set}
 
     # set (overwrite) the protocol
     self.m_configuration.protocol = self.m_protocol
@@ -345,8 +345,10 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = 'Force to erase former data if already exist')
   other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
-  other_group.add_argument('--protocols', type = str, nargs = '+', choices = ['Good', 'Bad', 'Ugly'], default = ['Good', 'Bad', 'Ugly'],
+  other_group.add_argument('--protocols', type=str, nargs = '+', choices = ['Good', 'Bad', 'Ugly'], default = ['Good', 'Bad', 'Ugly'],
       help = 'The protocols to use, by default all three (Good, Bad, and Ugly) are executed.')
+  other_group.add_argument('-x', '--training-set', choices=['x2', 'x4', 'x8'], default = 'x2',
+      help = 'Select the training set to be used')
 
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
