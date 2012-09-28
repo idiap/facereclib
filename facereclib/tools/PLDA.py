@@ -20,30 +20,26 @@ class PLDATool:
 
   def __load_data_by_client__(self, training_features):
     """Loads the data (arrays) from a list of list of filenames,
-    one list for each client, and put them in a list of Arraysets."""
+    one list for each client, and put them in a list of arraysets."""
 
     # Initializes an arrayset for the data
     data = []
     for client in sorted(training_features.keys()):
-      # Arrayset for this client
-      client_data = bob.io.Arrayset()
+      # arrayset for this client
       client_features = training_features[client]
-      for k in sorted(client_features.keys()):
-        # Loads the file
-        feature = client_features[k]
-        # Appends in the arrayset
-        client_data.append(feature)
+      client_data = numpy.vstack([client_features[k] for k in sorted(client_features.keys())])
       data.append(client_data)
-    # Returns the list of Arraysets
+    # Returns the list of arraysets
     return data
 
   def __train_pca__(self, training_set):
     """Trains and returns a LinearMachine that is trained using PCA"""
-    data = bob.io.Arrayset()
+    data_list = []
     for client in training_set:
       for feature in client:
         # Appends in the arrayset
-        data.append(feature)
+        data_list.append(feature)
+    data = numpy.vstack(data_list)
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
@@ -53,14 +49,15 @@ class PLDATool:
     return machine
 
   def __perform_pca_client__(self, machine, client):
-    """Perform PCA on an Arrayset"""
-    client_data = bob.io.Arrayset()
+    """Perform PCA on an arrayset"""
+    client_data_list = []
     for feature in client:
       # project data
       projected_feature = numpy.ndarray(machine.shape[1], numpy.float64)
       machine(feature, projected_feature)
       # add data in new arrayset
-      client_data.append(projected_feature)
+      client_data_list.append(projected_feature)
+    client_data = numpy.vstack(client_data_list)
     return client_data
 
   def __perform_pca__(self, machine, training_set):
@@ -73,7 +70,7 @@ class PLDATool:
 
 
   def train_enroller(self, training_features, projector_file):
-    """Generates the PLDA base model from a list of Arraysets (one per identity),
+    """Generates the PLDA base model from a list of arraysets (one per identity),
        and a set of training parameters. If PCA is requested, it is trained on the same data.
        Both the trained PLDABaseMachine and the PCA machine are written."""
 
@@ -137,7 +134,7 @@ class PLDATool:
       enroll_features_projected = self.__perform_pca_client__(self.m_pca_machine, enroll_features)
       self.m_plda_trainer.enrol(enroll_features_projected)
     else:
-      self.m_plda_trainer.enrol(bob.io.Arrayset(enroll_features))
+      self.m_plda_trainer.enrol(enroll_features)
     return self.m_plda_machine
 
   def read_model(self, model_file):

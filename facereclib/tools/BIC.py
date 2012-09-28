@@ -79,10 +79,8 @@ class BICTool:
     return (intra_pairs, extra_pairs)
 
   def __trainset_for__(self, pairs):
-    """Computes the bob.io.Arrayset containing the comparison results for the given set of image pairs."""
-    comparison_results = bob.io.Arrayset()
-    for (f1, f2) in pairs:
-      comparison_results.append(self.__compare__(f1, f2))
+    """Computes the arrayset containing the comparison results for the given set of image pairs."""
+    comparison_results = numpy.vstack([self.__compare__(f1, f2) for (f1, f2) in pairs])
     return comparison_results
 
   def train_enroller(self, train_features, enroller_file):

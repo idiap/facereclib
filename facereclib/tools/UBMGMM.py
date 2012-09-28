@@ -23,12 +23,10 @@ class UBMGMMTool:
   ################ UBM training #########################
   def __normalize_std_arrayset__(self, arrayset):
     """Applies a unit variance normalization to an arrayset"""
-    # Loads the data in RAM
-    arrayset.load()
 
     # Initializes variables
-    length = arrayset.shape[0]
-    n_samples = len(arrayset)
+    n_samples = arrayset.shape[0]
+    length = arrayset.shape[1]
     mean = numpy.ndarray((length,), 'float64')
     std = numpy.ndarray((length,), 'float64')
 
@@ -36,8 +34,8 @@ class UBMGMMTool:
     std.fill(0)
 
     # Computes mean and variance
-    for array in arrayset:
-      x = array.astype('float64')
+    for k in range(n_samples):
+      x = arrayset[k,:].astype('float64')
       mean += x
       std += (x ** 2)
 
@@ -46,9 +44,10 @@ class UBMGMMTool:
     std -= (mean ** 2)
     std = std ** 0.5 # sqrt(std)
 
-    ar_std = bob.io.Arrayset()
-    for array in arrayset:
-      ar_std.append(array.astype('float64') / std)
+    ar_std_list = []
+    for k in range(n_samples):
+      ar_std_list.append(arrayset[k,:].astype('float64') / std)
+    ar_std = numpy.vstack(ar_std_list)
 
     return (ar_std,std)
 
@@ -65,12 +64,12 @@ class UBMGMMTool:
 
   def _train_projector_using_arrayset(self, arrayset, projector_file):
 
-    utils.debug(" .... Training with %d feature vectors" % len(arrayset))
+    utils.debug(" .... Training with %d feature vectors" % arrayset.shape[0])
 
     # Computes input size
-    input_size = arrayset.shape[0]
+    input_size = arrayset.shape[1]
 
-    # Normalizes the Arrayset if required
+    # Normalizes the arrayset if required
     utils.debug(" .... Normalizing the arrayset")
     if not self.m_config.NORMALIZE_BEFORE_K_MEANS:
       normalized_arrayset = arrayset
@@ -124,10 +123,8 @@ class UBMGMMTool:
 
     utils.info("  -> Training UBM model with %d training files" % len(train_features))
 
-    # Loads the data into an Arrayset
-    arrayset = bob.io.Arrayset()
-    for k in sorted(train_features.keys()):
-      arrayset.extend(train_features[k])
+    # Loads the data into an arrayset
+    arrayset = numpy.vstack([train_features[k] for k in sorted(train_features.keys())])
 
     self._train_projector_using_arrayset(arrayset, projector_file)
 
@@ -154,7 +151,7 @@ class UBMGMMTool:
 
 
   def _project_using_arrayset(self, arrayset):
-    utils.debug(" .... Projecting %d feature vectors" % len(arrayset))
+    utils.debug(" .... Projecting %d feature vectors" % arrayset.shape[0])
     # Accumulates statistics
     self.m_gmm_stats.init()
     self.m_ubm.acc_statistics(arrayset, self.m_gmm_stats)
@@ -166,11 +163,10 @@ class UBMGMMTool:
   def project(self, feature_array):
     """Computes GMM statistics against a UBM, given an input 2D numpy.ndarray of feature vectors"""
 
-    arrayset = bob.io.Arrayset(feature_array)
-    return self._project_using_arrayset(arrayset)
+    return self._project_using_arrayset(feature_array)
 
   def _enroll_using_arrayset(self,arrayset):
-    utils.debug(" .... Enrolling with %d feature vectors" % len(arrayset))
+    utils.debug(" .... Enrolling with %d feature vectors" % arrayset.shape[0])
 
     gmm = bob.machine.GMMMachine(self.m_ubm)
     gmm.set_variance_thresholds(self.m_config.GMM_VARIANCE_THRESHOLD)
@@ -180,12 +176,9 @@ class UBMGMMTool:
   def enroll(self, feature_arrays):
     """Enrolls a GMM using MAP adaptation, given a list of 2D numpy.ndarray's of feature vectors"""
 
-    # Load the data into an Arrayset
-    arrayset = bob.io.Arrayset()
-    for feature_array in feature_arrays:
-      arrayset.extend(feature_array)
+    arrayset = numpy.vstack([v for v in feature_arrays])
 
-    # Use the Arrayset to train a GMM and return it
+    # Use the arrayset to train a GMM and return it
     return self._enroll_using_arrayset(arrayset)
 
 

@@ -21,12 +21,7 @@ class PCATool:
   def train_projector(self, training_features, projector_file):
     """Generates the PCA covariance matrix"""
     # Initializes an arrayset for the data
-    data = bob.io.Arrayset()
-    for k in sorted(training_features.keys()):
-      # Loads the file
-      feature = training_features[k]
-      # Appends in the arrayset
-      data.append(feature)
+    data = numpy.vstack([training_features[k] for k in sorted(training_features.keys())])
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()

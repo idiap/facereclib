@@ -26,30 +26,31 @@ class LDATool:
   def __read_data__(self, training_files):
     data = []
     for client in sorted(training_files.keys()):
-      # Arrayset for this client
-      client_data = bob.io.Arrayset()
+      # arrayset for this client
       client_files = training_files[client]
       # at least two files per client are required!
       if len(client_files) < 2:
         utils.warn("Skipping client with id %s since the number of client files is only %d" %(client, len(client_files)))
         continue
-      for k in sorted(client_files.keys()):
-        # Loads the file
-        feature = client_files[k]
-        # Appends in the arrayset; assure that the data is 1-dimensional
-        client_data.append(numpy.reshape(feature, feature.size))
+      client_data = numpy.vstack([client_files[k].flatten() for k in sorted(client_files.keys())])
+      #for k in sorted(client_files.keys()):
+      #  # Loads the file
+      #  feature = client_files[k]
+      #  # Appends in the arrayset; assure that the data is 1-dimensional
+      #  client_data.append(numpy.reshape(feature, feature.size))
       data.append(client_data)
 
-    # Returns the list of Arraysets
+    # Returns the list of arraysets
     return data
 
   def __train_pca__(self, training_set):
     """Trains and returns a LinearMachine that is trained using PCA"""
-    data = bob.io.Arrayset()
+    data_list = []
     for client in training_set:
       for feature in client:
         # Appends in the arrayset
-        data.append(feature)
+        data_list.append(feature)
+    data = numpy.vstack(data_list)
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
@@ -63,14 +64,14 @@ class LDATool:
     """Perform PCA on data"""
     data = []
     for client in training_set:
-      client_data = bob.io.Arrayset()
+      client_data = []
       for feature in client:
         # project data
         projected_feature = numpy.ndarray(machine.shape[1], numpy.float64)
         machine(feature, projected_feature)
         # overwrite data in training set
         client_data.append(projected_feature)
-      data.append(client_data)
+      data.append(numpy.vstack(client_data))
     return data
 
 

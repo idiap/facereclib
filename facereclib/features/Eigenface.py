@@ -14,16 +14,10 @@ class Eigenface:
     #   generate extractor machine
     self.m_config = setup
 
-  def __linearize__(self, image):
-    return numpy.reshape(image, image.size)
-
   def train(self, image_list, extractor_file):
     """Trains the eigenface extractor using the given list of training images"""
     # Initializes an arrayset for the data
-    data = bob.io.Arrayset()
-    for k in sorted(image_list.keys()):
-      # Appends in the arrayset
-      data.append(self.__linearize__(image_list[k]))
+    data = numpy.vstack([image_list[k].flatten() for k in sorted(image_list.keys())])
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
@@ -42,7 +36,7 @@ class Eigenface:
   def __call__(self, image):
     """Projects the data using the stored covariance matrix"""
     # Projects the data
-    self.m_machine(self.__linearize__(image), self.m_projected_feature)
+    self.m_machine(image.flatten(), self.m_projected_feature)
     # return the projected data
     return self.m_projected_feature
 

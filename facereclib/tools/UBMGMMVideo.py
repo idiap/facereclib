@@ -20,12 +20,13 @@ class UBMGMMVideoTool(UBMGMMTool):
 
     utils.info("  -> Training UBM model with %d training files" % len(train_files))
 
-    # Loads the data into an Arrayset
-    arrayset = bob.io.Arrayset()
+    # Loads the data into an arrayset
+    data_list = []
     for k in sorted(train_files.keys()):
       frame_container = train_features[k]
       for data in self.m_config.frame_selector_for_projector_training(frame_container):
-        arrayset.extend(data)
+        data_list.append(data)
+    arrayset = numpy.vstack(data_list)
 
     self._train_projector_using_arrayset(arrayset, projector_file)
 
@@ -41,21 +42,20 @@ class UBMGMMVideoTool(UBMGMMTool):
       frame_selector = self.m_config.frame_selector_for_projection
 
     # Collect all feature vectors across all frames in a single array set
-    arrayset = bob.io.Arrayset()
-    for data in frame_selector(frame_container):
-      arrayset.extend(data)
+    arrayset = numpy.vstack([data for data in frame_selector(frame_container)])
     return self._project_using_arrayset(arrayset)
 
 
   def enroll(self, frame_containers):
     """Enrolls a GMM using MAP adaptation, given a list of video.FrameContainers"""
 
-    # Load the data into an Arrayset
-    arrayset = bob.io.Arrayset()
+    # Load the data into an arrayset
+    data_list = []
     for frame_container in frame_containers:
       for data in self.m_config.frame_selector_for_enroll(frame_container):
-        arrayset.extend(data)
+        data_list.append(data)
+    arrayset = numpy.vstack(data_list)
 
-    # Use the Arrayset to train a GMM and return it
+    # Use the arrayset to train a GMM and return it
     return self._enroll_using_arrayset(arrayset)
 
