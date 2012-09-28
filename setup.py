@@ -28,19 +28,7 @@ setup(
 
     install_requires=[
         "setuptools", # for whatever
-        "gridtk",   # SGE job submission at Idiap
         "bob >= 1.1.0a0",      # base signal proc./machine learning library
         # databases
-        "xbob.db.arface",
-        "xbob.db.atnt",
-        "xbob.db.banca",
-        "xbob.db.faceverif_fl",
-        "xbob.db.frgc",
-        "xbob.db.lfw",
-        "xbob.db.gbu",
-        "xbob.db.mobio",
-        "xbob.db.multipie",
-        "xbob.db.scface",
-        "xbob.db.xm2vts"
     ],
 )
