@@ -492,10 +492,10 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.)
 
 
-  def notest10_gmm_video(self):
+  def test10_gmm_video(self):
     raise SkipTest("This test is not yet implemented")
 
 
-  def notest11_isv_video(self):
+  def test11_isv_video(self):
     raise SkipTest("This test is not yet implemented")
 

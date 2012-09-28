@@ -142,7 +142,8 @@ class PreprocessingTest(unittest.TestCase):
     self.assertTrue((annots == annot2).all())
 
 
-  def notest07_tan_triggs_video(self):
+  def test07_tan_triggs_video(self):
+    raise SkipTest("Video tests are currently skipped.")
     # read input
     f = '/idiap/home/rwallace/work/databases/banca-video/output/frames/1024_f_g2_s11_1024_en_4.hdf5'
     if not os.path.exists(f):
@@ -168,3 +169,4 @@ class PreprocessingTest(unittest.TestCase):
   def test08_lfcc(self):
     # for now, I just raise a skip exception
     raise SkipTest("This test is not yet implemented.")
+

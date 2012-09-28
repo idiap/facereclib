@@ -46,6 +46,29 @@ class FeatureExtractionTest(unittest.TestCase):
     return imp.load_source('config', os.path.join('config', 'preprocessing', file))
 
 
+  def train_set(self, feature, count = 50, a = 0, b = 1):
+    # generate a random sequence of features
+    numpy.random.seed(42)
+    train_set = {}
+    for i in range(count):
+      train_set[i] = numpy.random.random(feature.shape) * (b - a) + a
+    return train_set
+
+  def train_set_by_id(self, feature, count = 50, a = 0, b = 1, as_int = False):
+    # generate a random sequence of features
+    numpy.random.seed(42)
+    train_set = {}
+    for i in range(count):
+      per_id = {}
+      for j in range(count):
+        per_id[j] = numpy.random.random(feature.shape) * (b - a) + a
+        if as_int:
+          per_id[j] = per_id[j].astype(int)
+      train_set[i] = per_id
+    return train_set
+
+
+
   def execute(self, extractor, image, reference):
     # execute the preprocessor
     feature = extractor(image)
@@ -130,7 +153,8 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertEqual(no_phase.shape[0]*2, with_phase.shape[0])
 
 
-  def notest05_dct_video(self):
+  def test05_dct_video(self):
+    raise SkipTest("Video tests are currently skipped.")
     # we need the preprocessor tool to actually read the data
     config = self.pre_config('tan_triggs_video.py')
     preprocessor = config.preprocessor(config)
@@ -173,10 +197,7 @@ class FeatureExtractionTest(unittest.TestCase):
     image = bob.io.load(self.input_dir('cropped.hdf5'))
 
     # we have to train the eigenface extractor, so we generate some data
-    numpy.random.seed(42)
-    train_data = {}
-    for i in range(400):
-      train_data[i] = numpy.random.rand(image.shape[0], image.shape[1]) * 255
+    train_data = self.train_set(image, 400, 0., 255.)
 
     t = tempfile.mkstemp('pca.hdf5')[1]
     extractor.train(train_data, t)
@@ -197,4 +218,5 @@ class FeatureExtractionTest(unittest.TestCase):
     # now, we can execute the extractor and check that the feature is still identical
     feature = self.execute(extractor, image, 'eigenface.hdf5')
     self.assertEqual(len(feature.shape), 1)
+
 
