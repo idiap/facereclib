@@ -11,9 +11,10 @@ from .. import toolchain
 
 class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
 
-  def __init__(self, args, protocol):
+  def __init__(self, args, protocol, perform_training):
     # remember the protocol
     self.m_protocol = protocol
+    self.m_perform_training = perform_training
 
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
@@ -31,6 +32,8 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
         self.m_configuration.__dict__[option].update({'type' : 'gbu', 'subworld' : self.m_args.training_set})
       else:
         self.m_configuration.__dict__[option] = {'type' : 'gbu', 'subworld' : self.m_args.training_set}
+    if not self.m_perform_training:
+      self.m_configuration.__dict__['all_files_options'].update({'groups' : 'dev'})
 
     # set (overwrite) the protocol
     self.m_configuration.protocol = self.m_protocol
@@ -39,7 +42,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     self.m_configuration.scores_nonorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.protocol)
 
 
-  def execute_tool_chain(self, perform_training):
+  def execute_tool_chain(self):
     """Executes the desired tool chain on the local machine"""
     # preprocessing
     if not self.m_args.skip_preprocessing:
@@ -51,7 +54,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # feature extraction
-    if perform_training and not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
+    if self.m_perform_training and not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
       if self.m_args.dry_run:
         print "Would have trained the extractor ..."
       else:
@@ -70,7 +73,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # feature projection
-    if perform_training and not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
+    if self.m_perform_training and not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
       if self.m_args.dry_run:
         print "Would have trained the projector ..."
       else:
@@ -89,7 +92,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # model enrollment
-    if perform_training and not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+    if self.m_perform_training and not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
       if self.m_args.dry_run:
         print "Would have trained the enroller ..."
       else:
@@ -130,7 +133,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               groups = ['dev']) # only dev group
 
 
-  def add_jobs_to_grid(self, external_dependencies, external_job_ids, perform_training):
+  def add_jobs_to_grid(self, external_dependencies, external_job_ids):
     # collect job ids
     job_ids = {}
     job_ids.update(external_job_ids)
@@ -140,13 +143,13 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     training_deps = external_dependencies[:]
 
     default_opt = ' --protocol %s'%self.m_configuration.protocol
+    if self.m_perform_training:
+      default_opt += ' --perform-training'
     # image preprocessing; never has any dependencies.
     if not self.m_args.skip_preprocessing:
       # preprocessing must be done one after each other
       #   since training files are identical for all protocols
       preprocessing_deps = deps[:]
-      if 'preprocessing' in job_ids:
-        preprocessing_deps.append(job_ids['preprocessing'])
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess' + default_opt,
               name = 'pre-%s' % self.m_configuration.protocol,
@@ -155,12 +158,12 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               dependencies = preprocessing_deps,
               **self.m_grid_config.preprocessing_queue)
       deps.append(job_ids['preprocessing'])
-      if perform_training:
+      if self.m_perform_training:
         training_deps.append(job_ids['preprocessing'])
 
 
     # feature extraction training
-    if perform_training and not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
+    if self.m_perform_training and not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
       job_ids['extraction_training'] = self.submit_grid_job(
               'train-extractor' + default_opt,
               name = 'f-train',
@@ -178,11 +181,11 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               dependencies = deps,
               **self.m_grid_config.extraction_queue)
       deps.append(job_ids['feature_extraction'])
-      if perform_training:
+      if self.m_perform_training:
         training_deps.append(job_ids['feature_extraction'])
 
     # feature projection training
-    if perform_training and not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
+    if self.m_perform_training and not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
       job_ids['projector_training'] = self.submit_grid_job(
               'train-projector' + default_opt,
               name = "p-train",
@@ -200,11 +203,11 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               dependencies = deps,
               **self.m_grid_config.projection_queue)
       deps.append(job_ids['feature_projection'])
-      if perform_training:
+      if self.m_perform_training:
         training_deps.append(job_ids['feature_projection'])
 
     # model enrollment training
-    if perform_training and not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+    if self.m_perform_training and not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
       job_ids['enrollment_training'] = self.submit_grid_job(
               'train-enroller' + default_opt,
               name="e-train",
@@ -357,6 +360,9 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
   parser.add_argument('--protocol', type=str, choices=['Good','Bad','Ugly'],
       help = argparse.SUPPRESS) #'The protocol which should be used in this sub-task'
+  parser.add_argument('--perform-training', action='store_true',
+      help = argparse.SUPPRESS) #'Is this the first job that needs to perform the training?'
+
 
   return parser.parse_args(command_line_arguments)
 
@@ -374,7 +380,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
 
   if args.sub_task:
     # execute the desired sub-task
-    executor = ToolChainExecutorGBU(args, protocol=args.protocol)
+    executor = ToolChainExecutorGBU(args, args.protocol, args.perform_training)
     executor.execute_grid_job()
     return []
 
@@ -396,11 +402,11 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     dry_run_init = external_fake_job_id
     for protocol in args.protocols:
       # create an executor object
-      executor = ToolChainExecutorGBU(args, protocol)
+      executor = ToolChainExecutorGBU(args, protocol, perform_training)
       executor.set_common_parameters(calling_file = this_file, parameters = parameters, fake_job_id = dry_run_init)
 
       # add the jobs
-      new_job_ids = executor.add_jobs_to_grid(dependencies, job_ids, perform_training)
+      new_job_ids = executor.add_jobs_to_grid(dependencies, job_ids)
       job_ids.update(new_job_ids)
 
       # perform training only in the first round since the training set is identical for all algorithms
@@ -414,9 +420,9 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     # not in a grid, use default tool chain sequentially
     for protocol in args.protocols:
       # generate executor for the current protocol
-      executor = ToolChainExecutorGBU(args, protocol)
+      executor = ToolChainExecutorGBU(args, protocol, perform_training)
       # execute the tool chain locally
-      executor.execute_tool_chain(perform_training)
+      executor.execute_tool_chain()
       perform_training = False
 
     # no dependencies since we executed the jobs locally
