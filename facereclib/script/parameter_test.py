@@ -2,7 +2,7 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import faceverify_zt, faceverify_gbu, faceverify_lfw
+import faceverify, faceverify_gbu, faceverify_lfw
 import os, shutil, sys
 import argparse
 from .. import utils

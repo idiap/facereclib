@@ -13,5 +13,5 @@ image_extension = '.jpg'
 all_files_options = { 'type' : 'unrestricted' }
 extractor_training_options = { 'subworld' : 'twofolds', 'type' : 'unrestricted' }
 projector_training_options = {'subworld' : 'twofolds', 'type' : 'unrestricted' }
-enroler_training_options = { 'subworld' : 'twofolds', 'type' : 'unrestricted' }
+enroller_training_options = { 'subworld' : 'twofolds', 'type' : 'unrestricted' }
 features_by_clients_options = { 'subworld' : 'twofolds' }

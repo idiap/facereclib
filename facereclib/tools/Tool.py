@@ -20,8 +20,6 @@
 import bob
 import os
 
-from .. import utils
-
 class Tool:
   """This is the base class for all face recognition tools.
   It defines the minimum requirements for all derived tool classes.
@@ -77,7 +75,6 @@ class Tool:
 
     Please register 'performs_projection = True' in the constructor to enable this function.
     """
-    utils.ensure_dir(os.path.dirname(feature_file))
     if hasattr(feature, 'save'):
       # this is some class that supports saving itself
       feature.save(bob.io.HDF5File(feature_file, "w"))
@@ -105,10 +102,9 @@ class Tool:
 
     If you have a different format, please overwrite this function.
     """
-    utils.ensure_dir(os.path.dirname(model_file))
     if hasattr(model, 'save'):
       # this is some class that supports saving itself
-      feature.save(bob.io.HDF5File(model_file, "w"))
+      model.save(bob.io.HDF5File(model_file, "w"))
     else:
       bob.io.save(model, model_file)
 

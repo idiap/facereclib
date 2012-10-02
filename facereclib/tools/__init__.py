@@ -4,6 +4,7 @@
 
 """Tool chain for computing verification scores"""
 
+from Tool import Tool
 from GaborJets import GaborJetTool
 from LGBPHS import LGBPHSTool
 from UBMGMM import UBMGMMTool
@@ -23,11 +24,16 @@ import bob
 from .. import utils
 
 
-class DummyTool:
+class DummyTool (Tool):
   """This class is used to test all the possible functions of the tool chain, but it does basically nothing."""
 
   def __init__(self, setup):
     """Generates a test value that is read and written"""
+    Tool.__init__(self,
+                  performs_projection = True,
+                  use_projected_features_for_enrollment = True,
+                  requires_enroller_training = True
+                  )
     self.m_test_value = numpy.array([[1,2,3], [4,5,6], [7,8,9]], dtype = numpy.uint8)
 
   def __test__(self, file_name):
@@ -60,7 +66,7 @@ class DummyTool:
 
   def load_enroller(self, enroller_file):
     """Loads the test value from file and compares it with the desired one"""
-    utils.debug("DummyTool: Training enroller %s using %d features" % (enroller_file, len(train_files)))
+    utils.debug("DummyTool: Loading enroller %s" % enroller_file)
     self.__test__(enroller_file)
 
   def enroll(self, enroll_features):

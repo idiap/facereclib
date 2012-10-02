@@ -26,7 +26,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
 
   def protocol_specific_configuration(self):
-    """Special configuration for GBU protocol"""
+    """Special configuration for LFW protocol"""
     self.m_configuration.image_directory = self.m_configuration.image_directory
     self.m_configuration.protocol = self.m_protocol
     self.m_configuration.models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.model_dir, self.m_configuration.protocol)
@@ -60,7 +60,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # feature extraction
-    if not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
+    if not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
       if self.m_args.dry_run:
         print "Would have trained the extractor for protocol %s ..." % self.m_protocol
       else:
@@ -79,7 +79,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # feature projection
-    if not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
+    if not self.m_args.skip_projector_training and self.m_tool.requires_projector_training:
       if self.m_args.dry_run:
         print "Would have trained the projector for protocol %s ..." % self.m_protocol
       else:
@@ -88,7 +88,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
               self.m_extractor,
               force = self.m_args.force)
 
-    if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
+    if not self.m_args.skip_projection and self.m_tool.performs_projection:
       if self.m_args.dry_run:
         print "Would have projected the features for protocol %s ..." % self.m_protocol
       else:
@@ -98,7 +98,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # model enrollment
-    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+    if not self.m_args.skip_enroller_training and self.m_tool.requires_enroller_training:
       if self.m_args.dry_run:
         print "Would have trained the enroller for protocol %s ..." % self.m_protocol
       else:
@@ -161,7 +161,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['preprocessing'])
 
     # feature extraction training
-    if not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
+    if not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
       job_ids['extraction_training'] = self.submit_grid_job(
               'train-extractor' + default_opt,
               name = 'f-train-%s'%pshort,
@@ -180,7 +180,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['feature_extraction'])
 
     # feature projection training
-    if not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
+    if not self.m_args.skip_projector_training and self.m_tool.requires_projector_training:
       job_ids['projector_training'] = self.submit_grid_job(
               'train-projector' + default_opt,
               name = "p-train-%s"%pshort,
@@ -188,7 +188,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
               **self.m_grid_config.training_queue)
       deps.append(job_ids['projector_training'])
 
-    if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
+    if not self.m_args.skip_projection and self.m_tool.performs_projection:
       job_ids['feature_projection'] = self.submit_grid_job(
               'project' + default_opt,
               name="pro-%s"%pshort,
@@ -199,7 +199,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['feature_projection'])
 
     # model enrollment training
-    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+    if not self.m_args.skip_enroller_training and self.m_tool.requires_enroller_training:
       job_ids['enrollment_training'] = self.submit_grid_job(
               'train-enroller' + default_opt,
               dependencies = deps,
@@ -338,7 +338,8 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
   def average_results(self):
     """Iterates over all the folds of the current view and computes the average result"""
-    file = open(self.m_configuration.result_file, 'w')
+    if not self.m_args.dry_run:
+      file = open(self.m_configuration.result_file, 'w')
     if 'view1' in self.m_args.views:
       if self.m_args.dry_run:
         print "Would have averaged the results from view1 ..."

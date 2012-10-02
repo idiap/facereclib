@@ -62,6 +62,8 @@ class ToolChainZT:
 
         # call the image preprocessor
         preprocessed_image = preprocessor(image, annotations)
+
+        utils.ensure_dir(os.path.dirname(preprocessed_image_file))
         preprocessor.save_image(preprocessed_image, str(preprocessed_image_file))
 
 
@@ -127,6 +129,7 @@ class ToolChainZT:
         # extract feature
         feature = extractor(image)
         # Save feature
+        utils.ensure_dir(os.path.dirname(feature_file))
         extractor.save_feature(feature, str(feature_file))
 
 
@@ -198,6 +201,7 @@ class ToolChainZT:
           # project feature
           projected = tool.project(feature)
           # write it
+          utils.ensure_dir(os.path.dirname(projected_file))
           tool.save_feature(projected, str(projected_file))
 
 
@@ -214,7 +218,7 @@ class ToolChainZT:
         # first, load the projector
         tool.load_projector(str(self.m_file_selector.projector_file()))
         # training models
-        train_files = self.m_file_selector.training_feature_list_by_clients('projected' if use_projected_features else 'features', 'train_enroller')
+        train_files = self.m_file_selector.training_feature_list_by_clients('projected' if tool.use_projected_features_for_enrollment else 'features', 'train_enroller')
         train_features = self.__read_features_by_client__(train_files, reader)
 
         # perform training
@@ -264,6 +268,7 @@ class ToolChainZT:
 
             model = tool.enroll(enroll_features)
             # save the model
+            utils.ensure_dir(os.path.dirname(model_file))
             tool.save_model(model, str(model_file))
 
     # T-Norm-Models
@@ -294,6 +299,7 @@ class ToolChainZT:
 
             model = tool.enroll(enroll_features)
             # save model
+            utils.ensure_dir(os.path.dirname(model_file))
             tool.save_model(model, str(model_file))
 
 

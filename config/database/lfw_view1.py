@@ -12,5 +12,5 @@ image_extension = '.jpg'
 
 extractor_training_options = { 'subworld' : 'twofolds' }
 projector_training_options = {'subworld' : 'twofolds' }
-enroler_training_options = { 'subworld' : 'twofolds' }
+enroller_training_options = { 'subworld' : 'twofolds' }
 

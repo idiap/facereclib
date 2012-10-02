@@ -48,7 +48,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # feature extraction
-    if not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
+    if not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
       if self.m_args.dry_run:
         print "Would have trained the extractor ..."
       else:
@@ -67,7 +67,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # feature projection
-    if not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
+    if not self.m_args.skip_projector_training and self.m_tool.requires_projector_training:
       if self.m_args.dry_run:
         print "Would have trained the projector ..."
       else:
@@ -76,7 +76,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               self.m_extractor,
               force = self.m_args.force)
 
-    if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
+    if not self.m_args.skip_projection and self.m_tool.performs_projection:
       if self.m_args.dry_run:
         print "Would have projected the features ..."
       else:
@@ -86,7 +86,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               force = self.m_args.force)
 
     # model enrollment
-    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+    if not self.m_args.skip_enroller_training and self.m_tool.requires_enroller_training:
       if self.m_args.dry_run:
         print "Would have trained the enroller ..."
       else:
@@ -153,7 +153,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['preprocessing'])
 
     # feature extraction training
-    if not self.m_args.skip_extractor_training and hasattr(self.m_extractor, 'train'):
+    if not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
       job_ids['extractor-training'] = self.submit_grid_job(
               'train-extractor',
               name = 'train-f',
@@ -172,7 +172,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['extraction'])
 
     # feature projection training
-    if not self.m_args.skip_projector_training and hasattr(self.m_tool, 'train_projector'):
+    if not self.m_args.skip_projector_training and self.m_tool.requires_projector_training:
       job_ids['projector_training'] = self.submit_grid_job(
               'train-projector',
               name="train-p",
@@ -181,7 +181,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['projector_training'])
 
     # feature projection
-    if not self.m_args.skip_projection and hasattr(self.m_tool, 'project'):
+    if not self.m_args.skip_projection and self.m_tool.performs_projection:
       job_ids['projection'] = self.submit_grid_job(
               'project',
               list_to_split = self.m_file_selector.feature_list(),
@@ -191,7 +191,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['projection'])
 
     # model enrollment training
-    if not self.m_args.skip_enroller_training and hasattr(self.m_tool, 'train_enroller'):
+    if not self.m_args.skip_enroller_training and self.m_tool.requires_enroller_training:
       job_ids['enroller_training'] = self.submit_grid_job(
               'train-enroller',
               name = "train-e",

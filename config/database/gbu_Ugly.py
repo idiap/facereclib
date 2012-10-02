@@ -15,4 +15,4 @@ annotation_type = 'named'
 all_files_options = { 'subworld': 'x2' }
 extractor_training_options = { 'subworld': 'x2' }
 projector_training_options = { 'subworld': 'x2' }
-enroler_training_options = { 'subworld': 'x2' }
+enroller_training_options = { 'subworld': 'x2' }
