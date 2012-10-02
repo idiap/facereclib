@@ -368,7 +368,7 @@ class ToolChainZT:
             for k in sorted(enroll_files.keys()):
               # processes one file
 
-              feature = self.__read_feature__(str(enroll_files[k]))
+              feature = self.__read_feature__(str(enroll_files[k]), reader)
               enroll_features.append(feature)
 
             model = tool.enroll(enroll_features)
