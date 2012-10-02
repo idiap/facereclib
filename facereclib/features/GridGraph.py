@@ -4,11 +4,13 @@
 
 import bob
 import numpy
+from .Extractor import Extractor
 
-class GridGraph:
+class GridGraph (Extractor):
   """Extracts grid graphs from the images"""
 
   def __init__(self, setup):
+    Extractor.__init__(self)
     #   generate extractor machine
     self.m_gwt = bob.ip.GaborWaveletTransform(
           number_of_angles = setup.GABOR_DIRECTIONS,

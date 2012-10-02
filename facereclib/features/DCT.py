@@ -7,9 +7,12 @@
 import numpy,math
 import bob
 
-class DCTBlocks:
+from .Extractor import Extractor
+
+class DCTBlocks (Extractor):
   """Extracts DCT blocks"""
   def __init__(self, config):
+    Extractor.__init__(self)
     self.m_config = config
     if config.BLOCK_HEIGHT < config.BLOCK_Y_OVERLAP or config.BLOCK_WIDTH < config.BLOCK_X_OVERLAP:
       raise ValueError("The overlap is bigger than the block size. This won't work. Please check your setup!")

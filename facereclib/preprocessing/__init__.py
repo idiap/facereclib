@@ -9,6 +9,7 @@ import numpy
 import math
 from .. import utils
 
+from Preprocessor import Preprocessor
 from FaceCrop import FaceCrop
 from TanTriggs import TanTriggs, TanTriggsVideo
 from HistogramEqualization import HistogramEqualization
@@ -18,10 +19,11 @@ from Keypoints import Keypoints
 from Cepstral import Cepstral
 
 
-class NullPreprocessor:
+class NullPreprocessor (Preprocessor):
   """Skips proprocessing files by simply copying the contents into an hdf5 file
   (and perform gray scale conversion if required)"""
   def __init__(self, config):
+    Preprocessor.__init__(self)
     self.m_color_channel = config.color_channel if hasattr(config, 'COLOR_CHANNEL') else 'gray'
 
   def __call__(self, image, annotations = None):

@@ -5,13 +5,15 @@
 import bob
 import numpy
 
+from .Extractor import Extractor
 from .. import utils
 
-class Eigenface:
+class Eigenface (Extractor):
   """Extracts grid graphs from the images"""
 
   def __init__(self, setup):
-    #   generate extractor machine
+    # We have to register that this function will need a training step
+    Extractor.__init__(self, requires_training = True)
     self.m_config = setup
 
   def train(self, image_list, extractor_file):

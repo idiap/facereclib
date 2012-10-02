@@ -5,12 +5,14 @@
 import bob
 import numpy
 
+from .Extractor import Extractor
 from .. import utils
 
-class LGBPHS:
+class LGBPHS (Extractor):
   """Extractor for local Gabor binary pattern histogram sequences"""
 
   def __init__(self, setup):
+    Extractor.__init__(self)
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
     # Initializes LBPHS processor
     if setup.BLOCK_HEIGHT < setup.BLOCK_Y_OVERLAP or setup.BLOCK_WIDTH < setup.BLOCK_X_OVERLAP:

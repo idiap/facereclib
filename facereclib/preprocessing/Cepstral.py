@@ -7,9 +7,12 @@ import numpy,math
 import bob
 import os
 
-class Cepstral:
-  """Extracts Cepstral coefficents"""
+from .Preprocessor import Preprocessor
+
+class Cepstral (Preprocessor):
+  """Extracts Cepstral coefficients"""
   def __init__(self, config):
+    Preprocessor.__init__(self)
     self.m_config = config
 
   def _read(self, filename):

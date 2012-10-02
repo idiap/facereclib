@@ -21,11 +21,13 @@ import bob
 import numpy
 import math
 from .. import utils
+from .Preprocessor import Preprocessor
 
-class FaceCrop:
+class FaceCrop (Preprocessor):
   """Crops the face according to the eye positions"""
 
   def __init__(self, config):
+    Preprocessor.__init__(self)
     self.m_config = config
     self.m_color_channel = config.COLOR_CHANNEL if hasattr(config, 'COLOR_CHANNEL') else 'gray'
     # prepare image normalization

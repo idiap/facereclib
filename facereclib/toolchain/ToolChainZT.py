@@ -14,33 +14,6 @@ class ToolChainZT:
     """Initializes the tool chain object with the current file selector"""
     self.m_file_selector = file_selector
 
-  def __read_original_image__(self, filename, preprocessor):
-    """Loads the given image from file, using the function specified by the preprocessor, if available"""
-    if hasattr(preprocessor, 'read_original_image'):
-      return preprocessor.read_original_image(str(filename))
-    else:
-      return bob.io.load(str(filename))
-
-  def __read_image__(self, filename, preprocessor):
-    """Loads the given image from file, using the function specified by the preprocessor, if available"""
-    if hasattr(preprocessor, 'read_image'):
-      return preprocessor.read_image(str(filename))
-    else:
-      return bob.io.load(str(filename))
-
-  def __save_image__(self, data, filename, preprocessor):
-    """Saves the given image to the given filename, using the function specified by the preprocessor if available"""
-    utils.ensure_dir(os.path.dirname(filename))
-    if hasattr(preprocessor, 'save_image'):
-      # Tool has a save_feature function, so use this one
-      preprocessor.save_image(data, str(filename))
-    elif hasattr(data, 'save'):
-      # this is some class that supports saving itself
-      data.save(bob.io.HDF5File(str(filename), "w"))
-    else:
-      # this is most probably a numpy.ndarray that can be saved by bob.io.save
-      bob.io.save(data, str(filename))
-
   def __read_feature__(self, feature_file, tool):
     """This function reads the feature from file. It uses the tool.read_feature() function, if available, otherwise it uses bob.io.load()"""
     if hasattr(tool, 'read_feature'):
@@ -127,7 +100,7 @@ class ToolChainZT:
       preprocessed_image_file = preprocessed_image_files[k]
 
       if not self.__check_file__(preprocessed_image_file, force):
-        image = self.__read_original_image__(image_files[k], preprocessor)
+        image = preprocessor.read_original_image(str(image_files[k]))
         annotations = None
         if annotation_list != None:
           # read eyes position file
@@ -135,14 +108,14 @@ class ToolChainZT:
 
         # call the image preprocessor
         preprocessed_image = preprocessor(image, annotations)
-        self.__save_image__(preprocessed_image, preprocessed_image_file, preprocessor)
+        preprocessor.save_image(preprocessed_image, preprocessed_image_file)
 
 
 
   def __read_images__(self, files, preprocessor):
     retval = {}
     for k in files.keys():
-      retval[k] = self.__read_image__(files[k], preprocessor)
+      retval[k] = preprocessor.read_image(str(files[k]))
     return retval
 
   def __read_images_by_client__(self, files, preprocessor):
@@ -152,19 +125,19 @@ class ToolChainZT:
       data = {}
       client_files = files[client]
       for k in client_files.keys():
-        data[k] = self.__read_image__(client_files[k], preprocessor)
+        data[k] = preprocessor.read_image(str(client_files[k]))
       retval[client] = data
     return retval
 
   def train_extractor(self, extractor, preprocessor, force = False):
     """Trains the feature extractor, if it requires training"""
-    if hasattr(extractor,'train'):
+    if extractor.requires_training:
       extractor_file = self.m_file_selector.extractor_file()
       if self.__check_file__(extractor_file, force, 1000):
         utils.info("- Extraction: extractor '%s' already exists." % extractor_file)
       else:
         # read training files
-        if hasattr(extractor, 'use_training_images_sorted_by_identity'):
+        if extractor.split_training_images_by_client:
           train_files = self.m_file_selector.training_feature_list_by_clients('preprocessed', 'train_extractor')
           train_images = self.__read_images_by_client__(train_files, preprocessor)
           utils.info("- Extraction: training extractor '%s' using %d identities: " %(extractor_file, len(train_files)))
@@ -179,8 +152,7 @@ class ToolChainZT:
 
   def extract_features(self, extractor, preprocessor, indices = None, force=False):
     """Extracts the features using the given extractor"""
-    if hasattr(extractor, 'load'):
-      extractor.load(self.m_file_selector.extractor_file())
+    extractor.load(str(self.m_file_selector.extractor_file()))
     image_files = self.m_file_selector.preprocessed_image_list()
     feature_files = self.m_file_selector.feature_list()
 
@@ -197,18 +169,18 @@ class ToolChainZT:
 
       if not self.__check_file__(feature_file, force):
         # load image
-        image = self.__read_image__(image_file, preprocessor)
+        image = preprocessor.read_image(image_file)
         # extract feature
         feature = extractor(image)
         # Save feature
-        self.__save_feature__(feature, str(feature_file), extractor)
+        extractor.save_feature(feature, str(feature_file))
 
 
 
   def __read_features__(self, files, extractor):
     retval = {}
     for k in files.keys():
-      retval[k] = self.__read_feature__(files[k], extractor)
+      retval[k] = extractor.read_feature(str(files[k]))
     return retval
 
   def __read_features_by_client__(self, files, extractor):
@@ -218,7 +190,7 @@ class ToolChainZT:
       data = {}
       client_files = files[client]
       for k in client_files.keys():
-        data[k] = self.__read_feature__(client_files[k], extractor)
+        data[k] = extractor.read_feature(str(client_files[k]))
       retval[client] = data
     return retval
 

@@ -21,8 +21,9 @@ import bob
 import numpy
 import math
 from .. import utils
+from .Preprocessor import Preprocessor
 
-class Keypoints:
+class Keypoints (Preprocessor):
   """Extracts keypoints"""
 
   def __init__(self, config):

@@ -20,6 +20,7 @@
 import bob
 import numpy
 from .. import utils
+from .Preprocessor import Preprocessor
 from .FaceCrop import FaceCrop
 
 class TanTriggs (FaceCrop):
@@ -61,10 +62,11 @@ class TanTriggs (FaceCrop):
 
 
 
-class TanTriggsVideo:
+class TanTriggsVideo (Preprocessor):
   """Applies the Tan-Triggs algorithm to each frame in a video"""
 
   def __init__(self, config):
+    Preprocessor.__init__(self)
     self.m_config = config
     self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
     # prepare image normalization

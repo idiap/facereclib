@@ -5,10 +5,13 @@
 import bob
 import numpy
 
-class SIFTKeypoints:
+from .Extractor import Extractor
+
+class SIFTKeypoints (Extractor):
   """Extracts Sift descriptors according to the given keypoints"""
 
   def __init__(self, config):
+    Extractor.__init__(self)
     self.m_config = config
     # prepare SIFT extractor
     self.m_n_scales = config.N_SCALES
