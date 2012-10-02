@@ -4,6 +4,8 @@
 
 import bob
 import numpy
+
+from .Tool import Tool
 from . import UBMGMMTool
 from .. import utils
 

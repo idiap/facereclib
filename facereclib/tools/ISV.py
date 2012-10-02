@@ -5,6 +5,8 @@
 import bob
 import numpy
 import types
+
+from .Tool import Tool
 from . import UBMGMMTool
 
 
@@ -17,7 +19,12 @@ class ISVTool (UBMGMMTool):
     # call base class constructor
     UBMGMMTool.__init__(self, setup)
 
-    del self.use_unprojected_features_for_model_enroll
+    # call tool constructor to overwrite what was set before
+    Tool.__init__(self,
+                  performs_projection = True,
+                  use_projected_features_for_enrollment = True,
+                  requires_enroller_training = True
+                  )
 
 
   def __load_gmm_stats__(self, l_files):

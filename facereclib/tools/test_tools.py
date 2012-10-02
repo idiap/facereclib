@@ -95,6 +95,8 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('graph_with_phase.hdf5'))
     config = self.config('gabor_jet.py')
     tool = config.tool(config)
+    self.assertFalse(tool.performs_projection)
+    self.assertFalse(tool.requires_enroller_training)
 
     model = tool.enroll([feature])
     self.compare(model, 'graph_model.hdf5')
@@ -110,6 +112,8 @@ class ToolTest(unittest.TestCase):
     feature2 = bob.io.load(self.input_dir('lgbphs_no_phase.hdf5'))
     config = self.config('lgbphs.py')
     tool = config.tool(config)
+    self.assertFalse(tool.performs_projection)
+    self.assertFalse(tool.requires_enroller_training)
 
     # enroll model
     model = tool.enroll([feature1])
@@ -126,6 +130,11 @@ class ToolTest(unittest.TestCase):
     config = self.config('pca.py')
     config.SUBSPACE_DIMENSION = 10
     tool = config.tool(config)
+
+    self.assertTrue(tool.performs_projection)
+    self.assertTrue(tool.requires_projector_training)
+    self.assertTrue(tool.use_projected_features_for_enrollment)
+    self.assertFalse(tool.split_training_features_by_client)
 
     # train the projector
     t = tempfile.mkstemp('pca.hdf5')[1]
@@ -165,6 +174,12 @@ class ToolTest(unittest.TestCase):
     config.PCA_SUBSPACE_DIMENSION = 10
     config.LDA_SUBSPACE_DIMENSION = 5
     tool = config.tool(config)
+
+    self.assertTrue(tool.performs_projection)
+    self.assertTrue(tool.requires_projector_training)
+    self.assertTrue(tool.use_projected_features_for_enrollment)
+    self.assertTrue(tool.split_training_features_by_client)
+
 
     # train the projector
     t = tempfile.mkstemp('pca+lda.hdf5')[1]
@@ -208,6 +223,9 @@ class ToolTest(unittest.TestCase):
     config.EXTRA_SUBSPACE_DIMENSION = 7
 
     tool = config.tool(config)
+
+    self.assertFalse(tool.performs_projection)
+    self.assertTrue(tool.requires_enroller_training)
 
     # train the enroller
     t = tempfile.mkstemp('bic.hdf5')[1]
@@ -275,6 +293,12 @@ class ToolTest(unittest.TestCase):
 
     tool = config.tool(config)
 
+    self.assertTrue(tool.performs_projection)
+    self.assertTrue(tool.requires_projector_training)
+    self.assertFalse(tool.use_projected_features_for_enrollment)
+    self.assertFalse(tool.split_training_features_by_client)
+
+
     # train the projector
     t = tempfile.mkstemp('ubm.hdf5')[1]
     tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
@@ -322,6 +346,12 @@ class ToolTest(unittest.TestCase):
     config.JFA_TRAINING_ITERATIONS = 1
 
     tool = config.tool(config)
+    self.assertTrue(tool.performs_projection)
+    self.assertTrue(tool.requires_projector_training)
+    self.assertTrue(tool.use_projected_features_for_enrollment)
+    self.assertFalse(tool.split_training_features_by_client)
+    self.assertTrue(tool.requires_enroller_training)
+
 
     # train the projector
     t = tempfile.mkstemp('ubm.hdf5')[1]
@@ -389,6 +419,11 @@ class ToolTest(unittest.TestCase):
     config.JFA_TRAINING_ITERATIONS = 1
 
     tool = config.tool(config)
+    self.assertTrue(tool.performs_projection)
+    self.assertTrue(tool.requires_projector_training)
+    self.assertTrue(tool.use_projected_features_for_enrollment)
+    self.assertFalse(tool.split_training_features_by_client)
+    self.assertTrue(tool.requires_enroller_training)
 
     # train the projector
     t = tempfile.mkstemp('ubm.hdf5')[1]
@@ -455,6 +490,8 @@ class ToolTest(unittest.TestCase):
     config.SUBSPACE_DIMENSION_OF_G = 2
     config.PLDA_TRAINING_ITERATIONS = 1
     tool = config.tool(config)
+    self.assertFalse(tool.performs_projection)
+    self.assertTrue(tool.requires_enroller_training)
 
     # train the projector
     t = tempfile.mkstemp('pca+plda.hdf5')[1]

@@ -193,6 +193,8 @@ class FeatureExtractionTest(unittest.TestCase):
     config.SUBSPACE_DIMENSION = 5
     extractor = config.feature_extractor(config)
 
+    self.assertTrue(extractor.requires_training)
+
     # we read the test image (so that we have a length)
     image = bob.io.load(self.input_dir('cropped.hdf5'))
 

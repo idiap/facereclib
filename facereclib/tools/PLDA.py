@@ -5,14 +5,16 @@
 import bob
 import numpy
 
+from .Tool import Tool
 from .. import utils
 
 
-class PLDATool:
+class PLDATool (Tool):
   """Tool chain for computing PLDA (over PCA-dimensionality reduced) features"""
 
   def __init__(self, setup):
     """Initializes the local (PCA-)PLDA tool chain with the given file selector object"""
+    Tool.__init__(self, requires_enroller_training = True)
     self.m_config = setup
     self.m_pca_subpace_size = setup.SUBSPACE_DIMENSION_PCA if hasattr(setup, 'SUBSPACE_DIMENSION_PCA') else None
     self.m_pca_machine = None

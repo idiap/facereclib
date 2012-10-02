@@ -5,10 +5,13 @@
 import bob
 import numpy
 
-class GaborJetTool:
+from .Tool import Tool
+
+class GaborJetTool (Tool):
   """Tool chain for computing Gabor jets, Gabor graphs, and Gabor graph comparisons"""
 
   def __init__(self, setup):
+    Tool.__init__(self)
     # graph machine for enrolling models and comparing graphs
     self.m_graph_machine = bob.machine.GaborGraphMachine()
     # the Gabor wavelet transform; used by (some of) the Gabor jet similarities

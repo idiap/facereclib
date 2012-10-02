@@ -27,7 +27,7 @@ class Preprocessor:
   It defines the minimum requirements for all derived proprocessor classes.
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self):
     # Each class needs to have a constructor taking
     # all the parameters that are required for the proprocessing as arguments
     pass

@@ -14,52 +14,6 @@ class ToolChainZT:
     """Initializes the tool chain object with the current file selector"""
     self.m_file_selector = file_selector
 
-  def __read_feature__(self, feature_file, tool):
-    """This function reads the feature from file. It uses the tool.read_feature() function, if available, otherwise it uses bob.io.load()"""
-    if hasattr(tool, 'read_feature'):
-      return tool.read_feature(str(feature_file))
-    else:
-      return bob.io.load(str(feature_file))
-
-  def __save_feature__(self, data, filename, tool):
-    """Saves the feature to file using the function specified by the tool if available"""
-    utils.ensure_dir(os.path.dirname(filename))
-    if hasattr(tool, 'save_feature'):
-      # Tool has a save_feature function, so use this one
-      tool.save_feature(data, str(filename))
-    elif hasattr(data, 'save'):
-      # this is some class that supports saving itself
-      data.save(bob.io.HDF5File(str(filename), "w"))
-    else:
-      # this is most probably a numpy.ndarray that can be saved by bob.io.save
-      bob.io.save(data, str(filename))
-
-  def __read_model__(self, model_file, tool):
-    """This function reads the model from file. It uses the tool.read_model() function, if available, otherwise it uses bob.io.load()"""
-    if hasattr(tool, 'read_model'):
-      return tool.read_model(str(model_file))
-    else:
-      return bob.io.load(str(model_file))
-
-  def __save_model__(self, data, filename, tool):
-    """Saves the model using the function specified by the tool if available"""
-    utils.ensure_dir(os.path.dirname(filename))
-    # Tool has a save_model function, so use this one
-    if hasattr(tool, 'save_model'):
-      tool.save_model(data, str(filename))
-    elif hasattr(data, 'save'):
-      # this is some class that supports saving itself
-      data.save(bob.io.HDF5File(str(filename), "w"))
-    else:
-      # this is most probably a numpy.ndarray that can be saved by bob.io.save
-      bob.io.save(data, str(filename))
-
-  def __read_probe__(self, probe_file, tool):
-    """This function reads the probe from file. It uses the tool.read_probe() function, if available, otherwise it uses bob.io.load()"""
-    if hasattr(tool, 'read_probe'):
-      return tool.read_probe(str(probe_file))
-    else:
-      return bob.io.load(str(probe_file))
 
 
   def __check_file__(self, filename, force, expected_file_size = 1):
@@ -108,7 +62,7 @@ class ToolChainZT:
 
         # call the image preprocessor
         preprocessed_image = preprocessor(image, annotations)
-        preprocessor.save_image(preprocessed_image, preprocessed_image_file)
+        preprocessor.save_image(preprocessed_image, str(preprocessed_image_file))
 
 
 
@@ -169,7 +123,7 @@ class ToolChainZT:
 
       if not self.__check_file__(feature_file, force):
         # load image
-        image = preprocessor.read_image(image_file)
+        image = preprocessor.read_image(str(image_file))
         # extract feature
         feature = extractor(image)
         # Save feature
@@ -177,33 +131,35 @@ class ToolChainZT:
 
 
 
-  def __read_features__(self, files, extractor):
+  def __read_features__(self, files, reader):
     retval = {}
     for k in files.keys():
-      retval[k] = extractor.read_feature(str(files[k]))
+      retval[k] = reader.read_feature(str(files[k]))
     return retval
 
-  def __read_features_by_client__(self, files, extractor):
+  def __read_features_by_client__(self, files, reader):
     retval = {}
     for client in files.keys():
       # images for the client
       data = {}
       client_files = files[client]
       for k in client_files.keys():
-        data[k] = extractor.read_feature(str(client_files[k]))
+        data[k] = reader.read_feature(str(client_files[k]))
       retval[client] = data
     return retval
 
+
+
   def train_projector(self, tool, extractor, force=False):
     """Train the feature projector with the extracted features of the world group"""
-    if hasattr(tool,'train_projector'):
+    if tool.requires_projector_training:
       projector_file = self.m_file_selector.projector_file()
 
       if self.__check_file__(projector_file, force, 1000):
         utils.info("- Projection: projector '%s' already exists." % projector_file)
       else:
         # train projector
-        if hasattr(tool, 'use_training_features_sorted_by_identity'):
+        if tool.split_training_features_by_client:
           train_files = self.m_file_selector.training_feature_list_by_clients('features', 'train_projector')
           train_features = self.__read_features_by_client__(train_files, extractor)
           utils.info("- Projection: training projector '%s' using %d identities: " %(projector_file, len(train_files)))
@@ -218,11 +174,10 @@ class ToolChainZT:
 
 
   def project_features(self, tool, extractor, indices = None, force=False):
-    """Extract the features for all files of the database"""
+    """Projects the features for all files of the database"""
     # load the projector file
-    if hasattr(tool, 'project'):
-      if hasattr(tool, 'load_projector'):
-        tool.load_projector(self.m_file_selector.projector_file())
+    if tool.performs_projection:
+      tool.load_projector(str(self.m_file_selector.projector_file()))
 
       feature_files = self.m_file_selector.feature_list()
       projected_files = self.m_file_selector.projected_list()
@@ -239,26 +194,25 @@ class ToolChainZT:
 
         if not self.__check_file__(projected_file, force):
           # load feature
-          feature = self.__read_feature__(feature_file, extractor)
+          feature = extractor.read_feature(str(feature_file))
           # project feature
           projected = tool.project(feature)
           # write it
-          utils.ensure_dir(os.path.dirname(projected_file))
-          self.__save_feature__(projected, projected_file, tool)
+          tool.save_feature(projected, str(projected_file))
+
 
 
   def train_enroller(self, tool, extractor, force=False):
     """Trains the model enroller using the extracted or projected features"""
-    use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enroll')
-    reader = tool if use_projected_features else extractor
-    if hasattr(tool, 'train_enroller'):
+    reader = tool if tool.use_projected_features_for_enrollment else extractor
+    if tool.requires_enroller_training:
       enroller_file = self.m_file_selector.enroller_file()
 
       if self.__check_file__(enroller_file, force, 1000):
         utils.info("- Enrollment: enroller '%s' already exists." % enroller_file)
       else:
-        if hasattr(tool, 'load_projector'):
-          tool.load_projector(self.m_file_selector.projector_file())
+        # first, load the projector
+        tool.load_projector(str(self.m_file_selector.projector_file()))
         # training models
         train_files = self.m_file_selector.training_feature_list_by_clients('projected' if use_projected_features else 'features', 'train_enroller')
         train_features = self.__read_features_by_client__(train_files, reader)
@@ -276,17 +230,12 @@ class ToolChainZT:
        use_unprojected_features_for_model_enroll"""
 
     # read the projector file, if needed
-    if hasattr(tool,'load_projector'):
-      # read the feature extraction model
-      tool.load_projector(self.m_file_selector.projector_file())
-    if hasattr(tool, 'load_enroller'):
-      # read the model enrollment file
-      tool.load_enroller(self.m_file_selector.enroller_file())
+    tool.load_projector(self.m_file_selector.projector_file())
+    # read the model enrollment file
+    tool.load_enroller(self.m_file_selector.enroller_file())
 
-    # use projected or unprojected features for model enrollment?
-    use_projected_features = hasattr(tool, 'project') and not hasattr(tool, 'use_unprojected_features_for_model_enroll')
     # which tool to use to read the features...
-    reader = tool if use_projected_features else extractor
+    reader = tool if tool.use_projected_features_for_enrollment else extractor
 
     # Create Models
     if 'N' in types:
@@ -304,18 +253,18 @@ class ToolChainZT:
 
           # Removes old file if required
           if not self.__check_file__(model_file, force):
-            enroll_files = self.m_file_selector.enroll_files(model_id, group, use_projected_features)
+            enroll_files = self.m_file_selector.enroll_files(model_id, group, tool.use_projected_features_for_enrollment)
 
             # load all files into memory
             enroll_features = []
             for k in sorted(enroll_files.keys()):
               # processes one file
-              feature = self.__read_feature__(str(enroll_files[k]), reader)
+              feature = reader.read_feature(str(enroll_files[k]))
               enroll_features.append(feature)
 
             model = tool.enroll(enroll_features)
             # save the model
-            self.__save_model__(model, model_file, tool)
+            tool.save_model(model, str(model_file))
 
     # T-Norm-Models
     if 'T' in types and compute_zt_norm:
@@ -333,19 +282,19 @@ class ToolChainZT:
 
           # Removes old file if required
           if not self.__check_file__(model_file, force):
-            enroll_files = self.m_file_selector.tenroll_files(model_id, group, use_projected_features)
+            enroll_files = self.m_file_selector.tenroll_files(model_id, group, tool.use_projected_features_for_enrollment)
 
             # load all files into memory
             enroll_features = []
             for k in sorted(enroll_files.keys()):
               # processes one file
 
-              feature = self.__read_feature__(str(enroll_files[k]))
+              feature = reader.read_feature(str(enroll_files[k]))
               enroll_features.append(feature)
 
             model = tool.enroll(enroll_features)
             # save model
-            self.__save_model__(model, model_file, tool)
+            tool.save_model(model, str(model_file))
 
 
 
@@ -357,7 +306,7 @@ class ToolChainZT:
     i = 0
     for k in sorted(probe_objects.keys()):
       # read probe
-      probe = self.__read_probe__(str(probe_objects[k][0]), self.m_tool)
+      probe = self.m_tool.read_probe(str(probe_objects[k][0]))
       # compute score
       scores[0,i] = self.m_tool.score(model, probe)
       i += 1
@@ -402,7 +351,7 @@ class ToolChainZT:
       all_probes = {}
       # read all probe files into memory
       for k in sorted(all_probe_objects.keys()):
-        all_probes[k] = self.__read_probe__(str(all_probe_objects[k][0]), self.m_tool)
+        all_probes[k] = self.m_tool.read_probe(str(all_probe_objects[k][0]))
 
     if compute_zt_norm:
       utils.info("- Scoring: computing score matrix A for group '%s'" % group)
@@ -418,7 +367,7 @@ class ToolChainZT:
       else:
         # get the probe split
         probe_objects = self.m_file_selector.probe_files_for_model(model_id, group, self.m_use_projected_dir)
-        model = self.__read_model__(self.m_file_selector.model_file(model_id, group), self.m_tool)
+        model = self.m_tool.read_model(self.m_file_selector.model_file(model_id, group))
         if preload_probes:
           # select the probe files for this model from all probes
           current_probes = self.__probe_split__(probe_objects, all_probes)
@@ -448,7 +397,7 @@ class ToolChainZT:
       zprobes = {}
       # read all probe files into memory
       for k in sorted(zprobe_objects.keys()):
-        zprobes[k] = self.__read_probe__(str(zprobe_objects[k][0]), self.m_tool)
+        zprobes[k] = self.m_tool.read_probe(str(zprobe_objects[k][0]))
 
     utils.info("- Scoring: computing score matrix B for group '%s'" % group)
 
@@ -459,7 +408,7 @@ class ToolChainZT:
       if self.__check_file__(score_file, force):
         utils.warn("score file '%s' already exists." % (score_file))
       else:
-        model = self.__read_model__(self.m_file_selector.model_file(model_id, group), self.m_tool)
+        model = self.m_tool.read_model(self.m_file_selector.model_file(model_id, group))
         if preload_probes:
           b = self.__scores_preloaded__(model, zprobes)
         else:
@@ -477,7 +426,7 @@ class ToolChainZT:
       probes = {}
       # read all probe files into memory
       for k in sorted(probe_objects.keys()):
-        probes[k] = self.__read_probe__(str(probe_objects[k][0]), self.m_tool)
+        probes[k] = self.m_tool.read_probe(str(probe_objects[k][0]))
 
     utils.info("- Scoring: computing score matrix C for group '%s'" % group)
 
@@ -488,7 +437,7 @@ class ToolChainZT:
       if self.__check_file__(score_file, force):
         utils.warn("score file '%s' already exists." % (score_file))
       else:
-        tmodel = self.__read_model__(self.m_file_selector.tmodel_file(tmodel_id, group), self.m_tool)
+        tmodel = self.m_tool.read_model(self.m_file_selector.tmodel_file(tmodel_id, group))
         if preload_probes:
           c = self.__scores_preloaded__(tmodel, probes)
         else:
@@ -505,7 +454,7 @@ class ToolChainZT:
       zprobes = {}
       # read all probe files into memory
       for k in sorted(zprobe_objects.keys()):
-        zprobes[k] = self.__read_probe__(str(zprobe_objects[k][0]), self.m_tool)
+        zprobes[k] = self.m_tool.read_probe(str(zprobe_objects[k][0]))
 
     utils.info("- Scoring: computing score matrix D for group '%s'" % group)
 
@@ -521,7 +470,7 @@ class ToolChainZT:
       if self.__check_file__(score_file, force):
         utils.warn("score file '%s' already exists." % (score_file))
       else:
-        tmodel = self.__read_model__(self.m_file_selector.tmodel_file(tmodel_id, group), self.m_tool)
+        tmodel = self.m_tool.read_model(self.m_file_selector.tmodel_file(tmodel_id, group))
         if preload_probes:
           d = self.__scores_preloaded__(tmodel, zprobes)
         else:
@@ -539,11 +488,9 @@ class ToolChainZT:
     self.m_tool = tool
     self.m_use_projected_dir = hasattr(tool, 'project')
 
-    # load the projector, if needed
-    if hasattr(tool,'load_projector'):
-      tool.load_projector(self.m_file_selector.projector_file())
-    if hasattr(tool,'load_enroller'):
-      tool.load_enroller(self.m_file_selector.enroller_file())
+    # load the projector and the enroller, if needed
+    tool.load_projector(self.m_file_selector.projector_file())
+    tool.load_enroller(self.m_file_selector.enroller_file())
 
     for group in groups:
       # get model ids

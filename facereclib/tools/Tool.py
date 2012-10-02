@@ -1,0 +1,177 @@
+#!/usr/bin/env python
+# vim: set fileencoding=utf-8 :
+# @author: Manuel Guenther <Manuel.Guenther@idiap.ch>
+# @date: Tue Oct  2 12:12:39 CEST 2012
+#
+# Copyright (C) 2011-2012 Idiap Research Institute, Martigny, Switzerland
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import bob
+import os
+
+from .. import utils
+
+class Tool:
+  """This is the base class for all face recognition tools.
+  It defines the minimum requirements for all derived tool classes.
+  """
+
+  def __init__(self,
+               performs_projection = False, # enable if your tool will project the features
+               requires_projector_training = True, # by default, the projector needs training, if projection is enabled
+               split_training_features_by_client = False, # enable if your projector training needs the training files sorted by client
+               use_projected_features_for_enrollment = True, # by default, the enroller used projected features for enrollment, if projection is enabled.
+               requires_enroller_training = False # enable if your enroller needs training
+               ):
+    """Initializes the Tool.
+    Call this constructor in derived class implementations.
+    If your derived tool performs feature projection, please register this here.
+    If it needs training for the projector or the enroller, please set this here, too.
+    """
+
+    self.performs_projection = performs_projection
+    self.requires_projector_training = performs_projection and requires_projector_training
+    self.split_training_features_by_client = split_training_features_by_client
+    self.use_projected_features_for_enrollment = performs_projection and use_projected_features_for_enrollment
+    self.requires_enroller_training = requires_enroller_training
+
+
+  def enroll(self, enroll_features):
+    """This function will enroll and return the model from the given list of features.
+    It must be overwritten by derived classes.
+    """
+    raise NotImplementedError("Please overwrite this function in your derived class")
+
+
+  def score(self, model, probe):
+    """This function will compute the score between the given model and probe.
+    It must be overwritten by derived classes.
+    """
+    raise NotImplementedError("Please overwrite this function in your derived class")
+
+
+  ############################################################
+  ### Special functions that might be overwritten on need
+  ############################################################
+
+  def save_feature(self, feature, feature_file):
+    """Saves the given *projected* feature to a file with the given name.
+    In this base class implementation:
+
+    - If the given feature has a 'save' attribute, it calls feature.save(bob.io.HDF5File(feature_file), 'w').
+      In this case, the given feature_file might be either a file name or a bob.io.HDF5File.
+    - Otherwise, it uses bob.io.save to do that.
+
+    If you have a different format, please overwrite this function.
+
+    Please register 'performs_projection = True' in the constructor to enable this function.
+    """
+    utils.ensure_dir(os.path.dirname(feature_file))
+    if hasattr(feature, 'save'):
+      # this is some class that supports saving itself
+      feature.save(bob.io.HDF5File(feature_file, "w"))
+    else:
+      bob.io.save(feature, feature_file)
+
+
+  def read_feature(self, feature_file):
+    """Reads the *projected* feature from file.
+    In this base class implementation, it uses bob.io.load to do that.
+    If you have different format, please overwrite this function.
+
+    Please register 'performs_projection = True' in the constructor to enable this function.
+    """
+    return bob.io.load(feature_file)
+
+
+  def save_model(self, model, model_file):
+    """Saves the enrolled model to the given file.
+    In this base class implementation:
+
+    - If the given model has a 'save' attribute, it calls model.save(bob.io.HDF5File(model_file), 'w').
+      In this case, the given model_file might be either a file name or a bob.io.HDF5File.
+    - Otherwise, it uses bob.io.save to do that.
+
+    If you have a different format, please overwrite this function.
+    """
+    utils.ensure_dir(os.path.dirname(model_file))
+    if hasattr(model, 'save'):
+      # this is some class that supports saving itself
+      feature.save(bob.io.HDF5File(model_file, "w"))
+    else:
+      bob.io.save(model, model_file)
+
+
+  def read_model(self, model_file):
+    """Loads the enrolled model from file.
+    In this base class implementation, it uses bob.io.load to do that.
+
+    If you have a different format, please overwrite this function.
+    """
+    return bob.io.load(model_file)
+
+
+  def read_probe(self, probe_file):
+    """Reads the probe feature from file.
+    By default, the probe feature is identical to the projected feature.
+    Hence, this base class implementation simply calls self.read_feature(...).
+
+    If your tool requires different behavior, please overwrite this function.
+    """
+    return self.read_feature(probe_file)
+
+
+
+  def train_projector(self, training_features, projector_file):
+    """This function can be overwritten to train the feature projector.
+    If you do this, please also register the function by calling this base class constructor
+    and enabling the training by 'requires_projector_training = True'.
+
+    The training function gets two parameters:
+
+    - training_features: A list of *extracted* features that can be used for training the extractor.
+    - projector_file: The file to write. This file should be readable with the 'load_projector' function (see above).
+    """
+    raise NotImplementedError("Please overwrite this function in your derived class, or unset the 'requires_projector_training' option in the constructor.")
+
+
+  def load_projector(self, projector_file):
+    """Loads the parameters required for feature projection from file.
+    This function usually is only useful in combination with the 'train_projector' function (see above).
+    In this base class implementation, it does nothing.
+
+    Please register 'performs_projection = True' in the constructor to enable this function.
+    """
+    pass
+
+
+  def train_enroller(self, training_features, enroller_file):
+    """This function can be overwritten to train the model enroller.
+    If you do this, please also register the function by calling this base class constructor
+    and enabling the training by 'require_enroller_training = True'.
+
+    The training function gets two parameters:
+
+    - training_features: A dictionary of *extracted* or *projected* features, which are sorted by clients, that can be used for training the extractor.
+    - enroller_file: The file to write. This file should be readable with the 'load_enroller' function (see above).
+    """
+
+
+  def load_enroller(self, enroller_file):
+    """Loads the parameters required for model enrollment from file.
+    This function usually is only useful in combination with the 'train_enroller' function (see above).
+    This function is always called AFTER calling the 'load_projector'.
+    In this base class implementation, it does nothing.
+    """
+    pass

@@ -6,15 +6,17 @@ import bob
 import numpy
 import math
 
+from .Tool import Tool
 from .. import utils
 
-class BICTool:
+class BICTool (Tool):
   """Computes the Intrapersonal/Extrapersonal classifier"""
 
   def sqr(self, x):
     return x*x
 
   def __init__(self, setup):
+    Tool.__init__(self, requires_enroller_training = True)
     self.m_cfg = setup
     self.m_distance_function = setup.distance_function
     self.m_maximum_pair_count = setup.MAXIMUM_TRAINING_PAIR_COUNT if hasattr(setup, 'MAXIMUM_TRAINING_PAIR_COUNT') else None

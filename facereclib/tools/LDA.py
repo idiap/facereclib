@@ -5,13 +5,18 @@
 import bob
 import numpy
 
+from .Tool import Tool
 from .. import utils
 
-class LDATool:
+class LDATool (Tool):
   """Tool for computing linear discriminant analysis (so-called Fisher faces)"""
 
   def __init__(self, setup):
     """Initializes the LDA tool with the given configuration"""
+    Tool.__init__(self,
+                  performs_projection = True,
+                  split_training_features_by_client = True)
+
     self.m_pca_subspace = setup.PCA_SUBSPACE_DIMENSION if hasattr(setup, 'PCA_SUBSPACE_DIMENSION') else None
     self.m_lda_subspace = setup.LDA_SUBSPACE_DIMENSION if hasattr(setup, 'LDA_SUBSPACE_DIMENSION') else None
     if self.m_pca_subspace and self.m_lda_subspace and self.m_pca_subspace < self.m_lda_subspace:

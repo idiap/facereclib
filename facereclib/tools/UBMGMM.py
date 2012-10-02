@@ -5,19 +5,22 @@
 import bob
 import numpy
 
+from .Tool import Tool
 from .. import utils
 
-class UBMGMMTool:
+class UBMGMMTool (Tool):
   """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
 
 
   def __init__(self, setup):
     """Initializes the local UBM-GMM tool chain with the given file selector object"""
+    Tool.__init__(self,
+                  performs_projection = True,
+                  use_projected_features_for_enrollment = False)
+
     self.m_config = setup
     self.m_ubm = None
     self.m_scoring_function = setup.scoring_function
-
-    self.use_unprojected_features_for_model_enroll = True
 
   #######################################################
   ################ UBM training #########################

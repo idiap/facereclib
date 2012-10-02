@@ -5,13 +5,15 @@
 import bob
 import numpy
 
+from .Tool import Tool
 from .. import utils
 
-class PCATool:
+class PCATool (Tool):
   """Tool for computing eigenfaces"""
 
   def __init__(self, setup):
     """Initializes the PCA tool with the given setup"""
+    Tool.__init__(self, performs_projection = True)
     self.m_subspace_dim = setup.SUBSPACE_DIMENSION
     self.m_machine = None
     self.m_distance_function = setup.distance_function
@@ -20,7 +22,7 @@ class PCATool:
 
   def train_projector(self, training_features, projector_file):
     """Generates the PCA covariance matrix"""
-    # Initializes an arrayset for the data
+    # Initializes the data
     data = numpy.vstack([training_features[k] for k in sorted(training_features.keys())])
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")

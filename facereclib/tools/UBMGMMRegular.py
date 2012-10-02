@@ -5,18 +5,19 @@
 import bob
 import numpy
 
+from .Tool import Tool
 from .. import utils
 
-class UBMGMMRegularTool:
+class UBMGMMRegularTool (Tool):
   """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
 
 
   def __init__(self, setup):
     """Initializes the local UBM-GMM tool chain with the given file selector object"""
+    Tool.__init__(self, needs_enroller_training = True)
+    utils.error("This class must be checked. Please verify that I didn't do any mistake here. I had to rename 'train_projector' into a 'train_enroller'! Please also check that the base class constructor call is correct!.")
     self.m_config = setup
     self.m_ubm = None
-
-    self.use_unprojected_features_for_model_enrol = True
 
   #######################################################
   ################ UBM training #########################
@@ -117,13 +118,13 @@ class UBMGMMRegularTool:
     self.m_ubm.save(bob.io.HDF5File(projector_file, "w"))
 
 
-  def train_projector(self, train_features, projector_file):
+  def train_enroller(self, train_features, projector_file):
     """Computes the Universal Background Model from the training ("world") data"""
 
     utils.info("  -> Training UBM model with %d training files" % len(train_features))
 
     # Loads the data into an arrayset
-    arrayset = numpy.vstack([train_features[k] for k in sorted(train_features.keys())])
+    arrayset = numpy.vstack([train_features[k][f] for k in sorted(train_features.keys()) for f in sorted(train_features[k].keys())])
 
     self._train_projector_using_arrayset(arrayset, projector_file)
 
@@ -131,7 +132,7 @@ class UBMGMMRegularTool:
   #######################################################
   ############## GMM training using UBM #################
 
-  def load_projector(self, projector_file):
+  def load_enroller(self, projector_file):
     """Reads the UBM model from file"""
     # read UBM
     self.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(projector_file))
@@ -155,8 +156,8 @@ class UBMGMMRegularTool:
     self.m_trainer.train(gmm, arrayset)
     return gmm
 
-  def enrol(self, feature_arrays):
-    """Enrols a GMM using MAP adaptation, given a list of 2D numpy.ndarray's of feature vectors"""
+  def enroll(self, feature_arrays):
+    """Enrolls a GMM using MAP adaptation, given a list of 2D numpy.ndarray's of feature vectors"""
 
     # Load the data into an arrayset
     arrayset = numpy.vstack([v for v in feature_arrays])

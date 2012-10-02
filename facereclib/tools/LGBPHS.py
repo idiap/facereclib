@@ -4,13 +4,16 @@
 
 import bob
 import numpy
+
+from .Tool import Tool
 from .. import utils
 
-class LGBPHSTool:
+class LGBPHSTool (Tool):
   """Tool chain for computing local Gabor binary pattern histogram sequences"""
 
   def __init__(self, setup):
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
+    Tool.__init__(self)
     # nothing to be done here
     self.m_distance_function = setup.distance_function
     self.m_factor =  -1. if setup.IS_DISTANCE_FUNCTION else 1

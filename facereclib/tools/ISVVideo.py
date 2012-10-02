@@ -5,6 +5,8 @@
 import bob
 import numpy
 import types
+
+from .Tool import Tool
 from . import UBMGMMVideoTool, ISVTool
 from .. import utils
 
@@ -28,7 +30,12 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
 
   def __init__(self, setup):
     ISVTool.__init__(self, setup)
-    self.use_unprojected_features_for_model_enroll = True
+    # call tool constructor to overwrite what was set before
+    Tool.__init__(self,
+                  perform_projection = True,
+                  use_projected_features_for_model_enroll = False,
+                  requires_enroller_training = True
+                  )
 
   # Overrides ISVTool.train_enroller
   def train_enroller(self, train_features, enroller_file):

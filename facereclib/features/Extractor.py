@@ -29,8 +29,8 @@ class Extractor:
 
   def __init__(self,
                requires_training = False, # enable, if your extractor needs training
-               split_training_images_by_client = False, # enable, if your extractor needs the training files sorted by client
-               **kwargs):
+               split_training_images_by_client = False # enable, if your extractor needs the training files sorted by client
+               ):
     # Each class needs to have a constructor taking
     # all the parameters that are required for the feature extraction as arguments
     self.requires_training = requires_training
@@ -90,7 +90,7 @@ class Extractor:
 
     The training function gets two parameters:
 
-    - image_list: A list of images that can be used for training the extractor
+    - image_list: A list of images that can be used for training the extractor.
     - extractor_file: The file to write. This file should be readable with the 'load' function (see above).
     """
-    raise NotImplementedError("Please overwrite this function in your derived class, or unset the requires_training option in the constructor.")
+    raise NotImplementedError("Please overwrite this function in your derived class, or unset the 'requires_training' option in the constructor.")
