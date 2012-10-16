@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 import xbob.db.atnt
+import facereclib
 
-name = 'atnt'
-db = xbob.db.atnt.Database()
-protocol = 'Default'
+database = facereclib.databases.DatabaseXBob(
+  database = xbob.db.atnt.Database(),
+  name = 'atnt',
+  image_directory = "/idiap/group/biometric/databases/orl/",
+  image_extension = ".pgm"
+)
 
-image_directory = "/idiap/group/biometric/databases/orl/"
-image_extension = ".pgm"
 

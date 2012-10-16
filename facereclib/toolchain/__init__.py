@@ -9,3 +9,6 @@ from ToolChainZT import ToolChainZT
 
 from FileSelectorGBU import FileSelectorGBU
 from ToolChainGBU import ToolChainGBU
+
+from FileSelector import FileSelector
+from ToolChain import ToolChain

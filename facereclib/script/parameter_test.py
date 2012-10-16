@@ -301,6 +301,8 @@ def execute_parallel(args, config, preprocess_file, feature_file, tool_file):
 
 def main():
   """Main entry point for the parameter test. Try --help to see the parameters that can be specified."""
+
+  raise NotImplementedError("This function is currently not working. It needs a re-design to work with the latest modifications in the FaceRecLib.")
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__,
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)

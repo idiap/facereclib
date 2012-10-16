@@ -17,23 +17,34 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
 
     # specify the file selector and tool chain objects to be used by this class (and its base class)
-    self.m_file_selector = toolchain.FileSelectorZT(self.m_configuration, self.m_configuration)
-    self.m_tool_chain = toolchain.ToolChainZT(self.m_file_selector)
+    self.m_file_selector = toolchain.FileSelector(
+        self.m_configuration.database,
+        preprocessed_directory = self.m_configuration.preprocessed_dir,
+        extractor_file = self.m_configuration.extractor_file,
+        features_directory = self.m_configuration.features_dir,
+        projector_file = self.m_configuration.projector_file,
+        projected_directory = self.m_configuration.projected_dir,
+        enroller_file = self.m_configuration.enroller_file,
+        model_directories = (self.m_configuration.models_dir, self.m_configuration.tnorm_models_dir),
+        score_directories = (self.m_configuration.zt_norm_A_dir, self.m_configuration.zt_norm_B_dir, self.m_configuration.zt_norm_C_dir, self.m_configuration.zt_norm_D_dir, self.m_configuration.zt_norm_D_sameValue_dir),
+        zt_score_directories = (self.m_configuration.scores_nonorm_dir, self.m_configuration.scores_ztnorm_dir)
+    )
+    self.m_tool_chain = toolchain.ToolChain(self.m_file_selector)
 
 
   def protocol_specific_configuration(self):
     """Special configuration for ZT-Norm computation"""
-    self.m_configuration.models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.models_dirs[0], self.m_configuration.protocol)
-    self.m_configuration.tnorm_models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.models_dirs[1], self.m_configuration.protocol)
+    self.m_configuration.models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.models_dirs[0], self.m_configuration.database.protocol)
+    self.m_configuration.tnorm_models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.models_dirs[1], self.m_configuration.database.protocol)
 
-    self.m_configuration.zt_norm_A_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.protocol, self.m_args.zt_dirs[0])
-    self.m_configuration.zt_norm_B_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.protocol, self.m_args.zt_dirs[1])
-    self.m_configuration.zt_norm_C_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.protocol, self.m_args.zt_dirs[2])
-    self.m_configuration.zt_norm_D_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.protocol, self.m_args.zt_dirs[3])
-    self.m_configuration.zt_norm_D_sameValue_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.protocol, self.m_args.zt_dirs[4])
+    self.m_configuration.zt_norm_A_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[0])
+    self.m_configuration.zt_norm_B_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[1])
+    self.m_configuration.zt_norm_C_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[2])
+    self.m_configuration.zt_norm_D_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[3])
+    self.m_configuration.zt_norm_D_sameValue_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[4])
 
-    self.m_configuration.scores_nonorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.protocol, self.m_args.score_dirs[0])
-    self.m_configuration.scores_ztnorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.protocol, self.m_args.score_dirs[1])
+    self.m_configuration.scores_nonorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.score_dirs[0])
+    self.m_configuration.scores_ztnorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.score_dirs[1])
 
 
   def execute_tool_chain(self):
