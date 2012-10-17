@@ -26,8 +26,8 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
         projected_directory = self.m_configuration.projected_dir,
         enroller_file = self.m_configuration.enroller_file,
         model_directories = (self.m_configuration.models_dir, self.m_configuration.tnorm_models_dir),
-        score_directories = (self.m_configuration.zt_norm_A_dir, self.m_configuration.zt_norm_B_dir, self.m_configuration.zt_norm_C_dir, self.m_configuration.zt_norm_D_dir, self.m_configuration.zt_norm_D_sameValue_dir),
-        zt_score_directories = (self.m_configuration.scores_nonorm_dir, self.m_configuration.scores_ztnorm_dir)
+        score_directories = (self.m_configuration.scores_nonorm_dir, self.m_configuration.scores_ztnorm_dir),
+        zt_score_directories = (self.m_configuration.zt_norm_A_dir, self.m_configuration.zt_norm_B_dir, self.m_configuration.zt_norm_C_dir, self.m_configuration.zt_norm_D_dir, self.m_configuration.zt_norm_D_sameValue_dir)
     )
     self.m_tool_chain = toolchain.ToolChain(self.m_file_selector)
 

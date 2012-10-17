@@ -30,15 +30,15 @@ config_dir = os.path.join(base_dir, 'config')
 
 class TestScript (unittest.TestCase):
 
-
   def test01_faceverify_local(self):
     test_dir = tempfile.mkdtemp(prefix='frl_')
     # define dummy parameters
-    parameters = ['-d', os.path.join(config_dir, 'database', 'atnt_Default.py'),
+    parameters = ['-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
                   '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
                   '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
-                  '-b', 'dummy',
+                  '--zt-norm',
+                  '-b', 'test',
                   '--temp-directory', test_dir,
                   '--user-directory', test_dir
                   ]
@@ -50,20 +50,24 @@ class TestScript (unittest.TestCase):
     job_ids = faceverify.face_verify(verif_args)
 
     # assert that the score file exists
-    score_file = os.path.join(test_dir, 'dummy', 'scores', 'Default', 'nonorm', 'scores-dev')
-    self.assertTrue(os.path.exists(score_file))
+    score_files = (os.path.join(test_dir, 'test', 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test', 'scores', 'Default', 'ztnorm', 'scores-dev'))
+    self.assertTrue(os.path.exists(score_files[0]))
+    self.assertTrue(os.path.exists(score_files[1]))
 
     # also assert that the scores are still the same -- though they have no real meaning
-    reference_file = os.path.join(base_dir, 'testdata', 'scripts', 'scores-nonorm-dev')
+    reference_files = (os.path.join(base_dir, 'testdata', 'scripts', 'scores-nonorm-dev'), os.path.join(base_dir, 'testdata', 'scripts', 'scores-ztnorm-dev'))
 
-    f1 = open(score_file, 'r')
-    f2 = open(reference_file, 'r')
+    for i in (0,1):
 
-    self.assertTrue(f1.read() == f2.read())
-    f1.close()
-    f2.close()
+      f1 = open(score_files[i], 'r')
+      f2 = open(reference_files[i], 'r')
+
+      self.assertTrue(f1.read() == f2.read())
+      f1.close()
+      f2.close()
 
     shutil.rmtree(test_dir)
+
 
   def test02_faceverify_grid(self):
     # define dummy parameters including the dry-run
