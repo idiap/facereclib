@@ -1,16 +1,21 @@
 #!/usr/bin/env python
 
 import xbob.db.multipie
+import facereclib
 
-# setup for Multi-PIE database
-name = 'multipie'
-db = xbob.db.multipie.Database()
-protocol = 'P110'
+# here, we only want to have the cameras that are used in the P110 protocol
+cameras = ('05_1', '11_0')
 
-image_directory = "/idiap/resource/database/Multi-Pie/data/"
-image_extension = ".png"
-annotation_directory = "/idiap/group/biometric/annotations/multipie/"
-annotation_type = 'multipie'
-
-projector_training_options = { 'world_sampling': 3, 'world_first': True }
-
+database = facereclib.databases.DatabaseXBobZT(
+  database = xbob.db.multipie.Database(),
+  name = "multipie",
+  image_directory ="/idiap/resource/database/Multi-Pie/data/",
+  image_extension = ".png",
+  annotation_directory = "/idiap/group/biometric/annotations/multipie/",
+  annotation_type = 'multipie',
+  protocol = 'P110',
+  all_files_options = {'cameras' : cameras},
+  extractor_training_options = {'cameras' : cameras},
+  projector_training_options = {'cameras' : cameras, 'world_sampling': 3, 'world_first': True},
+  enroller_training_options = {'cameras' : cameras}
+)

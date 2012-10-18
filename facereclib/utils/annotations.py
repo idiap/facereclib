@@ -92,6 +92,7 @@ def read_annotations(file_name, annotation_type):
       else:
         # enumerate all other annotations
         annotations['key%d'%(i-1)] = (int(positions[1]),int(positions[0]))
+      i = i + 1
 
   elif str(annotation_type) == 'named':
     # multiple lines, no header line, each line contains annotation and position

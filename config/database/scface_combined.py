@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 import xbob.db.scface
+import facereclib
 
 # setup for SCface database
-name = 'scface'
-db = xbob.db.scface.Database()
-protocol = 'combined'
-
-image_directory = "/idiap/group/biometric/databases/scface/images/"
-image_extension = ".jpg"
-annotation_directory = "/idiap/group/biometric/databases/scface/groundtruths/"
-annotation_type = 'scface'
-
-projector_training_options = { 'subworld': "twothirds" }
-
+database = facereclib.databases.DatabaseXBobZT(
+    database = xbob.db.scface.Database(),
+    name = 'scface',
+    image_directory = "/idiap/group/biometric/databases/scface/images/",
+    image_extension = ".jpg",
+    annotation_directory = "/idiap/group/biometric/databases/scface/groundtruths/",
+    annotation_type = 'scface',
+    protocol = 'combined',
+    projector_training_options = { 'subworld': "twothirds" }
+)

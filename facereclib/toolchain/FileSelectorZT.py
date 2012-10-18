@@ -11,6 +11,7 @@ class FileSelectorZT:
 
   def __init__(self, config, db):
     """Initialize the file selector object with the current configuration"""
+    utils.warn("This class is deprecated.")
     self.m_config = config
     self.m_db_options = db
     self.m_db = db.db

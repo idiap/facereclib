@@ -12,5 +12,3 @@ database = facereclib.databases.DatabaseXBobZT(
   annotation_type = 'eyecenter',
   protocol = 'P'
 )
-
-

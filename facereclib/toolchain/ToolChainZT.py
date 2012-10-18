@@ -12,6 +12,7 @@ class ToolChainZT:
 
   def __init__(self, file_selector):
     """Initializes the tool chain object with the current file selector"""
+    utils.warn("This class is deprecated.")
     self.m_file_selector = file_selector
 
 

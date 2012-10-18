@@ -149,8 +149,8 @@ def main():
 
   # Check the database configuration file
   database = os.path.join(config_dir, "database", args.database + "_" + args.protocol + ".py")
-  has_zt_norm = args.database in ('banca', 'mobio')
-  has_eval = args.database in ('banca', 'mobio', 'xm2vts', 'lfw')
+  has_zt_norm = args.database in ('banca', 'mobio', 'scface')
+  has_eval = args.database in ('banca', 'mobio', 'scface', 'xm2vts', 'lfw')
 
   if args.evaluate:
     # evaluate the results

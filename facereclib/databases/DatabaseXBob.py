@@ -59,7 +59,7 @@ class DatabaseXBob (Database):
     return self.sort(files)
 
 
-  def training_files(self, step, arrange_by_client):
+  def training_files(self, step, arrange_by_client = False):
     if step == 'train_extractor':
       training_options = self.extractor_training_options
     elif step == 'train_projector':
