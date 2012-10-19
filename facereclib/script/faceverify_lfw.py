@@ -14,46 +14,60 @@ from .. import toolchain
 class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
   def __init__(self, args, protocol):
-    # select the protocol
-    self.m_protocol = protocol
-
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
 
-    # specify the file selector and tool chain objects to be used by this class (and its base class)
-    self.m_file_selector = toolchain.FileSelectorZT(self.m_configuration, self.m_configuration)
-    self.m_tool_chain = toolchain.ToolChainZT(self.m_file_selector)
+    # overwrite the protocol of the database with the given one
+    self.m_database.protocol = protocol
 
+    # add specific configuration for LFW database
+    # each fold might have its own feature extraction training and feature projection training,
+    # so we have to overwrite the default directories
+    view = 'view1' if protocol == 'view1' else 'view2'
+    self.m_configuration.preprocessed_directory = os.path.join(self.m_configuration.temp_directory, view , self.m_args.preprocessed_image_directory)
+    self.m_configuration.features_directory = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.features_directory)
+    self.m_configuration.projected_directory = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.projected_features_directory)
 
-  def protocol_specific_configuration(self):
-    """Special configuration for LFW protocol"""
-    self.m_configuration.image_directory = self.m_configuration.image_directory
-    self.m_configuration.protocol = self.m_protocol
-    self.m_configuration.models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.model_dir, self.m_configuration.protocol)
+    self.m_configuration.extractor_file = os.path.join(self.m_configuration.temp_directory, view, self.m_args.extractor_file)
+    self.m_configuration.projector_file = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.projector_file)
+    self.m_configuration.enroller_file = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.enroller_file)
 
-    self.m_configuration.scores_nonorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.protocol)
+    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.models_directory)
+    self.m_configuration.scores_directory = self.__scores_directory__(protocol)
+
+    # define the final result text file
     if self.m_args.result_file:
       self.m_configuration.result_file = self.m_args.result_file
     else:
-      self.m_configuration.result_file = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, 'results.txt')
+      self.m_configuration.result_file = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, 'results.txt')
 
-    # each fold might have its own feature extraction training and feature projection training,
-    # so we have to overwrite the default directories
-    self.m_configuration.preprocessed_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, 'view1' if self.m_configuration.protocol == 'view1' else 'view2', self.m_args.preprocessed_dir)
-    self.m_configuration.features_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_configuration.protocol, self.m_args.features_dir)
-    self.m_configuration.projected_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_configuration.protocol, self.m_args.projected_dir)
+    # specify the file selector to be used
+    self.m_file_selector = toolchain.FileSelector(
+        self.m_database,
+        preprocessed_directory = self.m_configuration.preprocessed_directory,
+        extractor_file = self.m_configuration.extractor_file,
+        features_directory = self.m_configuration.features_directory,
+        projector_file = self.m_configuration.projector_file,
+        projected_directory = self.m_configuration.projected_directory,
+        enroller_file = self.m_configuration.enroller_file,
+        model_directories = (self.m_configuration.models_directory,),
+        score_directories = (self.m_configuration.scores_directory,)
+    )
 
-    self.m_configuration.extractor_file = os.path.join(self.m_configuration.base_output_TEMP_dir, 'view1' if self.m_configuration.protocol == 'view1' else 'view2', self.m_args.extractor_file)
-    self.m_configuration.projector_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_configuration.protocol, self.m_args.projector_file)
-    self.m_configuration.enroller_file = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_configuration.protocol, self.m_args.enroller_file)
+    # create the tool chain to be used to actually perform the parts of the experiments
+    self.m_tool_chain = toolchain.ToolChain(self.m_file_selector)
 
+
+  def __scores_directory__(self, protocol):
+    """This helper function returns the score directory for the given protocol."""
+    return os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, protocol)
 
   def execute_tool_chain(self):
     """Executes the desired tool chain on the local machine"""
     # preprocessing
     if not self.m_args.skip_preprocessing:
       if self.m_args.dry_run:
-        print "Would have preprocessed images for protocol %s ..." % self.m_protocol
+        print "Would have preprocessed images for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.preprocess_images(
               self.m_preprocessor,
@@ -62,7 +76,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # feature extraction
     if not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
       if self.m_args.dry_run:
-        print "Would have trained the extractor for protocol %s ..." % self.m_protocol
+        print "Would have trained the extractor for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.train_extractor(
               self.m_extractor,
@@ -71,7 +85,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_extraction:
       if self.m_args.dry_run:
-        print "Would have extracted the features for protocol %s ..." % self.m_protocol
+        print "Would have extracted the features for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.extract_features(
               self.m_extractor,
@@ -81,7 +95,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # feature projection
     if not self.m_args.skip_projector_training and self.m_tool.requires_projector_training:
       if self.m_args.dry_run:
-        print "Would have trained the projector for protocol %s ..." % self.m_protocol
+        print "Would have trained the projector for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.train_projector(
               self.m_tool,
@@ -90,7 +104,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_projection and self.m_tool.performs_projection:
       if self.m_args.dry_run:
-        print "Would have projected the features for protocol %s ..." % self.m_protocol
+        print "Would have projected the features for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.project_features(
               self.m_tool,
@@ -100,7 +114,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # model enrollment
     if not self.m_args.skip_enroller_training and self.m_tool.requires_enroller_training:
       if self.m_args.dry_run:
-        print "Would have trained the enroller for protocol %s ..." % self.m_protocol
+        print "Would have trained the enroller for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.train_enroller(
               self.m_tool,
@@ -109,7 +123,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_enrollment:
       if self.m_args.dry_run:
-        print "Would have enrolled the models for protocol %s ..." % self.m_protocol
+        print "Would have enrolled the models for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.enroll_models(
               self.m_tool,
@@ -121,7 +135,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # score computation
     if not self.m_args.skip_score_computation:
       if self.m_args.dry_run:
-        print "Would have computed the scores for protocol %s ..." % self.m_protocol
+        print "Would have computed the scores for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.compute_scores(
               self.m_tool,
@@ -132,7 +146,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_concatenation:
       if self.m_args.dry_run:
-        print "Would have concatenated the scores for protocol %s ..." % self.m_protocol
+        print "Would have concatenated the scores for protocol %s ..." % self.m_database.protocol
       else:
         self.m_tool_chain.concatenate(compute_zt_norm = False)
 
@@ -146,7 +160,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # if there are any external dependencies, we need to respect them
     deps = external_dependencies[:]
 
-    protocol = self.m_configuration.protocol
+    protocol = self.m_database.protocol
     pshort = protocol[0] + protocol[4]
     default_opt = ' --protocol %s'%protocol
     # image preprocessing; never has any dependencies.
@@ -244,6 +258,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # return the job ids, in case anyone wants to know them
     return job_ids
 
+
   def add_average_job_to_grid(self, external_dependencies):
     """Adds the job to average the results of the runs"""
     return {'average' :
@@ -330,6 +345,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     else:
       raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors.")
 
+
   def __classification_result__(self, negatives, positives, threshold):
     return (
         bob.measure.correctly_classified_negatives(negatives, threshold).sum(dtype=numpy.float64) +
@@ -345,7 +361,9 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
         print "Would have averaged the results from view1 ..."
       else:
         # process the single result of view 1
-        self.m_configuration.protocol = 'view1'
+
+        # HACK... Overwrite the score directory of the file selector to get the right result file
+        self.m_file_selector.scores_directories = (self.__scores_directory__('view1'),)
         res_file = self.m_file_selector.no_norm_result_file('dev')
 
         negatives, positives = bob.measure.load.split_four_column(res_file)
@@ -355,7 +373,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
         hter = (far + frr)/2.0
 
         file.write("On view1 (dev set only):\n\nFAR = %.3f;\tFRR = %.3f;\tHTER = %.3f;\tthreshold = %.3f\n"%(far, frr, hter, threshold))
-        file.write("Classification Success: %.2f%%\n\n"%(self.__classification_result__(negatives, positives, threshold) * 100.))
+        file.write("Classification success: %.2f%%\n\n"%(self.__classification_result__(negatives, positives, threshold) * 100.))
 
     if 'view2' in self.m_args.views:
       if self.m_args.dry_run:
@@ -365,9 +383,8 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
         # iterate over all folds of view 2
         errors = numpy.ndarray((10,), numpy.float64)
         for f in range(1,11):
-          # configure the file selector with the current protocol
-          self.m_protocol = 'fold%d'%f
-          self.protocol_specific_configuration()
+          # HACK... Overwrite the score directory of the file selector to get the right result file
+          self.m_file_selector.scores_directories = (self.__scores_directory__('fold%d'%f),)
           dev_res_file = self.m_file_selector.no_norm_result_file('dev')
           eval_res_file = self.m_file_selector.no_norm_result_file('eval')
 
@@ -383,17 +400,17 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
           file.write("On fold%d:\n\nFAR = %.3f;\tFRR = %.3f;\tHTER = %.3f;\tthreshold = %.3f\n"%(f, far, frr, hter, threshold))
           result = self.__classification_result__(eval_negatives, eval_positives, threshold)
-          file.write("Classification Success: %.2f%%\n\n"%(result * 100.))
+          file.write("Classification success: %.2f%%\n\n"%(result * 100.))
           errors[f-1] = result
 
         # compute mean and std error
         mean = numpy.mean(errors)
         std = numpy.std(errors)
-        file.write("\nOverall classification success: %f (with std %f)\n"%(mean,std))
+        file.write("\nOverall classification success: %f (with standard deviation %f)\n"%(mean,std))
 
 
 def parse_args(command_line_arguments = sys.argv[1:]):
-  """This function parses the given options (which by default are the command line options)"""
+  """This function parses the given options (which by default are the command line options)."""
   # sorry for that.
   global parameters
   parameters = command_line_arguments
@@ -405,21 +422,21 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   # add the arguments required for all tool chains
   config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorLFW.required_command_line_options(parser)
 
-  sub_dir_group.add_argument('--model-directory', type = str, metavar = 'DIR', dest='model_dir', default = 'models',
-      help = 'Subdirectories (of temp directory) where the models should be stored')
+  sub_dir_group.add_argument('--models-directory', metavar = 'DIR', default = 'models',
+      help = 'Sub-directory (of --temp-directory) where the models should be stored.')
 
   file_group.add_argument('--result-file', '-r', type = str, metavar = 'FILE',
-      help = 'The file where the final results should be written into. By default, \'results.txt\' in the USER directory.')
+      help = "The file where the final results should be written into. If not specified, 'results.txt' in the --user-directory/--score-sub-directory is used.")
 
   #######################################################################################
   ############################ other options ############################################
   other_group.add_argument('-F', '--force', action='store_true',
-      help = 'Force to erase former data if already exist')
-  other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
+      help = 'Force to erase former data if already exist.')
+  other_group.add_argument('-w', '--preload-probes', action='store_true',
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
-  other_group.add_argument('--views', type = str, nargs = '+', choices = ('view1', 'view2'), default = ['view1'],
+  other_group.add_argument('--views', nargs = '+', choices = ('view1', 'view2'), default = ['view1'],
       help = 'The views to be used, by default only the "view1" is executed.')
-  other_group.add_argument('--groups', type = str, nargs = '+', choices = ('dev', 'eval'), default = ['dev'],
+  other_group.add_argument('--groups', metavar = 'GROUP', nargs = '+', choices = ('dev', 'eval'), default = ['dev'],
       help = 'The groups to compute the scores for.')
 
   #######################################################################################
@@ -427,9 +444,9 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   parser.add_argument('--sub-task',
       choices = ('preprocess', 'train-extractor', 'extract', 'train-projector', 'project', 'train-enroller', 'enroll', 'compute-scores', 'concatenate', 'average-results'),
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
-  parser.add_argument('--group', type=str, choices=['dev','eval'],
+  parser.add_argument('--group', choices=('dev', 'eval'),
       help = argparse.SUPPRESS) #'The subset of the data for which the process should be executed'
-  parser.add_argument('--protocol', type=str, choices=['view1','fold1','fold2','fold3','fold4','fold5','fold6','fold7','fold8','fold9','fold10'],
+  parser.add_argument('--protocol', choices = ('view1', 'fold1', 'fold2', 'fold3', 'fold4', 'fold5', 'fold6', 'fold7', 'fold8', 'fold9', 'fold10'),
       help = argparse.SUPPRESS) #'The protocol which should be used in this sub-task'
 
   return parser.parse_args(command_line_arguments)

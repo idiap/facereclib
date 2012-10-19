@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 
 import xbob.db.lfw
+import facereclib
 
-# The database to use
-name = 'lfw'
-db = xbob.db.lfw.Database()
-protocol = 'view1'
-
-image_directory = '/idiap/resource/database/lfw/all_images'
-image_extension = '.jpg'
-
-extractor_training_options = { 'subworld' : 'twofolds' }
-projector_training_options = {'subworld' : 'twofolds' }
-enroller_training_options = { 'subworld' : 'twofolds' }
+database = facereclib.databases.DatabaseXBob(
+  database = xbob.db.lfw.Database(),
+  name = 'lfw',
+  image_directory = "/idiap/resource/database/lfw/all_images",
+  image_extension = ".jpg",
+  protocol = 'view1'
+)
 

@@ -79,3 +79,9 @@ class DatabaseTest(unittest.TestCase):
     self.check_database_zt(self.config('multipie_U.py'))
     self.check_database_zt(self.config('multipie_P.py'))
     self.check_database_zt(self.config('multipie_left_profile.py'))
+
+
+  def test07_lfw(self):
+    self.check_database(self.config('lfw_view1.py'))
+    self.check_database(self.config('lfw_view1_unrestricted.py'))
+

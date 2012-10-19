@@ -88,7 +88,7 @@ class TestScript (unittest.TestCase):
     job_ids = faceverify.face_verify(verif_args)
 
 
-  def test05_faceverify_gbu_local(self):
+  def notest05_faceverify_gbu_local(self):
     # define dummy parameters
     parameters = ['-d', os.path.join(config_dir, 'database', 'gbu_Good.py'),
                   '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
@@ -106,7 +106,7 @@ class TestScript (unittest.TestCase):
     job_ids = faceverify_gbu.face_verify(verif_args)
 
 
-  def test06_faceverify_gbu_grid(self):
+  def notest06_faceverify_gbu_grid(self):
     # define dummy parameters
     parameters = ['-d', os.path.join(config_dir, 'database', 'gbu_Good.py'),
                   '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),

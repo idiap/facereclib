@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 
 import xbob.db.lfw
+import facereclib
 
-# The database to use
-name = 'lfw'
-db = xbob.db.lfw.Database()
-protocol = 'view1'
+database = facereclib.databases.DatabaseXBob(
+  database = xbob.db.lfw.Database(),
+  name = 'lfw',
+  image_directory = "/idiap/resource/database/lfw/all_images",
+  image_extension = ".jpg",
+  protocol = 'view1',
 
-image_directory = '/idiap/resource/database/lfw/all_images'
-image_extension = '.jpg'
-
-all_files_options = { 'type' : 'unrestricted' }
-extractor_training_options = { 'subworld' : 'twofolds', 'type' : 'unrestricted' }
-projector_training_options = {'subworld' : 'twofolds', 'type' : 'unrestricted' }
-enroller_training_options = { 'subworld' : 'twofolds', 'type' : 'unrestricted' }
-features_by_clients_options = { 'subworld' : 'twofolds' }
+  all_files_options = { 'world_type' : 'unrestricted' },
+  extractor_training_options = { 'world_type' : 'unrestricted'}, # 'subworld' : 'twofolds'
+  projector_training_options = {'world_type' : 'unrestricted'}, # 'subworld' : 'twofolds'
+  enroller_training_options = { 'world_type' : 'unrestricted'} # 'subworld' : 'twofolds'
+)

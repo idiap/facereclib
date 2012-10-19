@@ -11,7 +11,7 @@ class ToolChain:
   """This class includes functionalities for a default tool chain to produce verification scores"""
 
   def __init__(self, file_selector):
-    """Initializes the tool chain object with the current file selector"""
+    """Initializes the tool chain object with the current file selector."""
     self.m_file_selector = file_selector
 
 
@@ -32,7 +32,7 @@ class ToolChain:
 
 
   def preprocess_images(self, preprocessor, indices=None, force=False):
-    """Preprocesses the images with the given preprocessor"""
+    """Preprocesses the original images with the given preprocessor."""
     # get the file lists
     image_files = self.m_file_selector.original_image_list()
     preprocessed_image_files = self.m_file_selector.preprocessed_image_list()
@@ -70,6 +70,7 @@ class ToolChain:
 
 
   def __read_images__(self, files, preprocessor):
+    """Reads the preprocessed images from file using the given reader."""
     # TODO: change the dictionary to a simple list (in ALL tools)
     retval = {}
     for i in range(len(files)):
@@ -77,6 +78,9 @@ class ToolChain:
     return retval
 
   def __read_images_by_client__(self, files, preprocessor):
+    """Reads the preprocessed images from file using the given reader.
+    In this case, images are grouped by clients."""
+
     # TODO: change the dictionary of dictionaries to a simple list of lists (in ALL tools)
     retval = {}
     for i in range(len(files)):
@@ -89,7 +93,7 @@ class ToolChain:
     return retval
 
   def train_extractor(self, extractor, preprocessor, force = False):
-    """Trains the feature extractor, if it requires training"""
+    """Trains the feature extractor using preprocessed images of the 'world' set, if the feature extractor requires training."""
     if extractor.requires_training:
       extractor_file = self.m_file_selector.extractor_file
       if self.__check_file__(extractor_file, force, 1000):
@@ -111,7 +115,7 @@ class ToolChain:
 
 
   def extract_features(self, extractor, preprocessor, indices = None, force=False):
-    """Extracts the features using the given extractor"""
+    """Extracts the features from the preprocessed images using the given extractor."""
     extractor.load(str(self.m_file_selector.extractor_file))
     image_files = self.m_file_selector.preprocessed_image_list()
     feature_files = self.m_file_selector.feature_list()
@@ -140,6 +144,7 @@ class ToolChain:
 
 
   def __read_features__(self, files, reader):
+    """Reads all features from file using the given reader."""
     # TODO: change the dictionary to a simple list (in ALL tools)
     retval = {}
     for i in range(len(files)):
@@ -147,6 +152,8 @@ class ToolChain:
     return retval
 
   def __read_features_by_client__(self, files, reader):
+    """Reads all features from file using the given reader.
+    In this case, the features are split up by the according client."""
     # TODO: change the dictionary of dictionaries to a simple list of lists (in ALL tools)
     retval = {}
     for i in range(len(files)):
@@ -159,7 +166,7 @@ class ToolChain:
     return retval
 
   def train_projector(self, tool, extractor, force=False):
-    """Train the feature projector with the extracted features of the world group"""
+    """Train the feature projector with the extracted features of the world group."""
     if tool.requires_projector_training:
       projector_file = self.m_file_selector.projector_file
 
@@ -168,7 +175,7 @@ class ToolChain:
       else:
         # train projector
         if tool.split_training_features_by_client:
-          train_files = self.m_file_selector.training_list('features', 'train_projector', sort_by_client = True)
+          train_files = self.m_file_selector.training_list('features', 'train_projector', arrange_by_client = True)
           train_features = self.__read_features_by_client__(train_files, extractor)
           utils.info("- Projection: training projector '%s' using %d identities: " %(projector_file, len(train_files)))
         else:
@@ -183,7 +190,7 @@ class ToolChain:
 
 
   def project_features(self, tool, extractor, indices = None, force=False):
-    """Projects the features for all files of the database"""
+    """Projects the features for all files of the database."""
     # load the projector file
     if tool.performs_projection:
       tool.load_projector(str(self.m_file_selector.projector_file))
@@ -216,7 +223,7 @@ class ToolChain:
 
 
   def train_enroller(self, tool, extractor, force=False):
-    """Trains the model enroller using the extracted or projected features"""
+    """Trains the model enroller using the extracted or projected features, depending on your setup of the base class Tool."""
     reader = tool if tool.use_projected_features_for_enrollment else extractor
     if tool.requires_enroller_training:
       enroller_file = self.m_file_selector.enroller_file
@@ -227,7 +234,7 @@ class ToolChain:
         # first, load the projector
         tool.load_projector(str(self.m_file_selector.projector_file))
         # training models
-        train_files = self.m_file_selector.training_list('projected' if tool.use_projected_features_for_enrollment else 'features', 'train_enroller', sort_by_client = True)
+        train_files = self.m_file_selector.training_list('projected' if tool.use_projected_features_for_enrollment else 'features', 'train_enroller', arrange_by_client = True)
         train_features = self.__read_features_by_client__(train_files, reader)
 
         # perform training
@@ -238,9 +245,8 @@ class ToolChain:
 
   def enroll_models(self, tool, extractor, compute_zt_norm, indices = None, groups = ['dev', 'eval'], types = ['N','T'], force=False):
     """Enroll the models for 'dev' and 'eval' groups, for both models and T-Norm-models.
-       This function by default used the projected features to compute the models.
-       If you need unprojected features for the model, please define a variable with the name
-       use_unprojected_features_for_model_enroll"""
+       This function uses the extracted or projected features to compute the models,
+       depending on your setup of the base class Tool."""
 
     # read the projector file, if needed
     tool.load_projector(self.m_file_selector.projector_file)
@@ -305,7 +311,7 @@ class ToolChain:
 
 
   def __scores__(self, model, probe_files):
-    """Compute simple scores for the given model"""
+    """Compute simple scores for the given model."""
     scores = numpy.ndarray((1,len(probe_files)), 'float64')
 
     # Loops over the probes
@@ -318,7 +324,7 @@ class ToolChain:
     return scores
 
   def __scores_preloaded__(self, model, preloaded_probes):
-    """Compute simple scores for the given model"""
+    """Compute simple scores for the given model."""
     scores = numpy.ndarray((1,len(preloaded_probes)), 'float64')
 
     # Loops over the probes
@@ -333,7 +339,7 @@ class ToolChain:
 
 
   def __probe_split__(self, selected_probe_objects, all_probe_objects, all_preloaded_probes):
-    """Helper function required when probe files are preloaded"""
+    """Helper function required when probe files are preloaded."""
     res = []
     selected_index = 0
     for all_index in range(len(all_probe_objects)):
@@ -347,7 +353,7 @@ class ToolChain:
     return res
 
   def __save_scores__(self, score_file, scores, probe_objects, client_id):
-    """Saves the scores into a text file"""
+    """Saves the scores into a text file."""
     f = open(score_file, 'w')
     assert len(probe_objects) == scores.shape[1]
     for i in range(len(probe_objects)):
@@ -397,7 +403,7 @@ class ToolChain:
         self.__save_scores__(self.m_file_selector.no_norm_file(model_id, group), a, current_probe_objects, self.m_file_selector.client_id(model_id))
 
   def __scores_b__(self, model_ids, group, force, preload_probes):
-    """Computes B scores"""
+    """Computes B scores."""
     # probe files:
     z_probe_objects = self.m_file_selector.z_probe_objects(group)
     z_probe_files = self.m_file_selector.get_paths(z_probe_objects, 'projected' if self.m_use_projected_dir else 'features')
@@ -424,7 +430,7 @@ class ToolChain:
         bob.io.save(b, score_file)
 
   def __scores_c__(self, t_model_ids, group, force, preload_probes):
-    """Computes C scores"""
+    """Computes C scores."""
     # probe files:
     probe_objects = self.m_file_selector.probe_objects(group)
     probe_files = self.m_file_selector.get_paths(probe_objects, 'projected' if self.m_use_projected_dir else 'features')
@@ -452,7 +458,7 @@ class ToolChain:
         bob.io.save(c, score_file)
 
   def __scores_d__(self, t_model_ids, group, force, preload_probes):
-    """Computes D scores"""
+    """Computes D scores."""
     # probe files:
     z_probe_objects = self.m_file_selector.z_probe_objects(group)
     z_probe_files = self.m_file_selector.get_paths(z_probe_objects, 'projected' if self.m_use_projected_dir else 'features')
@@ -490,7 +496,7 @@ class ToolChain:
 
 
   def compute_scores(self, tool, compute_zt_norm, force = False, indices = None, groups = ['dev', 'eval'], types = ['A', 'B', 'C', 'D'], preload_probes = False):
-    """Computes the scores for the given groups (by default 'dev' and 'eval')"""
+    """Computes the scores for the given groups (by default 'dev' and 'eval')."""
     # save tool for internal use
     self.m_tool = tool
     self.m_use_projected_dir = hasattr(tool, 'project')
@@ -545,7 +551,7 @@ class ToolChain:
 
 
   def __c_matrix_split_for_model__(self, selected_probe_objects, all_probe_objects, all_c_scores):
-    """Helper function required when probe files are preloaded"""
+    """Helper function to sub-select the c-scores in case not all probe files were used to compute A scores."""
     c_scores_for_model = numpy.ndarray((all_c_scores.shape[0], len(selected_probe_objects)), numpy.float64)
     selected_index = 0
     for all_index in range(len(all_probe_objects)):
@@ -558,7 +564,7 @@ class ToolChain:
     return c_scores_for_model
 
   def __scores_c_normalize__(self, model_ids, t_model_ids, group):
-    """Compute normalized probe scores using T-model scores"""
+    """Compute normalized probe scores using T-model scores."""
     # read all tmodel scores
     c_for_all = None
     for t_model_id in t_model_ids:

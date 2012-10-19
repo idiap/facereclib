@@ -10,45 +10,52 @@ from . import ToolChainExecutor
 from .. import toolchain
 
 class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
-  """Class that executes the ZT tool chain (locally or in the grid)"""
+  """Class that executes the ZT tool chain (locally or in the grid)."""
 
   def __init__(self, args):
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
 
-    # specify the file selector and tool chain objects to be used by this class (and its base class)
+    # add specific configuration for ZT-normalization
+    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[0], self.m_database.protocol)
+    self.m_configuration.t_norm_models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[1], self.m_database.protocol)
+
+    self.m_configuration.zt_norm_A_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[0])
+    self.m_configuration.zt_norm_B_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[1])
+    self.m_configuration.zt_norm_C_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[2])
+    self.m_configuration.zt_norm_D_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[3])
+    self.m_configuration.zt_norm_D_sameValue_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[4])
+
+    self.m_configuration.scores_no_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[0])
+    self.m_configuration.scores_zt_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[1])
+
+
+    # specify the file selector to be used
     self.m_file_selector = toolchain.FileSelector(
-        self.m_configuration.database,
-        preprocessed_directory = self.m_configuration.preprocessed_dir,
+        self.m_database,
+        preprocessed_directory = self.m_configuration.preprocessed_directory,
         extractor_file = self.m_configuration.extractor_file,
-        features_directory = self.m_configuration.features_dir,
+        features_directory = self.m_configuration.features_directory,
         projector_file = self.m_configuration.projector_file,
-        projected_directory = self.m_configuration.projected_dir,
+        projected_directory = self.m_configuration.projected_directory,
         enroller_file = self.m_configuration.enroller_file,
-        model_directories = (self.m_configuration.models_dir, self.m_configuration.tnorm_models_dir),
-        score_directories = (self.m_configuration.scores_nonorm_dir, self.m_configuration.scores_ztnorm_dir),
-        zt_score_directories = (self.m_configuration.zt_norm_A_dir, self.m_configuration.zt_norm_B_dir, self.m_configuration.zt_norm_C_dir, self.m_configuration.zt_norm_D_dir, self.m_configuration.zt_norm_D_sameValue_dir)
+        model_directories = (self.m_configuration.models_directory,
+                             self.m_configuration.t_norm_models_directory),
+        score_directories = (self.m_configuration.scores_no_norm_directory,
+                             self.m_configuration.scores_zt_norm_directory),
+        zt_score_directories = (self.m_configuration.zt_norm_A_directory,
+                                self.m_configuration.zt_norm_B_directory,
+                                self.m_configuration.zt_norm_C_directory,
+                                self.m_configuration.zt_norm_D_directory,
+                                self.m_configuration.zt_norm_D_sameValue_directory)
     )
+
+    # create the tool chain to be used to actually perform the parts of the experiments
     self.m_tool_chain = toolchain.ToolChain(self.m_file_selector)
 
 
-  def protocol_specific_configuration(self):
-    """Special configuration for ZT-Norm computation"""
-    self.m_configuration.models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.models_dirs[0], self.m_configuration.database.protocol)
-    self.m_configuration.tnorm_models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.models_dirs[1], self.m_configuration.database.protocol)
-
-    self.m_configuration.zt_norm_A_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[0])
-    self.m_configuration.zt_norm_B_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[1])
-    self.m_configuration.zt_norm_C_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[2])
-    self.m_configuration.zt_norm_D_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[3])
-    self.m_configuration.zt_norm_D_sameValue_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.zt_dirs[4])
-
-    self.m_configuration.scores_nonorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.score_dirs[0])
-    self.m_configuration.scores_ztnorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.database.protocol, self.m_args.score_dirs[1])
-
-
   def execute_tool_chain(self):
-    """Executes the ZT tool chain on the local machine"""
+    """Executes the ZT tool chain on the local machine."""
     # preprocessing
     if not self.m_args.skip_preprocessing:
       if self.m_args.dry_run:
@@ -146,7 +153,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
 
   def add_jobs_to_grid(self, external_dependencies):
-    """Adds all (desired) jobs of the tool chain to the grid"""
+    """Adds all (desired) jobs of the tool chain to the grid."""
     # collect the job ids
     job_ids = {}
 
@@ -296,7 +303,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
 
   def execute_grid_job(self):
-    """Run the desired job of the ZT tool chain that is specified on command line"""
+    """Run the desired job of the ZT tool chain that is specified on command line."""
     # preprocess the images
     if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_images(
@@ -400,7 +407,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
 
 def parse_args(command_line_arguments = sys.argv[1:]):
-  """This function parses the given options (which by default are the command line options)"""
+  """This function parses the given options (which by default are the command line options)."""
   # sorry for that.
   global parameters
   parameters = command_line_arguments
@@ -412,25 +419,25 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   # add the arguments required for all tool chains
   config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorZT.required_command_line_options(parser)
 
-  sub_dir_group.add_argument('--models-directories', type = str, metavar = 'DIR', nargs = 2, dest='models_dirs',
+  sub_dir_group.add_argument('--models-directories', metavar = 'DIR', nargs = 2,
       default = ['models', 'tmodels'],
       help = 'Sub-directories (of --temp-directory) where the models should be stored')
-  sub_dir_group.add_argument('--zt-temp-directories', type = str, metavar = 'DIR', nargs = 5, dest='zt_dirs',
+  sub_dir_group.add_argument('--zt-temp-directories', metavar = 'DIR', nargs = 5,
       default = ['zt_norm_A', 'zt_norm_B', 'zt_norm_C', 'zt_norm_D', 'zt_norm_D_sameValue'],
       help = 'Sub-directories (of --temp-directory) where to write the ZT-norm values')
-  sub_dir_group.add_argument('--zt-score-directories', type = str, metavar = 'DIR', nargs = 2, dest='score_dirs',
+  sub_dir_group.add_argument('--zt-score-directories', metavar = 'DIR', nargs = 2,
       default = ['nonorm', 'ztnorm'],
       help = 'Sub-directories (of --user-directory) where to write the results to')
 
   #######################################################################################
   ############################ other options ############################################
-  other_group.add_argument('-z', '--zt-norm', action='store_true', dest = 'zt_norm',
+  other_group.add_argument('-z', '--zt-norm', action='store_true',
       help = 'Enable the computation of ZT norms')
   other_group.add_argument('-F', '--force', action='store_true',
       help = 'Force to erase former data if already exist')
-  other_group.add_argument('-w', '--preload-probes', action='store_true', dest='preload_probes',
+  other_group.add_argument('-w', '--preload-probes', action='store_true',
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
-  other_group.add_argument('--groups', type = str,  metavar = 'GROUP', nargs = '+', default = ['dev',],
+  other_group.add_argument('--groups', metavar = 'GROUP', nargs = '+', default = ['dev'],
       help = "The group (i.e., 'dev' or  'eval') for which the models and scores should be generated")
 
   #######################################################################################
@@ -438,11 +445,11 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   parser.add_argument('--sub-task',
       choices = ('preprocess', 'train-extractor', 'extract', 'train-projector', 'project', 'train-enroller', 'enroll', 'compute-scores', 'concatenate'),
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
-  parser.add_argument('--model-type', type = str, choices = ['N', 'T'], metavar = 'TYPE',
+  parser.add_argument('--model-type', choices = ['N', 'T'],
       help = argparse.SUPPRESS) #'Which type of models to generate (Normal or TModels)'
-  parser.add_argument('--score-type', type = str, choices = ['A', 'B', 'C', 'D', 'Z'],  metavar = 'SCORE',
+  parser.add_argument('--score-type', choices = ['A', 'B', 'C', 'D', 'Z'],
       help = argparse.SUPPRESS) #'The type of scores that should be computed'
-  parser.add_argument('--group', type = str,  metavar = 'GROUP',
+  parser.add_argument('--group',
       help = argparse.SUPPRESS) #'The group for which the current action should be performed'
 
   return parser.parse_args(command_line_arguments)
@@ -457,7 +464,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
   -- and the grid configuration (in case, the function should be executed in the grid).
   Additionally, you can skip parts of the toolchain by selecting proper --skip-... parameters.
   If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.
-  If files should be re-generated, please specify the --force option (might be combined with the --skip-... options)"""
+  If files should be re-generated, please specify the --force option (might be combined with the --skip-... options)."""
 
 
   # generate tool chain executor
