@@ -45,29 +45,21 @@ class BICTool (Tool):
 
   def __intra_extra_pairs__(self, train_features):
     """Computes intrapersonal and extrapersonal pairs of features from given training files"""
-    # first, load all features
-    features = {}
-    for id in sorted(train_features.keys()):
-      features[id] = []
-      for im in train_features[id]:
-        feature = train_features[id][im]
-        features[id].append(feature)
-
     # generate intrapersonal pairs
     intra_pairs = []
-    for id in sorted(features.keys()):
-      for i in range(len(features[id])-1):
-        for j in range (i+1, len(features[id])):
-          intra_pairs.append((features[id][i], features[id][j]))
+    for client in range(len(train_features)):
+      for c in range(len(train_features[client])-1):
+        for c2 in range (c+1, len(train_features[client])):
+          intra_pairs.append((train_features[client][c], train_features[client][c2]))
 
     # generate extrapersonal pairs
     extra_pairs = []
-    for id in sorted(features.keys()):
-      for i in range(len(features[id])):
-        for jd in sorted(features.keys()):
-          if id != jd:
-            for j in range(len(features[jd])):
-              extra_pairs.append((features[id][i], features[jd][j]))
+    for client in range(len(train_features)):
+      for c in range(len(train_features[client])):
+        for impostor in range(len(train_features)):
+          if client != impostor:
+            for i in range(len(train_features[impostor])):
+              extra_pairs.append((train_features[client][c], train_features[impostor][i]))
 
     # limit the number of pairs by random selection
     if self.m_maximum_pair_count != None:
@@ -81,7 +73,7 @@ class BICTool (Tool):
     return (intra_pairs, extra_pairs)
 
   def __trainset_for__(self, pairs):
-    """Computes the arrayset containing the comparison results for the given set of image pairs."""
+    """Computes the array containing the comparison results for the given set of image pairs."""
     comparison_results = numpy.vstack([self.__compare__(f1, f2) for (f1, f2) in pairs])
     return comparison_results
 

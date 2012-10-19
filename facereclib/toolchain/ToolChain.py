@@ -71,25 +71,15 @@ class ToolChain:
 
   def __read_images__(self, files, preprocessor):
     """Reads the preprocessed images from file using the given reader."""
-    # TODO: change the dictionary to a simple list (in ALL tools)
-    retval = {}
-    for i in range(len(files)):
-      retval[i] = preprocessor.read_image(str(files[i]))
-    return retval
+    return [preprocessor.read_image(str(image)) for image in files]
 
   def __read_images_by_client__(self, files, preprocessor):
     """Reads the preprocessed images from file using the given reader.
     In this case, images are grouped by clients."""
-
-    # TODO: change the dictionary of dictionaries to a simple list of lists (in ALL tools)
-    retval = {}
-    for i in range(len(files)):
+    retval = []
+    for client_files in files:
       # images for the client
-      data = {}
-      client_files = files[i]
-      for j in range(len(client_files)):
-        data[j] = preprocessor.read_image(str(client_files[j]))
-      retval[i] = data
+      retval.append([preprocessor.read_image(str(image)) for image in client_files])
     return retval
 
   def train_extractor(self, extractor, preprocessor, force = False):
@@ -145,24 +135,15 @@ class ToolChain:
 
   def __read_features__(self, files, reader):
     """Reads all features from file using the given reader."""
-    # TODO: change the dictionary to a simple list (in ALL tools)
-    retval = {}
-    for i in range(len(files)):
-      retval[i] = reader.read_feature(str(files[i]))
-    return retval
+    return [reader.read_feature(str(file)) for file in files]
 
   def __read_features_by_client__(self, files, reader):
     """Reads all features from file using the given reader.
     In this case, the features are split up by the according client."""
-    # TODO: change the dictionary of dictionaries to a simple list of lists (in ALL tools)
-    retval = {}
-    for i in range(len(files)):
-      # images for the client
-      data = {}
-      client_files = files[i]
-      for j in range(len(client_files)):
-        data[j] = reader.read_feature(str(client_files[j]))
-      retval[i] = data
+    retval = []
+    for client_files in files:
+      # features for the client
+      retval.append([reader.read_feature(str(feature)) for feature in client_files])
     return retval
 
   def train_projector(self, tool, extractor, force=False):

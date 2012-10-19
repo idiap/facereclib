@@ -27,30 +27,6 @@ class ISVTool (UBMGMMTool):
                   )
 
 
-  def __load_gmm_stats__(self, l_files):
-    """Loads a dictionary of GMM statistics from a list of filenames"""
-    gmm_stats = []
-    for k in l_files:
-      # Processes one file
-      stats = l_files[k]
-      # Appends in the list
-      gmm_stats.append(stats)
-    return gmm_stats
-
-
-  def __load_gmm_stats_list__(self, ld_files):
-    """Loads a list of lists of GMM statistics from a list of dictionaries of filenames
-       There is one list for each identity"""
-    # Initializes a python list for the GMMStats
-    gmm_stats = []
-    for k in sorted(ld_files.keys()):
-      # Loads the list of GMMStats for the given client
-      gmm_stats_c = self.__load_gmm_stats__(ld_files[k])
-      # Appends to the main list
-      gmm_stats.append(gmm_stats_c)
-    return gmm_stats
-
-
   # Here, we just need to load the UBM from the projector file.
   def load_projector(self, projector_file):
     """Reads the UBM model from file"""
@@ -68,11 +44,9 @@ class ISVTool (UBMGMMTool):
     self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_config.SUBSPACE_DIMENSION_OF_U)
     self.m_jfabase.ubm = self.m_ubm
 
-    # load GMM stats from training files
-    gmm_stats = self.__load_gmm_stats_list__(train_features)
-
+    # train ISV model
     t = bob.trainer.JFABaseTrainer(self.m_jfabase)
-    t.train_isv(gmm_stats, self.m_config.JFA_TRAINING_ITERATIONS, self.m_config.RELEVANCE_FACTOR)
+    t.train_isv(train_features, self.m_config.JFA_TRAINING_ITERATIONS, self.m_config.RELEVANCE_FACTOR)
 
     # Save the JFA base AND the UBM into the same file
     self.m_jfabase.save(bob.io.HDF5File(enroller_file, "w"))

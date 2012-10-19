@@ -23,7 +23,7 @@ class PCATool (Tool):
   def train_projector(self, training_features, projector_file):
     """Generates the PCA covariance matrix"""
     # Initializes the data
-    data = numpy.vstack([training_features[k] for k in sorted(training_features.keys())])
+    data = numpy.vstack([feature.flatten() for feature in training_features])
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()

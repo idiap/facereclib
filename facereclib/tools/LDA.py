@@ -30,22 +30,20 @@ class LDATool (Tool):
 
   def __read_data__(self, training_files):
     data = []
-    for client in sorted(training_files.keys()):
-      # arrayset for this client
-      client_files = training_files[client]
+    for client_files in training_files:
       # at least two files per client are required!
       if len(client_files) < 2:
         utils.warn("Skipping client with id %s since the number of client files is only %d" %(client, len(client_files)))
         continue
-      client_data = numpy.vstack([client_files[k].flatten() for k in sorted(client_files.keys())])
+      client_data = numpy.vstack([feature.flatten() for feature in client_files])
       #for k in sorted(client_files.keys()):
       #  # Loads the file
       #  feature = client_files[k]
-      #  # Appends in the arrayset; assure that the data is 1-dimensional
+      #  # Appends in the array; assure that the data is 1-dimensional
       #  client_data.append(numpy.reshape(feature, feature.size))
       data.append(client_data)
 
-    # Returns the list of arraysets
+    # Returns the list of arrays
     return data
 
   def __train_pca__(self, training_set):
@@ -53,7 +51,7 @@ class LDATool (Tool):
     data_list = []
     for client in training_set:
       for feature in client:
-        # Appends in the arrayset
+        # Appends in the array
         data_list.append(feature)
     data = numpy.vstack(data_list)
 
@@ -82,7 +80,7 @@ class LDATool (Tool):
 
   def train_projector(self, training_features, projector_file):
     """Generates the LDA projection matrix from the given features (that are sorted by identity)"""
-    # Initializes an arrayset for the data
+    # Initializes an array for the data
     data = self.__read_data__(training_features)
 
     if self.m_pca_subspace:

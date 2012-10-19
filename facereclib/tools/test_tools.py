@@ -57,35 +57,30 @@ class ToolTest(unittest.TestCase):
   def train_set(self, feature, count = 50, a = 0, b = 1):
     # generate a random sequence of features
     numpy.random.seed(42)
-    train_set = {}
-    for i in range(count):
-      train_set[i] = numpy.random.random(feature.shape) * (b - a) + a
-    return train_set
+    return [numpy.random.random(feature.shape) * (b - a) + a for i in range(count)]
 
   def train_set_by_id(self, feature, count = 50, a = 0, b = 1):
     # generate a random sequence of features
     numpy.random.seed(42)
-    train_set = {}
+    train_set = []
     for i in range(count):
-      per_id = {}
-      for j in range(count):
-        per_id[j] = numpy.random.random(feature.shape) * (b - a) + a
-      train_set[i] = per_id
+      train_set.append([numpy.random.random(feature.shape) * (b - a) + a for j in range(count)])
     return train_set
+
 
   def train_gmm_stats(self, feature_file, count = 50, a = 0, b = 1):
     # generate a random sequence of GMM-Stats features
     numpy.random.seed(42)
-    train_set = {}
+    train_set = []
     f = bob.io.HDF5File(feature_file)
     for i in range(count):
-      per_id = {}
+      per_id = []
       for j in range(count):
         gmm_stats = bob.machine.GMMStats(f)
         gmm_stats.sum_px = numpy.random.random(gmm_stats.sum_px.shape) * (b - a) + a
         gmm_stats.sum_pxx = numpy.random.random(gmm_stats.sum_pxx.shape) * (b - a) + a
-        per_id[j] = gmm_stats
-      train_set[i] = per_id
+        per_id.append(gmm_stats)
+      train_set.append(per_id)
     return train_set
 
 

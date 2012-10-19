@@ -18,8 +18,8 @@ class Eigenface (Extractor):
 
   def train(self, image_list, extractor_file):
     """Trains the eigenface extractor using the given list of training images"""
-    # Initializes an arrayset for the data
-    data = numpy.vstack([image_list[k].flatten() for k in sorted(image_list.keys())])
+    # Initializes an array for the data
+    data = numpy.vstack([image.flatten() for image in image_list])
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()

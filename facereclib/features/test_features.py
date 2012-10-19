@@ -49,24 +49,7 @@ class FeatureExtractionTest(unittest.TestCase):
   def train_set(self, feature, count = 50, a = 0, b = 1):
     # generate a random sequence of features
     numpy.random.seed(42)
-    train_set = {}
-    for i in range(count):
-      train_set[i] = numpy.random.random(feature.shape) * (b - a) + a
-    return train_set
-
-  def train_set_by_id(self, feature, count = 50, a = 0, b = 1, as_int = False):
-    # generate a random sequence of features
-    numpy.random.seed(42)
-    train_set = {}
-    for i in range(count):
-      per_id = {}
-      for j in range(count):
-        per_id[j] = numpy.random.random(feature.shape) * (b - a) + a
-        if as_int:
-          per_id[j] = per_id[j].astype(int)
-      train_set[i] = per_id
-    return train_set
-
+    return [numpy.random.random(feature.shape) * (b - a) + a for i in range(count)]
 
 
   def execute(self, extractor, image, reference):
@@ -122,6 +105,7 @@ class FeatureExtractionTest(unittest.TestCase):
     extractor = config.feature_extractor(config)
     feature = self.execute(extractor, image, 'graph_no_phase.hdf5')
     self.assertEqual(len(feature.shape), 2)
+
 
   def test04_lgbphs(self):
     image = bob.io.load(self.input_dir('cropped.hdf5'))

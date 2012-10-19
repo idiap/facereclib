@@ -47,11 +47,10 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
 
     ########## calculate GMM stats from video.FrameContainers, using frame_selector_for_train_enroller
     gmm_stats = []
-    for k in sorted(train_features.keys()): # loop over clients
+    for client_features in train_features: # loop over clients
       gmm_stats_client = []
-      for j in sorted(train_features[k].keys()): # loop over videos of client k
-        frame_container = train_features[k][j]
-        this_gmm_stats = UBMGMMVideoTool.project(self,frame_container,self.m_config.frame_selector_for_enroller_training)
+      for frame_container in client_features: # loop over videos of client k
+        this_gmm_stats = UBMGMMVideoTool.project(self, frame_container, self.m_config.frame_selector_for_enroller_training)
         gmm_stats_client.append(this_gmm_stats)
       gmm_stats.append(gmm_stats_client)
 

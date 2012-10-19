@@ -20,26 +20,12 @@ class PLDATool (Tool):
     self.m_pca_machine = None
 
 
-  def __load_data_by_client__(self, training_features):
-    """Loads the data (arrays) from a list of list of filenames,
-    one list for each client, and put them in a list of arraysets."""
-
-    # Initializes an arrayset for the data
-    data = []
-    for client in sorted(training_features.keys()):
-      # arrayset for this client
-      client_features = training_features[client]
-      client_data = numpy.vstack([client_features[k] for k in sorted(client_features.keys())])
-      data.append(client_data)
-    # Returns the list of arraysets
-    return data
-
   def __train_pca__(self, training_set):
     """Trains and returns a LinearMachine that is trained using PCA"""
     data_list = []
     for client in training_set:
       for feature in client:
-        # Appends in the arrayset
+        # Appends in the array
         data_list.append(feature)
     data = numpy.vstack(data_list)
 
@@ -51,13 +37,13 @@ class PLDATool (Tool):
     return machine
 
   def __perform_pca_client__(self, machine, client):
-    """Perform PCA on an arrayset"""
+    """Perform PCA on an array"""
     client_data_list = []
     for feature in client:
       # project data
       projected_feature = numpy.ndarray(machine.shape[1], numpy.float64)
       machine(feature, projected_feature)
-      # add data in new arrayset
+      # add data in new array
       client_data_list.append(projected_feature)
     client_data = numpy.vstack(client_data_list)
     return client_data
@@ -72,18 +58,17 @@ class PLDATool (Tool):
 
 
   def train_enroller(self, training_features, projector_file):
-    """Generates the PLDA base model from a list of arraysets (one per identity),
+    """Generates the PLDA base model from a list of arrays (one per identity),
        and a set of training parameters. If PCA is requested, it is trained on the same data.
        Both the trained PLDABaseMachine and the PCA machine are written."""
 
-    # read data
-    data = self.__load_data_by_client__(training_features)
 
+    # train PCA and perform PCA on training data
     if self.m_pca_subpace_size:
-      self.m_pca_machine = self.__train_pca__(data)
-      data = self.__perform_pca__(self.m_pca_machine, data)
+      self.m_pca_machine = self.__train_pca__(training_features)
+      training_features = self.__perform_pca__(self.m_pca_machine, training_features)
 
-    input_dimension = data[0].shape[0]
+    input_dimension = training_features[0].shape[0]
 
     utils.info("  -> Training PLDA base machine")
     # create trainer
@@ -104,7 +89,7 @@ class PLDATool (Tool):
 
     # train machine
     self.m_plda_base_machine = bob.machine.PLDABaseMachine(input_dimension, self.m_config.SUBSPACE_DIMENSION_OF_F, self.m_config.SUBSPACE_DIMENSION_OF_G)
-    t.train(self.m_plda_base_machine, data)
+    t.train(self.m_plda_base_machine, training_features)
 
     # write machines to file
     proj_hdf5file = bob.io.HDF5File(str(projector_file), "w")
