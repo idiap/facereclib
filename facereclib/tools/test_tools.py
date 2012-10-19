@@ -332,7 +332,7 @@ class ToolTest(unittest.TestCase):
     # score with projected feature
     sim = tool.score(reference_model, probe)
     # compare to the weird reference score ...
-    self.assertAlmostEqual(sim, 931.872015904)
+    self.assertAlmostEqual(sim, 0.254818708)
 
 
   def test07_isv(self):

@@ -196,5 +196,5 @@ class UBMGMMTool (Tool):
 
   def score(self, model, probe):
     """Computes the score for the given model and the given probe using the scoring function from the config file"""
-    return self.m_scoring_function([model], self.m_ubm, [probe])[0][0]
+    return self.m_scoring_function([model], self.m_ubm, [probe], [], frame_length_normalisation = True)[0][0]
 
