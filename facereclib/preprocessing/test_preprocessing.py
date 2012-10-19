@@ -69,6 +69,8 @@ class PreprocessingTest(unittest.TestCase):
     self.execute(preprocessor, image, annotation, 'cropped.hdf5')
 
 
+
+
   def test02_tan_triggs(self):
     # read input
     image, annotation = self.input()
@@ -170,3 +172,17 @@ class PreprocessingTest(unittest.TestCase):
     # for now, I just raise a skip exception
     raise SkipTest("This test is not yet implemented.")
 
+
+  def test09_face_crop_fixed(self):
+    # tests fixed face cropping; this test must be the last in this set of tests...
+    image, annotation = self.input()
+    config = self.config('face_crop_fixed.py')
+    config.FIXED_LEFT_EYE = (170, 222)
+    config.FIXED_RIGHT_EYE = (176, 131)
+
+    # generate face cropper
+    preprocessor = config.preprocessor(config)
+
+    # execute face cropper;
+    # result must be identical to the original face cropper (same eyes are used)
+    self.execute(preprocessor, image, None, 'cropped.hdf5')
