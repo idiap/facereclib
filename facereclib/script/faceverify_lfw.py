@@ -10,6 +10,7 @@ import bob
 
 from . import ToolChainExecutor
 from .. import toolchain
+from .. import utils
 
 class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
@@ -354,6 +355,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
   def average_results(self):
     """Iterates over all the folds of the current view and computes the average result"""
+    utils.info(" - Scoring: Averaging results of views %s" % self.m_args.views)
     if not self.m_args.dry_run:
       file = open(self.m_configuration.result_file, 'w')
     if 'view1' in self.m_args.views:
@@ -459,7 +461,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
   -- feature extraction (including image preprocessing)
   -- the score computation tool
   -- and the grid configuration (in case, the function should be executed in the grid).
-  Additionally, you can skip parts of the toolchain by selecting proper --skip-... parameters.
+  Additionally, you can skip parts of the tool chain by selecting proper --skip-... parameters.
   If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.
   If files should be re-generated, please specify the --force option (might be combined with the --skip-... options)"""
 
