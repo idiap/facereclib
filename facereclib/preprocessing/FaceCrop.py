@@ -46,6 +46,9 @@ class FaceCrop (Preprocessor):
     # convert to the desired color channel
     image = utils.gray_channel(image, self.m_color_channel)
 
+    mask = numpy.ndarray(image.shape, numpy.bool)
+    mask.fill(True)
+
     if hasattr(self.m_config, 'FIXED_RIGHT_EYE') and hasattr(self.m_config, 'FIXED_LEFT_EYE') or hasattr(self.m_config, 'FIXED_EYE') and hasattr(self.m_config, 'FIXED_MOUTH'):
       # use the fixed eye positions to perform normalization
       if annotations == None or ('leye' in annotations and 'reye' in annotations):
@@ -53,7 +56,7 @@ class FaceCrop (Preprocessor):
         # use the frontal normalizer
         right = self.m_config.FIXED_RIGHT_EYE
         left = self.m_config.FIXED_LEFT_EYE
-        self.m_frontal_norm(image, mask, self.m_image, self.m_mask, rigth[0], right[1], leftz[0], left[1])
+        self.m_frontal_norm(image, mask, self.m_image, self.m_mask, right[0], right[1], left[0], left[1])
       else:
         assert hasattr(self.m_config, 'FIXED_EYE') and hasattr(self.m_config, 'FIXED_MOUTH')
         # use profile normalization
@@ -64,11 +67,9 @@ class FaceCrop (Preprocessor):
     elif annotations == None:
       # simply return the image
       return image.astype(numpy.float64)
-    else:
 
+    else:
       assert ('leye' in annotations and 'reye' in annotations) or ('eye' in annotations and 'mouth' in annotations)
-      mask = numpy.ndarray(image.shape, numpy.bool)
-      mask.fill(True)
       if 'leye' in annotations and 'reye' in annotations:
         # use the frontal normalizer
         self.m_frontal_norm(image, mask, self.m_image, self.m_mask, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
@@ -76,10 +77,9 @@ class FaceCrop (Preprocessor):
         # use profile normalization
         self.m_profile_norm(image, mask, self.m_image, self.m_mask, annotations['eye'][0], annotations['eye'][1], annotations['mouth'][0], annotations['mouth'][1])
 
-      # assure that pixels from the masked area are 0
-      self.m_image[self.m_mask == False] = 0.
-
-      return self.m_image
+    # assure that pixels from the masked area are 0
+    self.m_image[self.m_mask == False] = 0.
+    return self.m_image
 
 
   def __call__(self, image, annotations = None):
