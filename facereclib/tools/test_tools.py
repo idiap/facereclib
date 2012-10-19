@@ -332,7 +332,7 @@ class ToolTest(unittest.TestCase):
     # score with projected feature
     sim = tool.score(reference_model, probe)
     # compare to the weird reference score ...
-    self.assertAlmostEqual(sim, 0.254818708)
+    self.assertAlmostEqual(sim, 0.25472347774)
 
 
   def test07_isv(self):
@@ -405,7 +405,7 @@ class ToolTest(unittest.TestCase):
     # score with projected feature
     sim = tool.score(model, probe)
     # compare to the weird reference score ...
-    self.assertAlmostEqual(sim, 0.0004443922153)
+    self.assertAlmostEqual(sim, 0.000443472976)
 
 
   def test08_jfa(self):
@@ -477,7 +477,7 @@ class ToolTest(unittest.TestCase):
     # score with projected feature
     sim = tool.score(model, probe)
     # compare to the weird reference score ...
-    self.assertAlmostEqual(sim, 0.25469123955)
+    self.assertAlmostEqual(sim, 0.25459651295)
 
 
   def test09_plda(self):
