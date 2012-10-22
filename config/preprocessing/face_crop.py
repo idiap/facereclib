@@ -2,11 +2,6 @@
 
 import facereclib
 
-preprocessor = facereclib.preprocessing.FaceCrop
-
-# color channel
-COLOR_CHANNEL = 'gray'
-
 # Cropping
 CROPPED_IMAGE_HEIGHT = 80
 CROPPED_IMAGE_WIDTH  = CROPPED_IMAGE_HEIGHT * 4 / 5
@@ -20,5 +15,8 @@ LEFT_EYE_POS  = (CROPPED_IMAGE_HEIGHT / 5, CROPPED_IMAGE_WIDTH / 4 * 3)
 EYE_POS = (16, 20)
 MOUTH_POS = (52, 20)
 
-# Offset as will be required by the feature extraction -- here: None
-OFFSET = 0
+# define the preprocessor
+preprocessor = facereclib.preprocessing.FaceCrop(
+  cropped_image_size = (CROPPED_IMAGE_HEIGHT, CROPPED_IMAGE_WIDTH),
+  cropped_positions = {'leye' : LEFT_EYE_POS, 'reye' : RIGHT_EYE_POS, 'eye' : EYE_POS, 'mouth' : MOUTH_POS}
+)

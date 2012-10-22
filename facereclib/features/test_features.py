@@ -42,9 +42,6 @@ class FeatureExtractionTest(unittest.TestCase):
   def config(self, file):
     return imp.load_source('config', os.path.join('config', 'features', file))
 
-  def pre_config(self, file):
-    return imp.load_source('config', os.path.join('config', 'preprocessing', file))
-
 
   def train_set(self, feature, count = 50, a = 0, b = 1):
     # generate a random sequence of features
@@ -159,8 +156,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
   def test06_sift_key_points(self):
     # we need the preprocessor tool to actually read the data
-    config = self.pre_config('keypoints.py')
-    preprocessor = config.preprocessor(config)
+    preprocessor = facereclib.preprocessing.Keypoints()
     image = preprocessor.read_image(self.input_dir('key_points.hdf5'))
 
     # now, we extract features from it

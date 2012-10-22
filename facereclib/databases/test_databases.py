@@ -19,14 +19,14 @@
 
 
 import unittest
-import imp
 import os
+from .. import utils
 from nose.plugins.skip import SkipTest
 
 class DatabaseTest(unittest.TestCase):
 
   def config(self, file):
-    return imp.load_source('config', os.path.join('config', 'database', file)).database
+    return utils.read_config_file(os.path.join('config', 'database', file), 'database')
 
   def check_database(self, database, groups = ('dev',)):
     self.assertTrue(len(database.all_files()) > 0)

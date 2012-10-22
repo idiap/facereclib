@@ -29,7 +29,7 @@ class Preprocessor:
 
   def __init__(self):
     # Each class needs to have a constructor taking
-    # all the parameters that are required for the proprocessing as arguments
+    # all the parameters that are required for the preprocessing as arguments
     pass
 
   # The call function (i.e. the operator() in C++ terms)

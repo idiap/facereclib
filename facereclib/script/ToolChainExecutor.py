@@ -52,12 +52,10 @@ class ToolChainExecutor:
     self.m_args = args
 
     # generate the tools that we will need
-    self.m_database = imp.load_source('database', args.database).database
+    self.m_database = utils.read_config_file(args.database, 'database')
+    self.m_preprocessor = utils.read_config_file(args.preprocessor, 'preprocessor')
 
     # TODO: replace this by a proper class
-    self.m_preprocessor_config =  imp.load_source('preprocessor', args.preprocessor)
-    self.m_preprocessor = self.m_preprocessor_config.preprocessor(self.m_preprocessor_config)
-
     self.m_extractor_config = imp.load_source('extractor', args.features)
     self.m_extractor = self.m_extractor_config.feature_extractor(self.m_extractor_config)
 

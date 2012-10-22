@@ -25,29 +25,46 @@ from .FaceCrop import FaceCrop
 class INormLBP (FaceCrop):
   """Crops the face according to the eye positions (if given), and performs I-Norm LBP on the resulting image"""
 
-  def __init__(self, config):
-    # call base class constructor
-    FaceCrop.__init__(self, config)
+  def __init__(self,
+               radius = 2,  # Radius of the LBP
+               is_uniform = False, # use uniform LBP?
+               is_circular = True, # use circular LBP?
+               is_rotation_invariant = False,
+               compare_to_average = False,
+               add_average_bit = False,
+               # Parameters of face cropping; need to be adapted, if set
+               cropped_image_size = None,# resolution of the cropped image, in order (HEIGHT,WIDTH); if not given, no face cropping will be performed
+               cropped_positions = None, # dictionary of the cropped positions, usually: {'reye':(RIGHT_EYE_Y, RIGHT_EYE_X) , 'leye':(LEFT_EYE_Y, LEFT_EYE_X)}
+               **kwargs
+               ):
 
-    # overwrite base class functions to add radius of the LBP operator
-    offset = config.OFFSET + config.RADIUS
-    real_h = config.CROPPED_IMAGE_HEIGHT + 2 * offset
-    real_w = config.CROPPED_IMAGE_WIDTH + 2 * offset
-    self.m_frontal_norm = bob.ip.FaceEyesNorm(real_h, real_w, config.RIGHT_EYE_POS[0] + offset, config.RIGHT_EYE_POS[1] + offset, config.LEFT_EYE_POS[0] + offset, config.LEFT_EYE_POS[1] + offset)
-    if hasattr(config, 'MOUTH_POS'):
-      self.m_profile_norm = bob.ip.FaceEyesNorm(real_h, real_w, config.EYE_POS[0] + offset, config.EYE_POS[1] + offset, config.MOUTH_POS[0] + offset, config.MOUTH_POS[1] + offset)
-    self.m_image = numpy.ndarray((real_h, real_w), numpy.float64)
-    self.m_mask = numpy.ndarray((real_h, real_w), numpy.bool)
+    self.m_radius = radius
+    if cropped_image_size is not None:
+      assert len(cropped_image_size) == 2
+      cropped_image_size = tuple([pos + 2*radius for pos in cropped_image_size])
+    if cropped_positions is not None:
+      for key in cropped_positions:
+        cropped_positions[key] = tuple([pos + radius for pos in cropped_positions[key]])
+
+    # call base class constructor
+    FaceCrop.__init__(self,
+                      cropped_image_size = cropped_image_size,
+                      cropped_positions = cropped_positions,
+                      **kwargs)
 
     # lbp extraction
-    self.m_lgb_extractor = bob.ip.LBP8R(config.RADIUS, config.IS_CIRCULAR, config.COMPARE_TO_AVERAGE, config.ADD_AVERAGE_BIT, config.IS_UNIFORM, config.IS_ROTATION_INVARIANT, 0)
-    self.m_i_norm_image = numpy.ndarray((config.CROPPED_IMAGE_HEIGHT + 2 * config.OFFSET, config.CROPPED_IMAGE_WIDTH + 2 * config.OFFSET), numpy.uint16)
+    self.m_lgb_extractor = bob.ip.LBP8R(radius, is_circular, compare_to_average, add_average_bit, is_uniform, is_rotation_invariant, 0)
+    if self.m_perform_image_cropping:
+      self.m_i_norm_image = numpy.ndarray([size - 2*radius for size in self.m_cropped_image.shape], numpy.uint16)
+    else:
+      self.m_i_norm_image = None
+
 
 
   def i_norm(self, image):
     """Computes the I-Norm-LBP normalization on the given image"""
     # check the shape of the image and correct it if needed
-    desired_shape = (image.shape[0] - 2*self.m_config.RADIUS, image.shape[1] - 2*self.m_config.RADIUS)
+    desired_shape = tuple([size - 2*self.m_radius for size in image.shape])
     if self.m_i_norm_image.shape != desired_shape:
       self.m_i_norm_image = numpy.ndarray(desired_shape, numpy.uint16)
 
@@ -64,11 +81,10 @@ class INormLBP (FaceCrop):
     # compute I-Norm-LBP image
     i_norm_image = self.i_norm(image)
 
-    if annotations != None:
+    if self.m_perform_image_cropping and annotations != None:
       # set the positions that were masked during face cropping to 0; respect the size change of the two images!
       # I am not sure if 0 is the right value here...
-      R = self.m_config.RADIUS
-      i_norm_image[self.m_mask[R:-R,R:-R] == False] = 0
+      i_norm_image[self.m_cropped_mask[self.m_radius:-self.m_radius, self.m_radius:-self.m_radius] == False] = 0
 
     # save the image to file
     return i_norm_image.astype(numpy.float64)

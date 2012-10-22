@@ -13,6 +13,7 @@ class Cepstral (Preprocessor):
   """Extracts Cepstral coefficients"""
   def __init__(self, config):
     Preprocessor.__init__(self)
+    raise NotImplementedError("This class needs to be restructured to be able to use it with the current version of the FaceRecLib.")
     self.m_config = config
 
   def _read(self, filename):

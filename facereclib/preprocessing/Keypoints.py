@@ -26,14 +26,15 @@ from .Preprocessor import Preprocessor
 class Keypoints (Preprocessor):
   """Extracts keypoints"""
 
-  def __init__(self, config):
-    self.m_config = config
+  def __init__(self, color_channel = 'gray'):
+    # call base class constructor
+    Preprocessor.__init__(self)
+    self.m_color_channel = color_channel
 
   def extract_keypoints(self, image, annotations):
     """Executes the keypoints extractor"""
     # convert to grayscale
-    # TODO: Use the utils... function instead
-    image = bob.ip.rgb_to_gray(image)
+    image = utils.gray_channel(image, self.m_color_channel)
 
     # Creates a keypoints numpy array
     # (storing keypoints using the alphabetical order of the labels)

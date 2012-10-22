@@ -30,8 +30,22 @@ class File:
   path = None
 
 
+
 class Database:
-  def __init__(self, name, original_directory, original_extension, annotation_directory = None, annotation_extension = '.pos', annotation_type = None, protocol = 'Default'):
+  """This class represents the basic API for database access.
+  Please use this class as a base class for your database access classes.
+  Do not forget to call the constructor of this base class in your derived class."""
+
+  def __init__(self,
+               name,
+               original_directory,
+               original_extension,
+               annotation_directory = None,
+               annotation_extension = '.pos',
+               annotation_type = None,
+               protocol = 'Default'
+               ):
+
     self.name = name
     self.original_directory = original_directory
     self.original_extension = original_extension
@@ -41,16 +55,22 @@ class Database:
     self.protocol = protocol
 
 
+  ###########################################################################
+  ### Helper functions that you might want to use in derived classes
+  ###########################################################################
   def sort(self, files):
+    """Returns a sorted version of the given list of File's (or other structures that define an 'id' data member).
+    The files will be sorted according to their id."""
     return sorted(files, cmp=lambda x,y: cmp(x.id, y.id))
 
   def arrange_by_client(self, files):
+    """Arranges the given list of files by client id.
+    This function returns a list of lists of File's."""
     client_files = {}
     for file in files:
       if file.client_id not in client_files:
         client_files[file.client_id] = []
       client_files[file.client_id].append(file)
-
 
     files_by_clients = []
     for client in sorted(client_files.keys()):
@@ -59,13 +79,17 @@ class Database:
 
 
 
+  ###########################################################################
+  ### Interface functions that you need to implement in your class.
+  ###########################################################################
+
   def all_files(self):
     """Returns all files of the database"""
     raise NotImplementedError("Please implement this function in derived classes")
 
 
   def training_files(self, step, arrange_by_client = False):
-    """Returns all training File objects for the given step (might be 'extractor_training, projector_training, enroller_training'), and arranges them by client, if desired"""
+    """Returns all training File objects for the given step (might be 'train_extractor', 'train_projector', 'train_enroller'), and arranges them by client, if desired"""
     raise NotImplementedError("Please implement this function in derived classes")
 
 
@@ -91,6 +115,8 @@ class Database:
 
 
 class DatabaseZT (Database):
+  """This class defines additional API functions that are required to compute ZT score normalization.
+  During construction, please call the constructor of the base class 'Database' directly."""
 
   def t_model_ids(self, group = 'dev'):
     """Returns a list of T-Norm model ids for the given group"""

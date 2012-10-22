@@ -6,13 +6,9 @@ import facereclib
 import os
 execfile(os.path.join(os.path.dirname(__file__), 'face_crop.py'))
 
-preprocessor = facereclib.preprocessing.TanTriggs
-
-# Tan Triggs
-GAMMA = 0.2
-SIGMA0 = 1.
-SIGMA1 = 2.
-SIZE = 5
-THRESHOLD = 10.
-ALPHA = 0.1
+# we use the Tan&Triggs algorithm with default parameters
+preprocessor = facereclib.preprocessing.TanTriggs(
+  cropped_image_size = (CROPPED_IMAGE_HEIGHT, CROPPED_IMAGE_WIDTH),
+  cropped_positions = {'leye' : LEFT_EYE_POS, 'reye' : RIGHT_EYE_POS, 'eye' : EYE_POS, 'mouth' : MOUTH_POS}
+)
 

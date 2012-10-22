@@ -27,17 +27,22 @@ from .FaceCrop import FaceCrop
 class SelfQuotientImage (FaceCrop):
   """Crops the face according to the eye positions (if given), computes the self quotient image."""
 
-  def __init__(self, config):
+  def __init__(self, variance = 2., **kwargs):
     # call base class function
-    FaceCrop.__init__(self, config)
+    FaceCrop.__init__(self, **kwargs)
 
-    size = max(1, int(3. * math.sqrt(config.VARIANCE)))
-    self.m_self_quotient = bob.ip.SelfQuotientImage(size_min = size, sigma2 = config.VARIANCE)
-    self.m_self_quotient_image = numpy.ndarray(self.m_image.shape, numpy.float64)
+    size = max(1, int(3. * math.sqrt(variance)))
+    self.m_self_quotient = bob.ip.SelfQuotientImage(size_min = size, sigma2 = variance)
+
+    if self.m_perform_image_cropping:
+      self.m_self_quotient_image = numpy.ndarray(self.m_cropped_image.shape, numpy.float64)
+    else:
+      self.m_self_quotient_image = None
+
 
   def self_quotient(self, image):
     # create image in desired shape, if necessary
-    if self.m_self_quotient_image.shape != image.shape:
+    if self.m_self_quotient_image is None or self.m_self_quotient_image.shape != image.shape:
       self.m_self_quotient_image = numpy.ndarray(image.shape, numpy.float64)
 
     # perform Tan&Triggs normalization
@@ -54,9 +59,9 @@ class SelfQuotientImage (FaceCrop):
     # compute self quotient image
     self_quotient_image = self.self_quotient(image)
 
-    if annotations != None:
+    if self.m_perform_image_cropping and annotations != None:
       # set the positions that were masked during face cropping to 0
-      self_quotient_image[self.m_mask == False] = 0.
+      self_quotient_image[self.m_cropped_mask == False] = 0.
 
     # save the image to file
     return self_quotient_image

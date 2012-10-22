@@ -21,6 +21,8 @@
 from .Database import Database, DatabaseZT
 
 class DatabaseXBob (Database):
+  """This class can be used whenever you have a database that follows the default XBob database interface."""
+
   def __init__(self,
                database,
                name, # The name of the database; will be used as part of the directory structure
@@ -103,6 +105,7 @@ class DatabaseXBob (Database):
 
 
 class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
+  """This class can be used whenever you have a database that follows the default XBob database interface defining file lists for ZT score normalization."""
 
   def __init__(self,
                database,

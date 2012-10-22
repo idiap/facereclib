@@ -4,13 +4,13 @@ import facereclib
 
 # copy the settings of the face cropping
 import os
-execfile(os.path.join(os.path.dirname(__file__), 'face_crop.py'))
+execfile(os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'preprocessing', 'face_crop.py'))
 
 # fixed locations of the eyes; if this is set, the hand-labeled eye positions will be ignored (if available),
 # and instead it is assumed that a detector was run before and put the eye positions to these locations:
-# Here, I have put positions that should fit well with the LFW database
-FIXED_RIGHT_EYE_POS = (110, 100)
-FIXED_LEFT_EYE_POS = (110, 150)
+# Here, I have put the same positions as the annotations should provide, so the result should be identical
+FIXED_LEFT_EYE_POS = (170, 222)
+FIXED_RIGHT_EYE_POS = (176, 131)
 
 preprocessor = facereclib.preprocessing.FaceCrop(
   cropped_image_size = (CROPPED_IMAGE_HEIGHT, CROPPED_IMAGE_WIDTH),

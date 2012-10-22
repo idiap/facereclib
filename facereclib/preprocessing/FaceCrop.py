@@ -26,19 +26,64 @@ from .Preprocessor import Preprocessor
 class FaceCrop (Preprocessor):
   """Crops the face according to the eye positions"""
 
-  def __init__(self, config):
+  def __init__(self,
+               cropped_image_size = None,# resolution of the cropped image, in order (HEIGHT,WIDTH); if not given, no face cropping will be performed
+               cropped_positions = None, # dictionary of the cropped positions, usually: {'reye':(RIGHT_EYE_Y, RIGHT_EYE_X) , 'leye':(LEFT_EYE_Y, LEFT_EYE_X)}
+               fixed_positions = None,   # dictionary of FIXED positions in the original image; if specified, annotations from the database will be ignored
+               color_channel = 'gray',   # the color channel to extract from colored images, if colored images are in the database
+               offset = 0                # if your feature extractor requires a specific offset, you might want to specify it here
+               ):
+
+    # call base class constructor
     Preprocessor.__init__(self)
-    self.m_config = config
-    self.m_color_channel = config.COLOR_CHANNEL if hasattr(config, 'COLOR_CHANNEL') else 'gray'
-    # prepare image normalization
-    offset = config.OFFSET
-    real_h = config.CROPPED_IMAGE_HEIGHT + 2 * offset
-    real_w = config.CROPPED_IMAGE_WIDTH + 2 * offset
-    self.m_frontal_norm = bob.ip.FaceEyesNorm(real_h, real_w, config.RIGHT_EYE_POS[0] + offset, config.RIGHT_EYE_POS[1] + offset, config.LEFT_EYE_POS[0] + offset, config.LEFT_EYE_POS[1] + offset)
-    if hasattr(config, 'MOUTH_POS'):
-      self.m_profile_norm = bob.ip.FaceEyesNorm(real_h, real_w, config.EYE_POS[0] + offset, config.EYE_POS[1] + offset, config.MOUTH_POS[0] + offset, config.MOUTH_POS[1] + offset)
-    self.m_image = numpy.ndarray((real_h, real_w), numpy.float64)
-    self.m_mask = numpy.ndarray((real_h, real_w), numpy.bool)
+
+    self.m_cropped_image_size = cropped_image_size
+    self.m_cropped_positions = cropped_positions
+    self.m_fixed_postions = fixed_positions
+    self.m_color_channel = color_channel
+    self.m_offset = offset
+
+    if fixed_positions:
+      assert len(fixed_positions) == 2
+
+    # define our set of functions
+    self.m_croppers = {}
+    self.m_original_masks = {}
+
+    self.m_perform_image_cropping = self.m_cropped_image_size is not None
+
+    if self.m_perform_image_cropping:
+      # define the preprocessed image once
+      self.m_cropped_image = numpy.ndarray((self.m_cropped_image_size[0] + 2 * self.m_offset, self.m_cropped_image_size[1] + 2 * self.m_offset), numpy.float64)
+      # define the mask; this mask can be used in derived classes to further process the image
+      self.m_cropped_mask = numpy.ndarray(self.m_cropped_image.shape, numpy.bool)
+
+  def __cropper__(self, pair):
+    key = (pair[0] + "+" + pair[1])
+    assert pair[0] in self.m_cropped_positions and pair[1] in self.m_cropped_positions
+
+    if key not in self.m_croppers:
+      # generate cropper on the fly
+      cropper = bob.ip.FaceEyesNorm(self.m_cropped_image_size[0] + 2 * self.m_offset, # cropped image height
+                                    self.m_cropped_image_size[1] + 2 * self.m_offset, # cropped image width
+                                    self.m_cropped_positions[pair[0]][0] + self.m_offset, # Y of first position (usually: right eye)
+                                    self.m_cropped_positions[pair[0]][1] + self.m_offset, # X of first position (usually: right eye)
+                                    self.m_cropped_positions[pair[1]][0] + self.m_offset,  # Y of second position (usually: left eye)
+                                    self.m_cropped_positions[pair[1]][1] + self.m_offset)  # X of second position (usually: left eye)
+      self.m_croppers[key] = cropper
+
+    # return cropper for this type
+    return self.m_croppers[key]
+
+  def __mask__(self, shape):
+    key = (str(shape[0]) + "x" + str(shape[1]))
+    if key not in self.m_original_masks:
+      # generate mask for the given image resolution
+      mask = numpy.ndarray(shape, numpy.bool)
+      mask.fill(True)
+      self.m_original_masks[key] = mask
+    # return the stored mask for the given resolution
+    return self.m_original_masks[key]
 
 
   def crop_face(self, image, annotations):
@@ -46,40 +91,42 @@ class FaceCrop (Preprocessor):
     # convert to the desired color channel
     image = utils.gray_channel(image, self.m_color_channel)
 
-    mask = numpy.ndarray(image.shape, numpy.bool)
-    mask.fill(True)
+    if not self.m_perform_image_cropping:
+      return image
 
-    if hasattr(self.m_config, 'FIXED_RIGHT_EYE') and hasattr(self.m_config, 'FIXED_LEFT_EYE') or hasattr(self.m_config, 'FIXED_EYE') and hasattr(self.m_config, 'FIXED_MOUTH'):
-      # use the fixed eye positions to perform normalization
-      if annotations == None or ('leye' in annotations and 'reye' in annotations):
-        assert hasattr(self.m_config, 'FIXED_RIGHT_EYE') and hasattr(self.m_config, 'FIXED_LEFT_EYE')
-        # use the frontal normalizer
-        right = self.m_config.FIXED_RIGHT_EYE
-        left = self.m_config.FIXED_LEFT_EYE
-        self.m_frontal_norm(image, mask, self.m_image, self.m_mask, right[0], right[1], left[0], left[1])
-      else:
-        assert hasattr(self.m_config, 'FIXED_EYE') and hasattr(self.m_config, 'FIXED_MOUTH')
-        # use profile normalization
-        eye = self.m_config.FIXED_EYE
-        mouth = self.m_config.FIXED_MOUTH
-        self.m_profile_norm(image, mask, self.m_image, self.m_mask, eye[0], eye[1], mouth[0], mouth[1])
-
-    elif annotations == None:
-      # simply return the image
+    # check, which type of annotations we have
+    if self.m_fixed_postions:
+      # get the cropper for the fixed positions
+      keys = sorted(self.m_fixed_postions.keys())
+      # take the fixed annotations
+      annotations = self.m_fixed_postions
+    elif annotations:
+      # get cropper for given annotations
+      for pair in (('reye', 'leye'), ('eye', 'mouth')):
+        if pair[0] in annotations and pair[1] in annotations:
+          keys = pair
+    else:
+      # No annotations and no fixed positions: don't do any processing
       return image.astype(numpy.float64)
 
-    else:
-      assert ('leye' in annotations and 'reye' in annotations) or ('eye' in annotations and 'mouth' in annotations)
-      if 'leye' in annotations and 'reye' in annotations:
-        # use the frontal normalizer
-        self.m_frontal_norm(image, mask, self.m_image, self.m_mask, annotations['reye'][0], annotations['reye'][1], annotations['leye'][0], annotations['leye'][1])
-      else:
-        # use profile normalization
-        self.m_profile_norm(image, mask, self.m_image, self.m_mask, annotations['eye'][0], annotations['eye'][1], annotations['mouth'][0], annotations['mouth'][1])
+    cropper = self.__cropper__(keys)
+    mask = self.__mask__(image.shape)
+
+    # perform the cropping
+    cropper(image,  # input image
+            mask,   # full input mask
+            self.m_cropped_image, # cropped image
+            self.m_cropped_mask,  # cropped mase
+            annotations[keys[0]][0], # Y-position of first annotation, usually left eye
+            annotations[keys[0]][1], # X-position of first annotation, usually left eye
+            annotations[keys[1]][0], # Y-position of first annotation, usually right eye
+            annotations[keys[1]][1]) # X-position of first annotation, usually right eye
 
     # assure that pixels from the masked area are 0
-    self.m_image[self.m_mask == False] = 0.
-    return self.m_image
+    self.m_cropped_image[self.m_cropped_mask == False] = 0.
+
+    self.save_image(self.m_cropped_image, '/scratch/mguenther/temp/cropped.hdf5')
+    return self.m_cropped_image
 
 
   def __call__(self, image, annotations = None):

@@ -2,5 +2,5 @@
 
 import facereclib
 
-preprocessor = facereclib.preprocessing.Keypoints
+preprocessor = facereclib.preprocessing.Keypoints()
 

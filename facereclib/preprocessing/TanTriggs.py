@@ -24,19 +24,35 @@ from .Preprocessor import Preprocessor
 from .FaceCrop import FaceCrop
 
 class TanTriggs (FaceCrop):
-  """Crops the face and applies Tan&Triggs algorithm"""
+  """Crops the face (if desired) and applies Tan&Triggs algorithm"""
 
-  def __init__(self, config):
-    # call base class constructor
-    FaceCrop.__init__(self, config)
-    self.m_tan_triggs = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
-    self.m_tan_triggs_image = numpy.ndarray(self.m_image.shape, numpy.float64)
+  def __init__(self,
+               gamma = 0.2,
+               sigma0 = 1,
+               sigma1 = 2,
+               size = 5,
+               threshold = 10.,
+               alpha = 0.1,
+               **kwargs
+               ):
+
+    # call base class constructor with its set of parameters
+    FaceCrop.__init__(self, **kwargs)
+
+    if self.m_perform_image_cropping:
+      # input image will be the output of the face cropper
+      self.m_tan_triggs_image = numpy.ndarray(self.m_cropped_image.shape, numpy.float64)
+    else:
+      # resolution of input image is not known yet
+      self.m_tan_triggs_image = None
+
+    self.m_tan_triggs = bob.ip.TanTriggs(gamma, sigma0, sigma1, size, threshold, alpha)
 
 
   def tan_triggs(self, image):
     """Performs the Tan&Triggs normalization to the given image"""
     # create image in desired shape, if necessary
-    if self.m_tan_triggs_image.shape != image.shape:
+    if self.m_tan_triggs_image is None or self.m_tan_triggs_image.shape != image.shape:
       self.m_tan_triggs_image = numpy.ndarray(image.shape, numpy.float64)
 
     # perform Tan&Triggs normalization
@@ -53,9 +69,9 @@ class TanTriggs (FaceCrop):
     # perform Tan&Triggs normalization
     tan_triggs_image = self.tan_triggs(image)
 
-    if annotations != None:
+    if self.m_perform_image_cropping and annotations != None:
       # set the positions that were masked during face cropping to 0
-      tan_triggs_image[self.m_mask == False] = 0.
+      tan_triggs_image[self.m_cropped_mask == False] = 0.
 
     # save the image to file
     return tan_triggs_image
@@ -65,12 +81,20 @@ class TanTriggs (FaceCrop):
 class TanTriggsVideo (Preprocessor):
   """Applies the Tan-Triggs algorithm to each frame in a video"""
 
-  def __init__(self, config):
+  def __init__(self,
+               gamma = 0.2,
+               sigma0 = 1,
+               sigma1 = 2,
+               size = 5,
+               threshold = 10.,
+               alpha = 0.1,
+               color_channel = 'gray',
+               ):
+
     Preprocessor.__init__(self)
-    self.m_config = config
-    self.m_color_channel = config.color_channel if hasattr(config, 'color_channel') else 'gray'
+    self.m_color_channel = color_channel
     # prepare image normalization
-    self.m_tan = bob.ip.TanTriggs(config.GAMMA, config.SIGMA0, config.SIGMA1, config.SIZE, config.THRESHOLD, config.ALPHA)
+    self.m_tan = bob.ip.TanTriggs(gamma, sigma0, sigma1, size, threshold, alpha)
 
   def read_original_image(self, video_file):
     """Reads the original imge (in this case a utils.FrameContainer) from the given file"""
@@ -86,9 +110,9 @@ class TanTriggsVideo (Preprocessor):
       image = utils.gray_channel(image, self.m_color_channel)
 
       # Perform Tan-Triggs and store result
-      self.m_tan_image = numpy.ndarray(image.shape, numpy.float64)
+      tan_image = numpy.ndarray(image.shape, numpy.float64)
       self.m_tan(image, self.m_tan_image)
-      output_frame_container.add_frame(frame_id,self.m_tan_image,quality)
+      output_frame_container.add_frame(frame_id, tan_image, quality)
 
     return output_frame_container
 

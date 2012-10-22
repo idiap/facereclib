@@ -2,12 +2,15 @@
 
 import facereclib
 
+raise NotImplementedError("This configuration file needs to be restructured to be able to use it with the current version of the FaceRecLib.")
+
+
 preprocessor = facereclib.preprocessing.Cepstral
 
 # Cepstral parameters
 win_length_ms = 20;
 win_shift_ms = 10;
-n_filters = 24; 
+n_filters = 24;
 dct_norm = 1.0;
 #dct_norm = math.sqrt(2.0 / n_filters);
 f_min = 0.0;

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='facereclib',
-    version='0.1',
+    version='0.2',
     description='Face recognition and face verification toolchain',
 
     #url='http://pypi.python.org/pypi/TowelStuff/',
@@ -28,7 +28,7 @@ setup(
 
     install_requires=[
         "setuptools", # for whatever
-        "bob >= 1.1.0a0",      # base signal proc./machine learning library
+        "bob >= 1.1.1",      # base signal proc./machine learning library
         # databases
     ],
 )
