@@ -34,7 +34,7 @@ logger = logging.getLogger("bob.facereclib")
 def add_logger_command_line_option(parser):
   """Adds the verbosity command line option to the given parser."""
   parser.add_argument('-v', '--verbose', action = 'count', default = 0,
-    help = 'Increase the verbosity level from 0 (only error messages) to 1 (warnings), 2 (log messages), 3 (debug information).')
+    help = "Increase the verbosity level from 0 (only error messages) to 1 (warnings), 2 (log messages), 3 (debug information) by adding the --verbose option as often as desired (e.g. '-vvv' for debug).")
 
 def set_verbosity_level(level):
   """Sets the log level to 0: Error; 1: Warn; 2: Info; 3: Debug."""

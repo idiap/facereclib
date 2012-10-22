@@ -7,7 +7,7 @@ import argparse
 from .. import utils
 
 # This is the default set of algorithms that can be run using this script.
-all_algorithms = ('eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda', 'bic')
+all_algorithms = ('dummy', 'eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda', 'bic')
 
 def command_line_arguments():
   """Defines the command line parameters that are accepted."""
@@ -54,6 +54,13 @@ def command_line_arguments():
 # - The features to be extracted
 # - The algorithm to be run
 # - The grid configuration that it requires (only used when the --grid option is chosen)
+
+def dummy():
+  """Dummy script just for testing the tool chain"""
+  features      = "eigenfaces.py"
+  tool          = "dummy.py"
+  grid          = "grid.py"
+  return (features, tool, grid)
 
 def eigenface():
   """Simple eigenface comparison"""
@@ -142,8 +149,8 @@ def main():
 
   # Check the database configuration file
   database = os.path.join(config_dir, "database", args.database + "_" + args.protocol + ".py")
-  has_zt_norm = args.database in ('banca', 'mobio', 'xm2vts')
-  has_eval = args.database in ('banca', 'mobio', 'xm2vts', 'lfw')
+  has_zt_norm = args.database in ('banca', 'mobio', 'scface')
+  has_eval = args.database in ('banca', 'mobio', 'scface', 'xm2vts', 'lfw')
 
   if args.evaluate:
     # evaluate the results
