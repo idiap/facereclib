@@ -11,10 +11,10 @@ from .. import utils
 class Eigenface (Extractor):
   """Extracts grid graphs from the images"""
 
-  def __init__(self, setup):
+  def __init__(self, subspace_dimension):
     # We have to register that this function will need a training step
     Extractor.__init__(self, requires_training = True)
-    self.m_config = setup
+    self.m_subspace_dimension = subspace_dimension
 
   def train(self, image_list, extractor_file):
     """Trains the eigenface extractor using the given list of training images"""
@@ -25,7 +25,7 @@ class Eigenface (Extractor):
     t = bob.trainer.SVDPCATrainer()
     self.m_machine, __eig_vals = t.train(data)
     # Machine: get shape, then resize
-    self.m_machine.resize(self.m_machine.shape[0], self.m_config.SUBSPACE_DIMENSION)
+    self.m_machine.resize(self.m_machine.shape[0], self.m_subspace_dimension)
     self.m_machine.save(bob.io.HDF5File(extractor_file, "w"))
 
 

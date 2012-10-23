@@ -10,28 +10,44 @@ from .Extractor import Extractor
 class SIFTKeypoints (Extractor):
   """Extracts Sift descriptors according to the given keypoints"""
 
-  def __init__(self, config):
+  # TODO: REFACTOR: assign better names for variables
+  def __init__(
+      self,
+      sigmas,
+      height,
+      width,
+      n_intervals,
+      n_octaves,
+      octave_min,
+      edge_thres,
+      peak_thres,
+      magnif,
+      estimate_orientation = False
+  ):
+
+    # call base class constructor
     Extractor.__init__(self)
-    self.m_config = config
+
     # prepare SIFT extractor
-    self.m_n_scales = config.N_SCALES
+    self.m_n_scales = len(sigmas)
     self.m_sigmas = numpy.ndarray(shape=(self.m_n_scales,), dtype=numpy.float64)
-    if self.m_n_scales >= 5: self.m_sigmas[4] = config.SIGMA4
-    if self.m_n_scales >= 4: self.m_sigmas[3] = config.SIGMA3
-    if self.m_n_scales >= 3: self.m_sigmas[2] = config.SIGMA2
-    if self.m_n_scales >= 2: self.m_sigmas[1] = config.SIGMA1
-    if self.m_n_scales >= 1: self.m_sigmas[0] = config.SIGMA0
-    self.m_estimate_orientation = config.ESTIMATE_ORIENTATION
-    if(config.ESTIMATE_ORIENTATION): self.m_len_keypoint = 3
+    # TODO: restructure this code
+    if self.m_n_scales >= 5: self.m_sigmas[4] = sigmas[4]
+    if self.m_n_scales >= 4: self.m_sigmas[3] = sigmas[3]
+    if self.m_n_scales >= 3: self.m_sigmas[2] = sigmas[2]
+    if self.m_n_scales >= 2: self.m_sigmas[1] = sigmas[1]
+    if self.m_n_scales >= 1: self.m_sigmas[0] = sigmas[0]
+    self.m_estimate_orientation = estimate_orientation
+    if(estimate_orientation): self.m_len_keypoint = 3
     else: self.m_len_keypoint = 4
-    self.m_height = config.HEIGHT
-    self.m_width = config.WIDTH
-    self.m_n_intervals = config.N_INTERVALS
-    self.m_n_octaves = config.N_OCTAVES
-    self.m_octave_min = config.OCTAVE_MIN
-    self.m_peak_thres = config.PEAK_THRES
-    self.m_edge_thres = config.EDGE_THRES
-    self.m_magnif = config.MAGNIF
+    self.m_height = height
+    self.m_width = width
+    self.m_n_intervals = n_intervals
+    self.m_n_octaves = n_octaves
+    self.m_octave_min = octave_min
+    self.m_peak_thres = peak_thres
+    self.m_edge_thres = edge_thres
+    self.m_magnif = magnif
     # SIFT extractor
     self.m_sift_extract = bob.ip.VLSIFT(self.m_height, self.m_width, self.m_n_intervals, self.m_n_octaves, self.m_octave_min, self.m_peak_thres, self.m_edge_thres, self.m_magnif)
 

@@ -2,12 +2,13 @@
 
 import facereclib
 
-# copy the settings of the face cropping with offset
+# copy the settings of the face cropping
 import os
-execfile(os.path.join(os.path.dirname(__file__), 'face_crop_with_offset.py'))
+execfile(os.path.join(os.path.dirname(__file__), 'face_crop.py'))
 
-# copy the settings of the Tan & Triggs algorithm
-execfile(os.path.join(os.path.dirname(__file__), 'tan_triggs.py'))
-
-preprocessor = facereclib.preprocessing.TanTriggs
-
+# define the preprocessor
+preprocessor = facereclib.preprocessing.TanTriggs(
+    cropped_image_size = (CROPPED_IMAGE_HEIGHT, CROPPED_IMAGE_WIDTH),
+    cropped_positions = {'leye' : LEFT_EYE_POS, 'reye' : RIGHT_EYE_POS, 'eye' : EYE_POS, 'mouth' : MOUTH_POS},
+    offset = 2
+)

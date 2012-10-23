@@ -4,47 +4,82 @@
 
 import bob
 import numpy
+import math
 from .Extractor import Extractor
 
 class GridGraph (Extractor):
   """Extracts grid graphs from the images"""
 
-  def __init__(self, setup):
+  def __init__(
+      self,
+      # Gabor parameters
+      gabor_directions = 8,
+      gabor_scales = 5,
+      gabor_sigma = 2. * math.pi,
+      gabor_maxium_frequency = math.pi / 2.,
+      gabor_frequency_step = math.sqrt(.5),
+      gabor_power_of_k = 0,
+      gabor_dc_free = True,
+
+      # what kind of information to extract
+      normalize_gabor_jets = True,
+      extract_gabor_phases = True,
+
+      # setup of the aligned grid
+      eyes = None, # if set, the grid setup will be aligned to the eye positions {'leye' : LEFT_EYE_POS, 'reye' : RIGHT_EYE_POS},
+      nodes_between_eyes = 4,
+      nodes_along_eyes = 2,
+      nodes_above_eyes = 3,
+      nodes_below_eyes = 7,
+
+      # setup of static grid
+      first_node = None,
+      node_distance = None,
+      last_node = None
+  ):
+
+    # call base class constructor
     Extractor.__init__(self)
-    #   generate extractor machine
+
+    # create Gabor wavelet transform class
     self.m_gwt = bob.ip.GaborWaveletTransform(
-          number_of_angles = setup.GABOR_DIRECTIONS,
-          number_of_scales = setup.GABOR_SCALES,
-          sigma = setup.GABOR_SIGMA,
-          k_max = setup.GABOR_MAXIMUM_FREQUENCY,
-          k_fac = setup.GABOR_FREQUENCY_STEP,
-          pow_of_k = setup.GABOR_POWER_OF_K,
-          dc_free = setup.GABOR_DC_FREE
+        number_of_scales = gabor_scales,
+        number_of_angles = gabor_directions,
+        sigma = gabor_sigma,
+        k_max = gabor_maxium_frequency,
+        k_fac = gabor_frequency_step,
+        pow_of_k = gabor_power_of_k,
+        dc_free = gabor_dc_free
     )
 
-    if hasattr(setup, 'COUNT_BETWEEN_EYES'):
-      # compute eye positions from image preprocessing setup
+    # create graph extractor
+    if eyes is not None:
       self.m_graph_machine = bob.machine.GaborGraphMachine(
-              righteye = setup.RIGHT_EYE_POS,
-              lefteye = setup.LEFT_EYE_POS,
-              between = setup.NODE_COUNT_BETWEEN_EYES,
-              along = setup.NODE_COUNT_ALONG_EYES,
-              above = setup.NODE_COUNT_ABOVE_EYES,
-              below = setup.NODE_COUNT_BELOW_EYES
+          righteye = eyes['reye'],
+          lefteye = eyes['leye'],
+          between = nodes_between_eyes,
+          along = nodes_along_eyes,
+          above = nodes_above_eyes,
+          below = nodes_below_eyes
       )
-    elif hasattr(setup, 'FIRST_NODE'):
-      # take the specified positions
-      self.m_graph_machine = bob.machine.GaborGraphMachine(setup.FIRST_NODE, setup.LAST_NODE, setup.NODE_DISTANCE)
     else:
-      raise "The setup of the Grid graph is unknown."
+      assert first_node is not None
+      assert node_distance is not None
+      assert last_node is not None
+      # take the specified nodes
+      self.m_graph_machine = bob.machine.GaborGraphMachine(
+          first = first_node,
+          last = last_node,
+          step = node_distance
+      )
 
     self.m_jet_image = None
-    self.m_normalize_jets = setup.NORMALIZE_GABOR_JETS
-    if isinstance(setup.EXTRACT_GABOR_PHASES, bool):
-      self.m_extract_phases = setup.EXTRACT_GABOR_PHASES
+    self.m_normalize_jets = normalize_gabor_jets
+    if isinstance(extract_gabor_phases, bool):
+      self.m_extract_phases = extract_gabor_phases
       self.m_inline_phases = False
     else:
-      self.m_extract_phases = setup.EXTRACT_GABOR_PHASES == 'inline'
+      self.m_extract_phases = extract_gabor_phases == 'inline'
       self.m_inline_phases = self.m_extract_phases
 
     # preallocate memory for the face graph
@@ -54,7 +89,6 @@ class GridGraph (Extractor):
         self.m_reshaped_graph = numpy.ndarray((self.m_graph_machine.number_of_nodes, 2 * self.m_gwt.number_of_kernels), 'float64')
     else:
       self.m_face_graph = numpy.ndarray((self.m_graph_machine.number_of_nodes, self.m_gwt.number_of_kernels), 'float64')
-
 
 
   def __call__(self, image):

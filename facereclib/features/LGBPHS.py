@@ -4,6 +4,7 @@
 
 import bob
 import numpy
+import math
 
 from .Extractor import Extractor
 from .. import utils
@@ -11,35 +12,79 @@ from .. import utils
 class LGBPHS (Extractor):
   """Extractor for local Gabor binary pattern histogram sequences"""
 
-  def __init__(self, setup):
-    Extractor.__init__(self)
+  def __init__(
+      self,
+      # Block setup
+      block_size,    # 1 or two parameters for block size
+      block_overlap, # 1 or two parameters for block overlap
+      # Gabor parameters
+      gabor_directions = 8,
+      gabor_scales = 5,
+      gabor_sigma = 2. * math.pi,
+      gabor_maxium_frequency = math.pi / 2.,
+      gabor_frequency_step = math.sqrt(.5),
+      gabor_power_of_k = 0,
+      gabor_dc_free = True,
+      use_gabor_phases = False,
+      # LBP parameters
+      lbp_radius = 2,
+      lbp_neighbor_count = 8,
+      lbp_uniform = True,
+      lbp_circular = True,
+      lbp_rotation_invariant = False,
+      lbp_compare_to_average = False,
+      lbp_add_average = False,
+      # histogram options
+      sparse_histogram = False,
+      split_histogram = None
+  ):
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
-    # Initializes LBPHS processor
-    if setup.BLOCK_HEIGHT < setup.BLOCK_Y_OVERLAP or setup.BLOCK_WIDTH < setup.BLOCK_X_OVERLAP:
-      raise ValueError("The overlap is bigger than the block size. This won't work. Please check your setup!")
-    real_h = setup.BLOCK_HEIGHT + 2 * setup.RADIUS
-    real_w = setup.BLOCK_HEIGHT + 2 * setup.RADIUS
-    real_oy = setup.BLOCK_Y_OVERLAP + 2 * setup.RADIUS
-    real_ox = setup.BLOCK_X_OVERLAP + 2 * setup.RADIUS
-    self.m_lgbphs_extractor = bob.ip.LBPHSFeatures(
-          real_h, real_w, real_oy, real_ox,
-          setup.RADIUS, setup.NEIGHBOR_COUNT,
-          setup.IS_CIRCULAR, setup.COMPARE_TO_AVERAGE, setup.ADD_AVERAGE_BIT, setup.IS_UNIFORM, setup.IS_ROTATION_INVARIANT
-    )
 
+    # call base class constructor
+    Extractor.__init__(self)
+
+    # block parameters
+    self.m_block_size = block_size if isinstance(block_size, (tuple, list)) else (block_size, block_size)
+    self.m_block_overlap = block_overlap if isinstance(block_overlap, (tuple, list)) else (block_overlap, block_overlap)
+    if self.m_block_size[0] < self.m_block_overlap[0] or self.m_block_size[1] < self.m_block_overlap[1]:
+      raise ValueError("The overlap is bigger than the block size. This won't work. Please check your setup!")
+
+    # Gabor wavelet transform class
     self.m_gwt = bob.ip.GaborWaveletTransform(
-          number_of_angles = setup.GABOR_DIRECTIONS,
-          number_of_scales = setup.GABOR_SCALES,
-          sigma = setup.GABOR_SIGMA,
-          k_max = setup.GABOR_MAXIMUM_FREQUENCY,
-          k_fac = setup.GABOR_FREQUENCY_STEP,
-          pow_of_k = setup.GABOR_POWER_OF_K,
-          dc_free = setup.GABOR_DC_FREE
+        number_of_scales = gabor_scales,
+        number_of_angles = gabor_directions,
+        sigma = gabor_sigma,
+        k_max = gabor_maxium_frequency,
+        k_fac = gabor_frequency_step,
+        pow_of_k = gabor_power_of_k,
+        dc_free = gabor_dc_free
     )
     self.m_trafo_image = None
-    self.m_split = setup.SPLIT_HISTOGRAM
-    self.m_use_phases = setup.USE_GABOR_PHASES
-    self.m_sparse = setup.USE_SPARSE_HISTOGRAM if hasattr(setup, 'USE_SPARSE_HISTOGRAM') else False
+    self.m_use_phases = use_gabor_phases
+
+
+    # Initializes LBPHS processor
+    real_h = self.m_block_size[0] + 2 * lbp_radius
+    real_w = self.m_block_size[1] + 2 * lbp_radius
+    real_oy = self.m_block_overlap[0] + 2 * lbp_radius
+    real_ox = self.m_block_overlap[1] + 2 * lbp_radius
+
+    self.m_lgbphs_extractor = bob.ip.LBPHSFeatures(
+          block_h = real_h,
+          block_w = real_w,
+          overlap_h = real_oy,
+          overlap_w = real_ox,
+          lbp_radius = float(lbp_radius),
+          lbp_neighbours = lbp_neighbor_count,
+          circular = lbp_circular,
+          to_average = lbp_compare_to_average,
+          add_average_bit = lbp_add_average,
+          uniform = lbp_uniform,
+          rotation_invariant = lbp_rotation_invariant
+    )
+
+    self.m_split = split_histogram
+    self.m_sparse = sparse_histogram
     if self.m_sparse and self.m_split:
       raise ValueError("Sparse histograms cannot be split! Check your setup!")
 
@@ -64,7 +109,7 @@ class LGBPHS (Extractor):
   def __call__(self, image):
     """Extracts the local Gabor binary pattern histogram sequence from the given image"""
     # perform GWT on image
-    if self.m_trafo_image == None or self.m_trafo_image.shape[1:2] != image.shape:
+    if self.m_trafo_image is None or self.m_trafo_image.shape[1:2] != image.shape:
       # create trafo image
       self.m_trafo_image = self.m_gwt.empty_trafo_image(image)
 

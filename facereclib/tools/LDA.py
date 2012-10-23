@@ -11,22 +11,32 @@ from .. import utils
 class LDATool (Tool):
   """Tool for computing linear discriminant analysis (so-called Fisher faces)"""
 
-  def __init__(self, setup):
+  def __init__(
+      self,
+      lda_subspace_dimension = None, # if set, the LDA subspace will be truncated to the given number of dimensions
+      pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA
+      distance_function = bob.math.euclidean_distance,
+      is_distance_function = True
+  ):
     """Initializes the LDA tool with the given configuration"""
-    Tool.__init__(self,
-                  performs_projection = True,
-                  split_training_features_by_client = True)
 
-    self.m_pca_subspace = setup.PCA_SUBSPACE_DIMENSION if hasattr(setup, 'PCA_SUBSPACE_DIMENSION') else None
-    self.m_lda_subspace = setup.LDA_SUBSPACE_DIMENSION if hasattr(setup, 'LDA_SUBSPACE_DIMENSION') else None
+    # call base class constructor and register that the LDA tool performs projection and need the training features split by client
+    Tool.__init__(
+        self,
+        performs_projection = True,
+        split_training_features_by_client = True
+    )
+
+    # copy information
+    self.m_pca_subspace = pca_subspace_dimension
+    self.m_lda_subspace = lda_subspace_dimension
     if self.m_pca_subspace and self.m_lda_subspace and self.m_pca_subspace < self.m_lda_subspace:
       raise ValueError("The LDA subspace is larger than the PCA subspace size. This won't work properly. Please check your setup!")
-    self.m_machine = None
-    self.m_distance_function = setup.distance_function
-    self.m_factor = -1 if not hasattr(setup, 'is_distance_function') or setup.is_distance_function else 1.
 
-    # declare that this LDA tool requires training data separated by identity
-    self.use_training_features_sorted_by_identity = True
+    self.m_machine = None
+    self.m_distance_function = distance_function
+    self.m_factor = -1 if is_distance_function else 1.
+
 
   def __read_data__(self, training_files):
     data = []
@@ -35,24 +45,14 @@ class LDATool (Tool):
       if len(client_files) < 2:
         utils.warn("Skipping client with id %s since the number of client files is only %d" %(client, len(client_files)))
         continue
-      client_data = numpy.vstack([feature.flatten() for feature in client_files])
-      #for k in sorted(client_files.keys()):
-      #  # Loads the file
-      #  feature = client_files[k]
-      #  # Appends in the array; assure that the data is 1-dimensional
-      #  client_data.append(numpy.reshape(feature, feature.size))
-      data.append(client_data)
+      data.append(numpy.vstack([feature.flatten() for feature in client_files]))
 
-    # Returns the list of arrays
+    # Returns the list of lists of arrays
     return data
 
   def __train_pca__(self, training_set):
     """Trains and returns a LinearMachine that is trained using PCA"""
-    data_list = []
-    for client in training_set:
-      for feature in client:
-        # Appends in the array
-        data_list.append(feature)
+    data_list = [feature for client in training_set for feature in client]
     data = numpy.vstack(data_list)
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
@@ -66,15 +66,8 @@ class LDATool (Tool):
   def __perform_pca__(self, machine, training_set):
     """Perform PCA on data"""
     data = []
-    for client in training_set:
-      client_data = []
-      for feature in client:
-        # project data
-        projected_feature = numpy.ndarray(machine.shape[1], numpy.float64)
-        machine(feature, projected_feature)
-        # overwrite data in training set
-        client_data.append(projected_feature)
-      data.append(numpy.vstack(client_data))
+    for client_features in training_set:
+      data.append(numpy.vstack([machine(feature) for feature in client_features]))
     return data
 
 
@@ -94,7 +87,7 @@ class LDATool (Tool):
     if self.m_pca_subspace:
       # compute combined PCA/LDA projection matrix
       combined_matrix = numpy.dot(pca_machine.weights, self.m_machine.weights)
-      # set new weigth matrix (and new mean vector) of novel machine
+      # set new weight matrix (and new mean vector) of novel machine
       self.m_machine = bob.machine.LinearMachine(combined_matrix)
       self.m_machine.input_subtract = pca_machine.input_subtract
 

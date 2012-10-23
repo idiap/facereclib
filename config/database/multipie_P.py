@@ -7,17 +7,17 @@ import facereclib
 cameras = ('24_0', '01_0', '20_0', '19_0', '04_1', '05_0', '05_1', '14_0', '13_0', '08_0', '09_0', '12_0', '11_0')
 
 database = facereclib.databases.DatabaseXBobZT(
-  database = xbob.db.multipie.Database(),
-  name = "multipie",
-  image_directory ="/idiap/resource/database/Multi-Pie/data/",
-  image_extension = ".png",
-  annotation_directory = "/idiap/group/biometric/annotations/multipie/",
-  annotation_type = 'multipie',
-  protocol = 'P',
-  all_files_options = {'cameras' : cameras},
-  extractor_training_options = {'cameras' : cameras},
-  projector_training_options = {'cameras' : cameras, 'world_sampling': 3, 'world_first': True},
-  enroller_training_options = {'cameras' : cameras}
+    database = xbob.db.multipie.Database(),
+    name = "multipie",
+    image_directory ="/idiap/resource/database/Multi-Pie/data/",
+    image_extension = ".png",
+    annotation_directory = "/idiap/group/biometric/annotations/multipie/",
+    annotation_type = 'multipie',
+    protocol = 'P',
+    all_files_options = {'cameras' : cameras},
+    extractor_training_options = {'cameras' : cameras},
+    projector_training_options = {'cameras' : cameras, 'world_sampling': 3, 'world_first': True},
+    enroller_training_options = {'cameras' : cameras}
 )
 
 # this probably is garbage and will be removed soon

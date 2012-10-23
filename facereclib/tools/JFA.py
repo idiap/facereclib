@@ -12,25 +12,40 @@ from . import UBMGMMTool
 class JFATool (UBMGMMTool):
   """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
 
-
-  def __init__(self, setup):
+  def __init__(
+      self,
+      # JFA training
+      subspace_dimension_of_u,       # U subspace dimension
+      subspace_dimension_of_v,       # V subspace dimension
+      jfa_training_iterations = 10,  # Number of EM iterations for the JFA training
+      # JFA enrollment
+      jfa_enroll_iterations = 1,     # Number of iterations for the enrollment phase
+      # parameters of the GMM
+      **kwargs
+  ):
     """Initializes the local UBM-GMM tool with the given file selector object"""
     # call base class constructor
-    UBMGMMTool.__init__(self, setup)
+    UBMGMMTool.__init__(self, **kwargs)
 
     # call tool constructor to overwrite what was set before
-    Tool.__init__(self,
-                  performs_projection = True,
-                  use_projected_features_for_enrollment = True,
-                  requires_enroller_training = True
-                  )
+    Tool.__init__(
+        self,
+        performs_projection = True,
+        use_projected_features_for_enrollment = True,
+        requires_enroller_training = True
+    )
+
+    self.m_subspace_dimension_of_u = subspace_dimension_of_u
+    self.m_subspace_dimension_of_v = subspace_dimension_of_v
+    self.m_jfa_training_iterations = jfa_training_iterations
+    self.m_jfa_enroll_iterations = jfa_enroll_iterations
 
   # Here, we just need to load the UBM from the projector file.
   def load_projector(self, projector_file):
     """Reads the UBM model from file"""
     # read UBM
     self.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(projector_file))
-    self.m_ubm.set_variance_thresholds(self.m_config.GMM_VARIANCE_THRESHOLD)
+    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
     # Initializes GMMStats object
     self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
 
@@ -40,12 +55,12 @@ class JFATool (UBMGMMTool):
   ################ JFA training #########################
   def train_enroller(self, train_features, enroller_file):
     # create a JFABasemachine with the UBM from the base class
-    self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_config.SUBSPACE_DIMENSION_OF_U, self.m_config.SUBSPACE_DIMENSION_OF_V)
+    self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_subspace_dimension_of_u, self.m_subspace_dimension_of_v)
     self.m_jfabase.ubm = self.m_ubm
 
     # train the JFA
     t = bob.trainer.JFABaseTrainer(self.m_jfabase)
-    t.train(train_features, self.m_config.JFA_TRAINING_ITERATIONS)
+    t.train(train_features, self.m_jfa_training_iterations)
 
     # Save the JFA base AND the UBM into the same file
     self.m_jfabase.save(bob.io.HDF5File(enroller_file, "w"))
@@ -74,7 +89,7 @@ class JFATool (UBMGMMTool):
   def enroll(self, enroll_features):
     """Enrolls a GMM using MAP adaptation"""
 
-    self.m_trainer.enrol(enroll_features, self.m_config.JFA_ENROLL_ITERATIONS)
+    self.m_trainer.enrol(enroll_features, self.m_jfa_enroll_iterations)
     # return the resulting gmm
     return self.m_machine
 

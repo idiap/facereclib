@@ -26,15 +26,16 @@ from .FaceCrop import FaceCrop
 class TanTriggs (FaceCrop):
   """Crops the face (if desired) and applies Tan&Triggs algorithm"""
 
-  def __init__(self,
-               gamma = 0.2,
-               sigma0 = 1,
-               sigma1 = 2,
-               size = 5,
-               threshold = 10.,
-               alpha = 0.1,
-               **kwargs
-               ):
+  def __init__(
+      self,
+      gamma = 0.2,
+      sigma0 = 1,
+      sigma1 = 2,
+      size = 5,
+      threshold = 10.,
+      alpha = 0.1,
+      **kwargs
+  ):
 
     # call base class constructor with its set of parameters
     FaceCrop.__init__(self, **kwargs)
@@ -81,15 +82,16 @@ class TanTriggs (FaceCrop):
 class TanTriggsVideo (Preprocessor):
   """Applies the Tan-Triggs algorithm to each frame in a video"""
 
-  def __init__(self,
-               gamma = 0.2,
-               sigma0 = 1,
-               sigma1 = 2,
-               size = 5,
-               threshold = 10.,
-               alpha = 0.1,
-               color_channel = 'gray',
-               ):
+  def __init__(
+     self,
+     gamma = 0.2,
+     sigma0 = 1,
+     sigma1 = 2,
+     size = 5,
+     threshold = 10.,
+     alpha = 0.1,
+     color_channel = 'gray',
+  ):
 
     Preprocessor.__init__(self)
     self.m_color_channel = color_channel

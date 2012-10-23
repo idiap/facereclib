@@ -25,18 +25,19 @@ from .FaceCrop import FaceCrop
 class INormLBP (FaceCrop):
   """Crops the face according to the eye positions (if given), and performs I-Norm LBP on the resulting image"""
 
-  def __init__(self,
-               radius = 2,  # Radius of the LBP
-               is_uniform = False, # use uniform LBP?
-               is_circular = True, # use circular LBP?
-               is_rotation_invariant = False,
-               compare_to_average = False,
-               add_average_bit = False,
-               # Parameters of face cropping; need to be adapted, if set
-               cropped_image_size = None,# resolution of the cropped image, in order (HEIGHT,WIDTH); if not given, no face cropping will be performed
-               cropped_positions = None, # dictionary of the cropped positions, usually: {'reye':(RIGHT_EYE_Y, RIGHT_EYE_X) , 'leye':(LEFT_EYE_Y, LEFT_EYE_X)}
-               **kwargs
-               ):
+  def __init__(
+      self,
+      radius = 2,  # Radius of the LBP
+      is_uniform = False, # use uniform LBP?
+      is_circular = True, # use circular LBP?
+      is_rotation_invariant = False,
+      compare_to_average = False,
+      add_average_bit = False,
+      # Parameters of face cropping; need to be adapted, if set
+      cropped_image_size = None,# resolution of the cropped image, in order (HEIGHT,WIDTH); if not given, no face cropping will be performed
+      cropped_positions = None, # dictionary of the cropped positions, usually: {'reye':(RIGHT_EYE_Y, RIGHT_EYE_X) , 'leye':(LEFT_EYE_Y, LEFT_EYE_X)}
+      **kwargs # remaining parameters of the face cropping
+  ):
 
     self.m_radius = radius
     if cropped_image_size is not None:
@@ -47,10 +48,12 @@ class INormLBP (FaceCrop):
         cropped_positions[key] = tuple([pos + radius for pos in cropped_positions[key]])
 
     # call base class constructor
-    FaceCrop.__init__(self,
-                      cropped_image_size = cropped_image_size,
-                      cropped_positions = cropped_positions,
-                      **kwargs)
+    FaceCrop.__init__(
+        self,
+        cropped_image_size = cropped_image_size,
+        cropped_positions = cropped_positions,
+        **kwargs
+    )
 
     # lbp extraction
     self.m_lgb_extractor = bob.ip.LBP8R(radius, is_circular, compare_to_average, add_average_bit, is_uniform, is_rotation_invariant, 0)

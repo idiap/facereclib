@@ -54,17 +54,12 @@ class ToolChainExecutor:
     # generate the tools that we will need
     self.m_database = utils.read_config_file(args.database, 'database')
     self.m_preprocessor = utils.read_config_file(args.preprocessor, 'preprocessor')
-
-    # TODO: replace this by a proper class
-    self.m_extractor_config = imp.load_source('extractor', args.features)
-    self.m_extractor = self.m_extractor_config.feature_extractor(self.m_extractor_config)
-
-    self.m_tool_config = imp.load_source('tool_chain', args.tool)
-    self.m_tool = self.m_tool_config.tool(self.m_tool_config)
+    self.m_extractor = utils.read_config_file(args.features, 'feature_extractor')
+    self.m_tool = utils.read_config_file(args.tool, 'tool')
 
     # load configuration files specified on command line
     if args.grid:
-      self.m_grid_config = imp.load_source('grid', args.grid)
+      self.m_grid_config = utils.read_config_file(args.grid)
 
     # generate configuration
     self.m_configuration = Configuration(args, self.m_database.name)

@@ -11,12 +11,19 @@ from .. import utils
 class LGBPHSTool (Tool):
   """Tool chain for computing local Gabor binary pattern histogram sequences"""
 
-  def __init__(self, setup):
-    """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
+  def __init__(
+      self,
+      distance_function = bob.math.chi_square,
+      is_distance_function = True
+  ):
+    """Initializes the local Gabor binary pattern histogram sequence tool"""
+
+    # call base class constructor
     Tool.__init__(self)
-    # nothing to be done here
-    self.m_distance_function = setup.distance_function
-    self.m_factor =  -1. if setup.IS_DISTANCE_FUNCTION else 1
+
+    # remember distance function
+    self.m_distance_function = distance_function
+    self.m_factor =  -1. if is_distance_function else 1
 
   def enroll(self, enroll_features):
     """Enrolling model by taking the average of all features"""

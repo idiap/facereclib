@@ -32,9 +32,6 @@ class PreprocessingTest(unittest.TestCase):
   def input_dir(self, file):
     return os.path.join('testdata', file)
 
-  def conf_dir(self, file):
-    return os.path.join('config', 'preprocessing', file)
-
   def reference_dir(self, file = None):
     dir = os.path.join('testdata', 'preprocessing')
     facereclib.utils.ensure_dir(dir)
@@ -44,7 +41,7 @@ class PreprocessingTest(unittest.TestCase):
     return (bob.io.load(self.input_dir("testimage.jpg")), facereclib.utils.read_annotations(self.input_dir("testimage.pos"), 'named'))
 
   def config(self, file):
-    return facereclib.utils.read_config_file(file, 'preprocessor')
+    return facereclib.utils.read_config_file(os.path.join('config', 'preprocessing', file), 'preprocessor')
 
   def execute(self, preprocessor, image, annotations, reference):
     # execute the preprocessor
@@ -56,23 +53,32 @@ class PreprocessingTest(unittest.TestCase):
 
 
 
+  def test00_null_preprocessor(self):
+    # read input
+    image, annotation = self.input()
+    # the null preprocessor currently has no config file
+    preprocessor = facereclib.preprocessing.NullPreprocessor()
+    # execute preprocessor
+    self.execute(preprocessor, image, annotation, 'gray.hdf5')
+
+
   def test01_face_crop(self):
     # read input
-    image, annotations = self.input()
-    preprocessor = self.config(self.conf_dir('face_crop.py'))
+    image, annotation = self.input()
+    preprocessor = self.config('face_crop.py')
     # execute face cropper
-    self.execute(preprocessor, image, annotations, 'cropped.hdf5')
+    self.execute(preprocessor, image, annotation, 'cropped.hdf5')
 
     # test the preprocessor with fixed eye positions
     # here, we read a special config file that sets the same fixed eye positions as given in the test data
-    preprocessor = self.config(self.reference_dir('face_crop_fixed.py'))
+    preprocessor = facereclib.utils.read_config_file(self.reference_dir('face_crop_fixed.py'), 'preprocessor')
     # execute face cropper;
     # result must be identical to the original face cropper (same eyes are used)
     self.execute(preprocessor, image, None, 'cropped.hdf5')
 
     # test the preprocessor with offset
-    preprocessor = self.config(self.conf_dir('face_crop_with_offset.py'))
-    preprocessed = preprocessor(image, annotations)
+    preprocessor = self.config('face_crop_with_offset.py')
+    preprocessed = preprocessor(image, annotation)
     # results of the inner parts must be similar
     self.assertTrue((numpy.abs(bob.io.load(self.reference_dir('cropped.hdf5')) - preprocessed[2:-2, 2:-2]) < 1e-10).all())
 
@@ -80,19 +86,44 @@ class PreprocessingTest(unittest.TestCase):
   def test02_tan_triggs(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config(self.conf_dir('tan_triggs.py'))
+    preprocessor = self.config('tan_triggs.py')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'tan_triggs_cropped.hdf5')
+
+    # test if the preprocessor with offset at least loads
+    preprocessor = self.config('tan_triggs_with_offset.py')
+    self.assertTrue(isinstance(preprocessor, facereclib.preprocessing.TanTriggs))
 
     # execute the preprocessor without image cropping
     preprocessor = facereclib.preprocessing.TanTriggs()
     self.execute(preprocessor, image, None, 'tan_triggs.hdf5')
 
 
+  def test02a_tan_triggs_video(self):
+    preprocessor = self.config('tan_triggs_video.py')
+    self.assertTrue(isinstance(preprocessor, facereclib.preprocessing.TanTriggsVideo))
+    raise SkipTest("Video tests are currently skipped.")
+    # read input
+    f = '/idiap/home/rwallace/work/databases/banca-video/output/frames/1024_f_g2_s11_1024_en_4.hdf5'
+    if not os.path.exists(f):
+      raise SkipTest("The original video '%s' for the test is not available."%f)
+
+    # read the original video using the preprocessor
+    original = preprocessor.read_original_image(f)
+
+    # preprocess
+    preprocessed = preprocessor(original)
+    if regenerate_refs:
+      preprocessed.save(bob.io.HDF5File(self.reference_dir('video.hdf5'), 'w'))
+
+    reference = preprocessor.read_image(self.reference_dir('video.hdf5'))
+    self.assertEqual(preprocessed, reference)
+
+
   def test03_self_quotient(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config(self.conf_dir('self_quotient.py'))
+    preprocessor = self.config('self_quotient.py')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'self_quotient_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'self_quotient.hdf5')
@@ -101,7 +132,7 @@ class PreprocessingTest(unittest.TestCase):
   def test04_inorm_lbp(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config(self.conf_dir('inorm_lbp.py'))
+    preprocessor = self.config('inorm_lbp.py')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'inorm_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'inorm.hdf5')
@@ -110,7 +141,7 @@ class PreprocessingTest(unittest.TestCase):
   def test05_histogram(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config(self.conf_dir('histogram_equalize.py'))
+    preprocessor = self.config('histogram_equalize.py')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'histogram_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'histogram.hdf5')
@@ -119,7 +150,7 @@ class PreprocessingTest(unittest.TestCase):
   def test06_key_points(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config(self.conf_dir('keypoints.py'))
+    preprocessor = self.config('keypoints.py')
 
     # execute preprocessor
     preprocessed = preprocessor(image, annotation)
@@ -127,7 +158,6 @@ class PreprocessingTest(unittest.TestCase):
       preprocessor.save_image(preprocessed, self.reference_dir('key_points.hdf5'))
 
     reference = preprocessor.read_image(self.reference_dir('key_points.hdf5'))
-
     # check if it is near the reference image and positions
     image, annots = preprocessed
     imag2, annot2 = reference
@@ -135,39 +165,6 @@ class PreprocessingTest(unittest.TestCase):
     self.assertTrue((annots == annot2).all())
 
 
-  def test07_tan_triggs_video(self):
-    raise SkipTest("Video tests are currently skipped.")
-    # read input
-    f = '/idiap/home/rwallace/work/databases/banca-video/output/frames/1024_f_g2_s11_1024_en_4.hdf5'
-    if not os.path.exists(f):
-      raise SkipTest("The original video '%s' for the test is not available."%f)
-    config = self.config('tan_triggs_video.py')
-
-    # generate preprocessor
-    preprocessor = config.preprocessor(config)
-    # read the original video using the preprocessor
-    original = preprocessor.read_original_image(f)
-
-    # preprocess
-    preprocessed = preprocessor(original)
-
-    if regenerate_refs:
-      preprocessed.save(bob.io.HDF5File(self.reference_dir('video.hdf5'), 'w'))
-
-    reference = preprocessor.read_image(self.reference_dir('video.hdf5'))
-
-    self.assertEqual(preprocessed, reference)
-
-
-  def test08_lfcc(self):
+  def test07_lfcc(self):
     # for now, I just raise a skip exception
     raise SkipTest("This test is not yet implemented.")
-
-
-  def test09_null_preprocessor(self):
-    # read input
-    image, annotation = self.input()
-    # the null preprocessor currently has no config file
-    preprocessor = facereclib.preprocessing.NullPreprocessor()
-    # execute preprocessor
-    self.execute(preprocessor, image, annotation, 'gray.hdf5')

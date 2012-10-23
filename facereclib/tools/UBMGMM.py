@@ -11,16 +11,50 @@ from .. import utils
 class UBMGMMTool (Tool):
   """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
 
-
-  def __init__(self, setup):
+  def __init__(
+      self,
+      # parameters for the GMM
+      number_of_gaussians,
+      # parameters of UBM training
+      k_means_training_iterations = 500, # Maximum number of iterations for K-Means
+      gmm_training_iterations = 500,     # Maximum number of iterations for ML GMM Training
+      training_threshold = 5e-4,         # Threshold to end the ML training
+      variance_threshold = 5e-4,         # Minimum value that a variance can reach
+      update_weights = True,
+      update_means = True,
+      update_variances = True,
+      normalize_before_k_means = True,  # Normalize the input features before running K-Means
+      # parameters of the GMM enrollment
+      relevance_factor = 4,         # Relevance factor as described in Reynolds paper
+      gmm_enroll_iterations = 1,    # Number of iterations for the enrollment phase
+      responsibility_threshold = 0, # If set, the weight of a particular Gaussian will at least be greater than this threshold. In the case the real weight is lower, the prior mean value will be used to estimate the current mean and variance.
+      # scoring
+      scoring_function = bob.machine.linear_scoring
+  ):
     """Initializes the local UBM-GMM tool chain with the given file selector object"""
-    Tool.__init__(self,
-                  performs_projection = True,
-                  use_projected_features_for_enrollment = False)
 
-    self.m_config = setup
-    self.m_ubm = None
-    self.m_scoring_function = setup.scoring_function
+    # call base class constructor and register that this tool performs projection
+    Tool.__init__(
+        self,
+        performs_projection = True,
+        use_projected_features_for_enrollment = False
+    )
+
+    # copy parameters
+    self.m_gaussians = number_of_gaussians
+    self.m_k_means_training_iterations = k_means_training_iterations
+    self.m_gmm_training_iterations = gmm_training_iterations
+    self.m_training_threshold = training_threshold
+    self.m_variance_threshold = variance_threshold
+    self.m_update_weights = update_weights
+    self.m_update_means = update_means
+    self.m_update_variances = update_variances
+    self.m_normalize_before_k_means = normalize_before_k_means
+    self.m_relevance_factor = relevance_factor
+    self.m_gmm_enroll_iterations = gmm_enroll_iterations
+    self.m_responsibility_threshold = responsibility_threshold
+    self.m_scoring_function = scoring_function
+
 
   #######################################################
   ################ UBM training #########################
@@ -74,7 +108,7 @@ class UBMGMMTool (Tool):
 
     # Normalizes the array if required
     utils.debug(" .... Normalizing the array")
-    if not self.m_config.NORMALIZE_BEFORE_K_MEANS:
+    if not self.m_normalize_before_k_means:
       normalized_array = array
     else:
       normalized_array, std_array = self.__normalize_std_array__(array)
@@ -82,13 +116,13 @@ class UBMGMMTool (Tool):
 
     # Creates the machines (KMeans and GMM)
     utils.debug(" .... Creating machines")
-    kmeans = bob.machine.KMeansMachine(self.m_config.GAUSSIANS, input_size)
-    self.m_ubm = bob.machine.GMMMachine(self.m_config.GAUSSIANS, input_size)
+    kmeans = bob.machine.KMeansMachine(self.m_gaussians, input_size)
+    self.m_ubm = bob.machine.GMMMachine(self.m_gaussians, input_size)
 
     # Creates the KMeansTrainer
     kmeans_trainer = bob.trainer.KMeansTrainer()
-    kmeans_trainer.convergence_threshold = self.m_config.GMM_TRAINING_THRESHOLD
-    kmeans_trainer.max_iterations = self.m_config.K_MEANS_TRAINING_ITERATIONS
+    kmeans_trainer.convergence_threshold = self.m_training_threshold
+    kmeans_trainer.max_iterations = self.m_gmm_training_iterations
 
     # Trains using the KMeansTrainer
     utils.info("  -> Training K-Means")
@@ -99,7 +133,7 @@ class UBMGMMTool (Tool):
 
     # Undoes the normalization
     utils.debug(" .... Undoing normalization")
-    if self.m_config.NORMALIZE_BEFORE_K_MEANS:
+    if self.m_normalize_before_k_means:
       self.__multiply_vectors_by_factors__(means, std_array)
       self.__multiply_vectors_by_factors__(variances, std_array ** 2)
 
@@ -107,13 +141,13 @@ class UBMGMMTool (Tool):
     self.m_ubm.means = means
     self.m_ubm.variances = variances
     self.m_ubm.weights = weights
-    self.m_ubm.set_variance_thresholds(self.m_config.GMM_VARIANCE_THRESHOLD)
+    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
 
     # Trains the GMM
     utils.info("  -> Training GMM")
-    trainer = bob.trainer.ML_GMMTrainer(self.m_config.UPDATE_MEANS, self.m_config.UPDATE_VARIANCES, self.m_config.UPDATE_WEIGTHS)
-    trainer.convergence_threshold = self.m_config.GMM_TRAINING_THRESHOLD
-    trainer.max_iterations = self.m_config.GMM_TRAINING_ITERATIONS
+    trainer = bob.trainer.ML_GMMTrainer(self.m_update_means, self.m_update_variances, self.m_update_weights)
+    trainer.convergence_threshold = self.m_training_threshold
+    trainer.max_iterations = self.m_gmm_training_iterations
     trainer.train(self.m_ubm, array)
 
     # Saves the UBM to file
@@ -139,14 +173,14 @@ class UBMGMMTool (Tool):
     """Reads the UBM model from file"""
     # read UBM
     self.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(projector_file))
-    self.m_ubm.set_variance_thresholds(self.m_config.GMM_VARIANCE_THRESHOLD)
+    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
     # prepare MAP_GMM_Trainer
-    if self.m_config.RESPONSIBILITY_THRESHOLD > 0.:
-      self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_config.RELEVANCE_FACTOR, True, False, False, self.m_config.RESPONSIBILITY_THRESHOLD)
+    if self.m_responsibility_threshold > 0.:
+      self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_relevance_factor, True, False, False, self.m_responsibility_threshold)
     else:
-      self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_config.RELEVANCE_FACTOR, True, False, False)
-    self.m_trainer.convergence_threshold = self.m_config.GMM_TRAINING_THRESHOLD
-    self.m_trainer.max_iterations = self.m_config.GMM_ENROLL_ITERATIONS
+      self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_relevance_factor, True, False, False)
+    self.m_trainer.convergence_threshold = self.m_training_threshold
+    self.m_trainer.max_iterations = self.m_gmm_enroll_iterations
     self.m_trainer.set_prior_gmm(self.m_ubm)
 
     # Initializes GMMStats object
@@ -172,7 +206,7 @@ class UBMGMMTool (Tool):
     utils.debug(" .... Enrolling with %d feature vectors" % array.shape[0])
 
     gmm = bob.machine.GMMMachine(self.m_ubm)
-    gmm.set_variance_thresholds(self.m_config.GMM_VARIANCE_THRESHOLD)
+    gmm.set_variance_thresholds(self.m_variance_threshold)
     self.m_trainer.train(gmm, array)
     return gmm
 
@@ -180,7 +214,6 @@ class UBMGMMTool (Tool):
     """Enrolls a GMM using MAP adaptation, given a list of 2D numpy.ndarray's of feature vectors"""
 
     array = numpy.vstack([v for v in feature_arrays])
-
     # Use the array to train a GMM and return it
     return self._enroll_using_array(array)
 
@@ -197,4 +230,124 @@ class UBMGMMTool (Tool):
   def score(self, model, probe):
     """Computes the score for the given model and the given probe using the scoring function from the config file"""
     return self.m_scoring_function([model], self.m_ubm, [probe], [], frame_length_normalisation = True)[0][0]
+
+
+
+
+
+
+
+class UBMGMMRegularTool (UBMGMMTool):
+  """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
+
+  def __init__(self, **kwargs):
+    """Initializes the local UBM-GMM tool chain with the given file selector object"""
+    utils.warn("This class must be checked. Please verify that I didn't do any mistake here. I had to rename 'train_projector' into a 'train_enroller'!")
+    # initialize the UBMGMM base class
+    UBMGMMTool.__init__(self, **kwargs)
+    # register a different set of functions in the Tool base class
+    Tool.__init__(self, requires_enroller_training = True)
+
+
+
+  #######################################################
+  ################ UBM training #########################
+
+  def train_enroller(self, train_features, enroller_file):
+    """Computes the Universal Background Model from the training ("world") data"""
+    return self.train_projector(train_features, enroller_file)
+
+
+  #######################################################
+  ############## GMM training using UBM #################
+
+  def load_enroller(self, enroller_file):
+    """Reads the UBM model from file"""
+    return self.load_projector(enroller_file)
+
+
+  ######################################################
+  ################ Feature comparison ##################
+  def read_probe(self, probe_file):
+    return bob.io.load(probe_file)
+
+
+  def score(self, model, probe):
+    """Computes the score for the given model and the given probe.
+       The score are Log-Likelihood.
+       Therefore, the log of the likelihood ratio is obtained by computing the following difference."""
+
+    utils.warn("This class must be checked. Please verify that I didn't do any mistake here. For identical tests, this function gives a different score than the normal UBMGMMTool (see test_tools.py:test06a)")
+    score = 0
+    for i in range(probe.shape[0]):
+      score += model.forward(probe[i,:]) - self.m_ubm.forward(probe[i,:])
+    return score/probe.shape[0]
+
+
+
+
+
+
+
+
+class UBMGMMVideoTool(UBMGMMTool):
+  """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
+
+  def __init__(
+      self,
+      frame_selector_for_projector_training,
+      frame_selector_for_projection,
+      frame_selector_for_enroll,
+      **kwargs
+  ):
+
+    # initialize base class with its set of parameters
+    UBMGMMTool.__init__(self, **kwargs)
+
+    self.m_frame_selector_for_projector_training = frame_selector_for_projector_training
+    self.m_frame_selector_for_projection = frame_selector_for_projection
+    self.m_frame_selector_for_enroll = frame_selector_for_enroll
+
+    utils.warn("In its current version, this class has not been tested. Use it with care!")
+
+  def train_projector(self, train_features, projector_file):
+    """Computes the Universal Background Model from the training ("world") data"""
+    utils.info("  -> Training UBM model with %d training files" % len(train_files))
+    # Loads the data into an array
+    data_list = []
+    for frame_container in train_files:
+      for data in self.m_frame_selector_for_projector_training(frame_container):
+        data_list.append(data)
+    array = numpy.vstack(data_list)
+
+    self._train_projector_using_array(array, projector_file)
+
+
+  def read_feature(self, feature_file):
+    return utils.video.FrameContainer(str(feature_file))
+
+
+  def project(self, frame_container, frame_selector = None):
+    """Computes GMM statistics against a UBM, given an input video.FrameContainer"""
+
+    if frame_selector is None:
+      frame_selector = self.m_frame_selector_for_projection
+
+    # Collect all feature vectors across all frames in a single array set
+    array = numpy.vstack([data for data in frame_selector(frame_container)])
+    return self._project_using_array(array)
+
+
+  def enroll(self, frame_containers):
+    """Enrolls a GMM using MAP adaptation, given a list of video.FrameContainers"""
+
+    # Load the data into an array
+    data_list = []
+    for frame_container in frame_containers:
+      for data in self.m_frame_selector_for_enroll(frame_container):
+        data_list.append(data)
+    array = numpy.vstack(data_list)
+
+    # Use the array to train a GMM and return it
+    return self._enroll_using_array(array)
 

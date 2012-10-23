@@ -27,15 +27,20 @@ class Extractor:
   It defines the minimum requirements that a derived feature extractor class need to implement.
   """
 
-  def __init__(self,
-               requires_training = False, # enable, if your extractor needs training
-               split_training_images_by_client = False # enable, if your extractor needs the training files sorted by client
-               ):
+  def __init__(
+      self,
+      requires_training = False, # enable, if your extractor needs training
+      split_training_images_by_client = False # enable, if your extractor needs the training files sorted by client
+  ):
     # Each class needs to have a constructor taking
     # all the parameters that are required for the feature extraction as arguments
     self.requires_training = requires_training
     self.split_training_images_by_client = split_training_images_by_client
 
+
+  ############################################################
+  ### functions that must be overwritten in derived classes
+  ############################################################
 
   def __call__(self, image):
     """This function will actually perform the feature extraction.

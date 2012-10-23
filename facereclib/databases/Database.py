@@ -36,15 +36,16 @@ class Database:
   Please use this class as a base class for your database access classes.
   Do not forget to call the constructor of this base class in your derived class."""
 
-  def __init__(self,
-               name,
-               original_directory,
-               original_extension,
-               annotation_directory = None,
-               annotation_extension = '.pos',
-               annotation_type = None,
-               protocol = 'Default'
-               ):
+  def __init__(
+     self,
+     name,
+     original_directory,
+     original_extension,
+     annotation_directory = None,
+     annotation_extension = '.pos',
+     annotation_type = None,
+     protocol = 'Default'
+  ):
 
     self.name = name
     self.original_directory = original_directory

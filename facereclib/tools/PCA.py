@@ -11,13 +11,21 @@ from .. import utils
 class PCATool (Tool):
   """Tool for computing eigenfaces"""
 
-  def __init__(self, setup):
+  def __init__(
+      self,
+      subspace_dimension,
+      distance_function = bob.math.euclidean_distance,
+      is_distance_function = True
+  ):
+
     """Initializes the PCA tool with the given setup"""
+    # call base class constructor and register that the tool performs a projection
     Tool.__init__(self, performs_projection = True)
-    self.m_subspace_dim = setup.SUBSPACE_DIMENSION
+
+    self.m_subspace_dim = subspace_dimension
     self.m_machine = None
-    self.m_distance_function = setup.distance_function
-    self.m_factor = -1 if not hasattr(setup, 'IS_DISTANCE_FUNCTION') or setup.IS_DISTANCE_FUNCTION else 1.
+    self.m_distance_function = distance_function
+    self.m_factor = -1 if is_distance_function else 1.
 
 
   def train_projector(self, training_features, projector_file):

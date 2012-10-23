@@ -4,30 +4,49 @@
 
 import bob
 import numpy
+import math
 
 from .Tool import Tool
 
 class GaborJetTool (Tool):
   """Tool chain for computing Gabor jets, Gabor graphs, and Gabor graph comparisons"""
 
-  def __init__(self, setup):
+  def __init__(
+      self,
+      # parameters for the tool
+      gabor_jet_similarity_type,
+      extract_averaged_models = False,
+      # some similarity functions might need a GaborWaveletTransform class, so we have to provide the parameters here as well...
+      gabor_directions = 8,
+      gabor_scales = 5,
+      gabor_sigma = 2. * math.pi,
+      gabor_maxium_frequency = math.pi / 2.,
+      gabor_frequency_step = math.sqrt(.5),
+      gabor_power_of_k = 0,
+      gabor_dc_free = True
+  ):
+
+    # call base class constructor
     Tool.__init__(self)
+
     # graph machine for enrolling models and comparing graphs
     self.m_graph_machine = bob.machine.GaborGraphMachine()
+
     # the Gabor wavelet transform; used by (some of) the Gabor jet similarities
-    gabor_wavelet_transform = bob.ip.GaborWaveletTransform(
-          number_of_angles = setup.GABOR_DIRECTIONS,
-          number_of_scales = setup.GABOR_SCALES,
-          sigma = setup.GABOR_SIGMA,
-          k_max = setup.GABOR_MAXIMUM_FREQUENCY,
-          k_fac = setup.GABOR_FREQUENCY_STEP,
-          pow_of_k = setup.GABOR_POWER_OF_K,
-          dc_free = setup.GABOR_DC_FREE
+    gwt = bob.ip.GaborWaveletTransform(
+        number_of_scales = gabor_scales,
+        number_of_angles = gabor_directions,
+        sigma = gabor_sigma,
+        k_max = gabor_maxium_frequency,
+        k_fac = gabor_frequency_step,
+        pow_of_k = gabor_power_of_k,
+        dc_free = gabor_dc_free
     )
+
     # jet comparison function
-    self.m_similarity_function = bob.machine.GaborJetSimilarity(setup.GABOR_JET_SIMILARITY_TYPE, gabor_wavelet_transform)
+    self.m_similarity_function = bob.machine.GaborJetSimilarity(gabor_jet_similarity_type, gwt)
     # do model averaging?
-    self.m_average_model = setup.EXTRACT_AVERAGED_MODELS
+    self.m_average_model = extract_averaged_models
 
 
   def enroll(self, enroll_features):

@@ -12,12 +12,35 @@ from .. import utils
 class PLDATool (Tool):
   """Tool chain for computing PLDA (over PCA-dimensionality reduced) features"""
 
-  def __init__(self, setup):
+  def __init__(
+      self,
+      subspace_dimension_of_f, # Size of subspace F
+      subspace_dimension_of_g, # Size of subspace G
+      subspace_dimension_pca = None,  # if given, perform PCA on data and reduce the PCA subspace to the given dimension
+      plda_training_iterations = 200, # Maximum number of iterations for the EM loop
+      plda_training_threshold = 1e-3, # Threshold for ending the EM loop
+      # TODO: refactor the remaining parameters!
+      INIT_SEED = 0, # seed for initializing
+      INIT_F_METHOD = 1,
+      INIT_F_RATIO = 1,
+      INIT_G_METHOD = 1,
+      INIT_G_RATIO = 1,
+      INIT_S_METHOD = 3, #
+      INIT_S_RATIO = 1
+  ):
+
     """Initializes the local (PCA-)PLDA tool chain with the given file selector object"""
+    # call base class constructor and register that this class requires training for enrollment
     Tool.__init__(self, requires_enroller_training = True)
-    self.m_config = setup
-    self.m_pca_subpace_size = setup.SUBSPACE_DIMENSION_PCA if hasattr(setup, 'SUBSPACE_DIMENSION_PCA') else None
-    self.m_pca_machine = None
+
+    self.m_subspace_dimension_of_f = subspace_dimension_of_f
+    self.m_subspace_dimension_of_g = subspace_dimension_of_g
+    self.m_subspace_dimension_pca = subspace_dimension_pca
+    self.m_plda_training_iterations = plda_training_iterations
+    self.m_plda_training_threshold = plda_training_threshold
+
+    # TODO: refactor
+    self.m_init = (INIT_SEED, INIT_F_METHOD, INIT_F_RATIO, INIT_G_METHOD, INIT_G_RATIO, INIT_S_METHOD, INIT_S_RATIO)
 
 
   def __train_pca__(self, training_set):
@@ -33,7 +56,7 @@ class PLDATool (Tool):
     t = bob.trainer.SVDPCATrainer()
     machine, __eig_vals = t.train(data)
     # limit number of pcs
-    machine.resize(machine.shape[0], self.m_pca_subpace_size)
+    machine.resize(machine.shape[0], self.m_subspace_dimension_pca)
     return machine
 
   def __perform_pca_client__(self, machine, client):
@@ -64,7 +87,7 @@ class PLDATool (Tool):
 
 
     # train PCA and perform PCA on training data
-    if self.m_pca_subpace_size:
+    if self.m_subspace_dimension_pca is not None:
       self.m_pca_machine = self.__train_pca__(training_features)
       training_features = self.__perform_pca__(self.m_pca_machine, training_features)
 
@@ -73,27 +96,27 @@ class PLDATool (Tool):
     utils.info("  -> Training PLDA base machine")
     # create trainer
     t = bob.trainer.PLDABaseTrainer(
-        self.m_config.SUBSPACE_DIMENSION_OF_F,
-        self.m_config.SUBSPACE_DIMENSION_OF_G,
-        self.m_config.PLDA_TRAINING_THRESHOLD,
-        self.m_config.PLDA_TRAINING_ITERATIONS,
+        self.m_subspace_dimension_of_f,
+        self.m_subspace_dimension_of_g,
+        self.m_plda_training_threshold,
+        self.m_plda_training_iterations,
         False)
 
-    t.seed = self.m_config.INIT_SEED
-    t.init_f_method = self.m_config.INIT_F_METHOD
-    t.init_f_ratio = self.m_config.INIT_F_RATIO
-    t.init_g_method = self.m_config.INIT_G_METHOD
-    t.init_g_ratio = self.m_config.INIT_G_RATIO
-    t.init_sigma_method = self.m_config.INIT_S_METHOD
-    t.init_sigma_ratio = self.m_config.INIT_S_RATIO
+    t.seed = self.m_init[0]
+    t.init_f_method = self.m_init[1]
+    t.init_f_ratio = self.m_init[2]
+    t.init_g_method = self.m_init[3]
+    t.init_g_ratio = self.m_init[4]
+    t.init_sigma_method = self.m_init[5]
+    t.init_sigma_ratio = self.m_init[6]
 
     # train machine
-    self.m_plda_base_machine = bob.machine.PLDABaseMachine(input_dimension, self.m_config.SUBSPACE_DIMENSION_OF_F, self.m_config.SUBSPACE_DIMENSION_OF_G)
+    self.m_plda_base_machine = bob.machine.PLDABaseMachine(input_dimension, self.m_subspace_dimension_of_f, self.m_subspace_dimension_of_g)
     t.train(self.m_plda_base_machine, training_features)
 
     # write machines to file
     proj_hdf5file = bob.io.HDF5File(str(projector_file), "w")
-    if self.m_pca_subpace_size:
+    if self.m_subspace_dimension_pca is not None:
       proj_hdf5file.create_group('/pca')
       proj_hdf5file.cd('/pca')
       self.m_pca_machine.save(proj_hdf5file)
@@ -106,7 +129,7 @@ class PLDATool (Tool):
     """Reads the PCA projection matrix and the PLDA model from file"""
     # read UBM
     proj_hdf5file = bob.io.HDF5File(projector_file)
-    if self.m_pca_subpace_size:
+    if self.m_subspace_dimension_pca is not None:
       proj_hdf5file.cd('/pca')
       self.m_pca_machine = bob.machine.LinearMachine(proj_hdf5file)
     proj_hdf5file.cd('/plda')
@@ -117,7 +140,7 @@ class PLDATool (Tool):
 
   def enroll(self, enroll_features):
     """Enrolls the model by computing an average of the given input vectors"""
-    if self.m_pca_subpace_size:
+    if self.m_subspace_dimension_pca is not None:
       enroll_features_projected = self.__perform_pca_client__(self.m_pca_machine, enroll_features)
       self.m_plda_trainer.enrol(enroll_features_projected)
     else:
@@ -134,7 +157,7 @@ class PLDATool (Tool):
 
   def score(self, model, probe):
     """Computes the PLDA score for the given model and probe"""
-    if self.m_pca_subpace_size:
+    if self.m_subspace_dimension_pca is not None:
       # project probe
       projected_probe = numpy.ndarray(self.m_pca_machine.shape[1], numpy.float64)
       self.m_pca_machine(probe, projected_probe)

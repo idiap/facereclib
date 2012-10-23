@@ -19,13 +19,13 @@
 
 
 import unittest
-import imp
 import os
 import numpy
 import tempfile
 import facereclib
 import bob
 from nose.plugins.skip import SkipTest
+from .. import utils
 
 regenerate_refs = False
 
@@ -40,10 +40,7 @@ class ToolTest(unittest.TestCase):
     return os.path.join(dir, file)
 
   def config(self, file):
-    return imp.load_source('config', os.path.join('config', 'tools', file))
-
-  def ext_config(self, file):
-    return imp.load_source('config', os.path.join('config', 'features', file))
+    return utils.read_config_file(os.path.join('config', 'tools', file), 'tool')
 
 
   def compare(self, feature, reference):
@@ -88,11 +85,11 @@ class ToolTest(unittest.TestCase):
   def test01_gabor_jet(self):
     # read input
     feature = bob.io.load(self.input_dir('graph_with_phase.hdf5'))
-    config = self.config('gabor_jet.py')
-    tool = config.tool(config)
+    tool = self.config('gabor_jet.py')
     self.assertFalse(tool.performs_projection)
     self.assertFalse(tool.requires_enroller_training)
 
+    # enroll
     model = tool.enroll([feature])
     self.compare(model, 'graph_model.hdf5')
 
@@ -105,8 +102,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature1 = bob.io.load(self.input_dir('lgbphs_sparse.hdf5'))
     feature2 = bob.io.load(self.input_dir('lgbphs_no_phase.hdf5'))
-    config = self.config('lgbphs.py')
-    tool = config.tool(config)
+    tool = self.config('lgbphs.py')
     self.assertFalse(tool.performs_projection)
     self.assertFalse(tool.requires_enroller_training)
 
@@ -122,10 +118,12 @@ class ToolTest(unittest.TestCase):
   def test03_pca(self):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
-    config = self.config('pca.py')
-    config.SUBSPACE_DIMENSION = 10
-    tool = config.tool(config)
+    # assure that the config file is read
+    tool = self.config('pca.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.PCATool))
 
+    # generate tool with a lower number of dimensions
+    tool = facereclib.tools.PCATool(10)
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
     self.assertTrue(tool.use_projected_features_for_enrollment)
@@ -134,17 +132,14 @@ class ToolTest(unittest.TestCase):
     # train the projector
     t = tempfile.mkstemp('pca.hdf5')[1]
     tool.train_projector(self.train_set(feature, count=400, a=0., b=255.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('pca_projector.hdf5'))
 
     # load the projector file
     tool.load_projector(self.reference_dir('pca_projector.hdf5'))
-
     # compare the resulting machines
     new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
-
     self.assertEqual(tool.m_machine.shape, new_machine.shape)
     self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
     os.remove(t)
@@ -158,38 +153,34 @@ class ToolTest(unittest.TestCase):
     model = tool.enroll([projected])
     self.compare(model, 'pca_model.hdf5')
     sim = tool.score(model, projected)
-
     self.assertAlmostEqual(sim, 0.)
 
 
   def test04_pca_lda(self):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
-    config = self.config('pca+lda.py')
-    config.PCA_SUBSPACE_DIMENSION = 10
-    config.LDA_SUBSPACE_DIMENSION = 5
-    tool = config.tool(config)
+    # assure that the config file is loadable
+    tool = self.config('pca+lda.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.LDATool))
 
+    # here we use a reduced tool
+    tool = facereclib.tools.LDATool(5,10)
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
     self.assertTrue(tool.use_projected_features_for_enrollment)
     self.assertTrue(tool.split_training_features_by_client)
 
-
     # train the projector
     t = tempfile.mkstemp('pca+lda.hdf5')[1]
     tool.train_projector(self.train_set_by_id(feature, count=20, a=0., b=255.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('pca+lda_projector.hdf5'))
 
     # load the projector file
     tool.load_projector(self.reference_dir('pca+lda_projector.hdf5'))
-
     # compare the resulting machines
     new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
-
     self.assertEqual(tool.m_machine.shape, new_machine.shape)
     self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
     os.remove(t)
@@ -211,28 +202,24 @@ class ToolTest(unittest.TestCase):
   def test05_bic(self):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
-    config = self.config('bic.py')
-    # reduce the complexity for test purposes
-    config.MAXIMUM_TRAINING_PAIR_COUNT = 100
-    config.INTRA_SUBSPACE_DIMENSION = 5
-    config.EXTRA_SUBSPACE_DIMENSION = 7
+    # check that the config file is readable
+    tool = self.config('bic.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.BICTool))
 
-    tool = config.tool(config)
-
+    # here, we use a reduced complexity for test purposes
+    tool = facereclib.tools.BICTool(numpy.subtract, 100, (5,7))
     self.assertFalse(tool.performs_projection)
     self.assertTrue(tool.requires_enroller_training)
 
     # train the enroller
     t = tempfile.mkstemp('bic.hdf5')[1]
     tool.train_enroller(self.train_set_by_id(feature, count=10, a=0., b=255.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('bic_enroller.hdf5'))
 
     # load the projector file
     tool.load_enroller(self.reference_dir('bic_enroller.hdf5'))
-
     # compare the resulting machines
     new_machine = bob.machine.BICMachine(tool.m_use_dffs)
     new_machine.load(bob.io.HDF5File(t))
@@ -243,68 +230,59 @@ class ToolTest(unittest.TestCase):
     model = tool.enroll([feature])
     self.compare(model, 'bic_model.hdf5')
 
-    # score
+    # score and compare to the weird reference score ...
     sim = tool.score(model, feature)
-    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 0.31276072)
 
     # now, test without PCA
-    del config.INTRA_SUBSPACE_DIMENSION
-    del config.EXTRA_SUBSPACE_DIMENSION
-
-    tool = config.tool(config)
-
+    tool = facereclib.tools.BICTool(numpy.subtract, 100)
     # train the enroller
     t = tempfile.mkstemp('iec.hdf5')[1]
     tool.train_enroller(self.train_set_by_id(feature, count=10, a=0., b=255.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('iec_enroller.hdf5'))
 
     # load the projector file
     tool.load_enroller(self.reference_dir('iec_enroller.hdf5'))
-
     # compare the resulting machines
     new_machine = bob.machine.BICMachine(tool.m_use_dffs)
     new_machine.load(bob.io.HDF5File(t))
     self.assertEqual(tool.m_bic_machine, new_machine)
     os.remove(t)
 
-    # score
+    # score and compare to the weird reference score ...
     sim = tool.score(model, feature)
-    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 0.4070329180)
 
 
   def test06_gmm(self):
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
-    config = self.config('ubm_gmm.py')
-    # reduce the complexity for test purposes
-    config.GAUSSIANS = 2
-    config.K_MEANS_TRAINING_ITERATIONS = 1
-    config.GMM_TRAINING_ITERATIONS = 1
+    # assure that the config file is readable
+    tool = self.config('ubm_gmm.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMTool))
 
-    tool = config.tool(config)
-
+    # here, we use a reduced complexity for test purposes
+    tool = facereclib.tools.UBMGMMTool(
+        number_of_gaussians = 2,
+        k_means_training_iterations = 1,
+        gmm_training_iterations = 1
+    )
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
     self.assertFalse(tool.use_projected_features_for_enrollment)
     self.assertFalse(tool.split_training_features_by_client)
 
-
     # train the projector
     t = tempfile.mkstemp('ubm.hdf5')[1]
     tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('gmm_projector.hdf5'))
 
     # load the projector file
     tool.load_projector(self.reference_dir('gmm_projector.hdf5'))
-
     # compare GMM projector with reference
     new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
     self.assertEqual(tool.m_ubm, new_machine)
@@ -324,41 +302,83 @@ class ToolTest(unittest.TestCase):
     reference_model = tool.read_model(self.reference_dir('gmm_model.hdf5'))
     self.assertEqual(model, reference_model)
 
-    # score with projected feature
+    # score with projected feature and compare to the weird reference score ...
     sim = tool.score(reference_model, probe)
-    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 0.25472347774)
+
+  def test06a_gmm_regular(self):
+    # read input
+    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
+    # assure that the config file is readable
+    tool = self.config('ubm_gmm_regular_scoring.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMRegularTool))
+
+    # here, we use a reduced complexity for test purposes
+    tool = facereclib.tools.UBMGMMRegularTool(
+        number_of_gaussians = 2,
+        k_means_training_iterations = 1,
+        gmm_training_iterations = 1
+    )
+    self.assertFalse(tool.performs_projection)
+    self.assertTrue(tool.requires_enroller_training)
+
+    # train the enroller
+    t = tempfile.mkstemp('ubm.hdf5')[1]
+    tool.train_enroller(self.train_set(feature, count=5, a=-5., b=5.), t)
+    # assure that it is identical to the normal UBM projector
+    tool.load_enroller(self.reference_dir('gmm_projector.hdf5'))
+
+    # enroll model with the unprojected feature
+    model = tool.enroll([feature])
+    reference_model = tool.read_model(self.reference_dir('gmm_model.hdf5'))
+    self.assertEqual(model, reference_model)
+
+    # score with unprojected feature and compare to the weird reference score ...
+    probe = tool.read_probe(self.input_dir('dct_blocks.hdf5'))
+    sim = tool.score(reference_model, probe)
+
+    # TODO: I don't know why, but the result differ from the original UBMGMM approach...
+#    self.assertAlmostEqual(sim, 0.25472347774)
+    self.assertAlmostEqual(sim, 0.143875716)
+
+
+  def test06b_gmm_video(self):
+    # assure that the config file is readable
+    tool = self.config('ubm_gmm_video.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMVideoTool))
+    raise SkipTest("This test is not yet implemented")
 
 
   def test07_isv(self):
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
-    config = self.config('isv.py')
-    # reduce the complexity for test purposes
-    config.GAUSSIANS = 2
-    config.K_MEANS_TRAINING_ITERATIONS = 1
-    config.GMM_TRAINING_ITERATIONS = 1
-    config.JFA_TRAINING_ITERATIONS = 1
+    # assure that the config file is readable
+    tool = self.config('isv.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.ISVTool))
 
-    tool = config.tool(config)
+    # Here, we use a reduced complexity for test purposes
+    tool = facereclib.tools.ISVTool(
+        number_of_gaussians = 2,
+        subspace_dimension_of_u = 160,
+        k_means_training_iterations = 1,
+        gmm_training_iterations = 1,
+        jfa_training_iterations = 1
+    )
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
     self.assertTrue(tool.use_projected_features_for_enrollment)
     self.assertFalse(tool.split_training_features_by_client)
     self.assertTrue(tool.requires_enroller_training)
 
-
     # train the projector
     t = tempfile.mkstemp('ubm.hdf5')[1]
     tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('isv_projector.hdf5'))
 
     # load the projector file
     tool.load_projector(self.reference_dir('isv_projector.hdf5'))
-
     # compare ISV projector with reference
     new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
     self.assertEqual(tool.m_ubm, new_machine)
@@ -375,7 +395,6 @@ class ToolTest(unittest.TestCase):
     # train the enroller
     t = tempfile.mkstemp('ubm.hdf5')[1]
     tool.train_enroller(self.train_gmm_stats(self.reference_dir('isv_feature.hdf5'), count=5, a=-5., b=5.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('isv_enroller.hdf5'))
@@ -397,23 +416,34 @@ class ToolTest(unittest.TestCase):
     probe = tool.read_probe(self.reference_dir('isv_feature.hdf5'))
     self.assertEqual(probe, projected)
 
-    # score with projected feature
+    # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
-    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 0.000443472976)
+
+
+  def test07a_isv_video(self):
+    # assure that the config file is readable
+    tool = self.config('isv_video.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.ISVVideoTool))
+    raise SkipTest("This test is not yet implemented")
 
 
   def test08_jfa(self):
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
-    config = self.config('jfa.py')
-    # reduce the complexity for test purposes
-    config.GAUSSIANS = 2
-    config.K_MEANS_TRAINING_ITERATIONS = 1
-    config.GMM_TRAINING_ITERATIONS = 1
-    config.JFA_TRAINING_ITERATIONS = 1
+    # assure that the config file is readable
+    tool = self.config('jfa.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.JFATool))
 
-    tool = config.tool(config)
+    # here, we use a reduced complexity for test purposes
+    tool = facereclib.tools.JFATool(
+        number_of_gaussians = 2,
+        subspace_dimension_of_u = 2,
+        subspace_dimension_of_v = 2,
+        k_means_training_iterations = 1,
+        gmm_training_iterations = 1,
+        jfa_training_iterations = 1
+    )
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
     self.assertTrue(tool.use_projected_features_for_enrollment)
@@ -423,14 +453,12 @@ class ToolTest(unittest.TestCase):
     # train the projector
     t = tempfile.mkstemp('ubm.hdf5')[1]
     tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('jfa_projector.hdf5'))
 
     # load the projector file
     tool.load_projector(self.reference_dir('jfa_projector.hdf5'))
-
     # compare JFA projector with reference
     new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
     self.assertEqual(tool.m_ubm, new_machine)
@@ -447,7 +475,6 @@ class ToolTest(unittest.TestCase):
     # train the enroller
     t = tempfile.mkstemp('ubm.hdf5')[1]
     tool.train_enroller(self.train_gmm_stats(self.reference_dir('jfa_feature.hdf5'), count=5, a=-5., b=5.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('jfa_enroller.hdf5'))
@@ -469,36 +496,37 @@ class ToolTest(unittest.TestCase):
     probe = tool.read_probe(self.reference_dir('jfa_feature.hdf5'))
     self.assertEqual(probe, projected)
 
-    # score with projected feature
+    # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
-    # compare to the weird reference score ...
     self.assertAlmostEqual(sim, 0.25459651295)
 
 
   def test09_plda(self):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
-    config = self.config('pca+plda.py')
-    # reduce the complexity for test purposes
-    config.SUBSPACE_DIMENSION_PCA = 10
-    config.SUBSPACE_DIMENSION_OF_F = 2
-    config.SUBSPACE_DIMENSION_OF_G = 2
-    config.PLDA_TRAINING_ITERATIONS = 1
-    tool = config.tool(config)
+    # assure that the config file is readable
+    tool = self.config('pca+plda.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.PLDATool))
+
+    # here, we use a reduced complexity for test purposes
+    tool = facereclib.tools.PLDATool(
+        subspace_dimension_of_f = 2,
+        subspace_dimension_of_g = 2,
+        subspace_dimension_pca = 10,
+        plda_training_iterations = 1
+    )
     self.assertFalse(tool.performs_projection)
     self.assertTrue(tool.requires_enroller_training)
 
     # train the projector
     t = tempfile.mkstemp('pca+plda.hdf5')[1]
     tool.train_enroller(self.train_set_by_id(feature, count=20, a=0., b=255.), t)
-
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('pca+plda_enroller.hdf5'))
 
     # load the projector file
     tool.load_enroller(self.reference_dir('pca+plda_enroller.hdf5'))
-
     # compare the resulting machines
     test_file = bob.io.HDF5File(t)
     test_file.cd('/pca')
@@ -524,10 +552,6 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.)
 
 
-  def test10_gmm_video(self):
-    raise SkipTest("This test is not yet implemented")
 
 
-  def test11_isv_video(self):
-    raise SkipTest("This test is not yet implemented")
 

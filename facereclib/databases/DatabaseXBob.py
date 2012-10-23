@@ -23,30 +23,24 @@ from .Database import Database, DatabaseZT
 class DatabaseXBob (Database):
   """This class can be used whenever you have a database that follows the default XBob database interface."""
 
-  def __init__(self,
-               database,
-               name, # The name of the database; will be used as part of the directory structure
-               image_directory, # the directory where to read the images from
-               image_extension, # the default file extension of the original images
-               annotation_directory = None, # The directory, where the annotations are found, if any
-               annotation_extension = '.pos', # The extension of the annotation files
-               annotation_type = None, # The way the annotations are written in the annotation files
-               protocol = 'Default',
+  def __init__(
+      self,
+      database,  # The xbob database that is used
+      image_directory,        # directory of the original images
+      image_extension,        # file extension of the original images
+      all_files_options = {}, # additional options for the database query that can be used to extract all files
+      extractor_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
+      projector_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
+      enroller_training_options = {},  # additional options for the database query that can be used to extract the training files for the extractor training
+      **kwargs  # The default parameters of the base class
+  ):
 
-               all_files_options = {}, # additional options for the database query that can be used to extract all files
-               extractor_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
-               projector_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
-               enroller_training_options = {} # additional options for the database query that can be used to extract the training files for the extractor training
-               ):
-
-    Database.__init__(self,
-                      name = name,
-                      original_directory = image_directory,
-                      original_extension = image_extension,
-                      annotation_directory = annotation_directory,
-                      annotation_extension = annotation_extension,
-                      annotation_type = annotation_type,
-                      protocol = protocol)
+    Database.__init__(
+        self,
+        original_directory = image_directory,
+        original_extension = image_extension,
+        **kwargs
+    )
 
     self.m_database = database
 
@@ -107,35 +101,9 @@ class DatabaseXBob (Database):
 class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
   """This class can be used whenever you have a database that follows the default XBob database interface defining file lists for ZT score normalization."""
 
-  def __init__(self,
-               database,
-               name, # The name of the database; will be used as part of the directory structure
-               image_directory, # the directory where to read the images from
-               image_extension, # the default file extension of the original images
-               annotation_directory = None, # The directory, where the annotations are found, if any
-               annotation_extension = '.pos', # The extension of the annotation files
-               annotation_type = None, # The way the annotations are written in the annotation files
-               protocol = 'Default',
-
-               all_files_options = {}, # additional options for the database query that can be used to extract all files
-               extractor_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
-               projector_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
-               enroller_training_options = {} # additional options for the database query that can be used to extract the training files for the extractor training
-               ):
-
-    DatabaseXBob.__init__(self,
-                          database = database,
-                          name = name,
-                          image_directory = image_directory,
-                          image_extension = image_extension,
-                          annotation_directory = annotation_directory,
-                          annotation_extension = annotation_extension,
-                          annotation_type = annotation_type,
-                          protocol = protocol,
-                          all_files_options = all_files_options,
-                          extractor_training_options = extractor_training_options,
-                          projector_training_options = projector_training_options,
-                          enroller_training_options = enroller_training_options)
+  def __init__(self, **kwargs):
+    # call base class constructor, passing all the parameters to it
+    DatabaseXBob.__init__(self, **kwargs)
 
 
   def t_model_ids(self, group = 'dev'):

@@ -4,17 +4,31 @@
 
 """Features for face recognition"""
 
-import numpy,math
+import numpy
+import math
 import bob
+from .. import utils
 
 from .Extractor import Extractor
 
 class DCTBlocks (Extractor):
+
   """Extracts DCT blocks"""
-  def __init__(self, config):
+  def __init__(
+      self,
+      block_size,    # 1 or two parameters for block size
+      block_overlap, # 1 or two parameters for block overlap
+      number_of_dct_coefficients,
+  ):
+
+    # call base class constructor
     Extractor.__init__(self)
-    self.m_config = config
-    if config.BLOCK_HEIGHT < config.BLOCK_Y_OVERLAP or config.BLOCK_WIDTH < config.BLOCK_X_OVERLAP:
+
+    # block parameters
+    self.m_block_size = block_size if isinstance(block_size, (tuple, list)) else (block_size, block_size)
+    self.m_block_overlap = block_overlap if isinstance(block_overlap, (tuple, list)) else (block_overlap, block_overlap)
+    self.m_number_of_dct_coefficients = number_of_dct_coefficients
+    if self.m_block_size[0] < self.m_block_overlap[0] or self.m_block_size[1] < self.m_block_overlap[1]:
       raise ValueError("The overlap is bigger than the block size. This won't work. Please check your setup!")
 
   def _normalize_blocks(self, src):
@@ -44,29 +58,29 @@ class DCTBlocks (Extractor):
 
 
   def _dct_features(self, prep, norm_before = True, norm_after = True, add_xy = False):
-    block_shape = bob.ip.get_block_3d_output_shape(prep, self.m_config.BLOCK_HEIGHT, self.m_config.BLOCK_WIDTH, self.m_config.BLOCK_Y_OVERLAP, self.m_config.BLOCK_X_OVERLAP)
+    block_shape = bob.ip.get_block_3d_output_shape(prep, self.m_block_size[0], self.m_block_size[1], self.m_block_overlap[0], self.m_block_overlap[1])
     blocks = numpy.ndarray(block_shape, 'float64')
-    bob.ip.block(prep, blocks, self.m_config.BLOCK_HEIGHT, self.m_config.BLOCK_WIDTH, self.m_config.BLOCK_Y_OVERLAP, self.m_config.BLOCK_X_OVERLAP)
+    bob.ip.block(prep, blocks, self.m_block_size[0], self.m_block_size[1], self.m_block_overlap[0], self.m_block_overlap[1])
 
     if norm_before:
       self._normalize_blocks(blocks)
 
     if add_xy:
-      real_DCT_coef = self.m_config.NUMBER_OF_DCT_COEFFICIENTS - 2
+      real_DCT_coef = self.m_number_of_dct_coefficients - 2
     else:
-      real_DCT_coef = self.m_config.NUMBER_OF_DCT_COEFFICIENTS
+      real_DCT_coef = self.m_number_of_dct_coefficients
 
     # limit the number of coefficients, when block size is to small
-    max_coefs = self.m_config.BLOCK_HEIGHT * self.m_config.BLOCK_WIDTH
+    max_coefs = self.m_block_size[0] * self.m_block_size[1]
     if real_DCT_coef > max_coefs:
       real_DCT_coef = max_coefs
       if add_xy:
-        self.m_config.NUMBER_OF_DCT_COEFFICIENTS = max_coefs + 2
+        self.m_number_of_dct_coefficients = max_coefs + 2
       else:
-        self.m_config.NUMBER_OF_DCT_COEFFICIENTS = max_coefs
+        self.m_number_of_dct_coefficients = max_coefs
 
     # Initializes cropper and destination array
-    DCTF = bob.ip.DCTFeatures(self.m_config.BLOCK_HEIGHT, self.m_config.BLOCK_WIDTH, self.m_config.BLOCK_Y_OVERLAP, self.m_config.BLOCK_X_OVERLAP, real_DCT_coef)
+    DCTF = bob.ip.DCTFeatures(self.m_block_size[0], self.m_block_size[1], self.m_block_overlap[0], self.m_block_overlap[1], real_DCT_coef)
 
     # Calls the preprocessing algorithm
     dct_blocks = DCTF(blocks)
@@ -74,9 +88,9 @@ class DCTBlocks (Extractor):
     n_blocks = block_shape[0]
 
     dct_blocks_min = 0
-    dct_blocks_max = self.m_config.NUMBER_OF_DCT_COEFFICIENTS
+    dct_blocks_max = self.m_number_of_dct_coefficients
     TMP_tensor_min = 0
-    TMP_tensor_max = self.m_config.NUMBER_OF_DCT_COEFFICIENTS
+    TMP_tensor_max = self.m_number_of_dct_coefficients
 
     if norm_before:
       dct_blocks_min += 1
@@ -90,7 +104,7 @@ class DCTBlocks (Extractor):
 
     #nBlocks = bob.ip.get_n_blocks(prep, self.m_config.BLOCK_H, self.m_config.BLOCK_W, self.m_config.OVERLAP_H, self.m_config.OVERLAP_W)
     # Note: nBlocks = ( n_blocks_h, n_blocks_w, block_h, block_w)
-    nBlocks = bob.ip.get_block_4d_output_shape(prep, self.m_config.BLOCK_HEIGHT, self.m_config.BLOCK_WIDTH, self.m_config.BLOCK_Y_OVERLAP, self.m_config.BLOCK_X_OVERLAP)
+    nBlocks = bob.ip.get_block_4d_output_shape(prep, self.m_block_size[0], self.m_block_size[1], self.m_block_overlap[0], self.m_block_overlap[1])
     for by in range(nBlocks[0]):
       for bx in range(nBlocks[1]):
         bi = bx + by * nBlocks[1]
@@ -111,4 +125,29 @@ class DCTBlocks (Extractor):
 
     # Computes DCT features
     return self._dct_features(image)
+
+
+
+
+class DCTBlocksVideo(DCTBlocks):
+
+  def __init__(self, **kwargs):
+    # call base class constructor with its required parameters
+    DCTBlocks.__init__(self, **kwargs)
+
+
+  def read_feature(self, filename):
+    """Read video.FrameContainer containing features extracted from each frame"""
+    return utils.video.FrameContainer(str(filename))
+
+
+  def __call__(self, frame_container):
+    """Returns local DCT features computed from each frame in the input video.FrameContainer"""
+
+    output_frame_container = utils.video.FrameContainer()
+    for (frame_id, image, quality) in frame_container.frames():
+      frame_dcts = DCTBlocks._dct_features(self,image)
+      output_frame_container.add_frame(frame_id,frame_dcts,quality)
+
+    return output_frame_container
 

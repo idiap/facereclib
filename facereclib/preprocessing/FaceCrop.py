@@ -26,13 +26,14 @@ from .Preprocessor import Preprocessor
 class FaceCrop (Preprocessor):
   """Crops the face according to the eye positions"""
 
-  def __init__(self,
-               cropped_image_size = None,# resolution of the cropped image, in order (HEIGHT,WIDTH); if not given, no face cropping will be performed
-               cropped_positions = None, # dictionary of the cropped positions, usually: {'reye':(RIGHT_EYE_Y, RIGHT_EYE_X) , 'leye':(LEFT_EYE_Y, LEFT_EYE_X)}
-               fixed_positions = None,   # dictionary of FIXED positions in the original image; if specified, annotations from the database will be ignored
-               color_channel = 'gray',   # the color channel to extract from colored images, if colored images are in the database
-               offset = 0                # if your feature extractor requires a specific offset, you might want to specify it here
-               ):
+  def __init__(
+      self,
+      cropped_image_size = None, # resolution of the cropped image, in order (HEIGHT,WIDTH); if not given, no face cropping will be performed
+      cropped_positions = None,  # dictionary of the cropped positions, usually: {'reye':(RIGHT_EYE_Y, RIGHT_EYE_X) , 'leye':(LEFT_EYE_Y, LEFT_EYE_X)}
+      fixed_positions = None,    # dictionary of FIXED positions in the original image; if specified, annotations from the database will be ignored
+      color_channel = 'gray',    # the color channel to extract from colored images, if colored images are in the database
+      offset = 0                 # if your feature extractor requires a specific offset, you might want to specify it here
+  ):
 
     # call base class constructor
     Preprocessor.__init__(self)
@@ -64,12 +65,14 @@ class FaceCrop (Preprocessor):
 
     if key not in self.m_croppers:
       # generate cropper on the fly
-      cropper = bob.ip.FaceEyesNorm(self.m_cropped_image_size[0] + 2 * self.m_offset, # cropped image height
-                                    self.m_cropped_image_size[1] + 2 * self.m_offset, # cropped image width
-                                    self.m_cropped_positions[pair[0]][0] + self.m_offset, # Y of first position (usually: right eye)
-                                    self.m_cropped_positions[pair[0]][1] + self.m_offset, # X of first position (usually: right eye)
-                                    self.m_cropped_positions[pair[1]][0] + self.m_offset,  # Y of second position (usually: left eye)
-                                    self.m_cropped_positions[pair[1]][1] + self.m_offset)  # X of second position (usually: left eye)
+      cropper = bob.ip.FaceEyesNorm(
+          self.m_cropped_image_size[0] + 2 * self.m_offset, # cropped image height
+          self.m_cropped_image_size[1] + 2 * self.m_offset, # cropped image width
+          self.m_cropped_positions[pair[0]][0] + self.m_offset, # Y of first position (usually: right eye)
+          self.m_cropped_positions[pair[0]][1] + self.m_offset, # X of first position (usually: right eye)
+          self.m_cropped_positions[pair[1]][0] + self.m_offset,  # Y of second position (usually: left eye)
+          self.m_cropped_positions[pair[1]][1] + self.m_offset   # X of second position (usually: left eye)
+      )
       self.m_croppers[key] = cropper
 
     # return cropper for this type
@@ -113,19 +116,20 @@ class FaceCrop (Preprocessor):
     mask = self.__mask__(image.shape)
 
     # perform the cropping
-    cropper(image,  # input image
-            mask,   # full input mask
-            self.m_cropped_image, # cropped image
-            self.m_cropped_mask,  # cropped mase
-            annotations[keys[0]][0], # Y-position of first annotation, usually left eye
-            annotations[keys[0]][1], # X-position of first annotation, usually left eye
-            annotations[keys[1]][0], # Y-position of first annotation, usually right eye
-            annotations[keys[1]][1]) # X-position of first annotation, usually right eye
+    cropper(
+        image,  # input image
+        mask,   # full input mask
+        self.m_cropped_image, # cropped image
+        self.m_cropped_mask,  # cropped mase
+        annotations[keys[0]][0], # Y-position of first annotation, usually left eye
+        annotations[keys[0]][1], # X-position of first annotation, usually left eye
+        annotations[keys[1]][0], # Y-position of first annotation, usually right eye
+        annotations[keys[1]][1]  # X-position of first annotation, usually right eye
+    )
 
     # assure that pixels from the masked area are 0
     self.m_cropped_image[self.m_cropped_mask == False] = 0.
 
-    self.save_image(self.m_cropped_image, '/scratch/mguenther/temp/cropped.hdf5')
     return self.m_cropped_image
 
 

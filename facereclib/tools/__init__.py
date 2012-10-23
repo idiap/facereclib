@@ -7,12 +7,9 @@
 from Tool import Tool
 from GaborJets import GaborJetTool
 from LGBPHS import LGBPHSTool
-from UBMGMM import UBMGMMTool
-from UBMGMMRegular import UBMGMMRegularTool
-from UBMGMMVideo import UBMGMMVideoTool
+from UBMGMM import UBMGMMTool, UBMGMMRegularTool, UBMGMMVideoTool
 from JFA import JFATool
-from ISV import ISVTool
-from ISVVideo import ISVVideoTool
+from ISV import ISVTool, ISVVideoTool
 from PCA import PCATool
 from LDA import LDATool
 from PLDA import PLDATool
@@ -27,13 +24,17 @@ from .. import utils
 class DummyTool (Tool):
   """This class is used to test all the possible functions of the tool chain, but it does basically nothing."""
 
-  def __init__(self, setup):
+  def __init__(self):
     """Generates a test value that is read and written"""
-    Tool.__init__(self,
-                  performs_projection = True,
-                  use_projected_features_for_enrollment = True,
-                  requires_enroller_training = True
-                  )
+
+    # call base class constructor registering that this tool performs everything.
+    Tool.__init__(
+        self,
+        performs_projection = True,
+        use_projected_features_for_enrollment = True,
+        requires_enroller_training = True
+    )
+
     self.m_test_value = numpy.array([[1,2,3], [4,5,6], [7,8,9]], dtype = numpy.uint8)
 
   def __test__(self, file_name):

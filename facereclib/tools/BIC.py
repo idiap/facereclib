@@ -15,20 +15,30 @@ class BICTool (Tool):
   def sqr(self, x):
     return x*x
 
-  def __init__(self, setup):
+  def __init__(
+      self,
+      distance_function, # the function to be used to compare two features; this highly depends on the type of features that are used
+      maximum_training_pair_count = None,  # if set, limit the number of training pairs to the given number in a non-random manner
+      subspace_dimensions = None, # if set as a pair (intra_dim, extra_dim), PCA subspace truncation for the two classes is performed
+      uses_dffs = False, # use the distance from feature space; only valid when PCA truncation is enabled; WARNING: uses this flag with care
+  ):
+
+    # call base class function and register that this tool requires training for the enrollment
     Tool.__init__(self, requires_enroller_training = True)
-    self.m_cfg = setup
-    self.m_distance_function = setup.distance_function
-    self.m_maximum_pair_count = setup.MAXIMUM_TRAINING_PAIR_COUNT if hasattr(setup, 'MAXIMUM_TRAINING_PAIR_COUNT') else None
-    self.m_use_dffs = setup.USE_DFFS if hasattr(setup, 'USE_DFFS') else False
-    if hasattr(setup, 'INTRA_SUBSPACE_DIMENSION') and hasattr(setup, 'EXTRA_SUBSPACE_DIMENSION'):
-      self.m_M_I = setup.INTRA_SUBSPACE_DIMENSION
-      self.m_M_E = setup.EXTRA_SUBSPACE_DIMENSION
+
+    # set up the BIC tool
+    self.m_distance_function = distance_function
+    self.m_maximum_pair_count = maximum_training_pair_count
+    self.m_use_dffs = uses_dffs
+    if subspace_dimensions is not None:
+      self.m_M_I = subspace_dimensions[0]
+      self.m_M_E = subspace_dimensions[1]
       self.m_bic_machine = bob.machine.BICMachine(self.m_use_dffs)
     else:
       self.m_bic_machine = bob.machine.BICMachine(False)
       self.m_M_I = None
       self.m_M_E = None
+
 
   def __compare__(self, feature_1, feature_2):
     """Computes a vector of similarities"""

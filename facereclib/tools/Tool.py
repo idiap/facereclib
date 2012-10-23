@@ -25,13 +25,14 @@ class Tool:
   It defines the minimum requirements for all derived tool classes.
   """
 
-  def __init__(self,
-               performs_projection = False, # enable if your tool will project the features
-               requires_projector_training = True, # by default, the projector needs training, if projection is enabled
-               split_training_features_by_client = False, # enable if your projector training needs the training files sorted by client
-               use_projected_features_for_enrollment = True, # by default, the enroller used projected features for enrollment, if projection is enabled.
-               requires_enroller_training = False # enable if your enroller needs training
-               ):
+  def __init__(
+      self,
+      performs_projection = False, # enable if your tool will project the features
+      requires_projector_training = True, # by default, the projector needs training, if projection is enabled
+      split_training_features_by_client = False, # enable if your projector training needs the training files sorted by client
+      use_projected_features_for_enrollment = True, # by default, the enroller used projected features for enrollment, if projection is enabled.
+      requires_enroller_training = False # enable if your enroller needs training
+  ):
     """Initializes the Tool.
     Call this constructor in derived class implementations.
     If your derived tool performs feature projection, please register this here.

@@ -2,4 +2,4 @@
 
 import facereclib
 
-tool = facereclib.tools.DummyTool
+tool = facereclib.tools.DummyTool()
