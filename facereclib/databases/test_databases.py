@@ -85,6 +85,9 @@ class DatabaseTest(unittest.TestCase):
     self.check_database(self.config('lfw_view1.py'))
     self.check_database(self.config('lfw_view1_unrestricted.py'))
 
+  def test08_arface(self):
+    self.check_database(self.config('arface_all.py'), groups=('dev', 'eval'))
+
 
   def test20_faceverif_fl(self):
     # The test of the faceverif_fl database is a bit different.

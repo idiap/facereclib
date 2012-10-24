@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 import xbob.db.arface
+import facereclib
 
-# 0/ The database to use
-name = 'arface'
-db = xbob.db.arface.Database()
-protocol = 'all'
-
-image_directory = "/idiap/resource/database/AR_Face/images"
-image_extension = ".ppm"
-annotation_directory = "/idiap/user/mguenther/annotations/ARface"
-annotation_type = 'eyecenter'
-
+database = facereclib.databases.DatabaseXBob(
+    database = xbob.db.arface.Database(),
+    name = 'arface',
+    image_directory = "/idiap/resource/database/AR_Face/images",
+    image_extension = ".ppm",
+    annotation_directory = "/idiap/user/mguenther/annotations/ARface",
+    annotation_type = 'eyecenter',
+    protocol = 'all'
+)
