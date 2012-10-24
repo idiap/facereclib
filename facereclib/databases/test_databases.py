@@ -85,3 +85,34 @@ class DatabaseTest(unittest.TestCase):
     self.check_database(self.config('lfw_view1.py'))
     self.check_database(self.config('lfw_view1_unrestricted.py'))
 
+
+  def test20_faceverif_fl(self):
+    # The test of the faceverif_fl database is a bit different.
+    # here, we test the output of two different ways of querying the AT&T database
+    # where actually both ways are uncommon...
+    db1 = utils.read_config_file(os.path.join('testdata', 'scripts', 'atnt_Test.py'), 'database')
+    db2 = utils.read_config_file(os.path.join('testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'), 'database')
+
+    # assure that different kind of queries result in the same file lists
+    self.assertEqual(set([str(id) for id in db1.model_ids()]), set(db2.model_ids()))
+    self.assertEqual(set([str(id) for id in db1.t_model_ids()]), set(db2.t_model_ids()))
+
+    def check_files(f1, f2):
+      self.assertEqual(set([file.path for file in f1]), set([file.path for file in f2]))
+
+    check_files(db1.all_files(), db2.all_files())
+    check_files(db1.training_files('train_extractor'), db2.training_files('train_extractor'))
+    check_files(db1.enroll_files(model_id=22), db2.enroll_files(model_id='22'))
+    check_files(db1.probe_files(model_id=22), db2.probe_files(model_id='22'))
+
+    check_files(db1.t_enroll_files(model_id=22), db2.t_enroll_files(model_id='22'))
+    check_files(db1.z_probe_files(), db2.z_probe_files())
+
+    f1 = db1.all_files()[0]
+    f2 = db2.all_files()[0]
+    self.assertEqual(f1.make_path(directory='xx', extension='.yy'), f2.make_path(directory='xx', extension='.yy'))
+
+    m1 = sorted([str(id) for id in db1.model_ids()])[0]
+    m2 = sorted([str(id) for id in db2.model_ids()])[0]
+    self.assertEqual(str(db1.client_id_from_model_id(m1)), db2.client_id_from_model_id(m2))
+

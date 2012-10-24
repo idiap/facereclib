@@ -156,9 +156,12 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.)
 
 
-  def test04_pca_lda(self):
+  def test04_lda(self):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
+    # assure that the config file is loadable
+    tool = self.config('lda.py')
+    self.assertTrue(isinstance(tool, facereclib.tools.LDATool))
     # assure that the config file is loadable
     tool = self.config('pca+lda.py')
     self.assertTrue(isinstance(tool, facereclib.tools.LDATool))

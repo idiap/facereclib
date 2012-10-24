@@ -69,6 +69,49 @@ class TestScript (unittest.TestCase):
     shutil.rmtree(test_dir)
 
 
+  def test01a_faceverify_fl(self):
+    test_dir = tempfile.mkdtemp(prefix='frl_')
+    # define dummy parameters
+    parameters = ['-d', os.path.join(base_dir, 'testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'),
+                  '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
+                  '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
+                  '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
+                  '--zt-norm',
+                  '-b', 'test_fl',
+                  '--temp-directory', test_dir,
+                  '--user-directory', test_dir
+                  ]
+
+    print ' '.join(parameters)
+
+    import faceverify
+    verif_args = faceverify.parse_args(parameters)
+    job_ids = faceverify.face_verify(verif_args)
+
+    # assert that the score file exists
+    score_files = (os.path.join(test_dir, 'test_fl', 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test_fl', 'scores', 'Default', 'ztnorm', 'scores-dev'))
+    self.assertTrue(os.path.exists(score_files[0]))
+    self.assertTrue(os.path.exists(score_files[1]))
+
+    # assert that the scores are are identical
+    reference_files = (os.path.join(base_dir, 'testdata', 'scripts', 'scores-nonorm-dev'), os.path.join(base_dir, 'testdata', 'scripts', 'scores-ztnorm-dev'))
+
+    import bob
+    for i in (0,1):
+
+      a1, b1 = bob.measure.load.split_four_column(score_files[i])
+      a2, b2 = bob.measure.load.split_four_column(reference_files[i])
+
+      a1 = sorted(a1); a2 = sorted(a2); b1 = sorted(b1); b2 = sorted(b2)
+
+      for i in range(len(a1)):
+        self.assertAlmostEqual(a1[i], a2[i], 6)
+      for i in range(len(b1)):
+        self.assertAlmostEqual(b1[i], b2[i], 6)
+
+    shutil.rmtree(test_dir)
+
+
   def test02_faceverify_grid(self):
     # define dummy parameters including the dry-run
     parameters = ['-d', os.path.join(config_dir, 'database', 'atnt_Default.py'),

@@ -107,7 +107,10 @@ class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
 
 
   def t_model_ids(self, group = 'dev'):
-    return sorted([model.id for model in self.m_database.tmodels(protocol = self.protocol, groups = group)])
+    if hasattr(self.m_database, 'tmodel_ids'):
+      return sorted(self.m_database.tmodel_ids(protocol = self.protocol, groups = group))
+    else:
+      return sorted([model.id for model in self.m_database.tmodels(protocol = self.protocol, groups = group)])
 
 
   def t_enroll_files(self, model_id, group = 'dev'):

@@ -26,5 +26,3 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
 
 database = TestDatabase()
 
-
-
