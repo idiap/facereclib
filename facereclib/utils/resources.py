@@ -44,14 +44,34 @@ def read_config_file(file, keyword = None):
   return eval('config.' + keyword)
 
 
-def read_resource(resource, keyword):
+def get_entry_points(keyword):
+  return  [entry_point for entry_point in pkg_resources.iter_entry_points('facereclib.' + keyword)]
+
+
+def load_resource(resource, keyword, imports = []):
+
+  print 'loading resource', resource
 
   # first, look if the resource is a file name
   if os.path.exists(resource):
     return read_config_file(resource, keyword)
 
   # now, we ckeck if the resource is registered as an entry point in the resource files
-  for entry_point in pkg_resources.iter_entry_points('facereclib.' + keyword):
-    file = entry_point.load()
-    print file
+  entry_points = [entry_point for entry_point in get_entry_points(keyword) if entry_point.name == resource]
+
+  if len(entry_points):
+    if len(entry_points) == 1:
+      return entry_points[0].load()
+    else:
+      raise ImportError("Under the desired name '%s', there are multiple entry points defined: %s" %(resource, [entry_point.module_name for entry_point in entry_points]))
+
+  # if the resource is neither a config file nor an entry point,
+  # just execute it as a command
+
+  # first, execute all import commands that are required
+  for i in imports:
+    exec "import %s"%i
+  # now, evaluate the resources
+  return eval(resource)
+
 

@@ -22,11 +22,16 @@ import unittest
 import os
 from .. import utils
 from nose.plugins.skip import SkipTest
+import pkg_resources
+
 
 class DatabaseTest(unittest.TestCase):
 
   def config(self, file):
-    return utils.read_config_file(os.path.join('config', 'database', file), 'database')
+    if os.path.splitext(file)[1] == '.py':
+      return utils.load_resource(os.path.join(os.path.dirname(__file__), '../configurations/databases/' + file), 'database')
+    else:
+      return utils.load_resource(file, 'database')
 
   def check_database(self, database, groups = ('dev',)):
     self.assertTrue(len(database.all_files()) > 0)
@@ -52,7 +57,7 @@ class DatabaseTest(unittest.TestCase):
 
 
   def test01_atnt(self):
-    self.check_database(self.config('atnt_Default.py'))
+    self.check_database(self.config('atnt'))
 
 
   def test02_banca(self):
@@ -86,7 +91,7 @@ class DatabaseTest(unittest.TestCase):
     self.check_database(self.config('lfw_view1_unrestricted.py'))
 
   def test08_arface(self):
-    self.check_database(self.config('arface_all.py'), groups=('dev', 'eval'))
+    self.check_database(self.config('arface'), groups=('dev', 'eval'))
 
 
   def test20_faceverif_fl(self):

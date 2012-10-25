@@ -6,7 +6,7 @@
 import video
 import histogram
 from logger import add_logger_command_line_option, set_verbosity_level, debug, info, warn, error
-from resources import read_resource, read_config_file
+from resources import load_resource, read_config_file, list_resources, get_entry_points
 from annotations import read_annotations
 
 import os

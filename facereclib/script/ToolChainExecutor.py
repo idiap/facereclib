@@ -52,10 +52,10 @@ class ToolChainExecutor:
     self.m_args = args
 
     # generate the tools that we will need
-    self.m_database = utils.read_config_file(args.database, 'database')
-    self.m_preprocessor = utils.read_config_file(args.preprocessor, 'preprocessor')
-    self.m_extractor = utils.read_config_file(args.features, 'feature_extractor')
-    self.m_tool = utils.read_config_file(args.tool, 'tool')
+    self.m_database = utils.load_resource(args.database, 'database', imports = args.imports)
+    self.m_preprocessor = utils.load_resource(args.preprocessor, 'preprocessor', imports = args.imports)
+    self.m_extractor = utils.load_resource(args.features, 'feature_extractor', imports = args.imports)
+    self.m_tool = utils.load_resource(args.tool, 'tool', imports = args.imports)
 
     # load configuration files specified on command line
     if args.grid:
@@ -84,6 +84,8 @@ class ToolChainExecutor:
         help = 'The configuration file for the face recognition tool.')
     config_group.add_argument('-g', '--grid', metavar = 'FILE',
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine.')
+    config_group.add_argument('--imports', metavar = 'LIB', nargs = '+', default = ['facereclib'],
+        help = 'If one of your configuration files is an actual command, please specify the lists of required imports to execute this command')
     config_group.add_argument('-b', '--sub-directory', metavar = 'DIR', required = True,
         help = 'The sub-directory where the files of the current experiment should be stored. Please specify a directory name with a name describing your experiment.')
 
