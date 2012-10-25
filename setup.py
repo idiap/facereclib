@@ -16,19 +16,34 @@ setup(
     entry_points={
       'console_scripts': [
         'faceverify.py = facereclib.script.faceverify:main',
-        'faceverify_gbu.py = facereclib.script.faceverify_gbu:main',
+#        'faceverify_gbu.py = facereclib.script.faceverify_gbu:main',
         'faceverify_lfw.py = facereclib.script.faceverify_lfw:main',
-        'faceverify_pose.py = facereclib.script.faceverify_pose:main',
-        'parameter_test.py = facereclib.script.parameter_test:main',
+#        'faceverify_pose.py = facereclib.script.faceverify_pose:main',
+#        'parameter_test.py = facereclib.script.parameter_test:main',
         'baselines.py = facereclib.script.baselines:main'
-        ],
-      },
+      ],
+
+      'facereclib.database': [
+        'atnt              = facereclib.config.databases.atnt_Default',
+      ],
+
+      'facereclib.preprocessor': [
+        'tan_triggs        = facereclib.config.preprocessing.tan_triggs',
+      ],
+
+      'facereclib.feature_extractor': [
+        'linearize         = facereclib.config.features.linearize',
+      ],
+
+      'facereclib.tool': [
+        'pca               = facereclib.config.tools.pca'
+      ]
+    },
 
     #long_description=open('doc/install.rst').read(),
 
     install_requires=[
-        "setuptools", # for whatever
-        "bob >= 1.1.1",      # base signal proc./machine learning library
-        # databases
+      "setuptools", # for whatever
+      "bob >= 1.1.1",      # base signal proc./machine learning library
     ],
 )
