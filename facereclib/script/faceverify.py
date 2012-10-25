@@ -499,10 +499,7 @@ def main():
   """Executes the main function"""
   # do the command line parsing
   args = parse_args()
-  # verify that the input files exist
-  for f in (args.database, args.preprocessor, args.features, args.tool):
-    if not os.path.exists(str(f)):
-      raise ValueError("The given file '%s' does not exist."%f)
+
   # perform face verification test
   face_verify(args)
 

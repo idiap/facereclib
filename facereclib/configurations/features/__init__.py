@@ -3,5 +3,3 @@
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
 """Configuration files for feature extractors"""
-
-__all__ = dir()

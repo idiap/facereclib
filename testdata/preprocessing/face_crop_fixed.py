@@ -4,7 +4,7 @@ import facereclib
 
 # copy the settings of the face cropping
 import os
-execfile(os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'preprocessing', 'face_crop.py'))
+execfile(os.path.join(os.path.dirname(__file__), '..', '..', 'facereclib', 'configurations', 'preprocessing', 'face_crop.py'))
 
 # fixed locations of the eyes; if this is set, the hand-labeled eye positions will be ignored (if available),
 # and instead it is assumed that a detector was run before and put the eye positions to these locations:

@@ -40,8 +40,8 @@ class PreprocessingTest(unittest.TestCase):
   def input(self):
     return (bob.io.load(self.input_dir("testimage.jpg")), facereclib.utils.read_annotations(self.input_dir("testimage.pos"), 'named'))
 
-  def config(self, file):
-    return facereclib.utils.read_config_file(os.path.join('config', 'preprocessing', file), 'preprocessor')
+  def config(self, resource):
+    return facereclib.utils.tests.configuration_file(resource, 'preprocessor', 'preprocessing')
 
   def execute(self, preprocessor, image, annotations, reference):
     # execute the preprocessor
@@ -65,19 +65,19 @@ class PreprocessingTest(unittest.TestCase):
   def test01_face_crop(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('face_crop.py')
+    preprocessor = self.config('face_crop')
     # execute face cropper
     self.execute(preprocessor, image, annotation, 'cropped.hdf5')
 
     # test the preprocessor with fixed eye positions
     # here, we read a special config file that sets the same fixed eye positions as given in the test data
-    preprocessor = facereclib.utils.read_config_file(self.reference_dir('face_crop_fixed.py'), 'preprocessor')
+    preprocessor = facereclib.utils.resources.load_resource(self.reference_dir('face_crop_fixed.py'), 'preprocessor')
     # execute face cropper;
     # result must be identical to the original face cropper (same eyes are used)
     self.execute(preprocessor, image, None, 'cropped.hdf5')
 
     # test the preprocessor with offset
-    preprocessor = self.config('face_crop_with_offset.py')
+    preprocessor = self.config('face_crop_with_offset')
     preprocessed = preprocessor(image, annotation)
     # results of the inner parts must be similar
     self.assertTrue((numpy.abs(bob.io.load(self.reference_dir('cropped.hdf5')) - preprocessed[2:-2, 2:-2]) < 1e-10).all())
@@ -86,12 +86,12 @@ class PreprocessingTest(unittest.TestCase):
   def test02_tan_triggs(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('tan_triggs.py')
+    preprocessor = self.config('tan_triggs')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'tan_triggs_cropped.hdf5')
 
     # test if the preprocessor with offset at least loads
-    preprocessor = self.config('tan_triggs_with_offset.py')
+    preprocessor = self.config('tan_triggs_with_offset')
     self.assertTrue(isinstance(preprocessor, facereclib.preprocessing.TanTriggs))
 
     # execute the preprocessor without image cropping
@@ -100,7 +100,7 @@ class PreprocessingTest(unittest.TestCase):
 
 
   def test02a_tan_triggs_video(self):
-    preprocessor = self.config('tan_triggs_video.py')
+    preprocessor = self.config('tan_triggs_video')
     self.assertTrue(isinstance(preprocessor, facereclib.preprocessing.TanTriggsVideo))
     raise SkipTest("Video tests are currently skipped.")
     # read input
@@ -123,7 +123,7 @@ class PreprocessingTest(unittest.TestCase):
   def test03_self_quotient(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('self_quotient.py')
+    preprocessor = self.config('self_quotient')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'self_quotient_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'self_quotient.hdf5')
@@ -132,7 +132,7 @@ class PreprocessingTest(unittest.TestCase):
   def test04_inorm_lbp(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('inorm_lbp.py')
+    preprocessor = self.config('inorm_lbp')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'inorm_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'inorm.hdf5')
@@ -141,7 +141,7 @@ class PreprocessingTest(unittest.TestCase):
   def test05_histogram(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('histogram_equalize.py')
+    preprocessor = self.config('histogram_equalize')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'histogram_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'histogram.hdf5')
@@ -150,7 +150,7 @@ class PreprocessingTest(unittest.TestCase):
   def test06_key_points(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('keypoints.py')
+    preprocessor = self.config('keypoints')
 
     # execute preprocessor
     preprocessed = preprocessor(image, annotation)

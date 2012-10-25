@@ -29,6 +29,7 @@ from nose.plugins.skip import SkipTest
 
 regenerate_refs = False
 
+
 class FeatureExtractionTest(unittest.TestCase):
 
   def input_dir(self, file):
@@ -39,8 +40,8 @@ class FeatureExtractionTest(unittest.TestCase):
     facereclib.utils.ensure_dir(dir)
     return os.path.join(dir, file)
 
-  def config(self, file):
-    return facereclib.utils.read_config_file(os.path.join('config', 'features', file), 'feature_extractor')
+  def config(self, resource):
+    return facereclib.utils.tests.configuration_file(resource, 'feature_extractor', 'features')
 
 
   def train_set(self, feature, count = 50, a = 0, b = 1):
@@ -64,7 +65,7 @@ class FeatureExtractionTest(unittest.TestCase):
   def test01_linearize(self):
     # read input
     image = bob.io.load(self.input_dir('cropped.hdf5'))
-    extractor = self.config('linearize.py')
+    extractor = self.config('linearize')
     # extract feature
     feature = self.execute(extractor, image, 'linearize.hdf5')
     self.assertTrue(len(feature.shape) == 1)
@@ -73,7 +74,7 @@ class FeatureExtractionTest(unittest.TestCase):
   def test02_dct(self):
     # read input
     image = bob.io.load(self.input_dir('cropped.hdf5'))
-    extractor = self.config('dct_blocks.py')
+    extractor = self.config('dct')
     # extract feature
     feature = self.execute(extractor, image, 'dct_blocks.hdf5')
     self.assertEqual(len(feature.shape), 2)
@@ -87,11 +88,11 @@ class FeatureExtractionTest(unittest.TestCase):
 
   def test02a_dct_video(self):
     # test that at least the config file can be read
-    extractor = self.config('dct_blocks_video.py')
+    extractor = self.config('dct_blocks_video')
     self.assertTrue(isinstance(extractor, facereclib.features.DCTBlocksVideo))
     raise SkipTest("Video tests are currently skipped.")
     # we need the preprocessor tool to actually read the data
-    preprocessor = facereclib.utils.read_config_file(os.path.join('config', 'preprocessor', 'tan_triggs_video.py'), 'preprocessor')
+    preprocessor = facereclib.utils.configuration_file('tan_triggs_video', 'preprocessor', 'preprocessing')
     video = preprocessor.read_image(self.input_dir('video.hdf5'))
 
     # now, we extract features from it
@@ -104,7 +105,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
   def test03_graphs(self):
     image = bob.io.load(self.input_dir('cropped.hdf5'))
-    extractor = self.config('grid_graph.py')
+    extractor = self.config('grid_graph')
     # execute extractor
     feature = self.execute(extractor, image, 'graph_with_phase.hdf5')
     self.assertEqual(len(feature.shape), 3)
@@ -121,7 +122,7 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertEqual(len(feature.shape), 2)
 
     # generate aligned graph extractor
-    extractor = self.config('grid_graph_aligned.py')
+    extractor = self.config('grid_graph_aligned')
     feature = self.execute(extractor, image, 'graph_aligned.hdf5')
     self.assertEqual(len(feature.shape), 3)
 
@@ -129,7 +130,7 @@ class FeatureExtractionTest(unittest.TestCase):
   def test04_lgbphs(self):
     image = bob.io.load(self.input_dir('cropped.hdf5'))
     # just test if the config file loads correctly...
-    extractor = self.config('lgbphs.py')
+    extractor = self.config('lgbphs')
     self.assertTrue(isinstance(extractor, facereclib.features.LGBPHS))
 
     # in this test, we use a smaller setup of the LGBPHS features
@@ -175,14 +176,14 @@ class FeatureExtractionTest(unittest.TestCase):
     preprocessor = facereclib.preprocessing.Keypoints()
     image = preprocessor.read_image(self.input_dir('key_points.hdf5'))
     # now, we extract features from it
-    extractor = self.config('sift_keypoints.py')
+    extractor = self.config('sift')
     feature = self.execute(extractor, image, 'sift.hdf5')
     self.assertEqual(len(feature.shape), 1)
 
 
   def test06_eigenface(self):
     # just test if the config file loads correctly...
-    extractor = self.config('eigenfaces.py')
+    extractor = self.config('eigenfaces')
     self.assertTrue(isinstance(extractor, facereclib.features.Eigenface))
 
     # create extractor with a smaller number of kept eigenfaces

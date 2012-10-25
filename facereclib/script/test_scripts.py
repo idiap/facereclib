@@ -26,31 +26,17 @@ import tempfile
 from nose.plugins.skip import SkipTest
 
 base_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-config_dir = os.path.join(base_dir, 'config')
+config_dir = os.path.join(base_dir, 'facereclib', 'configurations')
 
 class TestScript (unittest.TestCase):
 
-  def test01_faceverify_local(self):
-    test_dir = tempfile.mkdtemp(prefix='frl_')
-    # define dummy parameters
-    parameters = ['-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
-                  '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
-                  '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
-                  '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
-                  '--zt-norm',
-                  '-b', 'test',
-                  '--temp-directory', test_dir,
-                  '--user-directory', test_dir
-                  ]
-
-    print ' '.join(parameters)
-
+  def __face_verify__(self, parameters, test_dir, sub_dir):
     import faceverify
     verif_args = faceverify.parse_args(parameters)
     job_ids = faceverify.face_verify(verif_args)
 
     # assert that the score file exists
-    score_files = (os.path.join(test_dir, 'test', 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test', 'scores', 'Default', 'ztnorm', 'scores-dev'))
+    score_files = (os.path.join(test_dir, sub_dir, 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, sub_dir, 'scores', 'Default', 'ztnorm', 'scores-dev'))
     self.assertTrue(os.path.exists(score_files[0]))
     self.assertTrue(os.path.exists(score_files[1]))
 
@@ -69,7 +55,65 @@ class TestScript (unittest.TestCase):
     shutil.rmtree(test_dir)
 
 
-  def test01a_faceverify_fl(self):
+
+  def test01_faceverify_local(self):
+    test_dir = tempfile.mkdtemp(prefix='frl_')
+    # define dummy parameters
+    parameters = ['-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+                  '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
+                  '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
+                  '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
+                  '--zt-norm',
+                  '-b', 'test',
+                  '--temp-directory', test_dir,
+                  '--user-directory', test_dir
+                  ]
+
+    print ' '.join(parameters)
+
+    self.__face_verify__(parameters, test_dir, 'test')
+
+
+  def test01a_faceverify_resources(self):
+    test_dir = tempfile.mkdtemp(prefix='frl_')
+    # define dummy parameters
+    parameters = ['-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+                  '-p', 'face_crop',
+                  '-f', 'eigenfaces',
+                  '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
+                  '--zt-norm',
+                  '-b', 'test_a',
+                  '--temp-directory', test_dir,
+                  '--user-directory', test_dir
+                  ]
+
+    print ' '.join(parameters)
+
+    self.__face_verify__(parameters, test_dir, 'test_a')
+
+
+
+  def test01b_faceverify_commandline(self):
+    test_dir = tempfile.mkdtemp(prefix='frl_')
+    # define dummy parameters
+    parameters = ['-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+                  '-p', 'face_crop',
+                  '-f', 'facereclib.features.Eigenface(subspace_dimension = 100)',
+                  '-t', 'facereclib.tools.DummyTool()',
+                  '--zt-norm',
+                  '-b', 'test_b',
+                  '--temp-directory', test_dir,
+                  '--user-directory', test_dir
+                  ]
+
+    print ' '.join(parameters)
+
+    self.__face_verify__(parameters, test_dir, 'test_b')
+
+
+
+
+  def test01x_faceverify_fl(self):
     test_dir = tempfile.mkdtemp(prefix='frl_')
     # define dummy parameters
     parameters = ['-d', os.path.join(base_dir, 'testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'),
@@ -77,7 +121,7 @@ class TestScript (unittest.TestCase):
                   '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
                   '--zt-norm',
-                  '-b', 'test_fl',
+                  '-b', 'test_x',
                   '--temp-directory', test_dir,
                   '--user-directory', test_dir
                   ]
@@ -89,7 +133,7 @@ class TestScript (unittest.TestCase):
     job_ids = faceverify.face_verify(verif_args)
 
     # assert that the score file exists
-    score_files = (os.path.join(test_dir, 'test_fl', 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test_fl', 'scores', 'Default', 'ztnorm', 'scores-dev'))
+    score_files = (os.path.join(test_dir, 'test_x', 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test_x', 'scores', 'Default', 'ztnorm', 'scores-dev'))
     self.assertTrue(os.path.exists(score_files[0]))
     self.assertTrue(os.path.exists(score_files[1]))
 
@@ -112,11 +156,12 @@ class TestScript (unittest.TestCase):
     shutil.rmtree(test_dir)
 
 
+
   def test02_faceverify_grid(self):
     # define dummy parameters including the dry-run
-    parameters = ['-d', os.path.join(config_dir, 'database', 'atnt_Default.py'),
-                  '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
-                  '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
+    parameters = ['-d', 'atnt',
+                  '-p', 'face_crop',
+                  '-f', 'eigenfaces',
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
                   '-g', os.path.join(config_dir, 'grid', 'grid.py'),
                   '--dry-run',
@@ -133,7 +178,7 @@ class TestScript (unittest.TestCase):
 
   def notest05_faceverify_gbu_local(self):
     # define dummy parameters
-    parameters = ['-d', os.path.join(config_dir, 'database', 'gbu_Good.py'),
+    parameters = ['-d', os.path.join(config_dir, 'databases', 'gbu_Good.py'),
                   '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
                   '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -151,7 +196,7 @@ class TestScript (unittest.TestCase):
 
   def notest06_faceverify_gbu_grid(self):
     # define dummy parameters
-    parameters = ['-d', os.path.join(config_dir, 'database', 'gbu_Good.py'),
+    parameters = ['-d', os.path.join(config_dir, 'databases', 'gbu_Good.py'),
                   '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
                   '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -170,9 +215,9 @@ class TestScript (unittest.TestCase):
 
   def test03_faceverify_lfw_local(self):
     # define dummy parameters
-    parameters = ['-d', os.path.join(config_dir, 'database', 'lfw_view1.py'),
-                  '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
-                  '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
+    parameters = ['-d', 'lfw',
+                  '-p', 'face_crop',
+                  '-f', 'eigenfaces',
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
                   '--dry-run',
                   '-b', 'dummy'
@@ -188,9 +233,9 @@ class TestScript (unittest.TestCase):
 
   def test04_faceverify_lfw_grid(self):
     # define dummy parameters
-    parameters = ['-d', os.path.join(config_dir, 'database', 'lfw_view1.py'),
-                  '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
-                  '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
+    parameters = ['-d', 'lfw',
+                  '-p', 'face_crop',
+                  '-f', 'eigenfaces',
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
                   '-g', os.path.join(config_dir, 'grid', 'grid.py'),
                   '--dry-run',
@@ -203,4 +248,25 @@ class TestScript (unittest.TestCase):
     import faceverify_lfw
     verif_args = faceverify_lfw.parse_args(parameters)
     job_ids = faceverify_lfw.face_verify(verif_args)
+
+
+  def test11_baselines_api(self):
+    # test that all of the baselines would execute
+    from facereclib.script.baselines import all_databases, all_algorithms, main
+
+    for database in all_databases:
+      parameters = ['-d', database, '--dry-run']
+      main(parameters)
+      parameters.append('-g')
+      main(parameters)
+      parameters.append('-e')
+      main(parameters)
+
+    for algorithm in all_algorithms:
+      parameters = ['-a', algorithm, '--dry-run']
+      main(parameters)
+      parameters.append('-g')
+      main(parameters)
+      parameters.append('-e')
+      main(parameters)
 

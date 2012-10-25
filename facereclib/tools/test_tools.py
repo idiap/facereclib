@@ -25,9 +25,9 @@ import tempfile
 import facereclib
 import bob
 from nose.plugins.skip import SkipTest
-from .. import utils
 
 regenerate_refs = False
+
 
 class ToolTest(unittest.TestCase):
 
@@ -39,8 +39,8 @@ class ToolTest(unittest.TestCase):
     facereclib.utils.ensure_dir(dir)
     return os.path.join(dir, file)
 
-  def config(self, file):
-    return utils.read_config_file(os.path.join('config', 'tools', file), 'tool')
+  def config(self, resource):
+    return facereclib.utils.tests.configuration_file(resource, 'tool', 'tools')
 
 
   def compare(self, feature, reference):
@@ -85,7 +85,7 @@ class ToolTest(unittest.TestCase):
   def test01_gabor_jet(self):
     # read input
     feature = bob.io.load(self.input_dir('graph_with_phase.hdf5'))
-    tool = self.config('gabor_jet.py')
+    tool = self.config('gabor_jet')
     self.assertFalse(tool.performs_projection)
     self.assertFalse(tool.requires_enroller_training)
 
@@ -102,7 +102,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature1 = bob.io.load(self.input_dir('lgbphs_sparse.hdf5'))
     feature2 = bob.io.load(self.input_dir('lgbphs_no_phase.hdf5'))
-    tool = self.config('lgbphs.py')
+    tool = self.config('lgbphs')
     self.assertFalse(tool.performs_projection)
     self.assertFalse(tool.requires_enroller_training)
 
@@ -119,7 +119,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is read
-    tool = self.config('pca.py')
+    tool = self.config('pca')
     self.assertTrue(isinstance(tool, facereclib.tools.PCATool))
 
     # generate tool with a lower number of dimensions
@@ -160,10 +160,10 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is loadable
-    tool = self.config('lda.py')
+    tool = self.config('lda')
     self.assertTrue(isinstance(tool, facereclib.tools.LDATool))
     # assure that the config file is loadable
-    tool = self.config('pca+lda.py')
+    tool = self.config('pca+lda')
     self.assertTrue(isinstance(tool, facereclib.tools.LDATool))
 
     # here we use a reduced tool
@@ -206,7 +206,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     # check that the config file is readable
-    tool = self.config('bic.py')
+    tool = self.config('bic')
     self.assertTrue(isinstance(tool, facereclib.tools.BICTool))
 
     # here, we use a reduced complexity for test purposes
@@ -263,7 +263,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
-    tool = self.config('ubm_gmm.py')
+    tool = self.config('gmm')
     self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMTool))
 
     # here, we use a reduced complexity for test purposes
@@ -313,7 +313,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
-    tool = self.config('ubm_gmm_regular_scoring.py')
+    tool = self.config('ubm_gmm_regular_scoring')
     self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMRegularTool))
 
     # here, we use a reduced complexity for test purposes
@@ -347,7 +347,7 @@ class ToolTest(unittest.TestCase):
 
   def test06b_gmm_video(self):
     # assure that the config file is readable
-    tool = self.config('ubm_gmm_video.py')
+    tool = self.config('ubm_gmm_video')
     self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMVideoTool))
     raise SkipTest("This test is not yet implemented")
 
@@ -356,7 +356,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
-    tool = self.config('isv.py')
+    tool = self.config('isv')
     self.assertTrue(isinstance(tool, facereclib.tools.ISVTool))
 
     # Here, we use a reduced complexity for test purposes
@@ -426,7 +426,7 @@ class ToolTest(unittest.TestCase):
 
   def test07a_isv_video(self):
     # assure that the config file is readable
-    tool = self.config('isv_video.py')
+    tool = self.config('isv_video')
     self.assertTrue(isinstance(tool, facereclib.tools.ISVVideoTool))
     raise SkipTest("This test is not yet implemented")
 
@@ -435,7 +435,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
-    tool = self.config('jfa.py')
+    tool = self.config('jfa')
     self.assertTrue(isinstance(tool, facereclib.tools.JFATool))
 
     # here, we use a reduced complexity for test purposes
@@ -508,7 +508,7 @@ class ToolTest(unittest.TestCase):
     # read input
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is readable
-    tool = self.config('pca+plda.py')
+    tool = self.config('pca+plda')
     self.assertTrue(isinstance(tool, facereclib.tools.PLDATool))
 
     # here, we use a reduced complexity for test purposes
@@ -553,8 +553,4 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, feature)
     self.assertAlmostEqual(sim, 0.)
-
-
-
-
 

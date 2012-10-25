@@ -2,45 +2,46 @@
 
 import subprocess
 import os
+import sys
 import argparse
 
 from .. import utils
 
 # This is the default set of algorithms that can be run using this script.
+all_databases = utils.resources.resource_keys('database')
 all_algorithms = ('dummy', 'eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda', 'bic')
 
-def command_line_arguments():
+def command_line_arguments(command_line_parameters):
   """Defines the command line parameters that are accepted."""
 
   # create parser
-  parser = argparse.ArgumentParser(description="Execute baseline algorithms with default parameters", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser = argparse.ArgumentParser(description='Execute baseline algorithms with default parameters', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   # add parameters
   # - the algorithm to execute
-  parser.add_argument('-a', '--algorithms', choices = all_algorithms, default = ('eigenface',), nargs = '+', help = "Select one (or more) algorithms that you want to execute.")
-  parser.add_argument('--all', action = 'store_true', help = "Select all algorithms.")
+  parser.add_argument('-a', '--algorithms', choices = all_algorithms, default = ('eigenface',), nargs = '+', help = 'Select one (or more) algorithms that you want to execute.')
+  parser.add_argument('--all', action = 'store_true', help = 'Select all algorithms.')
   # - the image database to choose
-  parser.add_argument('-d', '--database', choices = ('atnt', 'banca', 'mobio', 'multipie', 'frgc', 'arface', 'gbu', 'lfw', 'xm2vts', 'scface'), default = 'atnt', help = "The database on which the baseline algorithm is executed.")
-  parser.add_argument('-p', '--protocol', default = 'Default', help = "The protocol for the desired database.")
+  parser.add_argument('-d', '--database', choices = all_databases, default = 'atnt', help = 'The database on which the baseline algorithm is executed.')
   # - the directory to write
-  parser.add_argument('-f', '--directory', help = "The directory to write the data of the experiment into. If not specified, the default directories of the faceverify script are used (see bin/faceverify.py --help).")
+  parser.add_argument('-f', '--directory', help = 'The directory to write the data of the experiment into. If not specified, the default directories of the faceverify script are used (see bin/faceverify.py --help).')
   # - special option to share image preprocessing. This can be used to save some time.
-  parser.add_argument('-s', '--share-preprocessing', action = 'store_true', help = "Share the preprocessed image directory?\nWARNING! When using this option and the --grid option, please let the first algorithm finish, until you start the next one.")
+  parser.add_argument('-s', '--share-preprocessing', action = 'store_true', help = 'Share the preprocessed image directory?\nWARNING! When using this option and the --grid option, please let the first algorithm finish, until you start the next one.')
 
   # - use the Idiap grid -- option is only useful if you are at Idiap
-  parser.add_argument('-g', '--grid', action = 'store_true', help = "Execute the algorithm in the SGE grid.")
+  parser.add_argument('-g', '--grid', action = 'store_true', help = 'Execute the algorithm in the SGE grid.')
 
   # - just print?
-  parser.add_argument('-x', '--dry-run', action = 'store_true', help = "Just print the commands, but do not execute them.")
+  parser.add_argument('-x', '--dry-run', action = 'store_true', help = 'Just print the commands, but do not execute them.')
   utils.add_logger_command_line_option(parser)
 
   # - evaluate the algorithm (after it has finished)
-  parser.add_argument('-e', '--evaluate', action = 'store_true', help = "Evaluate the results of the algorithms (instead of running them).")
+  parser.add_argument('-e', '--evaluate', action = 'store_true', help = 'Evaluate the results of the algorithms (instead of running them).')
 
   # - other parameters that are passed to the underlying script
-  parser.add_argument('parameters', nargs = argparse.REMAINDER, help = "Parameters directly passed to the face verification script.")
+  parser.add_argument('parameters', nargs = argparse.REMAINDER, help = 'Parameters directly passed to the face verification script.')
 
-  args = parser.parse_args()
+  args = parser.parse_args(command_line_parameters)
   if args.all:
     args.algorithms = all_algorithms
 
@@ -55,102 +56,87 @@ def command_line_arguments():
 # - The algorithm to be run
 # - The grid configuration that it requires (only used when the --grid option is chosen)
 
+# Some default variables that are required
+faceverify_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
+bin_dir = os.path.join(faceverify_dir, 'bin')
+config_dir = os.path.join(faceverify_dir, 'facereclib/configuration')
+script = os.path.join(bin_dir, 'faceverify.py')
+
+
 def dummy():
   """Dummy script just for testing the tool chain"""
-  features      = "eigenfaces.py"
-  tool          = "dummy.py"
-  grid          = "grid.py"
+  features      = 'eigenfaces'
+  tool          = os.path.join(config_dir, 'tools', 'dummy.py')
+  grid          = 'grid.py'
   return (features, tool, grid)
 
 def eigenface():
   """Simple eigenface comparison"""
-  features      = "linearize.py"
-  tool          = "pca.py"
-  grid          = "grid.py"
+  features      = 'linearize'
+  tool          = 'pca'
+  grid          = 'grid.py'
   return (features, tool, grid)
 
 def lda():
   """LDA on eigenface features"""
-  features      = "eigenfaces.py"
-  tool          = "lda.py"
-  grid          = "grid.py"
+  features      = 'eigenfaces'
+  tool          = 'lda'
+  grid          = 'grid.py'
   return (features, tool, grid)
 
 def gaborgraph():
   """Gabor grid graphs using a Gabor phase based similarity measure"""
-  features      = "grid_graph.py"
-  tool          = "gabor_jet.py"
-  grid          = "grid.py"
+  features      = 'grid_graph'
+  tool          = 'gabor_jet'
+  grid          = 'grid.py'
   return (features, tool, grid)
 
 def lgbphs():
   """Local Gabor binary pattern histogram sequences"""
-  features      = "lgbphs.py"
-  tool          = "lgbphs.py"
-  grid          = "grid.py"
-  preprocessing = "tan_triggs_with_offset.py"
+  features      = 'lgbphs'
+  tool          = 'lgbphs'
+  grid          = 'grid.py'
+  preprocessing = os.path.join(config_dir, 'preprocessing', 'tan_triggs_with_offset.py')
   return (features, tool, grid, preprocessing)
 
 def gmm():
   """UBM/GMM modelling of DCT block features"""
-  features      = "dct_blocks.py"
-  tool          = "ubm_gmm.py"
-  grid          = "demanding.py"
+  features      = 'dct'
+  tool          = 'gmm'
+  grid          = 'demanding.py'
   return (features, tool, grid)
 
 def isv():
   """Inter-Session-Variability modelling of DCT block features"""
-  features      = "dct_blocks.py"
-  tool          = "isv.py"
-  grid          = "demanding.py"
+  features      = 'dct'
+  tool          = 'isv'
+  grid          = 'demanding.py'
   return (features, tool, grid)
 
 def plda():
   """Probabilistic LDA using PCA+PLDA on pixel-based features"""
-  features      = "linearize.py"
-  tool          = "pca+plda.py"
-  grid          = "demanding.py"
+  features      = 'linearize'
+  tool          = 'pca+plda'
+  grid          = 'demanding.py'
   return (features, tool, grid)
 
 def bic():
   """The Bayesian Intrapersonal/Extrapersonal classifier"""
-  features      = "linearize.py"
-  tool          = "bic.py"
-  grid          = "demanding.py"
+  features      = 'linearize'
+  tool          = 'bic'
+  grid          = 'demanding.py'
   return (features, tool, grid)
 
-# Some default variables that are required
-faceverify_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", ".."))
-bin_dir = os.path.join(faceverify_dir, "bin")
-config_dir = os.path.join(faceverify_dir, "config")
-script = os.path.join(bin_dir, "faceverify.py")
 
 
-def available_protocols(database):
-  """Checks the database configuration files and estimates the protocol according to the file names."""
-  configs = os.listdir(os.path.join(config_dir, 'database'))
-  res=[]
-  for file in configs:
-    if file.find(database) == 0:
-      parts = os.path.splitext(file)
-      if parts[1] == '.py':
-        res.append(parts[0][len(database)+1:])
-  return res
-
-
-def main():
+def main(command_line_parameters = sys.argv[1:]):
 
   # Collect command line arguments
-  args = command_line_arguments()
-
-  # Check that the protocol is valid for the chosen database
-  if args.protocol not in available_protocols(args.database):
-    raise ValueError("The protocol '%s' for database '%s' is not (yet) available. Please choose one of %s"%(args.protocol, args.database, available_protocols(args.database)))
+  args = command_line_arguments(command_line_parameters)
 
   # Check the database configuration file
-  database = os.path.join(config_dir, "database", args.database + "_" + args.protocol + ".py")
-  has_zt_norm = args.database in ('banca', 'mobio', 'scface')
-  has_eval = args.database in ('banca', 'mobio', 'scface', 'xm2vts', 'lfw')
+  has_zt_norm = args.database in ('banca', 'mobio_male', 'mobio_female', 'multipie_U', 'multipie_P', 'scface')
+  has_eval = args.database in ('banca', 'mobio_male', 'mobio_female', 'multipie_U', 'multipie_P', 'scface', 'xm2vts', 'lfw')
 
   if args.evaluate:
     # evaluate the results
@@ -158,12 +144,14 @@ def main():
 
       utils.info("Evaluating algorithm '" + algorithm + "'")
 
+      database = utils.resources.load_resource(args.database, 'database')
+
       if args.directory:
         # append the directories
-        result_dir = os.path.join(args.directory, args.database, 'baselines', algorithm, 'scores', args.protocol)
+        result_dir = os.path.join(args.directory, args.database, 'baselines', algorithm, 'scores', database.protocol)
       else:
         # this is the default result directory
-        result_dir = os.path.join('/idiap/user', os.environ['USER'], args.database, 'baselines', algorithm, 'scores', args.protocol)
+        result_dir = os.path.join('/idiap/user', os.environ['USER'], args.database, 'baselines', algorithm, 'scores', database.protocol)
 
       # sub-directories of the result directories that contain the score files
       folders = ('nonorm', 'ztnorm') if has_zt_norm else ('nonorm',)
@@ -174,11 +162,11 @@ def main():
         eval_file = os.path.join(result_dir, dir, 'scores-eval') if has_eval else dev_file
 
         # check if the score files are already there (i.e., the experiments have finished)
-        if not os.path.exists(dev_file) or not os.path.exists(eval_file):
+        if not args.dry_run and (not os.path.exists(dev_file) or not os.path.exists(eval_file)):
           utils.error("The result file '%s' and/or '%s' does not exist" % (dev_file, eval_file))
-          if os.path.exists("failure.db"):
+          if os.path.exists('failure.db'):
             utils.warn("... and there were errors.")
-          elif os.path.exists("submitted.db"):
+          elif os.path.exists('submitted.db'):
             utils.warn("... maybe the jobs still run.")
           else:
             utils.warn("... although they should. Did you use some non-standard faceverify arguments?")
@@ -209,27 +197,27 @@ def main():
 
       # get the setup for the desired algorithm
       setup = eval(algorithm)()
-      features  = os.path.join(config_dir, "features", setup[0])
-      tool      = os.path.join(config_dir, "tools", setup[1])
-      grid      = os.path.join(config_dir, "grid", setup[2])
+      features  = setup[0]
+      tool      = setup[1]
+      grid      = os.path.join(config_dir, 'grid', setup[2])
       if len(setup) > 3:
-        preprocessing = os.path.join(config_dir, "preprocessing", setup[3])
+        preprocessing = setup[3]
         if args.share_preprocessing:
           utils.warn("Ignoring --share-preprocessing option for algorithm '%s' since it requires a special setup" % algorithm)
       else:
         # by default, we use Tan & Triggs preprocessing
-        preprocessing = os.path.join(config_dir, "preprocessing", "tan_triggs.py")
+        preprocessing = 'tan_triggs'
 
       # this is the default sub-directory that is used
-      sub_directory = os.path.join("baselines", algorithm)
+      sub_directory = os.path.join('baselines', algorithm)
 
       # create the command to the faceverify script
       command = [
                   script,
-                  "--database", database,
-                  "--preprocessing", preprocessing,
-                  "--features", features,
-                  "--tool", tool,
+                  '--database', args.database,
+                  '--preprocessing', preprocessing,
+                  '--features', features,
+                  '--tool', tool,
                   '--sub-directory', sub_directory
                 ]
 
@@ -255,7 +243,7 @@ def main():
 
       # set the verbosity level
       if args.verbose:
-        command.append("-" + "v"*args.verbose)
+        command.append('-' + 'v'*args.verbose)
 
       # add the command line arguments that were specified on command line
       if args.parameters:

@@ -52,14 +52,14 @@ class ToolChainExecutor:
     self.m_args = args
 
     # generate the tools that we will need
-    self.m_database = utils.load_resource(args.database, 'database', imports = args.imports)
-    self.m_preprocessor = utils.load_resource(args.preprocessor, 'preprocessor', imports = args.imports)
-    self.m_extractor = utils.load_resource(args.features, 'feature_extractor', imports = args.imports)
-    self.m_tool = utils.load_resource(args.tool, 'tool', imports = args.imports)
+    self.m_database = utils.resources.load_resource(args.database, 'database', imports = args.imports)
+    self.m_preprocessor = utils.resources.load_resource(args.preprocessor, 'preprocessor', imports = args.imports)
+    self.m_extractor = utils.resources.load_resource(args.features, 'feature_extractor', imports = args.imports)
+    self.m_tool = utils.resources.load_resource(args.tool, 'tool', imports = args.imports)
 
     # load configuration files specified on command line
     if args.grid:
-      self.m_grid_config = utils.read_config_file(args.grid)
+      self.m_grid_config = utils.resources.read_config_file(args.grid)
 
     # generate configuration
     self.m_configuration = Configuration(args, self.m_database.name)
@@ -73,15 +73,15 @@ class ToolChainExecutor:
 
     #######################################################################################
     ############## options that are required to be specified #######################
-    config_group = parser.add_argument_group('\nConfiguration files that need to be specified on the command line.')
-    config_group.add_argument('-d', '--database', metavar = 'FILE', required = True,
-        help = 'The configuration file for the database and the protocol.')
-    config_group.add_argument('-p', '--preprocessing', metavar = 'FILE', dest = 'preprocessor', required = True,
-        help = 'The configuration file for image preprocessing.')
-    config_group.add_argument('-f', '--features', metavar = 'FILE', required = True,
-        help = 'The configuration file for extracting the features.')
-    config_group.add_argument('-t', '--tool', metavar = 'FILE', required = True,
-        help = 'The configuration file for the face recognition tool.')
+    config_group = parser.add_argument_group('\nParameters defining the experiment. Most of these parameters can be a registered resource, a configuration file, or even a string that defines a newly created object')
+    config_group.add_argument('-d', '--database', metavar = 'x', required = True,
+        help = 'Database and the protocol; registered databases are: %s'%utils.resources.resource_keys('database'))
+    config_group.add_argument('-p', '--preprocessing', metavar = 'x', dest = 'preprocessor', required = True,
+        help = 'Image preprocessing; registered preprocessors are: %s'%utils.resources.resource_keys('preprocessor'))
+    config_group.add_argument('-f', '--features', metavar = 'x', required = True,
+        help = 'Feature extraction; registered feature extractors are: %s'%utils.resources.resource_keys('feature_extractor'))
+    config_group.add_argument('-t', '--tool', metavar = 'x', required = True,
+        help = 'Face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
     config_group.add_argument('-g', '--grid', metavar = 'FILE',
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine.')
     config_group.add_argument('--imports', metavar = 'LIB', nargs = '+', default = ['facereclib'],
@@ -91,7 +91,7 @@ class ToolChainExecutor:
 
     #######################################################################################
     ############## options to modify default directories or file names ####################
-    dir_group = parser.add_argument_group('\nDirectories that can be changed according to your requirements.')
+    dir_group = parser.add_argument_group('\nDirectories that can be changed according to your requirements')
     dir_group.add_argument('-T', '--temp-directory', metavar = 'DIR',
         help = 'The directory for temporary files; if not specified, /idiap/temp/$USER/database-name/sub-directory (or /scratch/$USER/database-name/sub-directory, when executed locally) is used.')
     dir_group.add_argument('-U', '--user-directory', metavar = 'DIR',
@@ -109,7 +109,7 @@ class ToolChainExecutor:
     file_group.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_database_file',
         help = 'The db file in which the submitted jobs will be written (only valid with the --grid option).')
 
-    sub_dir_group = parser.add_argument_group('\nSubdirectories of certain parts of the tool chain. You can specify directories in case you want to reuse parts of the experiments (e.g. extracted features) in other experiments. Please note that these directories are relative to the --temp-directory, but you can also specify absolute paths.')
+    sub_dir_group = parser.add_argument_group('\nSubdirectories of certain parts of the tool chain. You can specify directories in case you want to reuse parts of the experiments (e.g. extracted features) in other experiments. Please note that these directories are relative to the --temp-directory, but you can also specify absolute paths')
     sub_dir_group.add_argument('--preprocessed-image-directory', metavar = 'DIR', default = 'preprocessed',
         help = 'Name of the directory of the preprocessed images.')
     sub_dir_group.add_argument('--features-directory', metavar = 'DIR', default = 'features',
@@ -117,14 +117,14 @@ class ToolChainExecutor:
     sub_dir_group.add_argument('--projected-features-directory', metavar = 'DIR', default = 'projected',
         help = 'Name of the directory where the projected data should be stored.')
 
-    other_group = parser.add_argument_group('\nFlags that change the behavior of the experiment.')
+    other_group = parser.add_argument_group('\nFlags that change the behavior of the experiment')
     other_group.add_argument('-q', '--dry-run', action='store_true',
         help = 'Only report the commands that will be executed, but do not execute them.')
     utils.add_logger_command_line_option(other_group)
 
     #######################################################################################
     ################# options for skipping parts of the toolchain #########################
-    skip_group = parser.add_argument_group('\nFlags that allow to skip certain parts of the experiments. This does only make sense when the generated files are already there (e.g. when reusing parts of other experiments).')
+    skip_group = parser.add_argument_group('\nFlags that allow to skip certain parts of the experiments. This does only make sense when the generated files are already there (e.g. when reusing parts of other experiments)')
     skip_group.add_argument('--skip-preprocessing', '--nopre', action='store_true',
         help = 'Skip the image preprocessing step.')
     skip_group.add_argument('--skip-extractor-training', '--noet', action='store_true',

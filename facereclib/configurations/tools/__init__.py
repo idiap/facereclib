@@ -3,5 +3,3 @@
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
 """Configuration files for face recognition algorithms"""
-
-__all__ = dir()

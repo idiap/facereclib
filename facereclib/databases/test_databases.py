@@ -20,18 +20,14 @@
 
 import unittest
 import os
-from .. import utils
+import facereclib
 from nose.plugins.skip import SkipTest
-import pkg_resources
 
 
 class DatabaseTest(unittest.TestCase):
 
-  def config(self, file):
-    if os.path.splitext(file)[1] == '.py':
-      return utils.load_resource(os.path.join(os.path.dirname(__file__), '../configurations/databases/' + file), 'database')
-    else:
-      return utils.load_resource(file, 'database')
+  def config(self, resource):
+    return facereclib.utils.tests.configuration_file(resource, 'database', 'databases')
 
   def check_database(self, database, groups = ('dev',)):
     self.assertTrue(len(database.all_files()) > 0)
@@ -61,34 +57,34 @@ class DatabaseTest(unittest.TestCase):
 
 
   def test02_banca(self):
-    self.check_database_zt(self.config('banca_P.py'))
-    self.check_database_zt(self.config('banca_Ua_twothirds.py'))
-    self.check_database_zt(self.config('banca_Ua_twothirds_video.py'))
+    self.check_database_zt(self.config('banca'))
+    self.check_database_zt(self.config('banca_Ua_twothirds'))
+    self.check_database_zt(self.config('banca_Ua_twothirds_video'))
 
 
   def test03_xm2vts(self):
-    self.check_database(self.config('xm2vts_lp1.py'), groups=('dev', 'eval'))
-    self.check_database(self.config('xm2vts_darkened.py'), groups=('dev', 'eval'))
+    self.check_database(self.config('xm2vts'), groups=('dev', 'eval'))
+    self.check_database(self.config('xm2vts_darkened'), groups=('dev', 'eval'))
 
 
   def test04_scface(self):
-    self.check_database_zt(self.config('scface_combined.py'))
+    self.check_database_zt(self.config('scface'))
 
 
   def test05_mobio(self):
-    self.check_database_zt(self.config('mobio_male.py'))
-    self.check_database_zt(self.config('mobio_female.py'))
+    self.check_database_zt(self.config('mobio_male'))
+    self.check_database_zt(self.config('mobio_female'))
 
 
   def test06_multipie(self):
-    self.check_database_zt(self.config('multipie_U.py'))
-    self.check_database_zt(self.config('multipie_P.py'))
-    self.check_database_zt(self.config('multipie_left_profile.py'))
+    self.check_database_zt(self.config('multipie_U'))
+    self.check_database_zt(self.config('multipie_P'))
+    self.check_database_zt(self.config('multipie_left_profile'))
 
 
   def test07_lfw(self):
-    self.check_database(self.config('lfw_view1.py'))
-    self.check_database(self.config('lfw_view1_unrestricted.py'))
+    self.check_database(self.config('lfw'))
+    self.check_database(self.config('lfw_view1_unrestricted'))
 
   def test08_arface(self):
     self.check_database(self.config('arface'), groups=('dev', 'eval'))
@@ -98,8 +94,8 @@ class DatabaseTest(unittest.TestCase):
     # The test of the faceverif_fl database is a bit different.
     # here, we test the output of two different ways of querying the AT&T database
     # where actually both ways are uncommon...
-    db1 = utils.read_config_file(os.path.join('testdata', 'scripts', 'atnt_Test.py'), 'database')
-    db2 = utils.read_config_file(os.path.join('testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'), 'database')
+    db1 = facereclib.utils.resources.load_resource(os.path.join('testdata', 'scripts', 'atnt_Test.py'), 'database')
+    db2 = facereclib.utils.resources.load_resource(os.path.join('testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'), 'database')
 
     # assure that different kind of queries result in the same file lists
     self.assertEqual(set([str(id) for id in db1.model_ids()]), set(db2.model_ids()))

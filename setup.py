@@ -38,7 +38,7 @@ setup(
 
       'facereclib.preprocessor': [
         'face_crop         = facereclib.configurations.preprocessing.face_crop:preprocessor',
-        'histogram         = facereclib.configurations.preprocessing.histogram_equalize:preprocessor',
+        'histogram_equalize= facereclib.configurations.preprocessing.histogram_equalize:preprocessor',
         'inorm_lbp         = facereclib.configurations.preprocessing.inorm_lbp:preprocessor',
         'self_quotient     = facereclib.configurations.preprocessing.self_quotient:preprocessor',
         'tan_triggs        = facereclib.configurations.preprocessing.tan_triggs:preprocessor'
@@ -59,11 +59,11 @@ setup(
         'isv               = facereclib.configurations.tools.isv:tool',
         'jfa               = facereclib.configurations.tools.jfa:tool',
         'lda               = facereclib.configurations.tools.lda:tool',
-        'pca+lda           = facereclib.configurations.tools.pca+lda:tool',
+        'pca+lda           = facereclib.configurations.tools.pca_lda:tool',
         'lgbphs            = facereclib.configurations.tools.lgbphs:tool',
         'pca               = facereclib.configurations.tools.pca:tool',
         'plda              = facereclib.configurations.tools.plda:tool',
-        'pca+plda          = facereclib.configurations.tools.pca+plda:tool',
+        'pca+plda          = facereclib.configurations.tools.pca_plda:tool',
         'gmm               = facereclib.configurations.tools.ubm_gmm:tool',
       ]
     },

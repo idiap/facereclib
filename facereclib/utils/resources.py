@@ -44,20 +44,37 @@ def read_config_file(file, keyword = None):
   return eval('config.' + keyword)
 
 
-def get_entry_points(keyword):
+def _get_entry_points(keyword):
   return  [entry_point for entry_point in pkg_resources.iter_entry_points('facereclib.' + keyword)]
+
+def resource_keys(keyword):
+  """Reads and returns all resources that are registered with the given keyword."""
+  return sorted([entry_point.name for entry_point in _get_entry_points(keyword)])
+
+def print_resources(keyword):
+  """Prints a detailed list of resources that are registered with the given keyword."""
+  entry_points = _get_entry_points(keyword)
+  for entry_point in entry_points:
+    print entry_point.attrs[0] + ":", entry_point.name, "(" + str(entry_point.dist) + ")  -->", entry_point.module_name
 
 
 def load_resource(resource, keyword, imports = []):
+  """Loads the given resource that is registered with the given keyword.
+  The resource can be:
 
-  print 'loading resource', resource
+    * a resource as defined in the setup.py
+    * a configuration file
+    * a string defining the construction of an object. If imports are required for the construction of this object, they can be given as list of strings.
+
+  In any case, the resulting resource object is returned.
+  """
 
   # first, look if the resource is a file name
   if os.path.exists(resource):
     return read_config_file(resource, keyword)
 
   # now, we ckeck if the resource is registered as an entry point in the resource files
-  entry_points = [entry_point for entry_point in get_entry_points(keyword) if entry_point.name == resource]
+  entry_points = [entry_point for entry_point in _get_entry_points(keyword) if entry_point.name == resource]
 
   if len(entry_points):
     if len(entry_points) == 1:
@@ -68,10 +85,14 @@ def load_resource(resource, keyword, imports = []):
   # if the resource is neither a config file nor an entry point,
   # just execute it as a command
 
-  # first, execute all import commands that are required
-  for i in imports:
-    exec "import %s"%i
-  # now, evaluate the resources
-  return eval(resource)
+  try:
+    # first, execute all import commands that are required
+    for i in imports:
+      exec "import %s"%i
+    # now, evaluate the resources
+    return eval(resource)
+
+  except Exception as e:
+    raise ImportError("The given command line option '%s' is neither a resource, nor an existing configuration file, nor could be interpreted as a command (%s)"%(resource, str(e)))
 
 
