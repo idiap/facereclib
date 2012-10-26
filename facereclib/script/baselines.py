@@ -43,7 +43,7 @@ def command_line_arguments(command_line_parameters):
 
   args = parser.parse_args(command_line_parameters)
   if args.all:
-    args.algorithms = all_algorithms
+    args.algorithms = all_algorithms[1:]
 
   utils.set_verbosity_level(args.verbose)
 

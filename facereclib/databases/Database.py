@@ -22,12 +22,13 @@ import os
 class File:
   """This class defines the minimum interface of a file information that needs to be exported"""
 
-  # The **unique** id of the file
-  id = None
-  # The id of the client that is attached to the file
-  client_id = None
-  # The **relative** path of the file according to the base directory of the database.
-  path = None
+  def __init__(self, file_id, client_id, path):
+    # The **unique** id of the file
+    self.id = file_id
+    # The id of the client that is attached to the file
+    self.client_id = client_id
+    # The **relative** path of the file according to the base directory of the database, without file extension
+    self.path = path
 
 
 
@@ -46,6 +47,27 @@ class Database:
      annotation_type = None,
      protocol = 'Default'
   ):
+    """
+    Parameters to the constructor of the Database:
+
+    name
+      A unique name for the database.
+
+    original_directory
+      The directory where the original data of the database are stored.
+
+    original_extension
+      The file extension of the original data.
+
+    annotation_directory
+      The directory where the image annotations of the database are stored, if any.
+
+    annotation_directory
+      The file extension of the annotation files.
+
+    protocol
+      The name of the protocol that defines the default experimental setup for this database.
+    """
 
     self.name = name
     self.original_directory = original_directory

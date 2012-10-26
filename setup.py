@@ -20,7 +20,8 @@ setup(
         'faceverify_lfw.py = facereclib.script.faceverify_lfw:main',
 #        'faceverify_pose.py = facereclib.script.faceverify_pose:main',
 #        'parameter_test.py = facereclib.script.parameter_test:main',
-        'baselines.py = facereclib.script.baselines:main'
+        'baselines.py = facereclib.script.baselines:main',
+        'resources.py = facereclib.utils.resources:print_all_resources'
       ],
 
       'facereclib.database': [

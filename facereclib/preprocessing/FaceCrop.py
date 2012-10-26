@@ -32,7 +32,8 @@ class FaceCrop (Preprocessor):
       cropped_positions = None,  # dictionary of the cropped positions, usually: {'reye':(RIGHT_EYE_Y, RIGHT_EYE_X) , 'leye':(LEFT_EYE_Y, LEFT_EYE_X)}
       fixed_positions = None,    # dictionary of FIXED positions in the original image; if specified, annotations from the database will be ignored
       color_channel = 'gray',    # the color channel to extract from colored images, if colored images are in the database
-      offset = 0                 # if your feature extractor requires a specific offset, you might want to specify it here
+      offset = 0,                # if your feature extractor requires a specific offset, you might want to specify it here
+      supported_annotations = (('reye', 'leye'), ('eye', 'mouth')) # The set of annotations that this cropper excepts
   ):
 
     # call base class constructor
@@ -43,6 +44,7 @@ class FaceCrop (Preprocessor):
     self.m_fixed_postions = fixed_positions
     self.m_color_channel = color_channel
     self.m_offset = offset
+    self.m_supported_annotations = supported_annotations
 
     if fixed_positions:
       assert len(fixed_positions) == 2
@@ -105,7 +107,7 @@ class FaceCrop (Preprocessor):
       annotations = self.m_fixed_postions
     elif annotations:
       # get cropper for given annotations
-      for pair in (('reye', 'leye'), ('eye', 'mouth')):
+      for pair in self.m_supported_annotations:
         if pair[0] in annotations and pair[1] in annotations:
           keys = pair
     else:

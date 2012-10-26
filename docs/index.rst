@@ -22,8 +22,8 @@ To design a face recognition experiment, one has to choose:
 
 For any of these parts, several different types are implemented in the |project|, and basically any combination of the five parts can be executed.
 For each type, several meta-parameters can be tested.
-This results in a nearly infinite amount of possible face recognition algorithms that can be run using the current setup.
-But it is also possible to use your own database, preprocessing, feature type or face recognition algorithm and test this against the baseline algorithms implemented in the |project|.
+This results in a nearly infinite amount of possible face recognition experiments that can be run using the current setup.
+But it is also possible to use your own database, preprocessing, feature type, or face recognition algorithm and test this against the baseline algorithms implemented in the |project|.
 
 If you are interested, please continue reading:
 
@@ -35,7 +35,21 @@ If you are interested, please continue reading:
    installation
    baselines
    experiments
+   specialized
    contribute
+   references
+
+==========================
+|project| reference manual
+==========================
+
+.. toctree::
+   :maxdepth: 2
+
+   manual_databases
+   manual_preprocessors
+   manual_features
+   manual_tools
 
 
 ToDo-List

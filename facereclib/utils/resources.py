@@ -51,13 +51,6 @@ def resource_keys(keyword):
   """Reads and returns all resources that are registered with the given keyword."""
   return sorted([entry_point.name for entry_point in _get_entry_points(keyword)])
 
-def print_resources(keyword):
-  """Prints a detailed list of resources that are registered with the given keyword."""
-  entry_points = _get_entry_points(keyword)
-  for entry_point in entry_points:
-    print entry_point.attrs[0] + ":", entry_point.name, "(" + str(entry_point.dist) + ")  -->", entry_point.module_name
-
-
 def load_resource(resource, keyword, imports = []):
   """Loads the given resource that is registered with the given keyword.
   The resource can be:
@@ -93,6 +86,26 @@ def load_resource(resource, keyword, imports = []):
     return eval(resource)
 
   except Exception as e:
-    raise ImportError("The given command line option '%s' is neither a resource, nor an existing configuration file, nor could be interpreted as a command (%s)"%(resource, str(e)))
+    raise ImportError("The given command line option '%s' is neither a resource for a '%s', nor an existing configuration file, nor could be interpreted as a command (error: %s)"%(resource, keyword, str(e)))
 
 
+def print_resources(keyword):
+  """Prints a detailed list of resources that are registered with the given keyword."""
+  entry_points = _get_entry_points(keyword)
+  for entry_point in entry_points:
+    print "-", entry_point.attrs[0] + ":", entry_point.name, "(" + str(entry_point.dist) + ")  -->", entry_point.module_name
+
+def print_all_resources():
+  """Prints a detailed list of all resources that are registered."""
+  print "List of registered databases:"
+  print_resources('database')
+  print
+  print "List of registered preprocessors:"
+  print_resources('preprocessor')
+  print
+  print "List of registered feature extractors:"
+  print_resources('feature_extractor')
+  print
+  print "List of registered recognition algorithms:"
+  print_resources('tool')
+  print

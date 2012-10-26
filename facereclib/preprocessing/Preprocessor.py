@@ -37,8 +37,11 @@ class Preprocessor:
     """This is the call function that you have to overwrite in the derived class.
     The parameters that this function will receive are:
 
-    - image: The image that needs preprocessing
-    - annotations: The annotations (if any), as a dictionary from annotation type to the position.
+     image
+       The image that needs preprocessing
+
+    annotations:
+      The annotations (if any), as a dictionary from annotation type to the position.
       Usually, at least two annotations are given, namely: {'reye':(re_y,re_x), 'leye':(le_y,le_x)}
     """
     raise NotImplementedError("Please overwrite this function in your derived class")

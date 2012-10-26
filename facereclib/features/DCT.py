@@ -16,9 +16,9 @@ class DCTBlocks (Extractor):
   """Extracts DCT blocks"""
   def __init__(
       self,
-      block_size,    # 1 or two parameters for block size
-      block_overlap, # 1 or two parameters for block overlap
-      number_of_dct_coefficients,
+      block_size = 12,    # 1 or two parameters for block size
+      block_overlap = 11, # 1 or two parameters for block overlap
+      number_of_dct_coefficients = 45
   ):
 
     # call base class constructor

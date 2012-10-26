@@ -2,6 +2,7 @@
 .. author: Manuel Günther <manuel.guenther@idiap.ch>
 .. date: Thu Sep 20 11:58:57 CEST 2012
 
+=========================
 Installation instructions
 =========================
 
@@ -13,6 +14,8 @@ Download
 Currently the library is only available as a private project of `Idiap at GitHub`_.
 To check out the current version of the |project|, go to the console, move to any place you like and call::
 
+.. code-block:: sh
+
   $ git clone git@github.com:bioidiap/facereclib.git
 
 Bob
@@ -21,7 +24,7 @@ Bob
 The |project| is a satellite package of Bob_, where most of the image processing, feature extraction, and face recognition algorithms, as well as the evaluation techniques are implemented.
 To run properly, |project| requires Bob_ at least in version 1.1.0.
 If you have not installed Bob_ or your version is to old, please visit `Bob's GitHub page`_ and download the latest version.
-If you prefer not to install Bob_ in its default location, you have to adapt the ``eggs-directories`` of the **buildout.cfg** configuration file, which sits in the main directory of the |project|
+If you prefer not to install Bob_ in its default location, you have to adapt the ``eggs-directories`` of the **buildout.cfg** configuration file, which sits in the main directory of the |project|.
 
 .. note::
   Currently, the version 1.1.0 of Bob is not yet released.
@@ -51,7 +54,10 @@ If you prefer to use the latest version of them, just add ``find-links = http://
 Image databases
 ~~~~~~~~~~~~~~~
 
-With the |project| you will run face recognition experiments using some default facial image databases. Though the verification protocols are implemented in the |project|, the images (and the hand-labelled annotations) are **not included**. To download the image databases, please refer to the according Web-pages. For a start, one small, but freely available image database is the `AT&T database`_ (formerly known as the ORL database).
+With the |project| you will run face recognition experiments using some default facial image databases.
+Though the verification protocols are implemented in the |project|, the images (and the hand-labelled annotations) are **not included**.
+To download the image databases, please refer to the according Web-pages.
+For a start, you might want to try the small, but freely available image database called the `AT&T database`_ (formerly known as the ORL database).
 
 
 Set-up your |project|
@@ -106,7 +112,7 @@ Afterwards, the documentation is available and you can read it, e.g., by using:
 
   $ firefox sphinx/html/index.html
 
-(But you already have done this step, right?)
+(Since you are reading the documentation, you already have done this step, right?)
 
 
 .. include:: links.rst
