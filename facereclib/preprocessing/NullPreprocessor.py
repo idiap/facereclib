@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .Preprocessor import Preprocessor
+from .. import utils
+import numpy
 
 class NullPreprocessor (Preprocessor):
   """Skips proprocessing files by simply copying the contents into an hdf5 file

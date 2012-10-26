@@ -4,11 +4,6 @@
 
 """Image preprocessing tools"""
 
-import bob
-import numpy
-import math
-from .. import utils
-
 from Preprocessor import Preprocessor
 from NullPreprocessor import NullPreprocessor
 from FaceCrop import FaceCrop
