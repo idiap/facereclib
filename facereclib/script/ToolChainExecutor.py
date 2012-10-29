@@ -7,7 +7,6 @@ import argparse
 import imp
 import copy
 
-import gridtk
 from .. import toolchain
 from .. import utils
 
@@ -151,6 +150,8 @@ class ToolChainExecutor:
     """Sets the parameters that the grid jobs require to be called.
     Just hand over all parameters of the faceverify script, and this function will do the rest.
     Please call this function before submitting jobs to the grid using the submit_jobs_to_grid function"""
+
+    import gridtk
 
     # we want to have the executable with the name of this file, which is laying in the bin directory
     self.m_common_parameters = ''

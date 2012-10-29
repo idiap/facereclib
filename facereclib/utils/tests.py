@@ -19,7 +19,7 @@
 
 from .resources import resource_keys, load_resource
 
-def configuration_file(name, type, dir):
+def configuration_file(name, type, dir = None):
   # test if the resource is known
   if name in resource_keys(type):
     # resource registered, just load it

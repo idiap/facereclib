@@ -91,7 +91,7 @@ class ToolChain:
       else:
         # read training files
         if extractor.split_training_images_by_client:
-          train_files = self.m_file_selector.training_list('preprocessed', 'train_extractor', sort_by_client = True)
+          train_files = self.m_file_selector.training_list('preprocessed', 'train_extractor', arrange_by_client = True)
           train_images = self.__read_images_by_client__(train_files, preprocessor)
           utils.info("- Extraction: training extractor '%s' using %d identities: " %(extractor_file, len(train_files)))
         else:

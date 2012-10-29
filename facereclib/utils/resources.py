@@ -93,7 +93,7 @@ def print_resources(keyword):
   """Prints a detailed list of resources that are registered with the given keyword."""
   entry_points = _get_entry_points(keyword)
   for entry_point in entry_points:
-    print "-", entry_point.attrs[0] + ":", entry_point.name, "(" + str(entry_point.dist) + ")  -->", entry_point.module_name
+    print "-", entry_point.name, "(" + str(entry_point.dist) + ")  -->", entry_point.module_name, ":", entry_point.attrs[0]
 
 def print_all_resources():
   """Prints a detailed list of all resources that are registered."""

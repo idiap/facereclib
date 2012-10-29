@@ -27,7 +27,7 @@ setup(
       'facereclib.database': [
         'atnt              = facereclib.configurations.databases.atnt_Default:database',
         'arface            = facereclib.configurations.databases.arface_all:database',
-        'banca             = facereclib.configurations.databases.banca_P:database',
+        'banca             = facereclib.configurations.databases.banca_P_color:database',
         'lfw               = facereclib.configurations.databases.lfw_view1:database',
         'mobio_male        = facereclib.configurations.databases.mobio_male:database',
         'mobio_female      = facereclib.configurations.databases.mobio_female:database',
