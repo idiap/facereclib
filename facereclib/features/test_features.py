@@ -105,7 +105,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
   def test03_graphs(self):
     image = bob.io.load(self.input_dir('cropped.hdf5'))
-    extractor = self.config('grid_graph')
+    extractor = self.config('grid-graph')
     # execute extractor
     feature = self.execute(extractor, image, 'graph_with_phase.hdf5')
     self.assertEqual(len(feature.shape), 3)

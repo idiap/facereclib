@@ -29,26 +29,26 @@ setup(
         'arface            = facereclib.configurations.databases.arface_all:database',
         'banca             = facereclib.configurations.databases.banca_P_color:database',
         'lfw               = facereclib.configurations.databases.lfw_view1:database',
-        'mobio_male        = facereclib.configurations.databases.mobio_male:database',
-        'mobio_female      = facereclib.configurations.databases.mobio_female:database',
-        'multipie_P        = facereclib.configurations.databases.multipie_P:database',
-        'multipie_U        = facereclib.configurations.databases.multipie_U:database',
+        'mobio-male        = facereclib.configurations.databases.mobio_male:database',
+        'mobio-female      = facereclib.configurations.databases.mobio_female:database',
+        'multipie-P        = facereclib.configurations.databases.multipie_P:database',
+        'multipie-U        = facereclib.configurations.databases.multipie_U:database',
         'scface            = facereclib.configurations.databases.scface_combined:database',
         'xm2vts            = facereclib.configurations.databases.xm2vts_lp1:database'
       ],
 
       'facereclib.preprocessor': [
-        'face_crop         = facereclib.configurations.preprocessing.face_crop:preprocessor',
-        'histogram_equalize= facereclib.configurations.preprocessing.histogram_equalize:preprocessor',
-        'inorm_lbp         = facereclib.configurations.preprocessing.inorm_lbp:preprocessor',
-        'self_quotient     = facereclib.configurations.preprocessing.self_quotient:preprocessor',
-        'tan_triggs        = facereclib.configurations.preprocessing.tan_triggs:preprocessor'
+        'face-crop         = facereclib.configurations.preprocessing.face_crop:preprocessor',
+        'histogram-equalize= facereclib.configurations.preprocessing.histogram_equalize:preprocessor',
+        'inorm-lbp         = facereclib.configurations.preprocessing.inorm_lbp:preprocessor',
+        'self-quotient     = facereclib.configurations.preprocessing.self_quotient:preprocessor',
+        'tan-triggs        = facereclib.configurations.preprocessing.tan_triggs:preprocessor'
       ],
 
       'facereclib.feature_extractor': [
         'dct               = facereclib.configurations.features.dct_blocks:feature_extractor',
         'eigenfaces        = facereclib.configurations.features.eigenfaces:feature_extractor',
-        'grid_graph        = facereclib.configurations.features.grid_graph:feature_extractor',
+        'grid-graph        = facereclib.configurations.features.grid_graph:feature_extractor',
         'lgbphs            = facereclib.configurations.features.lgbphs:feature_extractor',
         'linearize         = facereclib.configurations.features.linearize:feature_extractor',
         'sift              = facereclib.configurations.features.sift_keypoints:feature_extractor',
@@ -56,7 +56,7 @@ setup(
 
       'facereclib.tool': [
         'bic               = facereclib.configurations.tools.bic:tool',
-        'gabor_jet         = facereclib.configurations.tools.gabor_jet:tool',
+        'gabor-jet         = facereclib.configurations.tools.gabor_jet:tool',
         'isv               = facereclib.configurations.tools.isv:tool',
         'jfa               = facereclib.configurations.tools.jfa:tool',
         'lda               = facereclib.configurations.tools.lda:tool',

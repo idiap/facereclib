@@ -20,6 +20,7 @@
 import imp
 import os
 import pkg_resources
+from .logger import warn
 
 
 def read_config_file(file, keyword = None):
@@ -73,7 +74,20 @@ def load_resource(resource, keyword, imports = []):
     if len(entry_points) == 1:
       return entry_points[0].load()
     else:
-      raise ImportError("Under the desired name '%s', there are multiple entry points defined: %s" %(resource, [entry_point.module_name for entry_point in entry_points]))
+      # TODO: extract current package name and use this one, if possible
+
+      # Now: check if there are only two entry points, and one is from the facereclib, then use the other one
+      index = -1
+      if len(entry_points) == 2:
+        print entry_points[0].dist.project_name
+        if entry_points[0].dist.project_name == 'facereclib': index = 1
+        elif entry_points[1].dist.project_name == 'facereclib': index = 0
+
+      if index != -1:
+        warn("RESOURCES: Using the resource '%s' from '%s', and ignoring the one from '%s'" %(resource, entry_points[index].module_name, entry_points[1-index].module_name))
+        return entry_points[index].load()
+      else:
+        raise ImportError("Under the desired name '%s', there are multiple entry points defined: %s" %(resource, [entry_point.module_name for entry_point in entry_points]))
 
   # if the resource is neither a config file nor an entry point,
   # just execute it as a command

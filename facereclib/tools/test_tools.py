@@ -85,7 +85,7 @@ class ToolTest(unittest.TestCase):
   def test01_gabor_jet(self):
     # read input
     feature = bob.io.load(self.input_dir('graph_with_phase.hdf5'))
-    tool = self.config('gabor_jet')
+    tool = self.config('gabor-jet')
     self.assertFalse(tool.performs_projection)
     self.assertFalse(tool.requires_enroller_training)
 

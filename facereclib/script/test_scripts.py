@@ -78,7 +78,7 @@ class TestScript (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frl_')
     # define dummy parameters
     parameters = ['-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
-                  '-p', 'face_crop',
+                  '-p', 'face-crop',
                   '-f', 'eigenfaces',
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
                   '--zt-norm',
@@ -97,7 +97,7 @@ class TestScript (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frl_')
     # define dummy parameters
     parameters = ['-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
-                  '-p', 'face_crop',
+                  '-p', 'face-crop',
                   '-f', 'facereclib.features.Eigenface(subspace_dimension = 100)',
                   '-t', 'facereclib.tools.DummyTool()',
                   '--zt-norm',
@@ -160,7 +160,7 @@ class TestScript (unittest.TestCase):
   def test02_faceverify_grid(self):
     # define dummy parameters including the dry-run
     parameters = ['-d', 'atnt',
-                  '-p', 'face_crop',
+                  '-p', 'face-crop',
                   '-f', 'eigenfaces',
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
                   '-g', os.path.join(config_dir, 'grid', 'grid.py'),
@@ -216,7 +216,7 @@ class TestScript (unittest.TestCase):
   def test03_faceverify_lfw_local(self):
     # define dummy parameters
     parameters = ['-d', 'lfw',
-                  '-p', 'face_crop',
+                  '-p', 'face-crop',
                   '-f', 'eigenfaces',
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
                   '--dry-run',
@@ -234,7 +234,7 @@ class TestScript (unittest.TestCase):
   def test04_faceverify_lfw_grid(self):
     # define dummy parameters
     parameters = ['-d', 'lfw',
-                  '-p', 'face_crop',
+                  '-p', 'face-crop',
                   '-f', 'eigenfaces',
                   '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
                   '-g', os.path.join(config_dir, 'grid', 'grid.py'),

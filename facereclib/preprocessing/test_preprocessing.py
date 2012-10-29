@@ -65,7 +65,7 @@ class PreprocessingTest(unittest.TestCase):
   def test01_face_crop(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('face_crop')
+    preprocessor = self.config('face-crop')
     # execute face cropper
     self.execute(preprocessor, image, annotation, 'cropped.hdf5')
 
@@ -86,7 +86,7 @@ class PreprocessingTest(unittest.TestCase):
   def test02_tan_triggs(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('tan_triggs')
+    preprocessor = self.config('tan-triggs')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'tan_triggs_cropped.hdf5')
 
@@ -123,7 +123,7 @@ class PreprocessingTest(unittest.TestCase):
   def test03_self_quotient(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('self_quotient')
+    preprocessor = self.config('self-quotient')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'self_quotient_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'self_quotient.hdf5')
@@ -132,7 +132,7 @@ class PreprocessingTest(unittest.TestCase):
   def test04_inorm_lbp(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('inorm_lbp')
+    preprocessor = self.config('inorm-lbp')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'inorm_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'inorm.hdf5')
@@ -141,7 +141,7 @@ class PreprocessingTest(unittest.TestCase):
   def test05_histogram(self):
     # read input
     image, annotation = self.input()
-    preprocessor = self.config('histogram_equalize')
+    preprocessor = self.config('histogram-equalize')
     # execute preprocessor
     self.execute(preprocessor, image, annotation, 'histogram_cropped.hdf5')
 #    self.execute(preprocessor, image, None, 'histogram.hdf5')

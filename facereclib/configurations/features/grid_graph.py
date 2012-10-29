@@ -10,8 +10,6 @@ execfile(os.path.join(os.path.dirname(__file__), '..', 'preprocessing', 'face_cr
 
 feature_extractor = facereclib.features.GridGraph(
     # Gabor parameters
-    gabor_directions = 8,
-    gabor_scales = 5,
     gabor_sigma = math.sqrt(2.) * math.pi,
 
     # what kind of information to extract
