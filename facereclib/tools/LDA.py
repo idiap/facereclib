@@ -43,7 +43,7 @@ class LDATool (Tool):
     for client_files in training_files:
       # at least two files per client are required!
       if len(client_files) < 2:
-        utils.warn("Skipping client with id %s since the number of client files is only %d" %(client, len(client_files)))
+        utils.warn("Skipping one client since the number of client files is only %d" %len(client_files))
         continue
       data.append(numpy.vstack([feature.flatten() for feature in client_files]))
 

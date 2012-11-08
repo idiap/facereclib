@@ -20,7 +20,7 @@
 import imp
 import os
 import pkg_resources
-from .logger import warn
+from .logger import info
 
 
 def read_config_file(file, keyword = None):
@@ -64,7 +64,7 @@ def load_resource(resource, keyword, imports = []):
   """
 
   # first, look if the resource is a file name
-  if os.path.exists(resource):
+  if os.path.isfile(resource):
     return read_config_file(resource, keyword)
 
   # now, we ckeck if the resource is registered as an entry point in the resource files
@@ -79,12 +79,11 @@ def load_resource(resource, keyword, imports = []):
       # Now: check if there are only two entry points, and one is from the facereclib, then use the other one
       index = -1
       if len(entry_points) == 2:
-        print entry_points[0].dist.project_name
         if entry_points[0].dist.project_name == 'facereclib': index = 1
         elif entry_points[1].dist.project_name == 'facereclib': index = 0
 
       if index != -1:
-        warn("RESOURCES: Using the resource '%s' from '%s', and ignoring the one from '%s'" %(resource, entry_points[index].module_name, entry_points[1-index].module_name))
+        info("RESOURCES: Using the resource '%s' from '%s', and ignoring the one from '%s'" %(resource, entry_points[index].module_name, entry_points[1-index].module_name))
         return entry_points[index].load()
       else:
         raise ImportError("Under the desired name '%s', there are multiple entry points defined: %s" %(resource, [entry_point.module_name for entry_point in entry_points]))
@@ -96,30 +95,72 @@ def load_resource(resource, keyword, imports = []):
     # first, execute all import commands that are required
     for i in imports:
       exec "import %s"%i
-    # now, evaluate the resources
-    return eval(resource)
+    # now, evaluate the resource (re-evaluate if the resource is still a string)
+    while isinstance(resource, str):
+      resource = eval(resource)
+    return resource
 
   except Exception as e:
     raise ImportError("The given command line option '%s' is neither a resource for a '%s', nor an existing configuration file, nor could be interpreted as a command (error: %s)"%(resource, keyword, str(e)))
 
 
+def read_file_resource(resource, keyword):
+  """Treats the given resource as a file and reads its configuration"""
+  # first, look if the resource is a file name
+  if os.path.isfile(resource):
+    # load it without the keyword -> all entries of the resource file are read
+    return read_config_file(resource)
+
+  entry_points = [entry_point for entry_point in _get_entry_points(keyword) if entry_point.name == resource]
+
+  if not len(entry_points):
+    raise ImportError("The given grid option '%s' is neither a resource, nor an existing configuration file"%(resource, keyword))
+
+  if len(entry_points) == 1:
+    return entry_points[0].load()
+  else:
+    # TODO: extract current package name and use this one, if possible
+
+    # Now: check if there are only two entry points, and one is from the facereclib, then use the other one
+    index = -1
+    if len(entry_points) == 2:
+      if entry_points[0].dist.project_name == 'facereclib': index = 1
+      elif entry_points[1].dist.project_name == 'facereclib': index = 0
+
+    if index != -1:
+      info("RESOURCES: Using the resource '%s' from '%s', and ignoring the one from '%s'" %(resource, entry_points[index].module_name, entry_points[1-index].module_name))
+      return entry_points[index].load()
+    else:
+      raise ImportError("Under the desired name '%s', there are multiple entry points defined: %s" %(resource, [entry_point.module_name for entry_point in entry_points]))
+
+
+
+
 def print_resources(keyword):
   """Prints a detailed list of resources that are registered with the given keyword."""
   entry_points = _get_entry_points(keyword)
+  last_dist = None
   for entry_point in entry_points:
-    print "-", entry_point.name, "(" + str(entry_point.dist) + ")  -->", entry_point.module_name, ":", entry_point.attrs[0]
+    if last_dist != str(entry_point.dist):
+      print "\n-", str(entry_point.dist) + ":"
+      last_dist = str(entry_point.dist)
+
+    if len(entry_point.attrs):
+      print "  +", entry_point.name, "  -->", entry_point.module_name, ":", entry_point.attrs[0]
+    else:
+      print "  +", entry_point.name, "  -->", entry_point.module_name
+
 
 def print_all_resources():
   """Prints a detailed list of all resources that are registered."""
-  print "List of registered databases:"
+  print "\nList of registered databases:"
   print_resources('database')
-  print
-  print "List of registered preprocessors:"
+  print "\n\nList of registered preprocessors:"
   print_resources('preprocessor')
-  print
-  print "List of registered feature extractors:"
+  print "\n\nList of registered feature extractors:"
   print_resources('feature_extractor')
-  print
-  print "List of registered recognition algorithms:"
+  print "\n\nList of registered recognition algorithms:"
   print_resources('tool')
+  print "\n\nList of registered SGE grid configurations:"
+  print_resources('grid')
   print

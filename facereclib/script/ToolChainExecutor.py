@@ -51,14 +51,14 @@ class ToolChainExecutor:
     self.m_args = args
 
     # generate the tools that we will need
-    self.m_database = utils.resources.load_resource(args.database, 'database', imports = args.imports)
-    self.m_preprocessor = utils.resources.load_resource(args.preprocessor, 'preprocessor', imports = args.imports)
-    self.m_extractor = utils.resources.load_resource(args.features, 'feature_extractor', imports = args.imports)
-    self.m_tool = utils.resources.load_resource(args.tool, 'tool', imports = args.imports)
+    self.m_database = utils.resources.load_resource(' '.join(args.database), 'database', imports = args.imports)
+    self.m_preprocessor = utils.resources.load_resource(' '.join(args.preprocessor), 'preprocessor', imports = args.imports)
+    self.m_extractor = utils.resources.load_resource(' '.join(args.features), 'feature_extractor', imports = args.imports)
+    self.m_tool = utils.resources.load_resource(' '.join(args.tool), 'tool', imports = args.imports)
 
     # load configuration files specified on command line
     if args.grid:
-      self.m_grid_config = utils.resources.read_config_file(args.grid)
+      self.m_grid_config = utils.resources.read_file_resource(args.grid, 'grid')
 
     # generate configuration
     self.m_configuration = Configuration(args, self.m_database.name)
@@ -73,15 +73,15 @@ class ToolChainExecutor:
     #######################################################################################
     ############## options that are required to be specified #######################
     config_group = parser.add_argument_group('\nParameters defining the experiment. Most of these parameters can be a registered resource, a configuration file, or even a string that defines a newly created object')
-    config_group.add_argument('-d', '--database', metavar = 'x', required = True,
+    config_group.add_argument('-d', '--database', metavar = 'x', nargs = '+', required = True,
         help = 'Database and the protocol; registered databases are: %s'%utils.resources.resource_keys('database'))
-    config_group.add_argument('-p', '--preprocessing', metavar = 'x', dest = 'preprocessor', required = True,
+    config_group.add_argument('-p', '--preprocessing', metavar = 'x', nargs = '+', dest = 'preprocessor', required = True,
         help = 'Image preprocessing; registered preprocessors are: %s'%utils.resources.resource_keys('preprocessor'))
-    config_group.add_argument('-f', '--features', metavar = 'x', required = True,
+    config_group.add_argument('-f', '--features', metavar = 'x', nargs = '+', required = True,
         help = 'Feature extraction; registered feature extractors are: %s'%utils.resources.resource_keys('feature_extractor'))
-    config_group.add_argument('-t', '--tool', metavar = 'x', required = True,
+    config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', required = True,
         help = 'Face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
-    config_group.add_argument('-g', '--grid', metavar = 'FILE',
+    config_group.add_argument('-g', '--grid', metavar = 'x',
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine.')
     config_group.add_argument('--imports', metavar = 'LIB', nargs = '+', default = ['facereclib'],
         help = 'If one of your configuration files is an actual command, please specify the lists of required imports to execute this command')
@@ -119,6 +119,7 @@ class ToolChainExecutor:
     other_group = parser.add_argument_group('\nFlags that change the behavior of the experiment')
     other_group.add_argument('-q', '--dry-run', action='store_true',
         help = 'Only report the commands that will be executed, but do not execute them.')
+
     utils.add_logger_command_line_option(other_group)
 
     #######################################################################################
@@ -154,9 +155,9 @@ class ToolChainExecutor:
     import gridtk
 
     # we want to have the executable with the name of this file, which is laying in the bin directory
-    self.m_common_parameters = ''
-    for p in parameters:
-      self.m_common_parameters += p + ' '
+    self.m_common_parameters = parameters[:]
+#    for p in parameters:
+#      self.m_common_parameters += p + ' '
 
     # job id used for the dry-run
     self.m_fake_job_id = fake_job_id
@@ -205,9 +206,9 @@ class ToolChainExecutor:
     cmd = [
             self.m_executable,
             '--sub-task',
-            command,
-            self.m_common_parameters
+            command
           ]
+    cmd.extend(self.m_common_parameters)
 
     # if no job name is specified, create one
     if name == None:
@@ -225,8 +226,7 @@ class ToolChainExecutor:
       array = (1,1,1)
 
     # create the grid wrapper for the command
-    use_cmd = ['-S', os.path.join(self.m_bin_directory, 'python')]
-    use_cmd.extend(cmd)
+    use_cmd = ['-S', os.path.join(self.m_bin_directory, 'python')] + cmd
 
     # submit the job to the job manager
     if not self.m_args.dry_run:

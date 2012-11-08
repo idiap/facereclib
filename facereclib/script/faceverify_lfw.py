@@ -411,18 +411,19 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
         file.write("\nOverall classification success: %f (with standard deviation %f)\n"%(mean,std))
 
 
-def parse_args(command_line_arguments = sys.argv[1:]):
+def parse_args(command_line_parameters):
   """This function parses the given options (which by default are the command line options)."""
-  # sorry for that.
-  global parameters
-  parameters = command_line_arguments
-
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__,
-      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+      conflict_handler='resolve')
 
   # add the arguments required for all tool chains
   config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorLFW.required_command_line_options(parser)
+
+  # overwrite default database entry
+  config_group.add_argument('-d', '--database', default = ['lfw'], nargs = '+',
+      help = 'The database interface to be used. The default should work fine for the common cases.')
 
   sub_dir_group.add_argument('--models-directory', metavar = 'DIR', default = 'models',
       help = 'Sub-directory (of --temp-directory) where the models should be stored.')
@@ -451,10 +452,10 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   parser.add_argument('--protocol', choices = ('view1', 'fold1', 'fold2', 'fold3', 'fold4', 'fold5', 'fold6', 'fold7', 'fold8', 'fold9', 'fold10'),
       help = argparse.SUPPRESS) #'The protocol which should be used in this sub-task'
 
-  return parser.parse_args(command_line_arguments)
+  return parser.parse_args(command_line_parameters)
 
 
-def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
+def face_verify(args, command_line_parameters, external_dependencies = [], external_fake_job_id = 0):
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
@@ -469,7 +470,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     # execute the desired sub-task
     executor = ToolChainExecutorLFW(args, protocol=args.protocol)
     executor.execute_grid_job()
-    return []
+    return {}
 
   elif args.grid:
 
@@ -477,9 +478,6 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     this_file = __file__
     if this_file[-1] == 'c':
       this_file = this_file[0:-1]
-
-    # initialize the executor to submit the jobs to the grid
-    global parameters
 
     # for the first protocol, we do not have any own dependencies
     dependencies = external_dependencies
@@ -498,7 +496,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     for protocol in protocols:
       # create an executor object
       executor = ToolChainExecutorLFW(args, protocol)
-      executor.set_common_parameters(calling_file = this_file, parameters = parameters, fake_job_id = dry_run_init)
+      executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = dry_run_init)
 
       # add the jobs
       new_dependencies = executor.add_jobs_to_grid(dependencies, perform_preprocessing)
@@ -535,15 +533,15 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     # after all protocols have been processed, compute average result
     executor.average_results()
     # no dependencies since we executed the jobs locally
-    return []
+    return {}
 
 
-def main():
+def main(command_line_parameters = sys.argv[1:]):
   """Executes the main function"""
   # do the command line parsing
-  args = parse_args()
+  args = parse_args(command_line_parameters)
   # perform face verification test
-  face_verify(args)
+  face_verify(args, command_line_parameters)
 
 if __name__ == "__main__":
   main()

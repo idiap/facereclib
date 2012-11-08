@@ -1,0 +1,2 @@
+include README.rst bootstrap.py *.cfg
+recursive-include docs *.py *.rst

@@ -16,6 +16,10 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
 
+    # overwrite protocol from command line?
+    if args.protocol:
+      self.m_database.protocol = args.protocol
+
     # add specific configuration for ZT-normalization
     self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[0], self.m_database.protocol)
     self.m_configuration.t_norm_models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[1], self.m_database.protocol)
@@ -28,7 +32,6 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
     self.m_configuration.scores_no_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[0])
     self.m_configuration.scores_zt_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[1])
-
 
     # specify the file selector to be used
     self.m_file_selector = toolchain.FileSelector(
@@ -406,18 +409,17 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors.")
 
 
-def parse_args(command_line_arguments = sys.argv[1:]):
+def parse_args(command_line_parameters):
   """This function parses the given options (which by default are the command line options)."""
-  # sorry for that.
-  global parameters
-  parameters = command_line_arguments
-
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__,
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   # add the arguments required for all tool chains
   config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorZT.required_command_line_options(parser)
+
+  config_group.add_argument('-P', '--protocol', metavar='PROTOCOL',
+      help = 'Overwrite the protocol that is stored in the database by the given one (might not by applicable for all databases).')
 
   sub_dir_group.add_argument('--models-directories', metavar = 'DIR', nargs = 2,
       default = ['models', 'tmodels'],
@@ -452,10 +454,10 @@ def parse_args(command_line_arguments = sys.argv[1:]):
   parser.add_argument('--group',
       help = argparse.SUPPRESS) #'The group for which the current action should be performed'
 
-  return parser.parse_args(command_line_arguments)
+  return parser.parse_args(command_line_parameters)
 
 
-def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
+def face_verify(args, command_line_parameters, external_dependencies = [], external_fake_job_id = 0):
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
@@ -478,7 +480,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
   elif args.sub_task:
     # execute the desired sub-task
     executor.execute_grid_job()
-    return []
+    return {}
   else:
     # no other parameter given, so deploy new jobs
 
@@ -488,20 +490,19 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
       this_file = this_file[0:-1]
 
     # initialize the executor to submit the jobs to the grid
-    global parameters
-    executor.set_common_parameters(calling_file = this_file, parameters = parameters, fake_job_id = external_fake_job_id )
+    executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = external_fake_job_id )
 
     # add the jobs
     return executor.add_jobs_to_grid(external_dependencies)
 
 
-def main():
+def main(command_line_parameters = sys.argv[1:]):
   """Executes the main function"""
   # do the command line parsing
-  args = parse_args()
+  args = parse_args(command_line_parameters)
 
   # perform face verification test
-  face_verify(args)
+  face_verify(args, command_line_parameters)
 
 if __name__ == "__main__":
   main()

@@ -15,8 +15,8 @@ class LGBPHS (Extractor):
   def __init__(
       self,
       # Block setup
-      block_size,    # 1 or two parameters for block size
-      block_overlap, # 1 or two parameters for block overlap
+      block_size,    # one or two parameters for block size
+      block_overlap, # one or two parameters for block overlap
       # Gabor parameters
       gabor_directions = 8,
       gabor_scales = 5,

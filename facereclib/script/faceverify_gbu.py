@@ -8,46 +8,56 @@ import argparse
 
 from . import ToolChainExecutor
 from .. import toolchain
+from .. import utils
 
 class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
 
   def __init__(self, args, protocol, perform_training):
-    # remember the protocol
-    self.m_protocol = protocol
-    self.m_perform_training = perform_training
-
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
 
+    # select the protocol
+    self.m_database.protocol = protocol
+    self.m_perform_training = perform_training
+    if not perform_training:
+      self.m_database.all_files_options.update({'groups' : 'dev'})
+
+    if args.training_set:
+      self.m_database.all_files_options.update({'subworld' : args.training_set})
+      self.m_database.extractor_training_options.update({'subworld' : args.training_set})
+      self.m_database.projector_training_options.update({'subworld' : args.training_set})
+      self.m_database.enroller_training_options.update({'subworld' : args.training_set})
+
+
+    # add specific configuration for ZT-normalization
+    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directory, self.m_database.protocol)
+
+    self.m_configuration.scores_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol)
+
+    # specify the file selector to be used
+    self.m_file_selector = toolchain.FileSelector(
+        self.m_database,
+        preprocessed_directory = self.m_configuration.preprocessed_directory,
+        extractor_file = self.m_configuration.extractor_file,
+        features_directory = self.m_configuration.features_directory,
+        projector_file = self.m_configuration.projector_file,
+        projected_directory = self.m_configuration.projected_directory,
+        enroller_file = self.m_configuration.enroller_file,
+        model_directories = (self.m_configuration.models_directory,),
+        score_directories = (self.m_configuration.scores_directory,)
+    )
+
     # specify the file selector and tool chain objects to be used by this class (and its base class)
-    self.m_file_selector = toolchain.FileSelectorZT(self.m_configuration, self.m_configuration)
-    self.m_tool_chain = toolchain.ToolChainZT(self.m_file_selector)
-
-
-  def protocol_specific_configuration(self):
-    """Special configuration for GBU protocol"""
-    # set the dictionary for the options to assure that we use the 'gbu' protocol type
-    for option in ('all_files_options', 'extractor_training_options', 'projector_training_options', 'enroller_training_options', 'models_options'):
-      if hasattr(self.m_configuration, option):
-        self.m_configuration.__dict__[option].update({'type' : 'gbu', 'subworld' : self.m_args.training_set})
-      else:
-        self.m_configuration.__dict__[option] = {'type' : 'gbu', 'subworld' : self.m_args.training_set}
-    if not self.m_perform_training:
-      self.m_configuration.__dict__['all_files_options'].update({'groups' : 'dev'})
-
-    # set (overwrite) the protocol
-    self.m_configuration.protocol = self.m_protocol
-
-    self.m_configuration.models_dir = os.path.join(self.m_configuration.base_output_TEMP_dir, self.m_args.model_dir, self.m_configuration.protocol)
-    self.m_configuration.scores_nonorm_dir = os.path.join(self.m_configuration.base_output_USER_dir, self.m_args.score_sub_dir, self.m_configuration.protocol)
+    self.m_tool_chain = toolchain.ToolChain(self.m_file_selector)
 
 
   def execute_tool_chain(self):
     """Executes the desired tool chain on the local machine"""
+    utils.info("Executing face recognition algorithm on protocol '%s'" % self.m_database.protocol)
     # preprocessing
     if not self.m_args.skip_preprocessing:
       if self.m_args.dry_run:
-        print "Would have preprocessed images for protocol %s ..." % self.m_configuration.protocol
+        print "Would have preprocessed images for protocol '%s' ..." % self.m_database.protocol
       else:
         self.m_tool_chain.preprocess_images(
               self.m_preprocessor,
@@ -65,7 +75,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_extraction:
       if self.m_args.dry_run:
-        print "Would have extracted the features for protocol %s ..." % self.m_configuration.protocol
+        print "Would have extracted the features for protocol '%s' ..." % self.m_database.protocol
       else:
         self.m_tool_chain.extract_features(
               self.m_extractor,
@@ -84,7 +94,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_projection and self.m_tool.performs_projection:
       if self.m_args.dry_run:
-        print "Would have projected the features for protocol %s ..." % self.m_configuration.protocol
+        print "Would have projected the features for protocol '%s' ..." % self.m_database.protocol
       else:
         self.m_tool_chain.project_features(
               self.m_tool,
@@ -103,7 +113,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_enrollment:
       if self.m_args.dry_run:
-        print "Would have enrolled the models for protocol %s ..." % self.m_configuration.protocol
+        print "Would have enrolled the models for protocol '%s' ..." % self.m_database.protocol
       else:
         self.m_tool_chain.enroll_models(
               self.m_tool,
@@ -115,7 +125,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # score computation
     if not self.m_args.skip_score_computation:
       if self.m_args.dry_run:
-        print "Would have computed the scores for protocol %s ..." % self.m_configuration.protocol
+        print "Would have computed the scores for protocol '%s' ..." % self.m_database.protocol
       else:
         self.m_tool_chain.compute_scores(
               self.m_tool,
@@ -124,9 +134,10 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               preload_probes = self.m_args.preload_probes,
               force = self.m_args.force)
 
+    # concatenation of scores
     if not self.m_args.skip_concatenation:
       if self.m_args.dry_run:
-        print "Would have concatenated the scores for protocol %s ..." % self.m_configuration.protocol
+        print "Would have concatenated the scores for protocol '%s' ..." % self.m_database.protocol
       else:
         self.m_tool_chain.concatenate(
               compute_zt_norm = False,
@@ -142,7 +153,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     deps = external_dependencies[:]
     training_deps = external_dependencies[:]
 
-    default_opt = ' --protocol %s'%self.m_configuration.protocol
+    default_opt = ' --protocol %s'%self.m_database.protocol
     if self.m_perform_training:
       default_opt += ' --perform-training'
     # image preprocessing; never has any dependencies.
@@ -152,7 +163,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       preprocessing_deps = deps[:]
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess' + default_opt,
-              name = 'pre-%s' % self.m_configuration.protocol,
+              name = 'pre-%s' % self.m_database.protocol,
               list_to_split = self.m_file_selector.original_image_list(),
               number_of_files_per_job = self.m_grid_config.number_of_images_per_job,
               dependencies = preprocessing_deps,
@@ -175,7 +186,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_extraction:
       job_ids['feature_extraction'] = self.submit_grid_job(
               'extract' + default_opt,
-              name = 'extr-%s' % self.m_configuration.protocol,
+              name = 'extr-%s' % self.m_database.protocol,
               list_to_split = self.m_file_selector.preprocessed_image_list(),
               number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
               dependencies = deps,
@@ -197,7 +208,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_projection and self.m_tool.performs_projection:
       job_ids['feature_projection'] = self.submit_grid_job(
               'project' + default_opt,
-              name="pro-%s" % self.m_configuration.protocol,
+              name="pro-%s" % self.m_database.protocol,
               list_to_split = self.m_file_selector.feature_list(),
               number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
               dependencies = deps,
@@ -220,7 +231,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_enrollment:
       job_ids['enroll'] = self.submit_grid_job(
               'enroll' + default_opt,
-              name = "enr-%s" % self.m_configuration.protocol,
+              name = "enr-%s" % self.m_database.protocol,
               list_to_split = self.m_file_selector.model_ids('dev'),
               number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
               dependencies = deps,
@@ -231,7 +242,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if not self.m_args.skip_score_computation:
       job_ids['score'] = self.submit_grid_job(
               'compute-scores' + default_opt,
-              name = "score-%s" % self.m_configuration.protocol,
+              name = "score-%s" % self.m_database.protocol,
               list_to_split = self.m_file_selector.model_ids('dev'),
               number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
               dependencies = deps,
@@ -243,7 +254,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       job_ids['concatenate'] = self.submit_grid_job(
               'concatenate' + default_opt,
               dependencies = deps,
-              name = "concat-%s" % self.m_configuration.protocol)
+              name = "concat-%s" % self.m_database.protocol)
 
     # return the job ids, in case anyone wants to know them
     return job_ids
@@ -326,20 +337,22 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors.")
 
 
-def parse_args(command_line_arguments = sys.argv[1:]):
+def parse_args(command_line_parameters):
   """This function parses the given options (which by default are the command line options)"""
-  # sorry for that.
-  global parameters
-  parameters = command_line_arguments
 
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__,
-      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+      conflict_handler='resolve')
 
   # add the arguments required for all tool chains
   config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorGBU.required_command_line_options(parser)
 
-  sub_dir_group.add_argument('--model-directory', type = str, metavar = 'DIR', dest='model_dir', default = 'models',
+  # overwrite default database entry
+  config_group.add_argument('-d', '--database', default = ['gbu'], nargs = '+',
+      help = 'The database interface to be used. The default should work fine for the common cases.')
+
+  sub_dir_group.add_argument('--models-directory', type = str, metavar = 'DIR', default = 'models',
       help = 'Subdirectories (of the --temp-directory) where the models should be stored')
 
   #######################################################################################
@@ -350,7 +363,7 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
   other_group.add_argument('--protocols', type=str, nargs = '+', choices = ['Good', 'Bad', 'Ugly'], default = ['Good', 'Bad', 'Ugly'],
       help = 'The protocols to use, by default all three (Good, Bad, and Ugly) are executed.')
-  other_group.add_argument('-x', '--training-set', choices=['x2', 'x4', 'x8'], default = 'x2',
+  other_group.add_argument('-x', '--training-set', choices=['x1', 'x2', 'x4', 'x8'], default = 'x2',
       help = 'Select the training set to be used')
 
   #######################################################################################
@@ -364,17 +377,17 @@ def parse_args(command_line_arguments = sys.argv[1:]):
       help = argparse.SUPPRESS) #'Is this the first job that needs to perform the training?'
 
 
-  return parser.parse_args(command_line_arguments)
+  return parser.parse_args(command_line_parameters)
 
 
-def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
+def face_verify(args, command_line_parameters, external_dependencies = [], external_fake_job_id = 0):
   """This is the main entry point for computing face verification experiments.
-  You just have to specify configuration scripts for any of the steps of the toolchain, which are:
+  You just have to specify configuration scripts for any of the steps of the tool chain, which are:
   -- the database
   -- feature extraction (including image preprocessing)
   -- the score computation tool
   -- and the grid configuration (in case, the function should be executed in the grid).
-  Additionally, you can skip parts of the toolchain by selecting proper --skip-... parameters.
+  Additionally, you can skip parts of the tool chain by selecting proper --skip-... parameters.
   If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.
   If files should be re-generated, please specify the --force option (might be combined with the --skip-... options)"""
 
@@ -391,9 +404,6 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     if this_file[-1] == 'c':
       this_file = this_file[0:-1]
 
-    # initialize the executor to submit the jobs to the grid
-    global parameters
-
     # for the first protocol, we do not have any own dependencies
     dependencies = external_dependencies
     job_ids = {}
@@ -403,7 +413,7 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     for protocol in args.protocols:
       # create an executor object
       executor = ToolChainExecutorGBU(args, protocol, perform_training)
-      executor.set_common_parameters(calling_file = this_file, parameters = parameters, fake_job_id = dry_run_init)
+      executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = dry_run_init)
 
       # add the jobs
       new_job_ids = executor.add_jobs_to_grid(dependencies, job_ids)
@@ -429,15 +439,12 @@ def face_verify(args, external_dependencies = [], external_fake_job_id = 0):
     return []
 
 
-def main():
+def main(command_line_parameters = sys.argv[1:]):
   """Executes the main function"""
   # do the command line parsing
-  args = parse_args()
-  for f in (args.database, args.preprocessor, args.features, args.tool):
-    if not os.path.exists(str(f)):
-      raise ValueError("The given file '%s' does not exist."%f)
+  args = parse_args(command_line_parameters)
   # perform face verification test
-  face_verify(args)
+  face_verify(args, command_line_parameters)
 
 if __name__ == "__main__":
   main()

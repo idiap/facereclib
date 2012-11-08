@@ -74,28 +74,29 @@ def eigenface():
   """Simple eigenface comparison"""
   features      = 'linearize'
   tool          = 'pca'
-  grid          = 'grid.py'
-  return (features, tool, grid)
+  grid          = 'grid'
+  preprocessing = 'face-crop'
+  return (features, tool, grid, preprocessing)
 
 def lda():
   """LDA on eigenface features"""
   features      = 'eigenfaces'
   tool          = 'lda'
-  grid          = 'grid.py'
+  grid          = 'grid'
   return (features, tool, grid)
 
 def gaborgraph():
   """Gabor grid graphs using a Gabor phase based similarity measure"""
-  features      = 'grid_graph'
-  tool          = 'gabor_jet'
-  grid          = 'grid.py'
+  features      = 'grid-graph'
+  tool          = 'gabor-jet'
+  grid          = 'grid'
   return (features, tool, grid)
 
 def lgbphs():
   """Local Gabor binary pattern histogram sequences"""
   features      = 'lgbphs'
   tool          = 'lgbphs'
-  grid          = 'grid.py'
+  grid          = 'grid'
   preprocessing = os.path.join(config_dir, 'preprocessing', 'tan_triggs_with_offset.py')
   return (features, tool, grid, preprocessing)
 
@@ -103,28 +104,28 @@ def gmm():
   """UBM/GMM modelling of DCT block features"""
   features      = 'dct'
   tool          = 'gmm'
-  grid          = 'demanding.py'
+  grid          = 'demanding'
   return (features, tool, grid)
 
 def isv():
   """Inter-Session-Variability modelling of DCT block features"""
   features      = 'dct'
   tool          = 'isv'
-  grid          = 'demanding.py'
+  grid          = 'demanding'
   return (features, tool, grid)
 
 def plda():
   """Probabilistic LDA using PCA+PLDA on pixel-based features"""
   features      = 'linearize'
   tool          = 'pca+plda'
-  grid          = 'demanding.py'
+  grid          = 'demanding'
   return (features, tool, grid)
 
 def bic():
   """The Bayesian Intrapersonal/Extrapersonal classifier"""
   features      = 'linearize'
   tool          = 'bic'
-  grid          = 'demanding.py'
+  grid          = 'demanding'
   return (features, tool, grid)
 
 
@@ -135,8 +136,8 @@ def main(command_line_parameters = sys.argv[1:]):
   args = command_line_arguments(command_line_parameters)
 
   # Check the database configuration file
-  has_zt_norm = args.database in ('banca', 'mobio_male', 'mobio_female', 'multipie_U', 'multipie_P', 'scface')
-  has_eval = args.database in ('banca', 'mobio_male', 'mobio_female', 'multipie_U', 'multipie_P', 'scface', 'xm2vts', 'lfw')
+  has_zt_norm = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface')
+  has_eval = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface', 'xm2vts', 'lfw')
 
   if args.evaluate:
     # evaluate the results
@@ -199,14 +200,14 @@ def main(command_line_parameters = sys.argv[1:]):
       setup = eval(algorithm)()
       features  = setup[0]
       tool      = setup[1]
-      grid      = os.path.join(config_dir, 'grid', setup[2])
+      grid      = setup[2]
       if len(setup) > 3:
         preprocessing = setup[3]
         if args.share_preprocessing:
           utils.warn("Ignoring --share-preprocessing option for algorithm '%s' since it requires a special setup" % algorithm)
       else:
         # by default, we use Tan & Triggs preprocessing
-        preprocessing = 'tan_triggs'
+        preprocessing = 'tan-triggs'
 
       # this is the default sub-directory that is used
       sub_directory = os.path.join('baselines', algorithm)

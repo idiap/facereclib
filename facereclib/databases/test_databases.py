@@ -89,6 +89,12 @@ class DatabaseTest(unittest.TestCase):
   def test08_arface(self):
     self.check_database(self.config('arface'), groups=('dev', 'eval'))
 
+  def test09_gbu(self):
+    self.check_database(self.config('gbu'))
+
+  def test10_frgc(self):
+    self.check_database(self.config('frgc'))
+
 
   def test20_faceverif_fl(self):
     # The test of the faceverif_fl database is a bit different.

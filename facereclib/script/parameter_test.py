@@ -3,381 +3,352 @@
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
 import faceverify, faceverify_gbu, faceverify_lfw
-import os, shutil, sys
-import argparse
+import argparse, os, sys
+import copy # for deep copies of dictionaries
 from .. import utils
-# from docutils.readers.python.pynodes import parameter
+
+# the configuration read from config file
+global configuration
+# the place holder key given on command line
+global place_holder_key
+# the extracted command line arguments
+global args
+# the job ids as returned by the call to the faceverify function
+global job_ids
+# first fake job id (useful for the --dry-run option)
+global fake_job_id
+fake_job_id = 0
+# the number of grid jobs that are executed
+global job_count
+# the total number of experiments run
+global task_count
+
+
+def command_line_options(command_line_parameters):
+  # set up command line parser
+  parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+  parser.add_argument('-c', '--configuration-file', required = True,
+      help = 'The file containing the information what parameters you want to have tested.')
+
+  parser.add_argument('-k', '--place-holder-key', default = '#',
+      help = 'The place holder key that starts the place holders which will be replaced.')
+
+  parser.add_argument('-d', '--database', required = True,
+      help = 'The database that you want to execute the experiments on.')
+
+  parser.add_argument('-b', '--sub-directory', required = True,
+      help = 'The sub-directory where the files of the current experiment should be stored. Please specify a directory name with a name describing your experiment.')
+
+  parser.add_argument('-g', '--grid',
+      help = 'The SGE grid configuration')
+
+  parser.add_argument('-p', '--preprocessed-image-directory',
+      help = '(optional) The directory where to read the already preprocessed images from (no preprocessing is performed in this case).')
+
+  parser.add_argument('-s', '--grid-database-directory', default = '.',
+      help = 'Directory where the submitted.db files should be written into (will create sub-directories on need)')
+
+  parser.add_argument('-w', '--write-commands',
+      help = '(optional) The file name where to write the calls into (will not write the dependencies, though)')
+
+  parser.add_argument('-q', '--dry-run', action='store_true',
+      help = 'Just write the commands to console and mimic dependencies, but do not execute the commands')
+
+  parser.add_argument('-Q', '--non-existent-only', type=str,
+      help = 'Only start the experiments that have not been executed successfully (i.e., where the given output directory does not exist yet)')
+
+  parser.add_argument('parameters', nargs = argparse.REMAINDER,
+      help = "Parameters directly passed to the face verify script. It should at least include the -d (and the -g) option. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify.py --help' for a complete list of options.")
+
+  utils.add_logger_command_line_option(parser)
+
+  global args
+  args = parser.parse_args(command_line_parameters)
+  utils.set_verbosity_level(args.verbose)
+
+
+
+def extract_values(replacements, indices):
+  """Extracts the value dictionary from the given dictionary of replacements"""
+  extracted_values = {}
+  for place_holder in replacements.keys():
+    # get all occurrences of the place holder key
+    parts = place_holder.split(place_holder_key)
+    # only one part -> no place holder key found -> no strings to be extracted
+    if len(parts) == 1:
+      continue
+
+    keys = [part[:1] for part in parts[1:]]
+
+    value_index = indices[place_holder]
+
+    entries = replacements[place_holder]
+    entry_key = sorted(entries.keys())[value_index]
+
+    # check that the keys are unique
+    for key in keys:
+      if key in extracted_values:
+        raise ValueError("The replacement key '%s' was defined multiple times. Please use each key only once."%key)
+
+    # extract values
+    if len(keys) == 1:
+      extracted_values[keys[0]] = entries[entry_key]
+
+    else:
+      for i in range(len(keys)):
+        extracted_values[keys[i]] = entries[entry_key][i]
+
+  return extracted_values
+
+
+def replace(string, replacements):
+  """Replaces the place holders in the given string with the according values from the values dictionary."""
+  # get all occurrences of the place holder key
+  parts = string.split(place_holder_key)
+  # only one part -> no place holder key found -> return the whole string
+  if len(parts) == 1:
+    return string
+
+  keys = [part[:1] for part in parts[1:]]
+
+  retval = parts[0]
+  for i in range(0, len(keys)):
+    # replace the place holder by the desired string and add the remaining of the command
+    retval += str(replacements[keys[i]]) + str(parts[i+1][1:])
+
+  return '"' + retval + '"'
+
+
+def create_command_line(replacements):
+  """Creates the parameters for the function call that will be given to the faceverify script."""
+  # get the values to be replaced with
+  values = {}
+  for key in configuration.replace:
+    values.update(extract_values(configuration.replace[key], replacements))
+  # replace the place holders with the values
+  return [
+      '--database', args.database,
+      '--preprocessing', replace(configuration.preprocessor, values),
+      '--features', replace(configuration.feature_extractor, values),
+      '--tool', replace(configuration.tool, values),
+      '--imports'
+  ] + configuration.imports
+
 
 
 # The different steps of the preprocessing chain.
 # Use these keywords to change parameters of the specific part
-steps = ['preprocessing', 'features', 'projection', 'enroll', 'scores']
+steps = ['preprocessing', 'extraction', 'projection', 'enrollment', 'scoring']
 
 # Parts that could be skipped when the dependecies are on the indexed level
 skips = [[''],
          ['--skip-preprocessing'],
-         ['--skip-feature-extraction-training', '--skip-feature-extraction'],
-         ['--skip-projection-training', '--skip-projection'],
-         ['--skip-enroller-training', '--skip-model-enrollment']
+         ['--skip-extractor-training', '--skip-extraction'],
+         ['--skip-projector-training', '--skip-projection'],
+         ['--skip-enroller-training', '--skip-enrollment']
         ]
 
 # The keywords to parse the job ids to get the according dependencies right
-dkeys  = ['DUMMY', 'preprocessing', 'feature_extraction', 'feature_projection', 'enroll']
+dependency_keys  = ['DUMMY', 'preprocess', 'extract', 'project', 'enroll']
 
 
-def next_level(config, index):
-  """Searches the config for the next non-empty level, i.e., where the according keyword is defined in the configuration"""
-  for i in range(index, len(steps)):
-    if hasattr(config, steps[i]):
-      return getattr(config, steps[i])
-  return None
-
-
-def write_config_file(args, infile_name, sub_dir, keyword, value):
-  """Copies the given configuration file by replacing the lines including the given keyword with the given value.
-     The function returnes the name of the newly generated file."""
-  # read the config file
-  outfile_name = os.path.join(args.config_dir, sub_dir, os.path.basename(infile_name))
-  if infile_name == outfile_name:
-    shutil.copy(infile_name, infile_name + '~')
-    infile = open(infile_name + '~')
-  else:
-    infile = open(infile_name, 'r')
-  utils.ensure_dir(os.path.dirname(outfile_name))
-#  print "\nWriting configuration file '%s'\n"%outfile_name
-  outfile = open(outfile_name, 'w')
-
-  replacement_count = 0
-
-  value_skips = len(value.split('\n')) - 1
-  skip_lines = 0
-
-  # iterate through the file
-  for line in infile:
-    if line.find(keyword) == 0:
-      # replace the lines by the new values
-      outfile.writelines(keyword + " = " + value + "\n")
-      replacement_count += 1
-      skip_lines = value_skips
-    else:
-      if skip_lines:
-        skip_lines -= 1
-      else:
-        outfile.writelines(line)
-
-#  if not replacement_count:
-#    # add the line when it was not replacable before
-#    print "Warning! Could not find the keyword '%s' in the given script '%s'! Adding new line at the end!"%(keyword, infile_name)
-#    outfile.writelines("\n" + keyword + " = " + value + "\n")
-
-  # close files
-  infile.close()
-  outfile.close()
-
-
-  # return the name of the written config file
-  return outfile_name
-
-
-def directory_parameters(args, dirs):
+def directory_parameters(directories):
   """This function generates the faceverify parameters that define the directories, where the data is stored.
-     The directories are set such that data is reused whenever possible, but disjoint if needed."""
-  parameters = []
-  last_dir = '.'
-  # add directory parameters
-  if dirs['preprocessing'] != '':
-    if args.preprocessed_image_dir:
-      parameters.extend(['--preprocessed-image-directory', os.path.join(args.preprocessed_image_dir, dirs['preprocessing'], 'preprocessed'), skips[1][0]])
+  The directories are set such that data is reused whenever possible, but disjoint if needed."""
+  def join_dirs(index, subdir):
+    # collect sub-directories
+    dirs = []
+    for i in range(index+1):
+      dirs.extend(directories[steps[i]])
+    if not dirs:
+      return subdir
     else:
-      parameters.extend(['--preprocessed-image-directory', os.path.join(dirs['preprocessing'], 'preprocessed')])
-    last_dir = dirs['preprocessing']
-  if dirs['features'] != '':
-    parameters.extend(['--features-directory', os.path.join(dirs['features'], 'features')])
-    parameters.extend(['--extractor-file', os.path.join(dirs['features'], 'Extractor.hdf5')])
-    last_dir = dirs['features']
-  if dirs['projection'] != '':
-    parameters.extend(['--projected-directory', os.path.join(dirs['projection'], 'projected')])
-    parameters.extend(['--projector-file', os.path.join(dirs['projection'], 'Projector.hdf5')])
-    last_dir = dirs['projection']
-  if dirs['enroll'] != '':
-    if args.protocol == 'zt':
-      parameters.extend(['--models-directories', os.path.join(dirs['enroll'], 'N-Models'), os.path.join(dirs['enroll'], 'T-Models')])
-    elif args.protocol == 'gbu' or args.protocol == 'lfw':
-      parameters.extend(['--model-directory', os.path.join(dirs['enroll'], 'models')])
-    parameters.extend(['--enroller-file', os.path.join(dirs['enroll'], 'Enroler.hdf5')])
-    last_dir = dirs['enroll']
-  if dirs['scores'] != '':
-    parameters.extend(['--score-sub-dir', dirs['scores']])
-    last_dir = dirs['scores']
+      dir = dirs[0]
+      for d in dirs[1:]:
+        dir = os.path.join(dir, d)
+      return os.path.join(dir, subdir)
 
-  # add directory for the submitted db
-  dbfile = os.path.join(args.db_dir, last_dir, 'submitted.db')
+  global args
+  parameters = []
+  db_file_name = 'submitted.db'
+
+  # add directory parameters
+  # - preprocessing
+  if args.preprocessed_image_directory:
+    parameters.extend(['--preprocessed-image-directory', os.path.join(args.preprocessed_image_directory, join_dirs(0, 'preprocessed'))] + skips[1])
+  else:
+    parameters.extend(['--preprocessed-image-directory', join_dirs(0, 'preprocessed')])
+
+  # - feature extraction
+  parameters.extend(['--features-directory', join_dirs(1, 'features')])
+  parameters.extend(['--extractor-file', join_dirs(1, 'Extractor.hdf5')])
+
+  # - feature projection
+  parameters.extend(['--projected-features-directory', join_dirs(2, 'projected')])
+  parameters.extend(['--projector-file', join_dirs(2, 'Projector.hdf5')])
+
+  # - model enrollment
+  # TODO: other parameters for other scripts?
+  parameters.extend(['--models-directories', join_dirs(3, 'N-Models'), join_dirs(3, 'T-Models')])
+  parameters.extend(['--enroller-file', join_dirs(3, 'Enroler.hdf5')])
+
+  # - scoring
+  parameters.extend(['--score-sub-directory', join_dirs(4, 'scores')])
+
+  parameters.extend(['--sub-directory', args.sub_directory])
+
+  # grid database
+  dbfile = os.path.join(args.grid_database_directory, 'submitted.db')
+  for i in range(len(steps)):
+    if len(directories[steps[i]]):
+      dbfile = os.path.join(args.grid_database_directory, join_dirs(i, 'submitted.db'))
   utils.ensure_dir(os.path.dirname(dbfile))
   parameters.extend(['--submit-db-file', dbfile])
 
   return parameters
 
 
-def get_deps(job_ids, index):
-  """Returns the dependencies for the given level from the given job ids"""
-  # get the dependencies
-  deps = []
+def execute_dependent_task(command_line, directories, dependency_level):
+  # add other command line arguments
+  command_line.extend(args.parameters[1:])
+  if args.grid:
+    command_line.extend(['--grid', args.grid])
+  if args.verbose:
+    command_line.append('-' + 'v'*args.verbose)
+
+  # create directory parameters
+  command_line.extend(directory_parameters(directories))
+
+  # add skip parameters according to the dependency level
+  for i in range(1, dependency_level+1):
+    command_line.extend(skips[i])
+
+  # write the command to file?
+  if args.write_commands:
+    index = command_line.index('--submit-db-file')
+    command_file = os.path.join(os.path.dirname(command_line[index+1]), args.write_commands)
+    with open(command_file, 'w') as f:
+      f.write('bin/faceverify.py ')
+      for p in command_line:
+        f.write(p + ' ')
+      f.close()
+    utils.info("Wrote command line into file '%s'" % command_file)
+
+  # extract dependencies
+  global job_ids
+  dependencies = []
   for k in sorted(job_ids.keys()):
-    for i in range(index+1):
-      if k.find(dkeys[i]) != -1:
-        deps.append(job_ids[k])
+    for i in range(1, dependency_level+1):
+      if k.find(dependency_keys[i]) != -1:
+        dependencies.append(job_ids[k])
 
-  print "Dependencies for the job at step '%s' are:"%steps[index], deps
-  return deps
+  # execute the command
+  new_job_ids = {}
+  try:
+    verif_args = faceverify.parse_args(command_line)
+    if args.dry_run:
+      print "Would have executed job",
+      print " ".join(command_line)
+      print "with dependencies", dependencies
+    else:
+      # execute the face verification experiment
+      global fake_job_id
+      new_job_ids = faceverify.face_verify(verif_args, command_line, external_dependencies = dependencies, external_fake_job_id = fake_job_id)
 
+  except Exception as e:
+    utils.error("The execution of job was rejected!\n%s\n Reason:\n%s"%(" ".join(command_line), e))
 
-def get_skips(index):
-  """Returns the skip parameters for the given level"""
-  # get the skip parameters
-  the_skips = []
-  for i in range(1,index+1):
-    the_skips.extend(skips[i])
-#  print "Skips for step '%s' are: "%steps[index], the_skips
-  return the_skips
-
-
-def execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs, skips, deps):
-  """Executes the face verification task using the given feature and tool configurations, setting dependencies to the given dependent jobs"""
-  # invoke face verification with the new configuration, including proper dependencies
-  parameters = args.parameters[1:]
-  parameters.extend(['-p', preprocess_file, '-f', feature_file, '-t', tool_file])
-  parameters.extend(directory_parameters(args, dirs))
-  parameters.extend(skips)
-
-  global task_count
+  # some statistics
+  global job_count, task_count
+  job_count += len(new_job_ids)
   task_count += 1
-  global fake_job_id
-
-  # let the face verification script parse the parameters
-  if args.protocol == 'zt':
-    faceverify_script = faceverify_zt
-    face_verify_executable = "faceverify_zt.py"
-  elif args.protocol == 'gbu':
-    faceverify_script = faceverify_gbu
-    face_verify_executable = "faceverify_gbu.py"
-  elif args.protocol == 'lfw':
-    faceverify_script = faceverify_lfw
-    face_verify_executable = "faceverify_lfw.py"
+  fake_job_id += 100
+  job_ids.update(new_job_ids)
 
 
-  # write executed call to file
-  index = parameters.index('--submit-db-file')
+def create_recursive(replace_dict, step_index, directories, dependency_level, keys=[]):
+  """Iterates through all the keywords and replaces all place holders with all keywords in a defined order."""
 
-  if args.non_existent_only:
-    index2 = parameters.index('--sub-directory')
-    path = os.path.realpath(os.path.join(args.non_existent_only, parameters[index2+1], os.path.dirname(parameters[index+1])))
-    if os.path.exists(path):
-      print "Skipping path '" + path + "' since the results already exist."
-      return []
-
-  out_file = os.path.join(os.path.dirname(parameters[index+1]), args.submit_call_file)
-  f = open(out_file, 'w')
-  f.write(os.path.join(os.path.realpath(os.path.dirname(sys.argv[0])), face_verify_executable) + ' ')
-  for p in parameters:
-    f.write(p + ' ')
-  f.close()
-
-  if args.dry_run:
-    job_ids = []
-    print "Wrote call to file", out_file, "without executing the file"
+  # check if we are at the lowest level
+  if step_index == len(steps):
+    # create a call and execute it
+    execute_dependent_task(create_command_line(replace_dict), directories, dependency_level)
   else:
-    try:
-      verif_args = faceverify_script.parse_args(parameters)
+    if steps[step_index] not in directories:
+      directories[steps[step_index]] = []
 
-      # execute the face verification
-      job_ids = faceverify_script.face_verify(verif_args, external_dependencies = deps, external_fake_job_id = fake_job_id)
-    except Exception as e:
-      print "\nWARNING: The execution of job '" + out_file + "' was rejected! Reason:"
-      print '"', e, '"\n'
-      job_ids = []
-    global job_count
-    job_count += len(job_ids)
-    fake_job_id += 100
-  return job_ids
-
-
-def remove_keyword(keyword, config):
-  """This function removes the given keyword from the given configuration (and returns a copy of it)"""
-  new_config = {}
-  for key in config.keys():
-    if key != keyword:
-      new_config[key] = config[key]
-  return new_config
-
-
-global job_ids
-job_ids = {}
-
-def execute_recursively(args, config, index, current_setup, dirs, preprocess_file, feature_file, tool_file, dependency_level):
-  if current_setup == None:
-    return
-  if not len(current_setup):
-#    print "\nEntering step", steps[index], "for executing task"
-    # try if we need to do another level of recursion
-    i = index
-    while i < len(steps)-1:
-      i += 1
-      dirs[steps[i]] = dirs[steps[i-1]]
-      # copy directory from previous index
-      if hasattr(config, steps[i]):
-        execute_recursively(args, config, i, next_level(config, i), dirs, preprocess_file, feature_file, tool_file, dependency_level)
-        return
-
-    if i == len(steps)-1:
-      # we are at the lowest level, execute jobs
-      new_job_ids = execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs, get_skips(dependency_level), get_deps(job_ids, dependency_level))
-#
-      print "integrating job ids:", new_job_ids
-      print "into old job ids:", job_ids
-      job_ids.update(new_job_ids)
-      print "The registered job ids are now:", job_ids
-
-  else:
-#    print "\nEntering step", steps[index], "for recursive calls"
-#    print "executing recursively on step '%s' with dependency step '%s'"%(steps[index], steps[dependency_level])
-    # read out the current level of recursion
-    keyword = sorted(current_setup.keys())[0]
-    replacements = current_setup[keyword]
-    remaining_setup = remove_keyword(keyword, current_setup)
-
-#    print remaining_setup
-
-    # The first job is dependent on the given dependency level,
-    # while the following jobs are dependent on this level only
-    first = True
-    dir = dirs[steps[index]]
-    # iterate through the replacements
-    for sub in replacements.keys():
-      if len(replacements) > 1:
-        dirs[steps[index]] = os.path.join(dir, sub)
-      # replace the current keyword with the current replacement
-      new_preprocess_file = write_config_file(args, preprocess_file, os.path.join(dirs[steps[index]], 'preprocessing'), keyword, replacements[sub]) if index < 1 else preprocess_file
-      new_feature_file = write_config_file(args, feature_file, os.path.join(dirs[steps[index]], 'feature'), keyword, replacements[sub]) if index < 2 else feature_file
-      new_tool_file = write_config_file(args, tool_file, os.path.join(dirs[steps[index]], 'tool'), keyword, replacements[sub])
-      execute_recursively(args, config, index, remaining_setup, dirs, new_preprocess_file, new_feature_file, new_tool_file, dependency_level if first else index)
-      first = False
-
-#  print "Leaving step", steps[index], "\n"
-
-def execute_parallel(args, config, preprocess_file, feature_file, tool_file):
-  job_ids = {}
-  dependency_level = 0
-  for index in range(len(steps)):
-    if hasattr(config, steps[index]):
-      setup = getattr(config, steps[index])
-      for keyword in sorted(setup.keys()):
-        first = True
-        for dir, replacement in setup[keyword].iteritems():
-          dep_level = dependency_level if first else index
-          dirs = {}
-          for i in range(index):
-            dirs[steps[i]] = '.'
-          for i in range(index, len(steps)):
-            dirs[steps[i]] = os.path.join(keyword, dir)
-          # replace the keyword with the current replacement
-          new_preprocess_file = write_config_file(args, preprocess_file, os.path.join(dirs[steps[index]], 'preprocessing'), keyword, replacement)
-          new_feature_file = write_config_file(args, feature_file, os.path.join(dirs[steps[index]], 'feature'), keyword, replacement)
-          new_tool_file = write_config_file(args, tool_file, os.path.join(dirs[steps[index]], 'tool'), keyword, replacement)
-
-          # execute the job
-          new_job_ids = execute_dependent_task(args, preprocess_file, feature_file, tool_file, dirs, get_skips(dep_level), get_deps(job_ids, dep_level))
-          if len(new_job_ids):
-            first = False
-
-          # generate new dependencies
-          print "integrating job ids:", new_job_ids
-          print "into old job ids:", job_ids
-          job_ids.update(new_job_ids)
-          print "The registered job ids are now:", job_ids
-
-        dependency_level = index
+    # we are at another level
+    if steps[step_index] not in configuration.replace.keys():
+      # nothing to be replaced here, so just go to the next level
+      create_recursive(replace_dict, step_index+1, directories, dependency_level)
+    else:
+      # iterate through the keys
+      if keys == []:
+        # call this function recursively by defining the set of keys that we need
+        create_recursive(replace_dict, step_index, directories, dependency_level, keys = configuration.replace[steps[step_index]].keys())
+      else:
+        # create a deep copy of the replacement dict to be able to modify it
+        replace_dict_copy = copy.deepcopy(replace_dict)
+        directories_copy = copy.deepcopy(directories)
+        # iterate over all replacements for the first of the keys
+        key = keys[0]
+        replacement_directories = sorted(configuration.replace[steps[step_index]][key])
+        directories_copy[steps[step_index]].append("")
+        new_dependency_level = dependency_level
+        for replacement_index in range(len(replacement_directories)):
+          # increase the counter of the current replacement
+          replace_dict_copy[key] = replacement_index
+          directories_copy[steps[step_index]][-1] = replacement_directories[replacement_index]
+          # call the function recursively
+          if len(keys) == 1:
+            # we have to go to the next level
+            create_recursive(replace_dict_copy, step_index+1, directories_copy, new_dependency_level)
+          else:
+            # we have to subtract the keys
+            create_recursive(replace_dict_copy, step_index, directories_copy, new_dependency_level, keys = keys[1:])
+          new_dependency_level = step_index
 
 
-
-def main():
+def main(command_line_parameters = sys.argv[1:]):
   """Main entry point for the parameter test. Try --help to see the parameters that can be specified."""
 
-  raise NotImplementedError("This function is currently not working. It needs a re-design to work with the latest modifications in the FaceRecLib.")
-  # set up command line parser
-  parser = argparse.ArgumentParser(description=__doc__,
-      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-  test_group = parser.add_argument_group('Parameters for the parameter tests')
-
-  test_group.add_argument('-p', '--preprocessing', type = str, required = True, metavar = 'FILE',
-      help = 'The preprocessing config file to use')
-  test_group.add_argument('-f', '--features', type = str, required = True, metavar = 'FILE',
-      help = 'The feature extraction config file to use')
-  test_group.add_argument('-t', '--tool', type = str, required = True, metavar = 'FILE',
-      help = 'The tool you want to use')
-  test_group.add_argument('-P', '--protocol', type = str, choices = ['zt', 'gbu', 'lfw'], default = 'zt',
-      help = 'The protocol you want to use')
-
-  test_group.add_argument('-c', '--config-file', type = str, dest = 'config', required = True, metavar = 'FILE',
-      help = 'The configuration file explaining what to replace by what')
-
-  test_group.add_argument('-C', '--config-dir', type = str, default = '.',
-      help = 'Directory where the automatically generated config files should be written into')
-
-  test_group.add_argument('-S', '--submit-db-dir', type = str, dest='db_dir', default = '.',
-      help = 'Directory where the submitted.db files should be written into')
-
-  test_group.add_argument('-F', '--submit-call-file', type=str, default = 'call.txt',
-      help = 'Name of the file where to write the executed command into')
-
-  test_group.add_argument('-X', '--preprocessed-image-dir', type=str,
-      help = 'Relative directory where the preprocessed images are located; implies --skip-preprocessing')
-
-  test_group.add_argument('-Q', '--non-existent-only', type=str,
-      help = 'Only start the experiments that have not been executed successfully (i.e., where the given output directory does not exist yet)')
-
-  test_group.add_argument('-u', '--uncorrelated', action='store_true',
-      help = 'Execute the single tests uncorrelated.')
-
-  test_group.add_argument('--dry-run', action='store_true',
-      help = 'Only generate call files, but do not execute them')
-
-
-  # These are the parameters that are forwarded to the face verify script. Use -- to separate the parameter
-  verif_group = parser.add_argument_group('Parameters for the face verification script')
-  verif_group.add_argument('parameters', nargs = argparse.REMAINDER,
-      help = "Parameters directly passed to the face verify script. It should at least include the -d (and the -g) option. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify_[zt,gbu,lfw].py --help' for a complete list of options.")
-
-  # parse arguments
-  args = parser.parse_args()
-
-  # read the configuration file
-  import imp
-  config = imp.load_source('config', args.config)
-  dirs = {}
-  for t in steps:
-    dirs[t] = '.'
-
-  global task_count
-  task_count = 0
-  global job_count
+  global task_count, job_count, job_ids
   job_count = 0
-  # fake job id is used in dry run only
-  global fake_job_id
-  fake_job_id = 0
+  task_count = 0
+  job_ids = {}
 
-  if args.uncorrelated:
-    execute_parallel(args, config, args.preprocessing, args.features, args.tool)
-  else:
-    i = 0
-    while i < len(steps):
-      # test if the config file for the given step is there
-      if hasattr(config, steps[i]):
-        execute_recursively(args, config, i, next_level(config,i), dirs, args.preprocessing, args.features, args.tool, 0)
-        break
-      i += 1
+  command_line_options(command_line_parameters)
 
-  print "\nDone. The number of executed tasks is:", task_count, "which is split up into", job_count, "single jobs"
+  global configuration, place_holder_key
+  configuration = utils.resources.read_config_file(args.configuration_file)
+  place_holder_key = args.place_holder_key
+
+  for attribute in ('preprocessor', 'feature_extractor', 'tool', 'replace'):
+    if not hasattr(configuration, attribute):
+      raise ValueError("The given configuration file '%s' does not contain the required attribute '%s'" %(args.configuration_file, attribute))
+
+  # extract the dictionary of replacements from the configuration
+  if not hasattr(configuration, 'replace'):
+    raise ValueError("Please define a set of replacements using the 'replace' keyword.")
+  if not hasattr(configuration, 'imports'):
+    configuration.imports = ['facereclib']
+    utils.info("No 'imports' specified in configuration file '%s' -> using default %s" %(args.configuration_file, configuration.imports))
+
+  replace_dict = {}
+  for step, replacements in configuration.replace.iteritems():
+    for key in replacements.keys():
+      if key in replace_dict:
+        raise ValueError("The replacement key '%s' was defined multiple times. Please use each key only once.")
+      # we always start with index 0.
+      replace_dict[key] = 0
+
+  # now, iterate through the list of replacements and create the according calls
+  create_recursive(replace_dict, step_index = 0, directories = {}, dependency_level = 0)
+
+  # finally, write some information about the
+  utils.info("The number of executed tasks is: %d, which are split up into %d jobs that are executed in the grid" %(task_count, job_count))
+
 
 if __name__ == "__main__":
   main()
