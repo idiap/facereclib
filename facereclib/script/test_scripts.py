@@ -168,6 +168,7 @@ class TestScript (unittest.TestCase):
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
         '-g', 'grid',
+        '--zt-norm',
         '--dry-run',
         '-b', 'dummy'
     ]

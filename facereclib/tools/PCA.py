@@ -53,7 +53,7 @@ class PCATool (Tool):
     """Reads the PCA projection matrix from file"""
     # read PCA projector
     f = bob.io.HDF5File(projector_file)
-    self.m_vairances = f.read("Eigenvalues")
+    self.m_variances = f.read("Eigenvalues")
     f.cd("/Machine")
     self.m_machine = bob.machine.LinearMachine(f)
     # Allocates an array for the projected data

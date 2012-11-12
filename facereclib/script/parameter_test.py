@@ -24,6 +24,12 @@ global job_count
 global task_count
 
 
+# The different steps of the processing chain.
+# Use these keywords to change parameters of the specific part
+steps = ['preprocessing', 'extraction', 'projection', 'enrollment', 'scoring']
+
+
+
 def command_line_options(command_line_parameters):
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -148,10 +154,6 @@ def create_command_line(replacements):
 
 
 
-# The different steps of the preprocessing chain.
-# Use these keywords to change parameters of the specific part
-steps = ['preprocessing', 'extraction', 'projection', 'enrollment', 'scoring']
-
 # Parts that could be skipped when the dependecies are on the indexed level
 skips = [[''],
          ['--skip-preprocessing'],
@@ -228,8 +230,9 @@ def check_requirements(replacements):
     values.update(extract_values(configuration.replace[key], replacements))
   for requirement in configuration.requirements:
     test = replace(requirement, values)
-    print test
-    if not eval(test):
+    while not isinstance(test, bool):
+      test = eval(test)
+    if not test:
       return False
   return True
 
