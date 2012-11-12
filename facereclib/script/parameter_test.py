@@ -37,6 +37,9 @@ def command_line_options(command_line_parameters):
   parser.add_argument('-d', '--database', required = True,
       help = 'The database that you want to execute the experiments on.')
 
+  parser.add_argument('-P', '--protocol',
+      help = 'The protocol that you want to use (if not specified, the default protocol for the database is used).')
+
   parser.add_argument('-b', '--sub-directory', required = True,
       help = 'The sub-directory where the files of the current experiment should be stored. Please specify a directory name with a name describing your experiment.')
 
@@ -52,7 +55,7 @@ def command_line_options(command_line_parameters):
   parser.add_argument('-g', '--grid',
       help = 'The SGE grid configuration')
 
-  parser.add_argument('-P', '--preprocessed-image-directory',
+  parser.add_argument('-i', '--preprocessed-image-directory',
       help = '(optional) The directory where to read the already preprocessed images from (no preprocessing is performed in this case).')
 
   parser.add_argument('-s', '--grid-database-directory', default = '.',
@@ -63,9 +66,6 @@ def command_line_options(command_line_parameters):
 
   parser.add_argument('-q', '--dry-run', action='store_true',
       help = 'Just write the commands to console and mimic dependencies, but do not execute the commands')
-
-  parser.add_argument('-Q', '--non-existent-only', type=str,
-      help = 'Only start the experiments that have not been executed successfully (i.e., where the given output directory does not exist yet)')
 
   parser.add_argument('parameters', nargs = argparse.REMAINDER,
       help = "Parameters directly passed to the face verify script. It should at least include the -d (and the -g) option. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify.py --help' for a complete list of options.")
@@ -136,8 +136,10 @@ def create_command_line(replacements):
   for key in configuration.replace:
     values.update(extract_values(configuration.replace[key], replacements))
   # replace the place holders with the values
-  return [
-      '--database', args.database,
+  call = ['--database', args.database]
+  if args.protocol:
+    call += ['--protocol', args.protocol]
+  return call + [
       '--preprocessing', replace(configuration.preprocessor, values),
       '--features', replace(configuration.feature_extractor, values),
       '--tool', replace(configuration.tool, values),
@@ -185,7 +187,7 @@ def directory_parameters(directories):
   # add directory parameters
   # - preprocessing
   if args.preprocessed_image_directory:
-    parameters.extend(['--preprocessed-image-directory', os.path.join(args.preprocessed_image_directory, join_dirs(0, 'preprocessed'))] + skips[1])
+    parameters.extend(['--preprocessed-image-directory', args.preprocessed_image_directory] + skips[1])
   else:
     parameters.extend(['--preprocessed-image-directory', join_dirs(0, 'preprocessed')])
 

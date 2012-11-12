@@ -27,7 +27,10 @@ from nose.plugins.skip import SkipTest
 class DatabaseTest(unittest.TestCase):
 
   def config(self, resource):
-    return facereclib.utils.tests.configuration_file(resource, 'database', 'databases')
+    try:
+      return facereclib.utils.tests.configuration_file(resource, 'database', 'databases')
+    except Exception as e:
+      raise SkipTest("The resource for database '%s' could not be loaded; probably you didn't define the 'xbob.db.%s' in your *buildout.cfg*. Here is the import error: '%s'" % (resource, resource, e))
 
   def check_database(self, database, groups = ('dev',)):
     self.assertTrue(len(database.all_files()) > 0)

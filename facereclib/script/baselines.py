@@ -9,6 +9,15 @@ from .. import utils
 
 # This is the default set of algorithms that can be run using this script.
 all_databases = utils.resources.resource_keys('database')
+# check, which databases can actually be assessed
+available_databases = []
+for database in all_databases:
+  try:
+    utils.tests.load_resource(database, 'database')
+    available_databases.append(database)
+  except:
+    pass
+
 all_algorithms = ('dummy', 'eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda', 'bic')
 
 def command_line_arguments(command_line_parameters):
@@ -22,7 +31,7 @@ def command_line_arguments(command_line_parameters):
   parser.add_argument('-a', '--algorithms', choices = all_algorithms, default = ('eigenface',), nargs = '+', help = 'Select one (or more) algorithms that you want to execute.')
   parser.add_argument('--all', action = 'store_true', help = 'Select all algorithms.')
   # - the image database to choose
-  parser.add_argument('-d', '--database', choices = all_databases, default = 'atnt', help = 'The database on which the baseline algorithm is executed.')
+  parser.add_argument('-d', '--database', choices = available_databases, default = 'atnt', help = 'The database on which the baseline algorithm is executed.')
   # - the directory to write
   parser.add_argument('-f', '--directory', help = 'The directory to write the data of the experiment into. If not specified, the default directories of the faceverify script are used (see bin/faceverify.py --help).')
   # - special option to share image preprocessing. This can be used to save some time.

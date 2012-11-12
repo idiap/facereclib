@@ -52,7 +52,7 @@ def resource_keys(keyword):
   """Reads and returns all resources that are registered with the given keyword."""
   return sorted([entry_point.name for entry_point in _get_entry_points(keyword)])
 
-def load_resource(resource, keyword, imports = []):
+def load_resource(resource, keyword, imports = ['facereclib']):
   """Loads the given resource that is registered with the given keyword.
   The resource can be:
 

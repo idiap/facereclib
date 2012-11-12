@@ -23,6 +23,7 @@ import os
 import shutil
 import tempfile
 
+import facereclib
 from nose.plugins.skip import SkipTest
 
 base_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -162,7 +163,7 @@ class TestScript (unittest.TestCase):
   def test02_faceverify_grid(self):
     # define dummy parameters including the dry-run
     parameters = [
-        '-d', 'atnt',
+        '-d', os.path.join(base_dir, 'testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'),
         '-p', 'face-crop',
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -179,6 +180,12 @@ class TestScript (unittest.TestCase):
 
 
   def test03_faceverify_lfw_local(self):
+    # try to import the lfw database
+    try:
+      facereclib.utils.resources.load_resource('lfw','database')
+    except Exception as e:
+      raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'xbob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
+
     # define dummy parameters
     parameters = [
         '-p', 'face-crop',
@@ -196,6 +203,11 @@ class TestScript (unittest.TestCase):
 
 
   def test04_faceverify_lfw_grid(self):
+    # try to import the lfw database
+    try:
+      facereclib.utils.resources.load_resource('lfw','database')
+    except Exception as e:
+      raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'xbob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
     # define dummy parameters
     parameters = [
         '-p', 'face-crop',
@@ -214,6 +226,12 @@ class TestScript (unittest.TestCase):
 
 
   def test05_faceverify_gbu_local(self):
+    # try to import the gbu database
+    try:
+      facereclib.utils.resources.load_resource('gbu','database')
+    except Exception as e:
+      raise SkipTest("The resource for database 'gbu' could not be loaded; probably you didn't define the 'xbob.db.gbu' in your *buildout.cfg*. Here is the import error: '%s'" % e)
+
     # define dummy parameters
     parameters = [
         '-p', 'face-crop',
@@ -231,7 +249,12 @@ class TestScript (unittest.TestCase):
 
 
   def test06_faceverify_gbu_grid(self):
-    # define dummy parameters
+    # try to import the gbu database
+    try:
+      facereclib.utils.resources.load_resource('gbu','database')
+    except Exception as e:
+      raise SkipTest("The resource for database 'gbu' could not be loaded; probably you didn't define the 'xbob.db.gbu' in your *buildout.cfg*. Here is the import error: '%s'" % e)
+
     # define dummy parameters
     parameters = [
         '-p', 'face-crop',
@@ -252,9 +275,9 @@ class TestScript (unittest.TestCase):
 
   def test11_baselines_api(self):
     # test that all of the baselines would execute
-    from facereclib.script.baselines import all_databases, all_algorithms, main
+    from facereclib.script.baselines import available_databases, all_algorithms, main
 
-    for database in all_databases:
+    for database in available_databases:
       parameters = ['-d', database, '--dry-run']
       main(parameters)
       parameters.append('-g')
