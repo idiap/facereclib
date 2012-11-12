@@ -51,10 +51,8 @@ setup(
         'frgc              = facereclib.configurations.databases.frgc_201:database',
         'gbu               = facereclib.configurations.databases.gbu_Good:database',
         'lfw               = facereclib.configurations.databases.lfw_view1:database',
-        'mobio-male        = facereclib.configurations.databases.mobio_male:database',
-        'mobio-female      = facereclib.configurations.databases.mobio_female:database',
-        'multipie-P        = facereclib.configurations.databases.multipie_P:database',
-        'multipie-U        = facereclib.configurations.databases.multipie_U:database',
+        'mobio             = facereclib.configurations.databases.mobio_male:database',
+        'multipie          = facereclib.configurations.databases.multipie_U:database',
         'scface            = facereclib.configurations.databases.scface_combined:database',
         'xm2vts            = facereclib.configurations.databases.xm2vts_lp1:database'
       ],
@@ -93,6 +91,7 @@ setup(
       'facereclib.grid': [
         'grid              = facereclib.configurations.grid.grid',
         'demanding         = facereclib.configurations.grid.demanding',
+        'gbu               = facereclib.configurations.grid.gbu',
         'lfw               = facereclib.configurations.grid.lfw'
       ]
     },

@@ -281,6 +281,7 @@ class TestScript (unittest.TestCase):
     parameters = [
         '-c', os.path.join(base_dir, 'testdata', 'scripts', 'parameter_Test.py'),
         '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+        '-f', 'lgbphs',
         '-b', 'test_p',
         '-s', test_dir,
         '--', '--dry-run'
@@ -296,6 +297,7 @@ class TestScript (unittest.TestCase):
     parameters = [
         '-c', os.path.join(base_dir, 'testdata', 'scripts', 'parameter_Test.py'),
         '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+        '-f', 'lgbphs',
         '-b', 'test_p',
         '-s', test_dir,
         '-g', 'grid',

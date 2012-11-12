@@ -139,7 +139,13 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('pca_projector.hdf5'))
     # compare the resulting machines
-    new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
+    f = bob.io.HDF5File(t)
+    new_variances = f.read("Eigenvalues")
+    f.cd("/Machine")
+    new_machine = bob.machine.LinearMachine(f)
+    del f
+    self.assertEqual(tool.m_variances.shape, new_variances.shape)
+    self.assertTrue(numpy.abs(tool.m_variances - new_variances < 1e-5).all())
     self.assertEqual(tool.m_machine.shape, new_machine.shape)
     self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
     os.remove(t)

@@ -40,10 +40,19 @@ def command_line_options(command_line_parameters):
   parser.add_argument('-b', '--sub-directory', required = True,
       help = 'The sub-directory where the files of the current experiment should be stored. Please specify a directory name with a name describing your experiment.')
 
+  parser.add_argument('-p', '--preprocessor',
+      help = "The preprocessor to be used (will overwrite the 'preprocessor' in the configuration file)")
+
+  parser.add_argument('-f', '--features',
+      help = "The features to be extracted (will overwrite the 'feature_extractor' in the configuration file)")
+
+  parser.add_argument('-t', '--tool',
+      help = "The recognition algorithms to be employed (will overwrite the 'tool' in the configuration file)")
+
   parser.add_argument('-g', '--grid',
       help = 'The SGE grid configuration')
 
-  parser.add_argument('-p', '--preprocessed-image-directory',
+  parser.add_argument('-P', '--preprocessed-image-directory',
       help = '(optional) The directory where to read the already preprocessed images from (no preprocessing is performed in this case).')
 
   parser.add_argument('-s', '--grid-database-directory', default = '.',
@@ -209,6 +218,20 @@ def directory_parameters(directories):
   return parameters
 
 
+def check_requirements(replacements):
+  # check if the requirement are met
+  global configuration
+  values = {}
+  for key in configuration.replace:
+    values.update(extract_values(configuration.replace[key], replacements))
+  for requirement in configuration.requirements:
+    test = replace(requirement, values)
+    print test
+    if not eval(test):
+      return False
+  return True
+
+
 def execute_dependent_task(command_line, directories, dependency_level):
   # add other command line arguments
   command_line.extend(args.parameters[1:])
@@ -273,7 +296,8 @@ def create_recursive(replace_dict, step_index, directories, dependency_level, ke
   # check if we are at the lowest level
   if step_index == len(steps):
     # create a call and execute it
-    execute_dependent_task(create_command_line(replace_dict), directories, dependency_level)
+    if check_requirements(replace_dict):
+      execute_dependent_task(create_command_line(replace_dict), directories, dependency_level)
   else:
     if steps[step_index] not in directories:
       directories[steps[step_index]] = []
@@ -324,9 +348,16 @@ def main(command_line_parameters = sys.argv[1:]):
   configuration = utils.resources.read_config_file(args.configuration_file)
   place_holder_key = args.place_holder_key
 
-  for attribute in ('preprocessor', 'feature_extractor', 'tool', 'replace'):
+  if args.preprocessor:
+    configuration.preprocessor = args.preprocessor
+  if args.features:
+    configuration.feature_extractor = args.features
+  if args.tool:
+    configuration.tool = args.tool
+
+  for attribute in ('preprocessor', 'feature_extractor', 'tool'):
     if not hasattr(configuration, attribute):
-      raise ValueError("The given configuration file '%s' does not contain the required attribute '%s'" %(args.configuration_file, attribute))
+      raise ValueError("The given configuration file '%s' does not contain the required attribute '%s', and it was not given on command line either" %(args.configuration_file, attribute))
 
   # extract the dictionary of replacements from the configuration
   if not hasattr(configuration, 'replace'):
@@ -334,6 +365,9 @@ def main(command_line_parameters = sys.argv[1:]):
   if not hasattr(configuration, 'imports'):
     configuration.imports = ['facereclib']
     utils.info("No 'imports' specified in configuration file '%s' -> using default %s" %(args.configuration_file, configuration.imports))
+
+  if not hasattr(configuration, 'requirements'):
+    configuration.requirements = []
 
   replace_dict = {}
   for step, replacements in configuration.replace.iteritems():

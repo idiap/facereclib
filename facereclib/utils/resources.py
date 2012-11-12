@@ -114,7 +114,7 @@ def read_file_resource(resource, keyword):
   entry_points = [entry_point for entry_point in _get_entry_points(keyword) if entry_point.name == resource]
 
   if not len(entry_points):
-    raise ImportError("The given grid option '%s' is neither a resource, nor an existing configuration file"%(resource, keyword))
+    raise ImportError("The given grid option '%s' is neither a resource, nor an existing configuration file for resource type '%s'"%(resource, keyword))
 
   if len(entry_points) == 1:
     return entry_points[0].load()

@@ -16,7 +16,7 @@ class GridGraph (Extractor):
       gabor_directions = 8,
       gabor_scales = 5,
       gabor_sigma = 2. * math.pi,
-      gabor_maxium_frequency = math.pi / 2.,
+      gabor_maximum_frequency = math.pi / 2.,
       gabor_frequency_step = math.sqrt(.5),
       gabor_power_of_k = 0,
       gabor_dc_free = True,
@@ -33,9 +33,9 @@ class GridGraph (Extractor):
       nodes_below_eyes = 7,
 
       # setup of static grid
-      first_node = None,
-      node_distance = None,
-      last_node = None
+      first_node = None,    # one or two integral values
+      node_distance = None, # always two integral values
+      last_node = None      # one or two integral values
   ):
 
     # call base class constructor
@@ -46,7 +46,7 @@ class GridGraph (Extractor):
         number_of_scales = gabor_scales,
         number_of_angles = gabor_directions,
         sigma = gabor_sigma,
-        k_max = gabor_maxium_frequency,
+        k_max = gabor_maximum_frequency,
         k_fac = gabor_frequency_step,
         pow_of_k = gabor_power_of_k,
         dc_free = gabor_dc_free
@@ -63,14 +63,13 @@ class GridGraph (Extractor):
           below = nodes_below_eyes
       )
     else:
-      assert first_node is not None
-      assert node_distance is not None
-      assert last_node is not None
+      if first_node is None or node_distance is None or last_node is None:
+        raise ValueError("Please specify either 'eyes' or the grid parameters 'first_node', 'last_node', and 'node_distance'!")
       # take the specified nodes
       self.m_graph_machine = bob.machine.GaborGraphMachine(
-          first = first_node,
+          first = (first_node, first_node) if isinstance(first_node, int) else first_node,
           last = last_node,
-          step = node_distance
+          step = (node_distance, node_distance) if isinstance(node_distance, int) else node_distance
       )
 
     self.m_jet_image = None

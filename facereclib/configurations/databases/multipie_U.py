@@ -11,5 +11,5 @@ database = facereclib.databases.DatabaseXBobZT(
     annotation_directory = "/idiap/group/biometric/annotations/multipie/",
     annotation_type = 'multipie',
     protocol = 'U',
-    projector_training_options = { 'world_sampling': 3, 'world_first': True }
+#    projector_training_options = { 'world_sampling': 3, 'world_first': True }
 )

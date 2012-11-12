@@ -72,13 +72,13 @@ class DatabaseTest(unittest.TestCase):
 
 
   def test05_mobio(self):
-    self.check_database_zt(self.config('mobio-male'))
-    self.check_database_zt(self.config('mobio-female'))
+    self.check_database_zt(self.config('mobio'))
+    self.check_database_zt(self.config('mobio_female'))
 
 
   def test06_multipie(self):
-    self.check_database_zt(self.config('multipie-U'))
-    self.check_database_zt(self.config('multipie-P'))
+    self.check_database_zt(self.config('multipie'))
+    self.check_database_zt(self.config('multipie_P'))
     self.check_database_zt(self.config('multipie_left_profile'))
 
 

@@ -20,7 +20,7 @@ class GaborJetTool (Tool):
       gabor_directions = 8,
       gabor_scales = 5,
       gabor_sigma = 2. * math.pi,
-      gabor_maxium_frequency = math.pi / 2.,
+      gabor_maximum_frequency = math.pi / 2.,
       gabor_frequency_step = math.sqrt(.5),
       gabor_power_of_k = 0,
       gabor_dc_free = True
@@ -37,7 +37,7 @@ class GaborJetTool (Tool):
         number_of_scales = gabor_scales,
         number_of_angles = gabor_directions,
         sigma = gabor_sigma,
-        k_max = gabor_maxium_frequency,
+        k_max = gabor_maximum_frequency,
         k_fac = gabor_frequency_step,
         pow_of_k = gabor_power_of_k,
         dc_free = gabor_dc_free
