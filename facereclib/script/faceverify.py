@@ -242,7 +242,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
           job_ids['enroll_%s_T'%group] = self.submit_grid_job(
                   'enroll --group %s --model-type T'%group,
                   name = "enr-T-%s"%group,
-                  list_to_split = self.m_file_selector.tmodel_ids(group),
+                  list_to_split = self.m_file_selector.t_model_ids(group),
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
                   dependencies = deps,
                   **self.m_grid_config.enroll_queue)
@@ -271,7 +271,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
           job_ids['score_%s_C'%group] = self.submit_grid_job(
                   'compute-scores --group %s --score-type C'%group,
                   name = "score-C-%s"%group,
-                  list_to_split = self.m_file_selector.tmodel_ids(group),
+                  list_to_split = self.m_file_selector.t_model_ids(group),
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
                   dependencies = enroll_deps_t[group],
                   **self.m_grid_config.score_queue)
@@ -279,7 +279,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
           job_ids['score_%s_D'%group] = self.submit_grid_job(
                   'compute-scores --group %s --score-type D'%group,
                   name = "score-D-%s"%group,
-                  list_to_split = self.m_file_selector.tmodel_ids(group),
+                  list_to_split = self.m_file_selector.t_model_ids(group),
                   number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
                   dependencies = enroll_deps_t[group],
                   **self.m_grid_config.score_queue)
@@ -368,7 +368,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
             self.m_tool,
             self.m_extractor,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
             groups = [self.m_args.group],
             types = ['T'],
             force = self.m_args.force)
@@ -389,7 +389,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.compute_scores(
             self.m_tool,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.tmodel_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
             groups = [self.m_args.group],
             types = [self.m_args.score_type],
             preload_probes = self.m_args.preload_probes,
