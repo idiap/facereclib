@@ -33,9 +33,9 @@ class GridGraph (Extractor):
       nodes_below_eyes = 7,
 
       # setup of static grid
-      node_distance = None, # always two integral values
-      image_resolution = None, # two integral values
-      first_node = None,    # one or two integral values, or None -> automatically determined
+      node_distance = None,    # one or two integral values
+      image_resolution = None, # always two integral values
+      first_node = None,       # one or two integral values, or None -> automatically determined
   ):
 
     # call base class constructor
@@ -74,7 +74,6 @@ class GridGraph (Extractor):
           if offset < node_distance[i]/2:
             offset += node_distance[i]/2
           first_node[i] = offset
-        print first_node
       last_node = [image_resolution[i] - first_node[i] for i in (0,1)]
       # take the specified nodes
       self.m_graph_machine = bob.machine.GaborGraphMachine(

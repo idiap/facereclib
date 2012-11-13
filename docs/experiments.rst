@@ -222,7 +222,8 @@ Here is the list of classes to perform feature extraction and its parameters.
   - ``eyes``: If given, align the grid to the eye positions.
     The eye positions must be given as a dictionary ``{'leye' : (left_eye_y, left_eye_x), 'reye' : (right_eye_y, right_eye_x)}``.
     In this case, the parameters ``nodes_between_eyes``, ``nodes_along_eyes``, ``nodes_above_eyes``, and ``nodes_below_eyes`` will be taken into consideration.
-    If ``eyes`` are not specified, a regular grid is placed according to the ``first_node``, ``node_distance``, and ``last_node`` parameters.
+    If ``eyes`` are not specified, a regular grid is placed according to the ``first_node``, ``node_distance``, and ``image_resolution`` parameters.
+    In this case, if the ``first_node```is not given (i.e. ``None``), it is calculated automatically to equally cover the whole image.
 
 * ``facereclib.features.LGBPHS``: Extracts *Local Gabor Binary Pattern Histogram Sequences* (LGBPHS) [ZSG+05]_ from the images:
 
