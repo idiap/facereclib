@@ -115,7 +115,7 @@ class FeatureExtractionTest(unittest.TestCase):
       gabor_sigma = math.sqrt(2.) * math.pi,
       extract_gabor_phases = False,
       first_node = (6, 6),
-      last_node = (image.shape[0] - 6, image.shape[1] - 6),
+      image_resolution = image.shape,
       node_distance = (4, 4)
     )
     feature = self.execute(extractor, image, 'graph_no_phase.hdf5')
@@ -125,6 +125,16 @@ class FeatureExtractionTest(unittest.TestCase):
     extractor = self.config('grid_graph_aligned')
     feature = self.execute(extractor, image, 'graph_aligned.hdf5')
     self.assertEqual(len(feature.shape), 3)
+
+    # test the automatic computation of start node
+    extractor = facereclib.features.GridGraph(
+      gabor_sigma = math.sqrt(2.) * math.pi,
+      node_distance = (10, 10),
+      image_resolution = (80, 64)
+    )
+    self.assertEqual(len(extractor.m_graph_machine.nodes), 48)
+    self.assertTrue((extractor.m_graph_machine.nodes[0] == (5, 7)).all())
+    self.assertTrue((extractor.m_graph_machine.nodes[-1] == (75, 57)).all())
 
 
   def test04_lgbphs(self):

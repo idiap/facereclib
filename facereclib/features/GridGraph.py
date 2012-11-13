@@ -33,9 +33,9 @@ class GridGraph (Extractor):
       nodes_below_eyes = 7,
 
       # setup of static grid
-      first_node = None,    # one or two integral values
       node_distance = None, # always two integral values
-      last_node = None      # one or two integral values
+      image_resolution = None, # two integral values
+      first_node = None,    # one or two integral values, or None -> automatically determined
   ):
 
     # call base class constructor
@@ -63,13 +63,25 @@ class GridGraph (Extractor):
           below = nodes_below_eyes
       )
     else:
-      if first_node is None or node_distance is None or last_node is None:
+      if node_distance is None or image_resolution is None:
         raise ValueError("Please specify either 'eyes' or the grid parameters 'first_node', 'last_node', and 'node_distance'!")
+      if isinstance(node_distance, int):
+         node_distance = (node_distance, node_distance)
+      if first_node is None:
+        first_node = [0,0]
+        for i in (0,1):
+          offset = (image_resolution[i] - image_resolution[i]/node_distance[i]*node_distance[i]) / 2
+          if offset < node_distance[i]/2:
+            offset += node_distance[i]/2
+          first_node[i] = offset
+        print first_node
+      last_node = [image_resolution[i] - first_node[i] for i in (0,1)]
       # take the specified nodes
       self.m_graph_machine = bob.machine.GaborGraphMachine(
-          first = (first_node, first_node) if isinstance(first_node, int) else first_node,
+
+          first = first_node,
           last = last_node,
-          step = (node_distance, node_distance) if isinstance(node_distance, int) else node_distance
+          step = node_distance
       )
 
     self.m_jet_image = None

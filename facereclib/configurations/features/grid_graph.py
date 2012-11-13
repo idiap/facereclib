@@ -17,8 +17,8 @@ feature_extractor = facereclib.features.GridGraph(
     extract_gabor_phases = True,
 
     # setup of the fixed grid
+    node_distance = (4, 4),
     first_node = (6, 6),
-    last_node = (CROPPED_IMAGE_HEIGHT - 6, CROPPED_IMAGE_WIDTH - 6),
-    node_distance = (4, 4)
+    image_resolution = (CROPPED_IMAGE_HEIGHT, CROPPED_IMAGE_WIDTH)
 )
 
