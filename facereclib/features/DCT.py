@@ -29,7 +29,10 @@ class DCTBlocks (Extractor):
     self.m_block_overlap = block_overlap if isinstance(block_overlap, (tuple, list)) else (block_overlap, block_overlap)
     self.m_number_of_dct_coefficients = number_of_dct_coefficients
     if self.m_block_size[0] < self.m_block_overlap[0] or self.m_block_size[1] < self.m_block_overlap[1]:
-      raise ValueError("The overlap is bigger than the block size. This won't work. Please check your setup!")
+      raise ValueError("The overlap '%s' is bigger than the block size '%s'. This won't work. Please check your setup!"%(self.m_block_overlap, self.m_block_size))
+    if self.m_block_size[0] * self.m_block_size[1] <= self.m_number_of_dct_coefficients:
+      raise ValueError("You selected more coefficients %d than your blocks have %d. This won't work. Please check your setup!"%(self.m_number_of_dct_coefficients, self.m_block_size[0] * self.m_block_size[1]))
+
 
   def _normalize_blocks(self, src):
     for i in range(src.shape[0]):
@@ -69,15 +72,6 @@ class DCTBlocks (Extractor):
       real_DCT_coef = self.m_number_of_dct_coefficients - 2
     else:
       real_DCT_coef = self.m_number_of_dct_coefficients
-
-    # limit the number of coefficients, when block size is to small
-    max_coefs = self.m_block_size[0] * self.m_block_size[1]
-    if real_DCT_coef > max_coefs:
-      real_DCT_coef = max_coefs
-      if add_xy:
-        self.m_number_of_dct_coefficients = max_coefs + 2
-      else:
-        self.m_number_of_dct_coefficients = max_coefs
 
     # Initializes cropper and destination array
     DCTF = bob.ip.DCTFeatures(self.m_block_size[0], self.m_block_size[1], self.m_block_overlap[0], self.m_block_overlap[1], real_DCT_coef)

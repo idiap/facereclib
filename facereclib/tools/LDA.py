@@ -14,7 +14,7 @@ class LDATool (Tool):
   def __init__(
       self,
       lda_subspace_dimension = None, # if set, the LDA subspace will be truncated to the given number of dimensions
-      pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA
+      pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA; might be integral or float
       distance_function = bob.math.euclidean_distance,
       is_distance_function = True
   ):
@@ -30,7 +30,7 @@ class LDATool (Tool):
     # copy information
     self.m_pca_subspace = pca_subspace_dimension
     self.m_lda_subspace = lda_subspace_dimension
-    if self.m_pca_subspace and self.m_lda_subspace and self.m_pca_subspace < self.m_lda_subspace:
+    if self.m_pca_subspace and isinstance(self.m_pca_subspace, int) and self.m_lda_subspace and self.m_pca_subspace < self.m_lda_subspace:
       raise ValueError("The LDA subspace is larger than the PCA subspace size. This won't work properly. Please check your setup!")
 
     self.m_machine = None
@@ -57,7 +57,16 @@ class LDATool (Tool):
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
-    machine, __eig_vals = t.train(data)
+    machine, eigen_values = t.train(data)
+
+
+    if isinstance(self.m_pca_subspace, float):
+      cummulated = numpy.cumsum(eigen_values) / numpy.sum(eigen_values)
+      for index in range(len(cummulated)):
+        if cummulated[index] > self.m_pca_subspace:
+          self.m_pca_subspace = index
+          break
+
     # limit number of pcs
     machine.resize(machine.shape[0], self.m_pca_subspace)
     return machine

@@ -252,7 +252,7 @@ Here is a list of the most important algorithms and their parameters:
 
 * ``facereclib.tools.PCATool``: Computes a PCA projection on the given features and computes the distance of two projected features in eigenspace.
 
-  - ``subspace_dimension``: The number of kept eigenvalues in the projection matrix.
+  - ``subspace_dimension``: If integral: the number of kept eigenvalues in the projection matrix; if float: the percentage of variance to keep.
   - ``distance_function``: The distance function to be used to compare two features in eigenspace.
 
 * ``facereclib.tools.LDATool``: Computes an LDA or a PCA+LDA projection on the given features.
@@ -260,6 +260,7 @@ Here is a list of the most important algorithms and their parameters:
   - ``lda_subspace_dimension``: **(optional)** Limit the number of dimensions of the LDA subspace.
     If this parameter is not specified, no truncation is applied.
   - ``pca_subspace_dimension``: **(optional)** If given, the computed projection matrix will be a PCA+LDA matrix, where ``pca_subspace_dimension`` defines the size of the PCA subspace.
+    If ``pca_subspace_dimension`` is integral, it is the number of kept eigenvalues in the projection matrix; if is is float, it stands for the percentage of variance to keep.
 
 * ``facereclib.tools.PLDATool``: Computes a probabilistic LDA
 

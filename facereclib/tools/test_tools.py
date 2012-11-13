@@ -161,6 +161,12 @@ class ToolTest(unittest.TestCase):
     sim = tool.score(model, projected)
     self.assertAlmostEqual(sim, 0.)
 
+    # test the calculation of the subspace dimension based on percentage of variance
+    tool = facereclib.tools.PCATool(.9)
+    tool.train_projector(self.train_set(feature, count=400, a=0., b=255.), t)
+    self.assertEqual(tool.m_subspace_dim, 334)
+    os.remove(t)
+
 
   def test04_lda(self):
     # read input
@@ -206,6 +212,12 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, projected)
     self.assertAlmostEqual(sim, 0.)
+
+    # test the calculation of the subspace dimension based on percentage of variance
+    tool = facereclib.tools.LDATool(5, .9)
+    tool.train_projector(self.train_set_by_id(feature, count=20, a=0., b=255.), t)
+    self.assertEqual(tool.m_pca_subspace, 334)
+    os.remove(t)
 
 
   def test05_bic(self):

@@ -13,7 +13,7 @@ class PCATool (Tool):
 
   def __init__(
       self,
-      subspace_dimension,
+      subspace_dimension,  # if int, number of subspace dimensions; if float, percentage of variance to keep
       distance_function = bob.math.euclidean_distance,
       is_distance_function = True,
       uses_variances = False
@@ -38,7 +38,16 @@ class PCATool (Tool):
     utils.info("  -> Training LinearMachine using PCA (SVD)")
     t = bob.trainer.SVDPCATrainer()
     self.m_machine, self.m_variances = t.train(data)
-    # Machine: get shape, then resize
+
+    # compute variance percentage, if desired
+    if isinstance(self.m_subspace_dim, float):
+      cummulated = numpy.cumsum(self.m_variances) / numpy.sum(self.m_variances)
+      for index in range(len(cummulated)):
+        if cummulated[index] > self.m_subspace_dim:
+          self.m_subspace_dim = index
+          break
+
+    # re-shape machine
     self.m_machine.resize(self.m_machine.shape[0], self.m_subspace_dim)
     self.m_variances.resize(self.m_subspace_dim)
 
