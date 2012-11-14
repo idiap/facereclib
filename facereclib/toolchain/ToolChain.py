@@ -59,7 +59,7 @@ class ToolChain:
         annotations = None
         if annotation_list != None:
           # read eyes position file
-          annotations = annotation_list[i]
+          annotations = self.m_file_selector.read_annotations(annotation_list[i])
 
         # call the image preprocessor
         preprocessed_image = preprocessor(image, annotations)

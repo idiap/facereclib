@@ -74,8 +74,10 @@ class FileSelector:
     """Returns the list of annotations, if existing."""
     if self.m_database.annotation_directory is None:
       return None
-    files = self.get_paths(self.m_database.all_files(), directory = self.m_database.annotation_directory, extension = self.m_database.annotation_extension)
-    return [utils.read_annotations(file, self.m_database.annotation_type) for file in files]
+    return self.get_paths(self.m_database.all_files(), directory = self.m_database.annotation_directory, extension = self.m_database.annotation_extension)
+
+  def read_annotations(self, annotation_file):
+    return utils.read_annotations(annotation_file, self.m_database.annotation_type)
 
   def preprocessed_image_list(self):
     """Returns the list of preprocessed images files."""
