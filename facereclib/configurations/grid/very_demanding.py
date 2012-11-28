@@ -11,7 +11,7 @@ preprocessing_queue = {}
 
 # number of features that one job should extract
 number_of_features_per_job = 100
-extraction_queue = {}
+extraction_queue = { 'queue':'q1d', 'memfree':'8G' }
 
 # number of features that one job should project
 number_of_projections_per_job = 20

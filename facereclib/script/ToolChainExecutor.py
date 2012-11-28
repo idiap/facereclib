@@ -4,8 +4,6 @@
 
 import os, sys, math
 import argparse
-import imp
-import copy
 
 from .. import toolchain
 from .. import utils
@@ -147,6 +145,13 @@ class ToolChainExecutor:
     return (config_group, dir_group, file_group, sub_dir_group, other_group, skip_group)
 
 
+
+################################################################################################
+########################## Functions concerning the grid setup #################################
+################################################################################################
+
+
+
   def set_common_parameters(self, calling_file, parameters, fake_job_id = 0, temp_dir = None):
     """Sets the parameters that the grid jobs require to be called.
     Just hand over all parameters of the faceverify script, and this function will do the rest.
@@ -156,8 +161,6 @@ class ToolChainExecutor:
 
     # we want to have the executable with the name of this file, which is laying in the bin directory
     self.m_common_parameters = parameters[:]
-#    for p in parameters:
-#      self.m_common_parameters += p + ' '
 
     # job id used for the dry-run
     self.m_fake_job_id = fake_job_id
@@ -168,12 +171,6 @@ class ToolChainExecutor:
     # generate job manager and set the temp dir
     self.m_job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
     self.m_logs_directory = os.path.join(temp_dir if temp_dir else self.m_configuration.temp_directory, "grid_tk_logs")
-
-
-
-################################################################################################
-########################## Functions concerning the grid setup #################################
-################################################################################################
 
 
   def __generate_job_array__(self, list_to_split, number_of_files_per_job):
@@ -187,7 +184,7 @@ class ToolChainExecutor:
        If no job id is set (e.g., because a sub-job is executed locally), it simply returns all indices."""
     # test if the 'SEG_TASK_ID' environment is set
     sge_task_id = os.getenv('SGE_TASK_ID')
-    if sge_task_id == None:
+    if sge_task_id is None:
       # task id is not set, so this function is not called from a grid job
       # hence, we process the whole list
       return (0,len(list_to_split))
@@ -234,7 +231,7 @@ class ToolChainExecutor:
           stdout=logdir, stderr=logdir, name=name, array=array,
           **kwargs)
 
-      utils.info('submitted: %s' % job)
+      utils.info('submitted: %s\nwith dependencies %s' % (job, dependencies))
       return job.id()
     else:
       self.m_fake_job_id += 1
@@ -242,4 +239,35 @@ class ToolChainExecutor:
       print ' '.join(use_cmd[2:]), '\nwith dependencies', dependencies
       return self.m_fake_job_id
 
+
+  def grid_job_id(self):
+    id = os.getenv('JOB_ID')
+    if id is not None:
+      return int(id)
+    return id
+
+
+  def kill_recursive(self, job_manager, job_id):
+    # get all listed jobs
+    for other_id in job_manager.keys():
+      # check if we still have to process the id (i.e., if it was not yet deleted by a recursive call)
+      if other_id != job_id and job_manager.has_key(other_id):
+        other_job = job_manager[other_id]
+        if other_job.is_dependent_on(job_id):
+          print >> sys.stderr, "Note: deleting dependent job id %d ('%s')" %(other_id, other_job.given_name())
+          self.kill_recursive(job_manager, other_id)
+          del job_manager[other_id]
+
+  def delete_dependent_grid_jobs(self):
+    job_id = self.grid_job_id()
+
+    # if the job id is not specified, we are not in the grid,
+    #   so we don't need to kill the dependencies
+    if job_id is None:
+      return
+
+    import gridtk
+    job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
+
+    self.kill_recursive(job_manager, job_id)
 

@@ -68,7 +68,7 @@ def command_line_arguments(command_line_parameters):
 # Some default variables that are required
 faceverify_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
 bin_dir = os.path.join(faceverify_dir, 'bin')
-config_dir = os.path.join(faceverify_dir, 'facereclib/configuration')
+config_dir = os.path.join(faceverify_dir, 'facereclib/configurations')
 script = os.path.join(bin_dir, 'faceverify.py')
 
 
