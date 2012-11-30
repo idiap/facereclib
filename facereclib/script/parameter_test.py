@@ -315,7 +315,7 @@ def create_recursive(replace_dict, step_index, directories, dependency_level, ke
       # iterate through the keys
       if keys == []:
         # call this function recursively by defining the set of keys that we need
-        create_recursive(replace_dict, step_index, directories, dependency_level, keys = configuration.replace[steps[step_index]].keys())
+        create_recursive(replace_dict, step_index, directories, dependency_level, keys = sorted(configuration.replace[steps[step_index]].keys()))
       else:
         # create a deep copy of the replacement dict to be able to modify it
         replace_dict_copy = copy.deepcopy(replace_dict)

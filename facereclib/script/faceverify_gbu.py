@@ -395,7 +395,7 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     # execute the desired sub-task
     executor = ToolChainExecutorGBU(args, args.protocol, args.perform_training)
     executor.execute_grid_job()
-    return []
+    return {}
 
   elif args.grid:
 
@@ -436,7 +436,7 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
       perform_training = False
 
     # no dependencies since we executed the jobs locally
-    return []
+    return {}
 
 
 def main(command_line_parameters = sys.argv[1:]):

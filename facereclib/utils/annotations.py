@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from .logger import warn
+from .logger import warn, info
 
 def read_annotations(file_name, annotation_type):
   """This function reads the given file of annotations.
@@ -67,7 +67,7 @@ def read_annotations(file_name, annotation_type):
       labels = ['reye', 'leye', 'reyeo', 'reyei', 'leyei', 'leyeo', 'nose', 'mouthr', 'mouthl', 'lipt', 'lipb', 'chin', 'rbrowo', 'rbrowi', 'lbrowi', 'lbrowo']
     elif count == 2:
       labels = ['reye', 'leye']
-      warn("Labels of file '%s' are incomplete"%file_name)
+      info("Labels of file '%s' are incomplete"%file_name)
     else:
       raise ValueError("The number %d of annotations in file '%s' is not handled."%(count, file_name))
 

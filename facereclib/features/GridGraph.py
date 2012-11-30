@@ -74,7 +74,7 @@ class GridGraph (Extractor):
           if offset < node_distance[i]/2:
             offset += node_distance[i]/2
           first_node[i] = offset
-      last_node = [image_resolution[i] - first_node[i] for i in (0,1)]
+      last_node = [image_resolution[i] - max(first_node[i],1) for i in (0,1)]
       # take the specified nodes
       self.m_graph_machine = bob.machine.GaborGraphMachine(
 

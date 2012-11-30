@@ -46,6 +46,9 @@ class PCATool (Tool):
         if cummulated[index] > self.m_subspace_dim:
           self.m_subspace_dim = index
           break
+      self.m_subspace_dim = index
+
+    utils.info("    ... Keeping %d PCA dimensions" % self.m_subspace_dim)
 
     # re-shape machine
     self.m_machine.resize(self.m_machine.shape[0], self.m_subspace_dim)

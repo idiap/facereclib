@@ -160,7 +160,7 @@ class ToolChainExecutor:
     import gridtk
 
     # we want to have the executable with the name of this file, which is laying in the bin directory
-    self.m_common_parameters = parameters[:]
+    self.m_common_parameters = [p for p in parameters if not '--skip' in p and p not in ('-q', '--dry-run')]
 
     # job id used for the dry-run
     self.m_fake_job_id = fake_job_id

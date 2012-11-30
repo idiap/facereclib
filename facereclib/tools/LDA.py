@@ -59,13 +59,19 @@ class LDATool (Tool):
     t = bob.trainer.SVDPCATrainer()
     machine, eigen_values = t.train(data)
 
-
     if isinstance(self.m_pca_subspace, float):
       cummulated = numpy.cumsum(eigen_values) / numpy.sum(eigen_values)
       for index in range(len(cummulated)):
         if cummulated[index] > self.m_pca_subspace:
           self.m_pca_subspace = index
           break
+      self.m_pca_subspace = index
+
+    if self.m_lda_subspace and self.m_pca_subspace <= self.m_lda_subspace:
+      utils.warn("  ... Extending the PCA subspace dimension from %d to %d" % (self.m_pca_subspace, self.m_lda_subspace + 1))
+      self.m_pca_subspace = self.m_lda_subspace + 1
+    else:
+      utils.info("  ... Limiting PCA subspace to %d dimensions" % self.m_pca_subspace)
 
     # limit number of pcs
     machine.resize(machine.shape[0], self.m_pca_subspace)

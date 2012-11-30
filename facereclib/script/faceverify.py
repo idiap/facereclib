@@ -20,18 +20,28 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     if args.protocol:
       self.m_database.protocol = args.protocol
 
-    # add specific configuration for ZT-normalization
     self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[0], self.m_database.protocol)
-    self.m_configuration.t_norm_models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[1], self.m_database.protocol)
-
-    self.m_configuration.zt_norm_A_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[0])
-    self.m_configuration.zt_norm_B_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[1])
-    self.m_configuration.zt_norm_C_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[2])
-    self.m_configuration.zt_norm_D_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[3])
-    self.m_configuration.zt_norm_D_sameValue_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[4])
-
     self.m_configuration.scores_no_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[0])
-    self.m_configuration.scores_zt_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[1])
+    # add specific configuration for ZT-normalization
+    if args.zt_norm:
+      self.m_configuration.t_norm_models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[1], self.m_database.protocol)
+      models_directories = (self.m_configuration.models_directory, self.m_configuration.t_norm_models_directory)
+
+      self.m_configuration.scores_zt_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[1])
+      score_directories = (self.m_configuration.scores_no_norm_directory, self.m_configuration.scores_zt_norm_directory)
+
+      self.m_configuration.zt_norm_A_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[0])
+      self.m_configuration.zt_norm_B_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[1])
+      self.m_configuration.zt_norm_C_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[2])
+      self.m_configuration.zt_norm_D_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[3])
+      self.m_configuration.zt_norm_D_sameValue_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[4])
+      zt_score_directories = (self.m_configuration.zt_norm_A_directory, self.m_configuration.zt_norm_B_directory, self.m_configuration.zt_norm_C_directory, self.m_configuration.zt_norm_D_directory, self.m_configuration.zt_norm_D_sameValue_directory)
+    else:
+      models_directories = (self.m_configuration.models_directory,)
+      score_directories = (self.m_configuration.scores_no_norm_directory,)
+      zt_score_directories = None
+
+
 
     # specify the file selector to be used
     self.m_file_selector = toolchain.FileSelector(
@@ -42,15 +52,9 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
         projector_file = self.m_configuration.projector_file,
         projected_directory = self.m_configuration.projected_directory,
         enroller_file = self.m_configuration.enroller_file,
-        model_directories = (self.m_configuration.models_directory,
-                             self.m_configuration.t_norm_models_directory),
-        score_directories = (self.m_configuration.scores_no_norm_directory,
-                             self.m_configuration.scores_zt_norm_directory),
-        zt_score_directories = (self.m_configuration.zt_norm_A_directory,
-                                self.m_configuration.zt_norm_B_directory,
-                                self.m_configuration.zt_norm_C_directory,
-                                self.m_configuration.zt_norm_D_directory,
-                                self.m_configuration.zt_norm_D_sameValue_directory)
+        model_directories = models_directories,
+        score_directories = score_directories,
+        zt_score_directories = zt_score_directories
     )
 
     # create the tool chain to be used to actually perform the parts of the experiments
@@ -475,7 +479,7 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
   if not args.grid:
     # not in a grid, use default tool chain sequentially
     executor.execute_tool_chain()
-    return []
+    return {}
 
   elif args.sub_task:
     # execute the desired sub-task
