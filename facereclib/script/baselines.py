@@ -76,7 +76,7 @@ def dummy():
   """Dummy script just for testing the tool chain"""
   features      = 'eigenfaces'
   tool          = os.path.join(config_dir, 'tools', 'dummy.py')
-  grid          = 'grid.py'
+  grid          = 'grid'
   return (features, tool, grid)
 
 def eigenface():

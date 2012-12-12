@@ -6,9 +6,9 @@ import facereclib
 database = facereclib.databases.DatabaseXBobZT(
     database = xbob.db.banca.Database(),
     name = "banca",
-    image_directory = "/idiap/group/vision/visidiap/databases/banca/english/images_gray/",
-    image_extension = ".pgm",
-    annotation_directory = "/idiap/group/vision/visidiap/databases/groundtruth/banca/english/eyecenter/",
+    image_directory = "/idiap/group/biometric/databases/banca/english/images/images/",
+    image_extension = ".ppm",
+    annotation_directory = "/idiap/group/biometric/annotations/banca/english/images/annotations/",
     annotation_type = 'eyecenter',
     protocol = 'P'
 )

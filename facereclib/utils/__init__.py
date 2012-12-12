@@ -7,7 +7,7 @@ import video
 import histogram
 import tests
 import resources
-from logger import add_logger_command_line_option, set_verbosity_level, debug, info, warn, error
+from logger import add_logger_command_line_option, set_verbosity_level, add_bob_handlers, debug, info, warn, error
 from annotations import read_annotations
 
 import os
@@ -18,13 +18,7 @@ def ensure_dir(dirname):
       taking into account concurrent 'creation' on the grid.
       An exception is thrown if a file (rather than a directory) already
       exists. """
-  try:
-    # Tries to create the directory
-    os.makedirs(dirname)
-  except OSError:
-    # Check that the directory exists
-    if os.path.isdir(dirname): pass
-    else: raise
+  bob.io.create_directories_save(dirname)
 
 
 def gray_channel(image, channel = 'gray'):

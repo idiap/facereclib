@@ -48,7 +48,6 @@ class ToolChain:
     # iterate through the images and perform normalization
 
     # read eye files
-    # - note: the resulting value of eye_files may be None
     annotation_list = self.m_file_selector.annotation_list()
 
     for i in index_range:
@@ -56,10 +55,9 @@ class ToolChain:
 
       if not self.__check_file__(preprocessed_image_file, force):
         image = preprocessor.read_original_image(str(image_files[i]))
-        annotations = None
-        if annotation_list != None:
-          # read eyes position file
-          annotations = self.m_file_selector.read_annotations(annotation_list[i])
+
+        # get the annotations; might be None
+        annotations = self.m_file_selector.get_annotations(annotation_list[i])
 
         # call the image preprocessor
         preprocessed_image = preprocessor(image, annotations)
@@ -335,12 +333,11 @@ class ToolChain:
 
   def __save_scores__(self, score_file, scores, probe_objects, client_id):
     """Saves the scores into a text file."""
-    f = open(score_file, 'w')
     assert len(probe_objects) == scores.shape[1]
-    for i in range(len(probe_objects)):
-      probe_object = probe_objects[i]
-      f.write(str(client_id) + " " + str(probe_object.client_id) + " " + str(probe_object.path) + " " + str(scores[0,i]) + "\n")
-    f.close()
+    with open(score_file, 'w') as f:
+      for i in range(len(probe_objects)):
+        probe_object = probe_objects[i]
+        f.write(str(client_id) + " " + str(probe_object.client_id) + " " + str(probe_object.path) + " " + str(scores[0,i]) + "\n")
 
   def __scores_a__(self, model_ids, group, compute_zt_norm, force, preload_probes):
     """Computes A scores. For non-ZT-norm, these are the only scores that are actually computed."""
@@ -625,29 +622,27 @@ class ToolChain:
       # (sorted) list of models
       model_ids = self.m_file_selector.model_ids(group)
 
-      f = open(self.m_file_selector.no_norm_result_file(group), 'w')
-      # Concatenates the scores
-      for model_id in model_ids:
-        model_file = self.m_file_selector.no_norm_file(model_id, group)
-        if not os.path.exists(model_file):
-          f.close()
-          os.remove(self.m_file_selector.no_norm_result_file(group))
-          raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
-
-        res_file = open(model_file, 'r')
-        f.write(res_file.read())
-      f.close()
-
-      if compute_zt_norm:
-        f = open(self.m_file_selector.zt_norm_result_file(group), 'w')
+      with open(self.m_file_selector.no_norm_result_file(group), 'w') as f:
         # Concatenates the scores
         for model_id in model_ids:
-          model_file = self.m_file_selector.zt_norm_file(model_id, group)
+          model_file = self.m_file_selector.no_norm_file(model_id, group)
           if not os.path.exists(model_file):
             f.close()
-            os.remove(self.m_file_selector.zt_norm_result_file(group))
+            os.remove(self.m_file_selector.no_norm_result_file(group))
             raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
 
-          res_file = open(model_file, 'r')
-          f.write(res_file.read())
-        f.close()
+          with open(model_file, 'r') as res_file:
+            f.write(res_file.read())
+
+      if compute_zt_norm:
+        with open(self.m_file_selector.zt_norm_result_file(group), 'w') as f:
+          # Concatenates the scores
+          for model_id in model_ids:
+            model_file = self.m_file_selector.zt_norm_file(model_id, group)
+            if not os.path.exists(model_file):
+              f.close()
+              os.remove(self.m_file_selector.zt_norm_result_file(group))
+              raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
+
+            with open(model_file, 'r') as res_file:
+              f.write(res_file.read())

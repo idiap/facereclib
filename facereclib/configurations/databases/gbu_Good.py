@@ -8,8 +8,7 @@ database = facereclib.databases.DatabaseXBob(
     name = "gbu",
     image_directory = "/idiap/resource/database/MBGC-V1",
     image_extension = ".jpg",
-    annotation_directory = "/idiap/user/mguenther/annotations/GBU",
-    annotation_type = 'named',
+    has_internal_annotations = True,
     protocol = 'Good',
 
     all_files_options = { 'subworld': 'x2' },

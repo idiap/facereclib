@@ -61,7 +61,9 @@ class FileSelector:
     if not extension:
       extension = self.default_extension
 
-    return [os.path.join(directory, file.path + extension) for file in files]
+    # return the paths, while removing duplicate entries
+    known = set()
+    return [file.make_path(directory, extension) for file in files if file.path not in known and not known.add(file.path)]
 
 
 
@@ -72,12 +74,11 @@ class FileSelector:
 
   def annotation_list(self):
     """Returns the list of annotations, if existing."""
-    if self.m_database.annotation_directory is None:
-      return None
-    return self.get_paths(self.m_database.all_files(), directory = self.m_database.annotation_directory, extension = self.m_database.annotation_extension)
+    return self.m_database.all_files()
 
-  def read_annotations(self, annotation_file):
-    return utils.read_annotations(annotation_file, self.m_database.annotation_type)
+  def get_annotations(self, annotation_file):
+    """Reads the annotation of the given file."""
+    return self.m_database.annotations(annotation_file)
 
   def preprocessed_image_list(self):
     """Returns the list of preprocessed images files."""

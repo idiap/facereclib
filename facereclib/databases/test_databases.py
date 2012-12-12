@@ -54,6 +54,11 @@ class DatabaseTest(unittest.TestCase):
       self.assertTrue(len(database.t_enroll_files(t_model_ids[0], group)) > 0)
       self.assertTrue(len(database.z_probe_files(group)) > 0)
 
+  def check_annotations(self, database):
+    for file in database.all_files():
+      annotations = database.annotations(file)
+      self.assertTrue('reye' in annotations and 'leye' in annotations)
+
 
   def test01_atnt(self):
     self.check_database(self.config('atnt'))
@@ -63,26 +68,31 @@ class DatabaseTest(unittest.TestCase):
     self.check_database_zt(self.config('banca'))
     self.check_database_zt(self.config('banca_Ua_twothirds'))
     self.check_database_zt(self.config('banca_Ua_twothirds_video'))
+    self.check_annotations(self.config('banca'))
 
 
   def test03_xm2vts(self):
     self.check_database(self.config('xm2vts'), groups=('dev', 'eval'))
     self.check_database(self.config('xm2vts_darkened'), groups=('dev', 'eval'))
+    self.check_annotations(self.config('xm2vts'))
 
 
   def test04_scface(self):
     self.check_database_zt(self.config('scface'))
+    self.check_annotations(self.config('scface'))
 
 
   def test05_mobio(self):
     self.check_database_zt(self.config('mobio'))
     self.check_database_zt(self.config('mobio_female'))
+    self.check_annotations(self.config('mobio'))
 
 
   def test06_multipie(self):
     self.check_database_zt(self.config('multipie'))
     self.check_database_zt(self.config('multipie_P'))
     self.check_database_zt(self.config('multipie_left_profile'))
+    self.check_annotations(self.config('multipie'))
 
 
   def test07_lfw(self):
@@ -91,12 +101,19 @@ class DatabaseTest(unittest.TestCase):
 
   def test08_arface(self):
     self.check_database(self.config('arface'), groups=('dev', 'eval'))
+    self.check_annotations(self.config('arface'))
 
   def test09_gbu(self):
     self.check_database(self.config('gbu'))
+    self.check_annotations(self.config('gbu'))
 
   def test10_frgc(self):
     self.check_database(self.config('frgc'))
+    self.check_annotations(self.config('frgc'))
+
+  def test11_caspeal(self):
+    self.check_database(self.config('caspeal'))
+    self.check_annotations(self.config('caspeal'))
 
 
   def test20_faceverif_fl(self):

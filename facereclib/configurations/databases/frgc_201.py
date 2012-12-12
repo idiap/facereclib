@@ -8,7 +8,6 @@ database = facereclib.databases.DatabaseXBob(
     name = "frgc",
     image_directory = "/idiap/resource/database/frgc/FRGC-2.0-dist",
     image_extension = ".jpg",
-    annotation_directory = "/idiap/user/mguenther/annotations/FRGC",
-    annotation_type = 'named',
+    has_internal_annotations = True,
     protocol = '2.0.1',
 )

@@ -47,7 +47,8 @@ setup(
       'facereclib.database': [
         'arface            = facereclib.configurations.databases.arface_all:database',
         'atnt              = facereclib.configurations.databases.atnt_Default:database',
-        'banca             = facereclib.configurations.databases.banca_P_color:database',
+        'banca             = facereclib.configurations.databases.banca_P:database',
+        'caspeal           = facereclib.configurations.databases.caspeal_lighting:database',
         'frgc              = facereclib.configurations.databases.frgc_201:database',
         'gbu               = facereclib.configurations.databases.gbu_Good:database',
         'lfw               = facereclib.configurations.databases.lfw_view1:database',

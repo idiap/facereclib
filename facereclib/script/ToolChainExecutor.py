@@ -158,6 +158,8 @@ class ToolChainExecutor:
     Please call this function before submitting jobs to the grid using the submit_jobs_to_grid function"""
 
     import gridtk
+    # set gridtk logger to use the same output and format as we do
+    utils.add_bob_handlers('gridtk')
 
     # we want to have the executable with the name of this file, which is laying in the bin directory
     self.m_common_parameters = parameters[:]

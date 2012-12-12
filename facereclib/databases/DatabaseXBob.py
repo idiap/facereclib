@@ -28,6 +28,7 @@ class DatabaseXBob (Database):
       database,  # The xbob database that is used
       image_directory,        # directory of the original images
       image_extension,        # file extension of the original images
+      has_internal_annotations = False, # annotations are stored internally and do not need to be read from file
       all_files_options = {}, # additional options for the database query that can be used to extract all files
       extractor_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
       projector_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
@@ -70,6 +71,7 @@ class DatabaseXBob (Database):
     )
 
     self.m_database = database
+    self.has_internal_annotations = has_internal_annotations
 
     self.all_files_options = all_files_options
     self.extractor_training_options = extractor_training_options
@@ -120,7 +122,6 @@ class DatabaseXBob (Database):
     files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'enrol')
     return self.sort(files)
 
-
   def probe_files(self, model_id = None, group = 'dev'):
     """Returns the list of probe File objects (for the given model id, if given)."""
     if model_id:
@@ -129,6 +130,13 @@ class DatabaseXBob (Database):
       files = self.m_database.objects(protocol = self.protocol, groups = group, purposes = 'probe')
     return self.sort(files)
 
+  def annotations(self, file):
+    """Returns the annotations for the given File object, if available."""
+    if self.has_internal_annotations:
+      return self.m_database.annotations(file.id)
+    else:
+      # call base class implementation
+      return Database.annotations(self, file)
 
 
 class DatabaseXBobZT (DatabaseXBob, DatabaseZT):

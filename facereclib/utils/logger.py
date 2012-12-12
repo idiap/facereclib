@@ -20,13 +20,14 @@
 import logging
 import bob
 
-# this formats the logger to print the name of the logger, the time, the type of message and the message itself
-# So, we have to set the formatter to all handlers registered in Bob
-formatter = logging.Formatter("%(name)s@%(asctime)s -- %(levelname)s: %(message)s")
-logger = logging.getLogger("bob")
-for handler in logger.handlers:
-  handler.setFormatter(formatter)
+def set_formatter(logger_name):
+  # this formats the logger to print the name of the logger, the time, the type of message and the message itself
+  # So, we have to set the formatter to all handlers registered in Bob
+  formatter = logging.Formatter("%(name)s@%(asctime)s -- %(levelname)s: %(message)s")
+  for handler in logging.getLogger(logger_name).handlers:
+    handler.setFormatter(formatter)
 
+set_formatter('bob')
 # this defined our own logger as a child of Bob's logger,
 # so that we can distinguish logs of Bob and our own logs
 logger = logging.getLogger("bob.facereclib")
@@ -47,6 +48,19 @@ def set_verbosity_level(level):
       2: logging.INFO,
       3: logging.DEBUG
     }[level])
+
+def add_bob_handlers(logger_name, set_format=True, set_log_level=True):
+  """Sets the logging handler of 'bob' to the logger with the given name"""
+  # add bob's default handlers to the logger with the given name
+  requested_logger = logging.getLogger(logger_name)
+  for handler in logging.getLogger('bob').handlers:
+    requested_logger.addHandler(handler)
+  # set the format of the logger to be identical to the one of the facereclib
+  if set_format:
+    set_formatter(logger_name)
+  # set the log level of the facereclib logger also to the desired logger
+  if set_log_level:
+    requested_logger.setLevel(logger.level)
 
 
 def debug(text):

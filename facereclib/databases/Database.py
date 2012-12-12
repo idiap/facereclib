@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from .. import utils
 
 class File:
   """This class defines the minimum interface of a file information that needs to be exported"""
@@ -44,6 +45,7 @@ class Database:
      original_extension,
      annotation_directory = None,
      annotation_extension = '.pos',
+     has_internal_annotations = False,
      annotation_type = None,
      protocol = 'Default'
   ):
@@ -64,6 +66,9 @@ class Database:
 
     annotation_directory
       The file extension of the annotation files.
+
+    has_internal_annotations
+      The annotations are stored in the database itself.
 
     protocol
       The name of the protocol that defines the default experimental setup for this database.
@@ -100,6 +105,14 @@ class Database:
       files_by_clients.append(client_files[client])
     return files_by_clients
 
+
+  def annotations(self, file):
+    """Returns the annotations for the given File object, if available."""
+    if self.annotation_directory:
+      annotation_path = os.path.join(self.annotation_directory, file.path + self.annotation_extension)
+      return utils.read_annotations(annotation_path, self.annotation_type)
+    else:
+      return None
 
 
   ###########################################################################
