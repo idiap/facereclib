@@ -18,7 +18,7 @@ def ensure_dir(dirname):
       taking into account concurrent 'creation' on the grid.
       An exception is thrown if a file (rather than a directory) already
       exists. """
-  bob.io.create_directories_save(dirname)
+  bob.db.utils.makedirs_safe(dirname)
 
 
 def gray_channel(image, channel = 'gray'):
