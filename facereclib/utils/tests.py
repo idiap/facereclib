@@ -18,14 +18,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .resources import resource_keys, load_resource
+import numpy
 
-def configuration_file(name, type, dir = None):
+def configuration_file(name, resource, dir = None):
+  """Reads configuration file or the registered resource with the given name."""
   # test if the resource is known
-  if name in resource_keys(type):
+  if name in resource_keys(resource):
     # resource registered, just load it
-    return load_resource(name, type)
+    return load_resource(name, resource)
   else: # resource not registered, but available...
     # import resource (actually this is a hack, but better than dealing with file names...)
     exec "from facereclib.configurations." + dir + " import " + name
     # get the database defined in the resource
-    return eval(name + "." + type)
+    return eval(name + "." + resource)
+    
+def random_training_set(shape, count, minimum = 0, maximum = 1):
+  """Returns a random training set with the given shape and the given number of elements."""
+  # generate a random sequence of features
+  numpy.random.seed(42)
+  return [numpy.random.random(shape) * (maximum - minimum) + minimum for i in range(count)]
+
+def random_training_set_by_id(shape, count = 50, minimum = 0, maximum = 1):
+  # generate a random sequence of features
+  numpy.random.seed(42)
+  train_set = []
+  for i in range(count):
+    train_set.append([numpy.random.random(shape) * (maximum - minimum) + minimum for j in range(count)])
+  return train_set
+

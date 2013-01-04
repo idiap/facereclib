@@ -37,13 +37,6 @@ class FileSelector:
     self.zt_score_directories = zt_score_directories
     self.default_extension = default_extension
 
-    # create the base directories already here
-    for d in [preprocessed_directory, features_directory, projected_directory] + list(model_directories) + list(score_directories):
-      utils.ensure_dir(d)
-    if zt_score_directories:
-      for d in zt_score_directories:
-        utils.ensure_dir(d)
-
 
   def get_paths(self, files, directory_type = None, directory = None, extension = None):
     """Returns the list of file names for the given list of File objects."""
@@ -217,6 +210,7 @@ class FileSelector:
   def no_norm_result_file(self, group):
     """Returns the resulting score text file for the given group."""
     no_norm_dir = self.score_directories[0]
+    utils.ensure_dir(no_norm_dir)
     return os.path.join(no_norm_dir, "scores-" + group)
 
 

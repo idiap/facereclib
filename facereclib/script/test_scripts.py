@@ -22,6 +22,7 @@ import unittest
 import os
 import shutil
 import tempfile
+import numpy
 
 import facereclib
 from nose.plugins.skip import SkipTest
@@ -44,20 +45,24 @@ class TestScript (unittest.TestCase):
     reference_files = (os.path.join(base_dir, 'testdata', 'scripts', 'scores-nonorm-dev'), os.path.join(base_dir, 'testdata', 'scripts', 'scores-ztnorm-dev'))
 
     for i in (0,1):
-
-      f1 = open(score_files[i], 'r')
-      f2 = open(reference_files[i], 'r')
-
-      self.assertTrue(f1.read() == f2.read())
-      f1.close()
-      f2.close()
+      # read reference and new data
+      with open(score_files[i], 'r') as f1:
+        d1 = numpy.array([line.rstrip().split() for line in f1])
+      with open(reference_files[i], 'r') as f2:
+        d2 = numpy.array([line.rstrip().split() for line in f2])
+  
+      self.assertTrue(d1.shape, d2.shape)
+      # assert that the data order is still correct
+      self.assertTrue((d1[:,0:3] == d2[:, 0:3]).all())
+      # assert that the values are OK
+      self.assertTrue((numpy.abs(d1[:,3].astype(float) - d2[:,3].astype(float)) < 1e-5).all())
 
     shutil.rmtree(test_dir)
 
 
 
   def test01_faceverify_local(self):
-    test_dir = tempfile.mkdtemp(prefix='frl_')
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
         '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
@@ -76,7 +81,7 @@ class TestScript (unittest.TestCase):
 
 
   def test01a_faceverify_resources(self):
-    test_dir = tempfile.mkdtemp(prefix='frl_')
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
         '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
@@ -96,7 +101,7 @@ class TestScript (unittest.TestCase):
 
 
   def test01b_faceverify_commandline(self):
-    test_dir = tempfile.mkdtemp(prefix='frl_')
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
         '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
@@ -117,7 +122,7 @@ class TestScript (unittest.TestCase):
 
 
   def test01x_faceverify_fl(self):
-    test_dir = tempfile.mkdtemp(prefix='frl_')
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
         '-d', os.path.join(base_dir, 'testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'),
@@ -297,7 +302,7 @@ class TestScript (unittest.TestCase):
 
 
   def test21_parameter_script(self):
-    test_dir = tempfile.mkdtemp(prefix='frl_')
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # tests that the parameter_test.py script works properly
     import parameter_test
 
@@ -308,7 +313,9 @@ class TestScript (unittest.TestCase):
         '-f', 'lgbphs',
         '-b', 'test_p',
         '-s', test_dir,
-        '--', '--dry-run'
+        '--', '--dry-run',
+        '--temp-directory', test_dir,
+        '--user-directory', test_dir
     ]
     parameter_test.main(parameters)
 
@@ -325,7 +332,9 @@ class TestScript (unittest.TestCase):
         '-b', 'test_p',
         '-s', test_dir,
         '-g', 'grid',
-        '--', '--dry-run'
+        '--', '--dry-run',
+        '--temp-directory', test_dir,
+        '--user-directory', test_dir
     ]
     parameter_test.main(parameters)
 

@@ -44,12 +44,6 @@ class FeatureExtractionTest(unittest.TestCase):
     return facereclib.utils.tests.configuration_file(resource, 'feature_extractor', 'features')
 
 
-  def train_set(self, feature, count = 50, a = 0, b = 1):
-    # generate a random sequence of features
-    numpy.random.seed(42)
-    return [numpy.random.random(feature.shape) * (b - a) + a for i in range(count)]
-
-
   def execute(self, extractor, image, reference):
     # execute the preprocessor
     feature = extractor(image)
@@ -203,8 +197,8 @@ class FeatureExtractionTest(unittest.TestCase):
     # we read the test image (so that we have a length)
     image = bob.io.load(self.input_dir('cropped.hdf5'))
     # we have to train the eigenface extractor, so we generate some data
-    train_data = self.train_set(image, 400, 0., 255.)
-    t = tempfile.mkstemp('pca.hdf5')[1]
+    train_data = facereclib.utils.tests.random_training_set(image.shape, 400, 0., 255.)
+    t = tempfile.mkstemp('pca.hdf5', prefix='frltest_')[1]
     extractor.train(train_data, t)
     if regenerate_refs:
       import shutil
@@ -214,7 +208,9 @@ class FeatureExtractionTest(unittest.TestCase):
     # compare the resulting machines
     new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
     self.assertEqual(extractor.m_machine.shape, new_machine.shape)
-    self.assertTrue(numpy.abs(extractor.m_machine.weights - new_machine.weights < 1e-5).all())
+    # ... rotation direction might change, hence either the sum or the difference should be 0
+    for i in range(5):
+      self.assertTrue(numpy.abs(extractor.m_machine.weights[:,i] - new_machine.weights[:,i] < 1e-5).all() or numpy.abs(extractor.m_machine.weights[:,i] + new_machine.weights[:,i] < 1e-5).all())
     os.remove(t)
 
     # now, we can execute the extractor and check that the feature is still identical

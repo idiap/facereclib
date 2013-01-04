@@ -51,21 +51,7 @@ class ToolTest(unittest.TestCase):
     self.assertTrue((numpy.abs(bob.io.load(self.reference_dir(reference)) - feature) < 1e-5).all())
 
 
-  def train_set(self, feature, count = 50, a = 0, b = 1):
-    # generate a random sequence of features
-    numpy.random.seed(42)
-    return [numpy.random.random(feature.shape) * (b - a) + a for i in range(count)]
-
-  def train_set_by_id(self, feature, count = 50, a = 0, b = 1):
-    # generate a random sequence of features
-    numpy.random.seed(42)
-    train_set = []
-    for i in range(count):
-      train_set.append([numpy.random.random(feature.shape) * (b - a) + a for j in range(count)])
-    return train_set
-
-
-  def train_gmm_stats(self, feature_file, count = 50, a = 0, b = 1):
+  def train_gmm_stats(self, feature_file, count = 50, minimum = 0, maximum = 1):
     # generate a random sequence of GMM-Stats features
     numpy.random.seed(42)
     train_set = []
@@ -74,8 +60,8 @@ class ToolTest(unittest.TestCase):
       per_id = []
       for j in range(count):
         gmm_stats = bob.machine.GMMStats(f)
-        gmm_stats.sum_px = numpy.random.random(gmm_stats.sum_px.shape) * (b - a) + a
-        gmm_stats.sum_pxx = numpy.random.random(gmm_stats.sum_pxx.shape) * (b - a) + a
+        gmm_stats.sum_px = numpy.random.random(gmm_stats.sum_px.shape) * (maximum - minimum) + minimum
+        gmm_stats.sum_pxx = numpy.random.random(gmm_stats.sum_pxx.shape) * (maximum - minimum) + minimum
         per_id.append(gmm_stats)
       train_set.append(per_id)
     return train_set
@@ -130,8 +116,8 @@ class ToolTest(unittest.TestCase):
     self.assertFalse(tool.split_training_features_by_client)
 
     # train the projector
-    t = tempfile.mkstemp('pca.hdf5')[1]
-    tool.train_projector(self.train_set(feature, count=400, a=0., b=255.), t)
+    t = tempfile.mkstemp('pca.hdf5', prefix='frltest_')[1]
+    tool.train_projector(facereclib.utils.tests.random_training_set(feature.shape, count=400, minimum=0., maximum=255.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('pca_projector.hdf5'))
@@ -147,7 +133,9 @@ class ToolTest(unittest.TestCase):
     self.assertEqual(tool.m_variances.shape, new_variances.shape)
     self.assertTrue(numpy.abs(tool.m_variances - new_variances < 1e-5).all())
     self.assertEqual(tool.m_machine.shape, new_machine.shape)
-    self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
+    # ... rotation direction might change, hence either the sum or the difference should be 0
+    for i in range(10):
+      self.assertTrue(numpy.abs(tool.m_machine.weights[:,i] - new_machine.weights[:,i] < 1e-5).all() or numpy.abs(tool.m_machine.weights[:,i] + new_machine.weights[:,i] < 1e-5).all())
     os.remove(t)
 
     # project feature
@@ -163,7 +151,7 @@ class ToolTest(unittest.TestCase):
 
     # test the calculation of the subspace dimension based on percentage of variance
     tool = facereclib.tools.PCATool(.9)
-    tool.train_projector(self.train_set(feature, count=400, a=0., b=255.), t)
+    tool.train_projector(facereclib.utils.tests.random_training_set(feature.shape, count=400, minimum=0., maximum=255.), t)
     self.assertEqual(tool.m_subspace_dim, 334)
     os.remove(t)
 
@@ -186,8 +174,8 @@ class ToolTest(unittest.TestCase):
     self.assertTrue(tool.split_training_features_by_client)
 
     # train the projector
-    t = tempfile.mkstemp('pca+lda.hdf5')[1]
-    tool.train_projector(self.train_set_by_id(feature, count=20, a=0., b=255.), t)
+    t = tempfile.mkstemp('pca+lda.hdf5', prefix='frltest_')[1]
+    tool.train_projector(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=20, minimum=0., maximum=255.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('pca+lda_projector.hdf5'))
@@ -197,7 +185,9 @@ class ToolTest(unittest.TestCase):
     # compare the resulting machines
     new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
     self.assertEqual(tool.m_machine.shape, new_machine.shape)
-    self.assertTrue(numpy.abs(tool.m_machine.weights - new_machine.weights < 1e-5).all())
+    # ... rotation direction might change, hence either the sum or the difference should be 0
+    for i in range(5):
+      self.assertTrue(numpy.abs(tool.m_machine.weights[:,i] - new_machine.weights[:,i] < 1e-5).all() or numpy.abs(tool.m_machine.weights[:,i] + new_machine.weights[:,i] < 1e-5).all())
     os.remove(t)
 
     # project feature
@@ -215,7 +205,7 @@ class ToolTest(unittest.TestCase):
 
     # test the calculation of the subspace dimension based on percentage of variance
     tool = facereclib.tools.LDATool(5, .9)
-    tool.train_projector(self.train_set_by_id(feature, count=20, a=0., b=255.), t)
+    tool.train_projector(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=20, minimum=0., maximum=255.), t)
     self.assertEqual(tool.m_pca_subspace, 334)
     os.remove(t)
 
@@ -233,8 +223,8 @@ class ToolTest(unittest.TestCase):
     self.assertTrue(tool.requires_enroller_training)
 
     # train the enroller
-    t = tempfile.mkstemp('bic.hdf5')[1]
-    tool.train_enroller(self.train_set_by_id(feature, count=10, a=0., b=255.), t)
+    t = tempfile.mkstemp('bic.hdf5', prefix='frltest_')[1]
+    tool.train_enroller(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=10, minimum=0., maximum=255.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('bic_enroller.hdf5'))
@@ -258,8 +248,8 @@ class ToolTest(unittest.TestCase):
     # now, test without PCA
     tool = facereclib.tools.BICTool(numpy.subtract, 100)
     # train the enroller
-    t = tempfile.mkstemp('iec.hdf5')[1]
-    tool.train_enroller(self.train_set_by_id(feature, count=10, a=0., b=255.), t)
+    t = tempfile.mkstemp('iec.hdf5', prefix='frltest_')[1]
+    tool.train_enroller(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=10, minimum=0., maximum=255.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('iec_enroller.hdf5'))
@@ -296,8 +286,8 @@ class ToolTest(unittest.TestCase):
     self.assertFalse(tool.split_training_features_by_client)
 
     # train the projector
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
+    t = tempfile.mkstemp('ubm.hdf5', prefix='frltest_')[1]
+    tool.train_projector(facereclib.utils.tests.random_training_set(feature.shape, count=5, minimum=-5., maximum=5.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('gmm_projector.hdf5'))
@@ -344,8 +334,8 @@ class ToolTest(unittest.TestCase):
     self.assertTrue(tool.requires_enroller_training)
 
     # train the enroller
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_enroller(self.train_set(feature, count=5, a=-5., b=5.), t)
+    t = tempfile.mkstemp('ubm.hdf5', prefix='frltest_')[1]
+    tool.train_enroller(facereclib.utils.tests.random_training_set(feature.shape, count=5, minimum=-5., maximum=5.), t)
     # assure that it is identical to the normal UBM projector
     tool.load_enroller(self.reference_dir('gmm_projector.hdf5'))
 
@@ -392,8 +382,8 @@ class ToolTest(unittest.TestCase):
     self.assertTrue(tool.requires_enroller_training)
 
     # train the projector
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
+    t = tempfile.mkstemp('ubm.hdf5', prefix='frltest_')[1]
+    tool.train_projector(facereclib.utils.tests.random_training_set(feature.shape, count=5, minimum=-5., maximum=5.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('isv_projector.hdf5'))
@@ -414,15 +404,15 @@ class ToolTest(unittest.TestCase):
     self.assertEqual(projected, projected_reference)
 
     # train the enroller
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_enroller(self.train_gmm_stats(self.reference_dir('isv_feature.hdf5'), count=5, a=-5., b=5.), t)
+    t = tempfile.mkstemp('ubm.hdf5', prefix='frltest_')[1]
+    tool.train_enroller(self.train_gmm_stats(self.reference_dir('isv_feature.hdf5'), count=5, minimum=-5., maximum=5.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('isv_enroller.hdf5'))
     tool.load_enroller(self.reference_dir('isv_enroller.hdf5'))
-    # TODO: compare ISV enroller with reference
-    #enroller_reference = bob.machine.JFABaseMachine(bob.io.HDF5File(t))
-    #self.assertEqual(tool.m_jfabase, enroller_reference)
+    # compare ISV enroller with reference
+    enroller_reference = bob.machine.JFABaseMachine(bob.io.HDF5File(t))
+    self.assertTrue(tool.m_jfabase.is_similar_to(enroller_reference))
     os.remove(t)
 
     # enroll model with the projected feature
@@ -431,7 +421,7 @@ class ToolTest(unittest.TestCase):
       model.save(bob.io.HDF5File(self.reference_dir('isv_model.hdf5'), 'w'))
     reference_model = tool.read_model(self.reference_dir('isv_model.hdf5'))
     # compare the ISV model with the reference
-    self.assertEqual(model, reference_model)
+    self.assertTrue(model.is_similar_to(reference_model))
 
     # check that the read_probe function reads the correct values
     probe = tool.read_probe(self.reference_dir('isv_feature.hdf5'))
@@ -472,8 +462,8 @@ class ToolTest(unittest.TestCase):
     self.assertTrue(tool.requires_enroller_training)
 
     # train the projector
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_projector(self.train_set(feature, count=5, a=-5., b=5.), t)
+    t = tempfile.mkstemp('ubm.hdf5', prefix='frltest_')[1]
+    tool.train_projector(facereclib.utils.tests.random_training_set(feature.shape, count=5, minimum=-5., maximum=5.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('jfa_projector.hdf5'))
@@ -494,15 +484,15 @@ class ToolTest(unittest.TestCase):
     self.assertEqual(projected, projected_reference)
 
     # train the enroller
-    t = tempfile.mkstemp('ubm.hdf5')[1]
-    tool.train_enroller(self.train_gmm_stats(self.reference_dir('jfa_feature.hdf5'), count=5, a=-5., b=5.), t)
+    t = tempfile.mkstemp('ubm.hdf5', prefix='frltest_')[1]
+    tool.train_enroller(self.train_gmm_stats(self.reference_dir('jfa_feature.hdf5'), count=5, minimum=-5., maximum=5.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('jfa_enroller.hdf5'))
     tool.load_enroller(self.reference_dir('jfa_enroller.hdf5'))
-    # TODO: compare JFA enroller with reference
-    #enroller_reference = bob.machine.JFABaseMachine(bob.io.HDF5File(t))
-    #self.assertEqual(tool.m_jfabase, enroller_reference)
+    # compare JFA enroller with reference
+    enroller_reference = bob.machine.JFABaseMachine(bob.io.HDF5File(t))
+    self.assertTrue(tool.m_jfabase.is_similar_to(enroller_reference))
     os.remove(t)
 
     # enroll model with the projected feature
@@ -511,7 +501,7 @@ class ToolTest(unittest.TestCase):
       model.save(bob.io.HDF5File(self.reference_dir('jfa_model.hdf5'), 'w'))
     # assert that the model is ok
     reference_model = tool.read_model(self.reference_dir('jfa_model.hdf5'))
-    self.assertEqual(model, reference_model)
+    self.assertTrue(model.is_similar_to(reference_model))
 
     # check that the read_probe function reads the requested data
     probe = tool.read_probe(self.reference_dir('jfa_feature.hdf5'))
@@ -540,8 +530,8 @@ class ToolTest(unittest.TestCase):
     self.assertTrue(tool.requires_enroller_training)
 
     # train the projector
-    t = tempfile.mkstemp('pca+plda.hdf5')[1]
-    tool.train_enroller(self.train_set_by_id(feature, count=20, a=0., b=255.), t)
+    t = tempfile.mkstemp('pca+plda.hdf5', prefix='frltest_')[1]
+    tool.train_enroller(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=20, minimum=0., maximum=255.), t)
     if regenerate_refs:
       import shutil
       shutil.copy2(t, self.reference_dir('pca+plda_enroller.hdf5'))
