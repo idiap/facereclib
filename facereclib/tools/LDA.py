@@ -16,7 +16,8 @@ class LDATool (Tool):
       lda_subspace_dimension = None, # if set, the LDA subspace will be truncated to the given number of dimensions
       pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA; might be integral or float
       distance_function = bob.math.euclidean_distance,
-      is_distance_function = True
+      is_distance_function = True,
+      multiple_feature_scoring = 'average'
   ):
     """Initializes the LDA tool with the given configuration"""
 
@@ -36,6 +37,7 @@ class LDATool (Tool):
     self.m_machine = None
     self.m_distance_function = distance_function
     self.m_factor = -1 if is_distance_function else 1.
+    self.m_multiple_feature_scoring = {'average':numpy.average, 'min':min, 'max':max, 'median':numpy.median}[multiple_feature_scoring]
 
 
   def __read_data__(self, training_files):
@@ -129,15 +131,11 @@ class LDATool (Tool):
 
   def enroll(self, enroll_features):
     """Enrolls the model by computing an average of the given input vectors"""
-    model = None
-    for feature in enroll_features:
-      if model == None:
-        model = numpy.zeros(feature.shape, numpy.float64)
-
-      model[:] += feature[:]
-
-    # Normalizes the model
-    model /= float(len(enroll_features))
+    assert len(enroll_features)
+    # just store all the features
+    model = numpy.zeros((len(enroll_features), enroll_features[0].shape[0]), numpy.float64)
+    for n, feature in enumerate(enroll_features):
+      model[n,:] += feature[:]
 
     # return enrolled model
     return model
@@ -146,7 +144,5 @@ class LDATool (Tool):
   def score(self, model, probe):
     """Computes the distance of the model to the probe using the distance function taken from the config file"""
     # return the negative distance (as a similarity measure)
-    return self.m_factor * self.m_distance_function(model, probe)
-
-
-
+    scores = [self.m_factor * self.m_distance_function(model[n], probe) for n in range(model.shape[0])]
+    return self.m_multiple_feature_scoring(scores)

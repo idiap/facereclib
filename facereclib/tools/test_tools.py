@@ -153,7 +153,12 @@ class ToolTest(unittest.TestCase):
     tool = facereclib.tools.PCATool(.9)
     tool.train_projector(facereclib.utils.tests.random_training_set(feature.shape, count=400, minimum=0., maximum=255.), t)
     self.assertEqual(tool.m_subspace_dim, 334)
+    tool.load_projector(t)
     os.remove(t)
+    projected = tool.project(feature)
+    model = tool.enroll([projected, projected])
+    self.assertTrue(model.shape == (2,334))
+    self.assertAlmostEqual(tool.score(model, projected), 0.)
 
 
   def test04_lda(self):
@@ -198,16 +203,23 @@ class ToolTest(unittest.TestCase):
     # enroll model
     model = tool.enroll([projected])
     self.compare(model, 'pca+lda_model.hdf5')
+    self.assertTrue(model.shape == (1,5))
 
     # score
     sim = tool.score(model, projected)
     self.assertAlmostEqual(sim, 0.)
 
-    # test the calculation of the subspace dimension based on percentage of variance
-    tool = facereclib.tools.LDATool(5, .9)
+    # test the calculation of the subspace dimension based on percentage of variance,
+    # and the usage of a different way to compute the final score in case of multiple features per model
+    tool = facereclib.tools.LDATool(5, .9, multiple_feature_scoring = 'median')
     tool.train_projector(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=20, minimum=0., maximum=255.), t)
     self.assertEqual(tool.m_pca_subspace, 334)
+    tool.load_projector(t)
     os.remove(t)
+    projected = tool.project(feature)
+    model = tool.enroll([projected, projected])
+    self.assertTrue(model.shape == (2,5))
+    self.assertAlmostEqual(tool.score(model, projected), 0.)
 
 
   def test05_bic(self):
