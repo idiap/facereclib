@@ -15,7 +15,7 @@ class GaborJetTool (Tool):
       self,
       # parameters for the tool
       gabor_jet_similarity_type,
-      multiple_feature_scoring = 'max',
+      multiple_feature_scoring = 'max_jet',
       # some similarity functions might need a GaborWaveletTransform class, so we have to provide the parameters here as well...
       gabor_directions = 8,
       gabor_scales = 5,
@@ -45,9 +45,29 @@ class GaborJetTool (Tool):
 
     # jet comparison function
     self.m_similarity_function = bob.machine.GaborJetSimilarity(gabor_jet_similarity_type, gwt)
-    # how to proceed with multiple features per model
-    self.m_multiple_feature_scoring = {'average_model':None, 'average':numpy.average, 'min':numpy.min, 'max':numpy.max, 'median':numpy.median}[multiple_feature_scoring]
 
+    # how to proceed with multiple features per model
+    self.m_jet_scoring = {
+        'average_model' : None, # compute an average model
+        'average' : numpy.average, # compute the average similarity
+        'min_jet' : numpy.min, # for each jet location, compute the minimum similarity
+        'max_jet' : numpy.max, # for each jet location, compute the maximum similarity
+        'med_jet' : numpy.median, # for each jet location, compute the median similarity
+        'min_graph' : numpy.average, # for each model graph, compute the minimum average similarity
+        'max_graph' : numpy.average, # for each model graph, compute the maximum average similarity
+        'med_graph' : numpy.average, # for each model graph, compute the median average similarity
+    }[multiple_feature_scoring]
+
+    self.m_graph_scoring = {
+        'average_model' : None, # compute an average model
+        'average' : numpy.average, # compute the average similarity
+        'min_jet' : numpy.average, # for each jet location, compute the minimum similarity
+        'max_jet' : numpy.average, # for each jet location, compute the maximum similarity
+        'med_jet' : numpy.average, # for each jet location, compute the median similarity
+        'min_graph' : numpy.min, # for each model graph, compute the minimum average similarity
+        'max_graph' : numpy.max, # for each model graph, compute the maximum average similarity
+        'med_graph' : numpy.median, # for each model graph, compute the median average similarity
+    }[multiple_feature_scoring]
 
 
   def enroll(self, enroll_features):
@@ -61,8 +81,8 @@ class GaborJetTool (Tool):
         raise Exception('Size mismatched')
       model[c] = graph
 
-    if self.m_multiple_feature_scoring is None:
-      if model.ndim() != 4:
+    if self.m_jet_scoring is None:
+      if model.ndim != 4:
         raise Exception('Averaging is only supported when phases are included')
       # compute average model
       average = numpy.ndarray(model.shape[1:], dtype=numpy.float64)
@@ -77,12 +97,12 @@ class GaborJetTool (Tool):
 
   def score(self, model, probe):
     """Computes the score of the probe and the model"""
-    if self.m_multiple_feature_scoring is None:
+    if self.m_jet_scoring is None:
       # compute sum of Gabor jet similarities between averaged model graph and probe graph
       return numpy.average([self.m_similarity_function(model[n], probe[n]) for n in range(model.shape[0])])
     else:
       # compute all Gabor jet similarities
       scores = [[self.m_similarity_function(model[c,n], probe[n]) for n in range(model.shape[1])] for c in range(model.shape[0])]
       # for each jet location, compute the desired score averaging
-      return numpy.average(self.m_multiple_feature_scoring(scores, axis=0))
+      return self.m_graph_scoring(self.m_jet_scoring(scores, axis=0))
 
