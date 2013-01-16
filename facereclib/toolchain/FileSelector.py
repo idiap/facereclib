@@ -67,7 +67,9 @@ class FileSelector:
 
   def annotation_list(self):
     """Returns the list of annotations, if existing."""
-    return self.m_database.all_files()
+    known = set()
+    return [file for file in self.m_database.all_files() if file.path not in known and not known.add(file.path)]
+
 
   def get_annotations(self, annotation_file):
     """Reads the annotation of the given file."""
