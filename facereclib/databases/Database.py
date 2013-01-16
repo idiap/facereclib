@@ -88,8 +88,9 @@ class Database:
   ###########################################################################
   def sort(self, files):
     """Returns a sorted version of the given list of File's (or other structures that define an 'id' data member).
-    The files will be sorted according to their id."""
-    return sorted(files, cmp=lambda x,y: cmp(x.id, y.id))
+    The files will be sorted according to their id, and duplicate entries will be removed."""
+    sorted_files = sorted(files, cmp=lambda x,y: cmp(x.id, y.id))
+    return [f for i,f in enumerate(sorted_files) if not i or sorted_files[i-1].id != f.id]
 
   def arrange_by_client(self, files):
     """Arranges the given list of files by client id.

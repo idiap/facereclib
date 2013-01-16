@@ -254,6 +254,8 @@ Here is a list of the most important algorithms and their parameters:
 
   - ``subspace_dimension``: If integral: the number of kept eigenvalues in the projection matrix; if float: the percentage of variance to keep.
   - ``distance_function``: The distance function to be used to compare two features in eigenspace.
+  - ``is_distance_function``: Specifies, if the ``distance_function`` is a distance or a similarity function.
+  - ``multiple_feature_scoring``: How to compute the score if several features per model are available, possible values: ``average``, ``min``, ``max``, ``median``
 
 * ``facereclib.tools.LDATool``: Computes an LDA or a PCA+LDA projection on the given features.
 
@@ -261,6 +263,9 @@ Here is a list of the most important algorithms and their parameters:
     If this parameter is not specified, no truncation is applied.
   - ``pca_subspace_dimension``: **(optional)** If given, the computed projection matrix will be a PCA+LDA matrix, where ``pca_subspace_dimension`` defines the size of the PCA subspace.
     If ``pca_subspace_dimension`` is integral, it is the number of kept eigenvalues in the projection matrix; if is is float, it stands for the percentage of variance to keep.
+  - ``distance_function``: The distance function to be used to compare two features in Fisher space.
+  - ``is_distance_function``: Specifies, if the ``distance_function`` is a distance or a similarity function.
+  - ``multiple_feature_scoring``: How to compute the score if several features per model are available, possible values: ``average``, ``min``, ``max``, ``median``
 
 * ``facereclib.tools.PLDATool``: Computes a probabilistic LDA
 
@@ -286,7 +291,8 @@ Here is a list of the most important algorithms and their parameters:
 
   - ``gabor_jet_similarity_type``: The Gabor jet similarity to compute.
     Please refer to the documentation of Bob_ for a list of possible values.
-  - ``extract_averaged_models``: Enroll models by averaging the graphs using linear interpolation of the Gabor jets, or simply store all Gabor graphs.
+  - ``multiple_feature_scoring``: How to compute the score if several features per model are available.
+    Possible values are: 'average_model', 'average', 'min_jet', 'max_jet', 'med_jet', 'min_graph', 'max_graph', 'med_graph'.
   - ``gabor_...``: The parameters of the Gabor wavelet family.
     These parameters are required by some of the Gabor jet similarity functions.
     The default values are identical to the ones in the ``facereclib.features.GridGraph`` features.
