@@ -218,6 +218,7 @@ class ToolChain:
 
         # perform training
         utils.info("- Enrollment: training enroller '%s' using %d identities: " %(enroller_file, len(train_features)))
+        utils.ensure_dir(os.path.dirname(enroller_file))
         tool.train_enroller(train_features, str(enroller_file))
 
 
