@@ -99,7 +99,7 @@ class UBMGMMTool (Tool):
   #######################################################
   ################ UBM training #########################
 
-  def _train_projector_using_array(self, array, projector_file):
+  def _train_projector_using_array(self, array):
 
     utils.debug(" .... Training with %d feature vectors" % array.shape[0])
 
@@ -149,11 +149,14 @@ class UBMGMMTool (Tool):
     trainer.convergence_threshold = self.m_training_threshold
     trainer.max_iterations = self.m_gmm_training_iterations
     trainer.train(self.m_ubm, array)
-
-    # Saves the UBM to file
+    
+    
+  def save_projector(self, projector_file): 
+    """Save projector to file"""
+    # Saves the UBM to file  
     utils.debug(" .... Saving model to file '%s'" % projector_file)
     self.m_ubm.save(bob.io.HDF5File(projector_file, "w"))
-
+    
 
   def train_projector(self, train_features, projector_file):
     """Computes the Universal Background Model from the training ("world") data"""
@@ -163,7 +166,13 @@ class UBMGMMTool (Tool):
     # Loads the data into an array
     array = numpy.vstack(train_features)
 
-    self._train_projector_using_array(array, projector_file)
+    self._train_projector_using_array(array)
+    
+    self.save_projector(projector_file) 
+
+    
+
+
 
 
   #######################################################

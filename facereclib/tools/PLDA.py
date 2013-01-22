@@ -21,11 +21,11 @@ class PLDATool (Tool):
       plda_training_threshold = 1e-3, # Threshold for ending the EM loop
       # TODO: refactor the remaining parameters!
       INIT_SEED = 0, # seed for initializing
-      INIT_F_METHOD = 1,
+      INIT_F_METHOD = bob.trainer.init_f_method.BETWEEN_SCATTER,
       INIT_F_RATIO = 1,
-      INIT_G_METHOD = 1,
+      INIT_G_METHOD = bob.trainer.init_g_method.WITHIN_SCATTER,
       INIT_G_RATIO = 1,
-      INIT_S_METHOD = 3, #
+      INIT_S_METHOD = bob.trainer.init_sigma_method.VARIANCE_DATA, 
       INIT_S_RATIO = 1
   ):
 
@@ -96,8 +96,6 @@ class PLDATool (Tool):
     utils.info("  -> Training PLDA base machine")
     # create trainer
     t = bob.trainer.PLDABaseTrainer(
-        self.m_subspace_dimension_of_f,
-        self.m_subspace_dimension_of_g,
         self.m_plda_training_threshold,
         self.m_plda_training_iterations,
         False)
@@ -136,15 +134,15 @@ class PLDATool (Tool):
     self.m_plda_base_machine = bob.machine.PLDABaseMachine(proj_hdf5file)
     #self.m_plda_base_machine = bob.machine.PLDABaseMachine(bob.io.HDF5File(projector_file))
     self.m_plda_machine = bob.machine.PLDAMachine(self.m_plda_base_machine)
-    self.m_plda_trainer = bob.trainer.PLDATrainer(self.m_plda_machine)
+    self.m_plda_trainer = bob.trainer.PLDATrainer()
 
   def enroll(self, enroll_features):
     """Enrolls the model by computing an average of the given input vectors"""
     if self.m_subspace_dimension_pca is not None:
       enroll_features_projected = self.__perform_pca_client__(self.m_pca_machine, enroll_features)
-      self.m_plda_trainer.enrol(enroll_features_projected)
+      self.m_plda_trainer.enrol(self.m_plda_machine,enroll_features_projected)
     else:
-      self.m_plda_trainer.enrol(enroll_features)
+      self.m_plda_trainer.enrol(self.m_plda_machine,enroll_features)
     return self.m_plda_machine
 
   def read_model(self, model_file):
