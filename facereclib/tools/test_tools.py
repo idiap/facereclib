@@ -521,7 +521,7 @@ class ToolTest(unittest.TestCase):
 
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
-    self.assertAlmostEqual(sim, 0.25459651295)
+    self.assertAlmostEqual(sim, 0.25475154455)
 
 
   def test09_plda(self):
