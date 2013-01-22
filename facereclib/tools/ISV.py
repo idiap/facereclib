@@ -34,45 +34,83 @@ class ISVTool (UBMGMMTool):
         self,
         performs_projection = True,
         use_projected_features_for_enrollment = True,
-        requires_enroller_training = True
+        requires_enroller_training = False, # not needed anymore because it's done while training the projector
+        split_training_features_by_client = True,
     )
 
     self.m_subspace_dimension_of_u = subspace_dimension_of_u
     self.m_jfa_training_iterations = jfa_training_iterations
     self.m_jfa_enroll_iterations = jfa_enroll_iterations
+    
 
-  # Here, we just need to load the UBM from the projector file.
-  def load_projector(self, projector_file):
-    """Reads the UBM model from file"""
-    # read UBM
-    self.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(projector_file))
-    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
-    # Initializes GMMStats object
+    
+  def train_projector(self, train_features, projector_file):
+    """Train Projector and Enroller at the same time"""
+
+    data_list = [feature for client in train_features for feature in client]
+    data1 = numpy.vstack(data_list)
+
+    utils.info("Trains and returns a UBM-GMM Model")
+    UBMGMMTool._train_projector_using_array(self, data1)
+    
     self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
-
-
-  #######################################################
-  ################ ISV training #########################
-  def train_enroller(self, train_features, enroller_file):
-    # create a JFABasemachine with the UBM from the base class
+    
+    # Initializes GMMStats object    
+    data2 = []
+    for client_features in train_features:
+      print len(feature)
+      list = []
+      for feature in client_features:
+        self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+        list.append(UBMGMMTool.project(self, feature)) 
+      data2.append(list)
+    
+   
+    
+    utils.info("Do ISV training (Training of the enroller)")
     self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_subspace_dimension_of_u)
     self.m_jfabase.ubm = self.m_ubm
 
     # train ISV model
     t = bob.trainer.JFABaseTrainer(self.m_jfabase)
-    t.train_isv(train_features, self.m_jfa_training_iterations, self.m_relevance_factor)
+    t.train_isv(data2, self.m_jfa_training_iterations, self.m_relevance_factor)
 
     # Save the JFA base AND the UBM into the same file
-    self.m_jfabase.save(bob.io.HDF5File(enroller_file, "w"))
-
-
-
-  #######################################################
-  ################## JFA model enroll ####################
-  def load_enroller(self, enroller_file):
+    self.save_projector(projector_file)
+    
+  
+  def save_projector(self, projector_file):
+    
+    hdf5file = bob.io.HDF5File(projector_file, "w")
+    hdf5file.create_group('Projector')
+    hdf5file.cd('Projector')
+    self.m_ubm.save(hdf5file)
+    
+    hdf5file.cd('/')
+    hdf5file.create_group('Enroller')
+    hdf5file.cd('Enroller')
+    self.m_jfabase.save(hdf5file)
+    
+    
+  
+  # Here, we just need to load the UBM from the projector file.
+  def load_projector(self, projector_file):
     """Reads the UBM model from file"""
-    # now, load the JFA base, if it is included in the file
-    self.m_jfabase = bob.machine.JFABaseMachine(bob.io.HDF5File(enroller_file))
+    
+    hdf5file = bob.io.HDF5File(projector_file)
+    
+    # Load Projector
+    hdf5file.cd('Projector')
+    # read UBM
+    self.m_ubm = bob.machine.GMMMachine(hdf5file)
+    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
+    # Initializes GMMStats object
+    self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+    
+    hdf5file.cd('/')
+    # Load Enroller
+    hdf5file.cd('Enroller')
+    self.m_jfabase = bob.machine.JFABaseMachine(hdf5file)
     # add UBM model from base class
     self.m_jfabase.ubm = self.m_ubm
 
@@ -81,9 +119,46 @@ class ISVTool (UBMGMMTool):
     self.m_trainer = bob.trainer.JFATrainer(self.m_machine, self.m_base_trainer)
 
 
+  #######################################################
+  ################ ISV training #########################
+
+
+
+  def project(self, feature_array):
+    """Computes GMM statistics against a UBM, then corresponding Ux vector"""
+    print "projecting UBM features"
+    
+    projected_ubm = UBMGMMTool.project(self,feature_array)
+    
+    print "projecting ISV features"
+    projected_isv = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
+    print projected_isv.shape
+    
+    model = bob.machine.JFAMachine(self.m_jfabase)
+    model.estimate_ux(projected_ubm, projected_isv)
+    return [projected_ubm, projected_isv]    
+
+  #######################################################
+  ################## JFA model enroll ####################
+  
+  def save_feature(self, data, feature_file):
+    print "Saving features (ISV projected)"
+    hdf5file = bob.io.HDF5File(feature_file, "w")
+    gmmstats = data[0]
+    Ux = data[1]
+    hdf5file.create_group('gmmstats')
+    hdf5file.cd('gmmstats')
+    gmmstats.save(hdf5file)
+    hdf5file.cd('/')
+    hdf5file.set('Ux', Ux)
+    
+    
   def read_feature(self, feature_file):
-    """Reads the projected feature to be enrolled as a model"""
-    return bob.machine.GMMStats(bob.io.HDF5File(str(feature_file)))
+    """Read the type of features that we require, namely GMMStats"""
+    hdf5file = bob.io.HDF5File(feature_file)
+    hdf5file.cd('gmmstats')
+    gmmstats = bob.machine.GMMStats(hdf5file)
+    return gmmstats
 
 
   def enroll(self, enroll_features):
@@ -101,13 +176,25 @@ class ISVTool (UBMGMMTool):
     machine.jfa_base = self.m_jfabase
     return machine
 
-  read_probe = read_feature
+  def read_probe(self, probe_file):
+    """Read the type of features that we require, namely GMMStats"""
+    hdf5file = bob.io.HDF5File(probe_file)
+    hdf5file.cd('gmmstats')
+    gmmstats = bob.machine.GMMStats(hdf5file)
+    hdf5file.cd('/')
+    Ux = hdf5file.read('Ux')
+    return [gmmstats, Ux]
 
   def score(self, model, probe):
     """Computes the score for the given model and the given probe using the scoring function from the config file"""
-    scores = numpy.ndarray((1,), 'float64')
-    model.forward([probe], scores)
-    return scores[0]
+    gmmstats = probe[0]
+    Ux = probe[1]
+    return model.forward_ux(gmmstats, Ux)
+    
+
+
+
+
 
 
 

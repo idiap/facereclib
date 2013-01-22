@@ -55,7 +55,9 @@ setup(
         'mobio             = facereclib.configurations.databases.mobio_male:database',
         'multipie          = facereclib.configurations.databases.multipie_U:database',
         'scface            = facereclib.configurations.databases.scface_combined:database',
-        'xm2vts            = facereclib.configurations.databases.xm2vts_lp1:database'
+        'xm2vts            = facereclib.configurations.databases.xm2vts_lp1:database',
+        'audio_banca_p     = facereclib.configurations.databases.audio_banca_P:database',
+        'audio_banca_g     = facereclib.configurations.databases.audio_banca_G:database',
       ],
 
       'facereclib.preprocessor': [
@@ -63,7 +65,8 @@ setup(
         'histogram-equalize= facereclib.configurations.preprocessing.histogram_equalize:preprocessor',
         'inorm-lbp         = facereclib.configurations.preprocessing.inorm_lbp:preprocessor',
         'self-quotient     = facereclib.configurations.preprocessing.self_quotient:preprocessor',
-        'tan-triggs        = facereclib.configurations.preprocessing.tan_triggs:preprocessor'
+        'tan-triggs        = facereclib.configurations.preprocessing.tan_triggs:preprocessor',
+        'audio-preprocessor= facereclib.configurations.preprocessing.audio_preprocessor:preprocessor',
       ],
 
       'facereclib.feature_extractor': [
@@ -73,6 +76,7 @@ setup(
         'lgbphs            = facereclib.configurations.features.lgbphs:feature_extractor',
         'linearize         = facereclib.configurations.features.linearize:feature_extractor',
         'sift              = facereclib.configurations.features.sift_keypoints:feature_extractor',
+        'cepstral          = facereclib.configurations.features.cepstral:feature_extractor',
       ],
 
       'facereclib.tool': [
@@ -103,5 +107,7 @@ setup(
       "setuptools", # for whatever
       "bob >= 1.1.1",      # base signal proc./machine learning library
       "xbob.db.atnt",      # for test purposes, the (freely available) AT&T database is required
+      "xbob.db.faceverif_fl",
+      "pysox",
     ],
 )
