@@ -52,21 +52,18 @@ class ISVTool (UBMGMMTool):
 
     utils.info("Trains and returns a UBM-GMM Model")
     UBMGMMTool._train_projector_using_array(self, data1)
-    
-    self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
-    
-    # Initializes GMMStats object    
+
+       
     data2 = []
     for client_features in train_features:
-      print len(feature)
       list = []
       for feature in client_features:
+        # Initializes GMMStats object 
         self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
         list.append(UBMGMMTool.project(self, feature)) 
       data2.append(list)
     
-   
-    
+
     utils.info("Do ISV training (Training of the enroller)")
     self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_subspace_dimension_of_u)
     self.m_jfabase.ubm = self.m_ubm
@@ -76,10 +73,10 @@ class ISVTool (UBMGMMTool):
     t.train_isv(data2, self.m_jfa_training_iterations, self.m_relevance_factor)
 
     # Save the JFA base AND the UBM into the same file
-    self.save_projector(projector_file)
+    self._save_projector(projector_file)
     
   
-  def save_projector(self, projector_file):
+  def _save_projector(self, projector_file):
     
     hdf5file = bob.io.HDF5File(projector_file, "w")
     hdf5file.create_group('Projector')
@@ -126,14 +123,13 @@ class ISVTool (UBMGMMTool):
 
   def project(self, feature_array):
     """Computes GMM statistics against a UBM, then corresponding Ux vector"""
-    print "projecting UBM features"
+    utils.info("projecting UBM features")
     
     projected_ubm = UBMGMMTool.project(self,feature_array)
     
-    print "projecting ISV features"
+    utils.info("projecting ISV features")
     projected_isv = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
-    print projected_isv.shape
-    
+
     model = bob.machine.JFAMachine(self.m_jfabase)
     model.estimate_ux(projected_ubm, projected_isv)
     return [projected_ubm, projected_isv]    
@@ -142,7 +138,7 @@ class ISVTool (UBMGMMTool):
   ################## JFA model enroll ####################
   
   def save_feature(self, data, feature_file):
-    print "Saving features (ISV projected)"
+    utils.info("Saving projected features...")
     hdf5file = bob.io.HDF5File(feature_file, "w")
     gmmstats = data[0]
     Ux = data[1]

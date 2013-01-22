@@ -151,7 +151,7 @@ class UBMGMMTool (Tool):
     trainer.train(self.m_ubm, array)
     
     
-  def save_projector(self, projector_file): 
+  def _save_projector(self, projector_file): 
     """Save projector to file"""
     # Saves the UBM to file  
     utils.debug(" .... Saving model to file '%s'" % projector_file)
@@ -168,7 +168,7 @@ class UBMGMMTool (Tool):
 
     self._train_projector_using_array(array)
     
-    self.save_projector(projector_file) 
+    self._save_projector(projector_file) 
 
     
 
