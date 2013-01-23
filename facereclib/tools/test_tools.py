@@ -402,13 +402,13 @@ class ToolTest(unittest.TestCase):
 
     # load the projector file
     tool.load_projector(self.reference_dir('isv_projector.hdf5'))
-    
+
     # compare ISV projector with reference
     hdf5file = bob.io.HDF5File(t)
     hdf5file.cd('Projector')
     projector_reference = bob.machine.GMMMachine(hdf5file)
     self.assertEqual(tool.m_ubm, projector_reference)
-    
+
     # compare ISV enroller with reference
     hdf5file.cd('/')
     hdf5file.cd('Enroller')
@@ -420,7 +420,7 @@ class ToolTest(unittest.TestCase):
     projected = tool.project(feature)
     if regenerate_refs:
       tool.save_feature(projected, self.reference_dir('isv_feature.hdf5'))
-    
+
     # compare the projected feature with the reference
     projected_reference = tool.read_feature(self.reference_dir('isv_feature.hdf5'))
     self.assertEqual(projected[0], projected_reference)
@@ -451,6 +451,7 @@ class ToolTest(unittest.TestCase):
 
 
   def test08_jfa(self):
+    # NOTE: This test will fail when it is run solely. Please always run all Tool tests in order to assure that they work.
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
@@ -495,7 +496,7 @@ class ToolTest(unittest.TestCase):
     self.assertEqual(projected, projected_reference)
 
     # train the enroller
-    t = tempfile.mkstemp('ubm.hdf5', prefix='frltest_')[1]
+    t = tempfile.mkstemp('enroll.hdf5', prefix='frltest_')[1]
     tool.train_enroller(self.train_gmm_stats(self.reference_dir('jfa_feature.hdf5'), count=5, minimum=-5., maximum=5.), t)
     if regenerate_refs:
       import shutil
@@ -520,8 +521,7 @@ class ToolTest(unittest.TestCase):
 
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
-    #self.assertAlmostEqual(sim, 0.25475154455)
-    self.assertAlmostEqual(sim, 0.25475154455, 4)
+    self.assertAlmostEqual(sim, 0.25459651295)
 
 
   def test09_plda(self):
