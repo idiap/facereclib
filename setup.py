@@ -96,6 +96,7 @@ setup(
       'facereclib.grid': [
         'grid              = facereclib.configurations.grid.grid',
         'demanding         = facereclib.configurations.grid.demanding',
+        'very-demanding    = facereclib.configurations.grid.very_demanding',
         'gbu               = facereclib.configurations.grid.gbu',
         'lfw               = facereclib.configurations.grid.lfw'
       ]

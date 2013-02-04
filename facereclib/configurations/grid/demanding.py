@@ -11,11 +11,11 @@ preprocessing_queue = {}
 
 # number of features that one job should extract
 number_of_features_per_job = 200
-extraction_queue = {'queue':'q1d', 'memfree':'8G'}
+extraction_queue = { 'queue':'q1d', 'memfree':'8G' }
 
 # number of features that one job should project
 number_of_projections_per_job = 200
-projection_queue = {}
+projection_queue = { 'queue':'q1d', 'memfree':'8G' }
 
 # number of models that should be enrolled by one enroll job
 number_of_models_per_enroll_job = 10

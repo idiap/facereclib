@@ -77,7 +77,6 @@ class GridGraph (Extractor):
       last_node = [image_resolution[i] - max(first_node[i],1) for i in (0,1)]
       # take the specified nodes
       self.m_graph_machine = bob.machine.GaborGraphMachine(
-
           first = first_node,
           last = last_node,
           step = node_distance
