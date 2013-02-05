@@ -44,6 +44,7 @@ class ToolChain:
     else:
       index_range = range(len(image_files))
 
+    utils.ensure_dir(self.m_file_selector.preprocessed_directory)
     utils.info("- Preprocessing: processing %d images from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.m_database.original_directory, self.m_file_selector.preprocessed_directory))
     # iterate through the images and perform normalization
 
@@ -115,6 +116,7 @@ class ToolChain:
     else:
       index_range = range(len(image_files))
 
+    utils.ensure_dir(self.m_file_selector.features_directory)
     utils.info("- Extraction: extracting %d features from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.preprocessed_directory, self.m_file_selector.features_directory))
     for i in index_range:
       image_file = image_files[i]
@@ -184,6 +186,7 @@ class ToolChain:
       else:
         index_range = range(len(feature_files))
 
+      utils.ensure_dir(self.m_file_selector.projected_directory)
       utils.info("- Projection: projecting %d images from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.features_directory, self.m_file_selector.projected_directory))
       # extract the features
       for i in index_range:

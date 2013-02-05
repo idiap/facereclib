@@ -32,7 +32,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # add specific configuration for ZT-normalization
     self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directory, self.m_database.protocol)
 
-    self.m_configuration.scores_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol)
+    self.m_configuration.scores_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, args.score_directory)
 
     # specify the file selector to be used
     self.m_file_selector = toolchain.FileSelector(
@@ -161,6 +161,8 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       # preprocessing must be done one after each other
       #   since training files are identical for all protocols
       preprocessing_deps = deps[:]
+      if 'preprocessing' in job_ids:
+        preprocessing_deps.append(job_ids['preprocessing'])
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess' + default_opt,
               name = 'pre-%s' % self.m_database.protocol,
@@ -171,7 +173,6 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       deps.append(job_ids['preprocessing'])
       if self.m_perform_training:
         training_deps.append(job_ids['preprocessing'])
-
 
     # feature extraction training
     if self.m_perform_training and not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
@@ -355,6 +356,9 @@ def parse_args(command_line_parameters):
   sub_dir_group.add_argument('--models-directory', type = str, metavar = 'DIR', default = 'models',
       help = 'Subdirectories (of the --temp-directory) where the models should be stored')
 
+  sub_dir_group.add_argument('--score-directory', metavar = 'DIR', default = 'nonorm',
+      help = 'Sub-directory (of --user-directory) where to write the results to (used mainly to create directory structures consistent with the faceverify.py script)')
+
   #######################################################################################
   ############################ other options ############################################
   other_group.add_argument('-F', '--force', action='store_true',
@@ -393,8 +397,12 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
   if args.sub_task:
     # execute the desired sub-task
-    executor = ToolChainExecutorGBU(args, args.protocol, args.perform_training)
-    executor.execute_grid_job()
+    try:
+      executor = ToolChainExecutorGBU(args, args.protocol, args.perform_training)
+      executor.execute_grid_job()
+    except Exception as e:
+      executor.delete_dependent_grid_jobs()
+      raise e
     return {}
 
   elif args.grid:

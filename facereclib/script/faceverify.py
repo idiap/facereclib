@@ -485,9 +485,10 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     # execute the desired sub-task
     try:
       executor.execute_grid_job()
-    except:
+    except Exception as e:
+      # delete dependent grid jobs, if desired
       executor.delete_dependent_grid_jobs()
-      raise
+      raise e
     return {}
   else:
     # no other parameter given, so deploy new jobs

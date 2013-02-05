@@ -25,15 +25,15 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # each fold might have its own feature extraction training and feature projection training,
     # so we have to overwrite the default directories
     view = 'view1' if protocol == 'view1' else 'view2'
-    self.m_configuration.preprocessed_directory = os.path.join(self.m_configuration.temp_directory, view , self.m_args.preprocessed_image_directory)
-    self.m_configuration.features_directory = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.features_directory)
-    self.m_configuration.projected_directory = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.projected_features_directory)
+    self.m_configuration.preprocessed_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.preprocessed_image_directory, view)
+    self.m_configuration.features_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.features_directory, protocol)
+    self.m_configuration.projected_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.projected_features_directory, protocol)
 
     self.m_configuration.extractor_file = os.path.join(self.m_configuration.temp_directory, view, self.m_args.extractor_file)
     self.m_configuration.projector_file = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.projector_file)
     self.m_configuration.enroller_file = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.enroller_file)
 
-    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.models_directory)
+    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directory, protocol)
     self.m_configuration.scores_directory = self.__scores_directory__(protocol)
 
     # define the final result text file
@@ -61,7 +61,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
   def __scores_directory__(self, protocol):
     """This helper function returns the score directory for the given protocol."""
-    return os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, protocol)
+    return os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, protocol, self.m_args.score_directory)
 
   def execute_tool_chain(self):
     """Executes the desired tool chain on the local machine"""
@@ -154,7 +154,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # That's it. The final averaging of results will be done by the calling function
 
 
-  def add_jobs_to_grid(self, external_dependencies, perform_preprocessing):
+  def add_jobs_to_grid(self, external_dependencies):
     # collect job ids
     job_ids = {}
 
@@ -165,7 +165,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     pshort = protocol[0] + protocol[4]
     default_opt = ' --protocol %s'%protocol
     # image preprocessing; never has any dependencies.
-    if not self.m_args.skip_preprocessing and perform_preprocessing:
+    if not self.m_args.skip_preprocessing:
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess' + default_opt,
               name = 'pre-%s'%pshort,
@@ -428,8 +428,14 @@ def parse_args(command_line_parameters):
   sub_dir_group.add_argument('--models-directory', metavar = 'DIR', default = 'models',
       help = 'Sub-directory (of --temp-directory) where the models should be stored.')
 
+  sub_dir_group.add_argument('--score-directory', metavar = 'DIR', default = 'nonorm',
+      help = 'Sub-directory (of --user-directory) where to write the results to (used mainly to create directory structures consistent with the faceverify.py script)')
+
   file_group.add_argument('--result-file', '-r', type = str, metavar = 'FILE',
       help = "The file where the final results should be written into. If not specified, 'results.txt' in the --user-directory/--score-sub-directory is used.")
+
+  skip_group.add_argument('--skip-averaging', '--noav', action='store_true',
+      help = 'Skip the score averaging step.')
 
   #######################################################################################
   ############################ other options ############################################
@@ -468,8 +474,12 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
   if args.sub_task:
     # execute the desired sub-task
-    executor = ToolChainExecutorLFW(args, protocol=args.protocol)
-    executor.execute_grid_job()
+    try:
+      executor = ToolChainExecutorLFW(args, protocol=args.protocol)
+      executor.execute_grid_job()
+    except Exception as e:
+      executor.delete_dependent_grid_jobs()
+      raise e
     return {}
 
   elif args.grid:
@@ -483,7 +493,6 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     dependencies = external_dependencies
     resulting_dependencies = {}
     average_dependencies = []
-    perform_preprocessing = True
     dry_run_init = external_fake_job_id
     # determine which protocols should be used
     protocols=[]
@@ -499,19 +508,20 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
       executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = dry_run_init)
 
       # add the jobs
-      new_dependencies = executor.add_jobs_to_grid(dependencies, perform_preprocessing)
+      new_dependencies = executor.add_jobs_to_grid(dependencies)
       resulting_dependencies.update(new_dependencies)
-      average_dependencies.append(new_dependencies['concatenate'])
+      if 'concatenate' in new_dependencies:
+        average_dependencies.append(new_dependencies['concatenate'])
       # perform preprocessing only once for view 2
-      if perform_preprocessing and protocol != 'view1':
+      if protocol != 'view1' and 'preprocessing' in new_dependencies:
         dependencies.append(new_dependencies['preprocessing'])
-        perform_preprocessing = False
-
       dry_run_init += 30
 
-    # at the end, compute the average result
-    last_dependency = executor.add_average_job_to_grid(average_dependencies)
-    resulting_dependencies.update(last_dependency)
+    if not args.skip_averaging:
+      # at the end, compute the average result
+      last_dependency = executor.add_average_job_to_grid(average_dependencies)
+      resulting_dependencies.update(last_dependency)
+
     # at the end of all protocols, return the list of dependencies
     return resulting_dependencies
   else:
@@ -531,7 +541,8 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
       executor.execute_tool_chain()
 
     # after all protocols have been processed, compute average result
-    executor.average_results()
+    if not args.skip_averaging:
+      executor.average_results()
     # no dependencies since we executed the jobs locally
     return {}
 

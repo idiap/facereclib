@@ -80,8 +80,8 @@ class DatabaseXBob (Database):
 
 
   def all_files(self):
-    """Returns all File objects of the database for the current protocol."""
-    files = self.m_database.objects(protocol = self.protocol, **self.all_files_options)
+    """Returns all File objects of the database for the current protocol. If the current protocol is 'None' (a string), None (NoneType) will be used instead"""
+    files = self.m_database.objects(protocol = self.protocol if self.protocol != 'None' else None, **self.all_files_options)
     return self.sort(files)
 
 
@@ -110,6 +110,7 @@ class DatabaseXBob (Database):
     else:
       return sorted([model.id for model in self.m_database.models(protocol = self.protocol, groups = group)])
 
+
   def client_id_from_model_id(self, model_id):
     """Returns the client id for the given model id."""
     if hasattr(self.m_database, 'get_client_id_from_model_id'):
@@ -117,10 +118,12 @@ class DatabaseXBob (Database):
     else:
       return model_id
 
+
   def enroll_files(self, model_id, group = 'dev'):
     """Returns the list of enrollment File objects for the given model id."""
     files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'enrol')
     return self.sort(files)
+
 
   def probe_files(self, model_id = None, group = 'dev'):
     """Returns the list of probe File objects (for the given model id, if given)."""
@@ -129,6 +132,7 @@ class DatabaseXBob (Database):
     else:
       files = self.m_database.objects(protocol = self.protocol, groups = group, purposes = 'probe')
     return self.sort(files)
+
 
   def annotations(self, file):
     """Returns the annotations for the given File object, if available."""

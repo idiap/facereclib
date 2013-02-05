@@ -117,6 +117,8 @@ class ToolChainExecutor:
     other_group = parser.add_argument_group('\nFlags that change the behavior of the experiment')
     other_group.add_argument('-q', '--dry-run', action='store_true',
         help = 'Only report the commands that will be executed, but do not execute them.')
+    other_group.add_argument('-R', '--delete-dependent-jobs-on-failure', action='store_true',
+        help = 'Try to recursively delete the dependent jobs from the SGE grid queue, when a job failed')
 
     utils.add_logger_command_line_option(other_group)
 
@@ -261,6 +263,9 @@ class ToolChainExecutor:
           del job_manager[other_id]
 
   def delete_dependent_grid_jobs(self):
+    if not self.m_args.delete_dependent_jobs_on_failure:
+      return
+
     job_id = self.grid_job_id()
 
     # if the job id is not specified, we are not in the grid,
@@ -268,8 +273,12 @@ class ToolChainExecutor:
     if job_id is None:
       return
 
-    import gridtk
-    job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
+    # try to kill the jobs (might fail, e.g. if a MemoryError triggered the job deletion)
+    try:
+      import gridtk
+      job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
 
-    self.kill_recursive(job_manager, job_id)
+      self.kill_recursive(job_manager, job_id)
+    except:
+      pass
 
