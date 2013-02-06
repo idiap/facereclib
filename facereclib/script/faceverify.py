@@ -410,7 +410,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
     # Test if the keyword was processed
     else:
-      raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors.")
+      raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors." % self.m_args.sub_task)
 
 
 def parse_args(command_line_parameters):
@@ -485,10 +485,13 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     # execute the desired sub-task
     try:
       executor.execute_grid_job()
-    except Exception as e:
+    except:
+      # remember stack trace of the exception
+      exc_info = sys.exc_info()
       # delete dependent grid jobs, if desired
       executor.delete_dependent_grid_jobs()
-      raise e
+      # re-raise exception with the original stack trace
+      raise exc_info[1], None, exc_info[2]
     return {}
   else:
     # no other parameter given, so deploy new jobs
