@@ -41,30 +41,21 @@ class ISVTool (UBMGMMTool):
     self.m_subspace_dimension_of_u = subspace_dimension_of_u
     self.m_jfa_training_iterations = jfa_training_iterations
     self.m_jfa_enroll_iterations = jfa_enroll_iterations
-    
 
-    
-  def train_projector(self, train_features, projector_file):
-    """Train Projector and Enroller at the same time"""
 
-    data_list = [feature for client in train_features for feature in client]
-    data1 = numpy.vstack(data_list)
-
-    utils.info("Trains and returns a UBM-GMM Model")
-    UBMGMMTool._train_projector_using_array(self, data1)
-
-       
+  def _train_isv(self, train_features):
+    utils.info("  -> Projecting training data")
     data2 = []
     for client_features in train_features:
       list = []
       for feature in client_features:
-        # Initializes GMMStats object 
+        # Initializes GMMStats object
         self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
-        list.append(UBMGMMTool.project(self, feature)) 
+        list.append(UBMGMMTool.project(self, feature))
       data2.append(list)
-    
 
-    utils.info("Do ISV training (Training of the enroller)")
+
+    utils.info("  -> Training ISV enroller")
     self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_subspace_dimension_of_u)
     self.m_jfabase.ubm = self.m_ubm
 
@@ -72,30 +63,43 @@ class ISVTool (UBMGMMTool):
     t = bob.trainer.JFABaseTrainer(self.m_jfabase)
     t.train_isv(data2, self.m_jfa_training_iterations, self.m_relevance_factor)
 
+
+  def train_projector(self, train_features, projector_file):
+    """Train Projector and Enroller at the same time"""
+
+    data1 = numpy.vstack([feature for client in train_features for feature in client])
+
+    UBMGMMTool._train_projector_using_array(self, data1)
+    # to save some memory, we might want to delete these data
+    del data1
+
+    # train ISV
+    self._train_isv(train_features)
+
     # Save the JFA base AND the UBM into the same file
     self._save_projector(projector_file)
-    
-  
+
+
   def _save_projector(self, projector_file):
-    
+
     hdf5file = bob.io.HDF5File(projector_file, "w")
     hdf5file.create_group('Projector')
     hdf5file.cd('Projector')
     self.m_ubm.save(hdf5file)
-    
+
     hdf5file.cd('/')
     hdf5file.create_group('Enroller')
     hdf5file.cd('Enroller')
     self.m_jfabase.save(hdf5file)
-    
-    
-  
+
+
+
   # Here, we just need to load the UBM from the projector file.
   def load_projector(self, projector_file):
     """Reads the UBM model from file"""
-    
+
     hdf5file = bob.io.HDF5File(projector_file)
-    
+
     # Load Projector
     hdf5file.cd('Projector')
     # read UBM
@@ -103,7 +107,7 @@ class ISVTool (UBMGMMTool):
     self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
     # Initializes GMMStats object
     self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
-    
+
     hdf5file.cd('/')
     # Load Enroller
     hdf5file.cd('Enroller')
@@ -123,22 +127,19 @@ class ISVTool (UBMGMMTool):
 
   def project(self, feature_array):
     """Computes GMM statistics against a UBM, then corresponding Ux vector"""
-    utils.info("projecting UBM features")
-    
+
     projected_ubm = UBMGMMTool.project(self,feature_array)
-    
-    utils.info("projecting ISV features")
+
     projected_isv = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
 
     model = bob.machine.JFAMachine(self.m_jfabase)
     model.estimate_ux(projected_ubm, projected_isv)
-    return [projected_ubm, projected_isv]    
+    return [projected_ubm, projected_isv]
 
   #######################################################
   ################## JFA model enroll ####################
-  
+
   def save_feature(self, data, feature_file):
-    utils.info("Saving projected features...")
     hdf5file = bob.io.HDF5File(feature_file, "w")
     gmmstats = data[0]
     Ux = data[1]
@@ -147,8 +148,8 @@ class ISVTool (UBMGMMTool):
     gmmstats.save(hdf5file)
     hdf5file.cd('/')
     hdf5file.set('Ux', Ux)
-    
-    
+
+
   def read_feature(self, feature_file):
     """Read the type of features that we require, namely GMMStats"""
     hdf5file = bob.io.HDF5File(feature_file)
@@ -186,7 +187,7 @@ class ISVTool (UBMGMMTool):
     gmmstats = probe[0]
     Ux = probe[1]
     return model.forward_ux(gmmstats, Ux)
-    
+
 
 
 
