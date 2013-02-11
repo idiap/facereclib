@@ -101,7 +101,7 @@ class ToolChainExecutor:
         help = 'Name of the file to write the feature extractor into.')
     file_group.add_argument('--projector-file', metavar = 'FILE', default = 'Projector.hdf5',
         help = 'Name of the file to write the feature projector into.')
-    file_group.add_argument('--enroller-file' , metavar = 'FILE', default = 'Enroler.hdf5',
+    file_group.add_argument('--enroller-file' , metavar = 'FILE', default = 'Enroller.hdf5',
         help = 'Name of the file to write the model enroller into.')
     file_group.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_database_file',
         help = 'The db file in which the submitted jobs will be written (only valid with the --grid option).')
@@ -164,7 +164,7 @@ class ToolChainExecutor:
     utils.add_bob_handlers('gridtk')
 
     # we want to have the executable with the name of this file, which is laying in the bin directory
-    self.m_common_parameters = [p for p in parameters if not '--skip' in p and p not in ('-q', '--dry-run')]
+    self.m_common_parameters = [p for p in parameters if not '--skip' in p and not '--no' in p and p not in ('-q', '--dry-run')]
 
     # job id used for the dry-run
     self.m_fake_job_id = fake_job_id
@@ -279,6 +279,6 @@ class ToolChainExecutor:
       job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
 
       self.kill_recursive(job_manager, job_id)
-    except:
-      pass
+    except Exception as e:
+      utils.warning("Deleting dependent jobs raised exception '%s'" % e)
 

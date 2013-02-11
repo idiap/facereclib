@@ -39,3 +39,15 @@ def gray_channel(image, channel = 'gray'):
 
   raise ValueError("The image channel " + channel + " is not known or not yet implemented")
 
+
+def quasi_random_indices(number_of_total_items, number_of_desired_items = None):
+  """Returns a quasi-random list of indices that will contain exactly the number of desired indices (or the number of total items in the list, if this is smaller)."""
+  # check if we need to compute a sublist at all
+  if number_of_desired_items >= number_of_total_items or number_of_desired_items is None or number_of_desired_items < 0:
+    return range(number_of_total_items)
+  increase = float(number_of_total_items)/float(number_of_desired_items)
+  # generate a regular quasi-random index list
+  return [int((i +.5)*increase) for i in range(number_of_desired_items)]
+
+
+
