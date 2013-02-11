@@ -38,6 +38,7 @@ setup(
         'faceverify.py = facereclib.script.faceverify:main',
         'faceverify_gbu.py = facereclib.script.faceverify_gbu:main',
         'faceverify_lfw.py = facereclib.script.faceverify_lfw:main',
+        'isv_trainer.py = facereclib.script.isv_trainer:main',
 #        'faceverify_pose.py = facereclib.script.faceverify_pose:main',
         'parameter_test.py = facereclib.script.parameter_test:main',
         'baselines.py = facereclib.script.baselines:main',
@@ -98,7 +99,8 @@ setup(
         'demanding         = facereclib.configurations.grid.demanding',
         'very-demanding    = facereclib.configurations.grid.very_demanding',
         'gbu               = facereclib.configurations.grid.gbu',
-        'lfw               = facereclib.configurations.grid.lfw'
+        'lfw               = facereclib.configurations.grid.lfw',
+        'small              = facereclib.configurations.grid.small',
       ]
     },
 
