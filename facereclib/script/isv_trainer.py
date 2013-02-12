@@ -393,15 +393,15 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
               **self.m_grid_config.extraction_queue)
       deps.append(job_ids['extraction'])
 
-    # feature projection training
+    # feature normalization
     if self.m_args.normalize_features and not self.m_args.skip_normalization:
       job_ids['feature_normalization'] = self.submit_grid_job(
               'normalize-features',
               name="norm-f",
               list_to_split = self.training_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
+              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
               dependencies = deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid_config.projection_queue)
       deps.append(job_ids['feature_normalization'])
 
     # KMeans
@@ -422,9 +422,9 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                 'kmeans-e-step --iteration %d' % iteration,
                 name='k-e-%d' % iteration,
                 list_to_split = self.training_list(),
-                number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
+                number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
                 dependencies = [job_ids['kmeans-m-step']] if iteration != self.m_args.kmeans_start_iteration else deps,
-                **self.m_grid_config.training_queue)
+                **self.m_grid_config.projection_queue)
 
         # M-step
         job_ids['kmeans-m-step'] = self.submit_grid_job(
@@ -455,9 +455,9 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                 'gmm-e-step --iteration %d' % iteration,
                 name='g-e-%d' % iteration,
                 list_to_split = self.training_list(),
-                number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
+                number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
                 dependencies = [job_ids['gmm-m-step']] if iteration != self.m_args.gmm_start_iteration else deps,
-                **self.m_grid_config.training_queue)
+                **self.m_grid_config.projection_queue)
 
         # M-step
         job_ids['gmm-m-step'] = self.submit_grid_job(
