@@ -365,7 +365,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
         # process the single result of view 1
 
         # HACK... Overwrite the score directory of the file selector to get the right result file
-        self.m_file_selector.scores_directories = (self.__scores_directory__('view1'),)
+        self.m_file_selector.score_directories = (self.__scores_directory__('view1'),)
         res_file = self.m_file_selector.no_norm_result_file('dev')
 
         negatives, positives = bob.measure.load.split_four_column(res_file)
@@ -386,7 +386,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
         errors = numpy.ndarray((10,), numpy.float64)
         for f in range(1,11):
           # HACK... Overwrite the score directory of the file selector to get the right result file
-          self.m_file_selector.scores_directories = (self.__scores_directory__('fold%d'%f),)
+          self.m_file_selector.score_directories = (self.__scores_directory__('fold%d'%f),)
           dev_res_file = self.m_file_selector.no_norm_result_file('dev')
           eval_res_file = self.m_file_selector.no_norm_result_file('eval')
 
@@ -445,7 +445,7 @@ def parse_args(command_line_parameters):
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
   other_group.add_argument('--views', nargs = '+', choices = ('view1', 'view2'), default = ['view1'],
       help = 'The views to be used, by default only the "view1" is executed.')
-  other_group.add_argument('--groups', metavar = 'GROUP', nargs = '+', choices = ('dev', 'eval'), default = ['dev'],
+  other_group.add_argument('--groups', metavar = 'GROUP', nargs = '+', choices = ('dev', 'eval'), default = ['dev', 'eval'],
       help = 'The groups to compute the scores for.')
 
   #######################################################################################
@@ -474,8 +474,8 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
   if args.sub_task:
     # execute the desired sub-task
+    executor = ToolChainExecutorLFW(args, protocol=args.protocol)
     try:
-      executor = ToolChainExecutorLFW(args, protocol=args.protocol)
       executor.execute_grid_job()
     except:
       # remember stack trace of the exception
