@@ -76,7 +76,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
         utils.debug("Skipping file '%s'" % normalized_list[index])
       else:
         utils.ensure_dir(os.path.dirname(normalized_list[index]))
-        f = bob.io.HDF5File(normalized_list[index], 'w')
+        f = bob.io.HDF5File(str(normalized_list[index]), 'w')
         f.set('mean', mean)
         f.set('std', std)
         utils.debug("Saved normalized feature %s" %str(normalized_list[index]))
@@ -511,7 +511,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     # train the feature projector
     elif self.m_args.sub_task == 'normalize-features':
       self.feature_normalization(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_features_per_job),
+          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
           force = self.m_args.force)
 
     # train the feature projector
@@ -522,13 +522,13 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     # train the feature projector
     elif self.m_args.sub_task == 'kmeans-e-step':
       self.kmeans_estep(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_features_per_job),
+          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
           force = self.m_args.force)
 
     # train the feature projector
     elif self.m_args.sub_task == 'kmeans-m-step':
       self.kmeans_mstep(
-          counts = self.m_grid_config.number_of_features_per_job,
+          counts = self.m_grid_config.number_of_projections_per_job,
           force = self.m_args.force)
 
     elif self.m_args.sub_task == 'gmm-init':
@@ -538,13 +538,13 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     # train the feature projector
     elif self.m_args.sub_task == 'gmm-e-step':
       self.gmm_estep(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_features_per_job),
+          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
           force = self.m_args.force)
 
     # train the feature projector
     elif self.m_args.sub_task == 'gmm-m-step':
       self.gmm_mstep(
-          counts = self.m_grid_config.number_of_features_per_job,
+          counts = self.m_grid_config.number_of_projections_per_job,
           force = self.m_args.force)
 
     # train the feature projector

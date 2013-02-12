@@ -100,7 +100,8 @@ setup(
         'very-demanding    = facereclib.configurations.grid.very_demanding',
         'gbu               = facereclib.configurations.grid.gbu',
         'lfw               = facereclib.configurations.grid.lfw',
-        'small              = facereclib.configurations.grid.small',
+        'small             = facereclib.configurations.grid.small',
+        'isv               = facereclib.configurations.grid.isv_training',
       ]
     },
 
