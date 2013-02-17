@@ -31,7 +31,7 @@ class PCATool (Tool):
     self.m_factor = -1 if is_distance_function else 1.
     self.m_uses_variances = uses_variances
     self.m_multiple_feature_scoring = {'average':numpy.average, 'min':min, 'max':max, 'median':numpy.median}[multiple_feature_scoring]
-    self.m_score_set = {'average':(lambda lst: sum(lst) / float(len(sum))), 'min':min, 'max':max}[score_set]
+    self.m_score_set = {'average':(lambda lst: sum(lst) / float(len(lst))), 'min':min, 'max':max}[score_set]
 
 
   def train_projector(self, training_features, projector_file):
