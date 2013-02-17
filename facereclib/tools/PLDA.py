@@ -91,7 +91,7 @@ class PLDATool (Tool):
       self.m_pca_machine = self.__train_pca__(training_features)
       training_features = self.__perform_pca__(self.m_pca_machine, training_features)
 
-    input_dimension = training_features[0].shape[0]
+    input_dimension = training_features[0].shape[1]
 
     utils.info("  -> Training PLDA base machine")
     # create trainer
