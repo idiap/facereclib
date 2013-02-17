@@ -18,7 +18,7 @@ class PLDATool (Tool):
       subspace_dimension_of_g, # Size of subspace G
       subspace_dimension_pca = None,  # if given, perform PCA on data and reduce the PCA subspace to the given dimension
       plda_training_iterations = 200, # Maximum number of iterations for the EM loop
-      plda_training_threshold = 1e-3, # Threshold for ending the EM loop
+      plda_training_threshold = 1e-6, # Threshold for ending the EM loop
       # TODO: refactor the remaining parameters!
       INIT_SEED = 0, # seed for initializing
       INIT_F_METHOD = bob.trainer.init_f_method.BETWEEN_SCATTER,
@@ -26,7 +26,8 @@ class PLDATool (Tool):
       INIT_G_METHOD = bob.trainer.init_g_method.WITHIN_SCATTER,
       INIT_G_RATIO = 1,
       INIT_S_METHOD = bob.trainer.init_sigma_method.VARIANCE_DATA, 
-      INIT_S_RATIO = 1
+      INIT_S_RATIO = 1,
+      score_set = 'joint_likelihood'
   ):
 
     """Initializes the local (PCA-)PLDA tool chain with the given file selector object"""
@@ -38,6 +39,7 @@ class PLDATool (Tool):
     self.m_subspace_dimension_pca = subspace_dimension_pca
     self.m_plda_training_iterations = plda_training_iterations
     self.m_plda_training_threshold = plda_training_threshold
+    self.m_score_set = {'joint_likelihood': 'joint_likelihood', 'average':(lambda lst: sum(lst) / float(len(lst))), 'min':min, 'max':max}[score_set]
 
     # TODO: refactor
     self.m_init = (INIT_SEED, INIT_F_METHOD, INIT_F_RATIO, INIT_G_METHOD, INIT_G_RATIO, INIT_S_METHOD, INIT_S_RATIO)
@@ -155,13 +157,30 @@ class PLDATool (Tool):
 
   def score(self, model, probe):
     """Computes the PLDA score for the given model and probe"""
+    if not isinstance(probe, (list,)): probe = [probe]
+    n_probes = len(probe)
     if self.m_subspace_dimension_pca is not None:
       # project probe
+      probe_ = numpy.ndarray((n_probes, self.m_pca_machine.shape[1]), numpy.float64)
       projected_probe = numpy.ndarray(self.m_pca_machine.shape[1], numpy.float64)
-      self.m_pca_machine(probe, projected_probe)
+      for i in range(n_probes):
+        self.m_pca_machine(probe[i], projected_probe)
+        probe_[i,:] = projected_probe
       # forward
-      return model.forward(projected_probe)
+      if self.m_score_set == 'joint_likelihood':
+        return model.forward(probe_)
+      else:
+        scores = [model.forward(probe_[i,:]) for i in range(n_probes)]
+        return self.m_score_set(scores)
     else:
       # just forward
-      return model.forward(probe)
+      if self.m_score_set == 'joint_likelihood':
+        probe_ = numpy.ndarray((n_probes, self.m_pca_machine.shape[1]), numpy.float64)
+        for i in range(n_probes):
+          probe_[i,:] = probe[i]
+        return model.forward(probe_)
+      # forward
+      else:
+        scores = [model.forward(probe[i]) for i in range(n_probes)]
+        return self.m_score_set(scores)
 

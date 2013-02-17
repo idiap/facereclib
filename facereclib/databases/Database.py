@@ -89,7 +89,10 @@ class Database:
   def sort(self, files):
     """Returns a sorted version of the given list of File's (or other structures that define an 'id' data member).
     The files will be sorted according to their id, and duplicate entries will be removed."""
-    sorted_files = sorted(files, cmp=lambda x,y: cmp(x.id, y.id))
+    if files and hasattr(files[0], 'files'): # Fileset
+      sorted_files = sorted(files)
+    else:
+      sorted_files = sorted(files, cmp=lambda x,y: cmp(x.id, y.id))
     return [f for i,f in enumerate(sorted_files) if not i or sorted_files[i-1].id != f.id]
 
   def arrange_by_client(self, files):
@@ -149,6 +152,11 @@ class Database:
     """Returns a list of probe File object in a specific format that should be compared with the model belonging to the given model id of the specified group"""
     raise NotImplementedError("Please implement this function in derived classes")
 
+  
+  def probe_file_sets(self, model_id = None, group = 'dev'):
+    """Returns a list of probe Fileset object in a specific format that should be compared with the model belonging to the given model id of the specified group"""
+    raise NotImplementedError("Please implement this function in derived classes")
+
 
 
 class DatabaseZT (Database):
@@ -165,4 +173,8 @@ class DatabaseZT (Database):
 
   def z_probe_files(self, model_id = None, group = 'dev'):
     """Returns a list of Z-probe objects in a specific format that should be compared with the model belonging to the given model id of the specified group"""
+    raise NotImplementedError("Please implement this function in derived classes")
+  
+  def z_probe_file_sets(self, model_id = None, group = 'dev'):
+    """Returns a list of Z-probesets object in a specific format that should be compared with the model belonging to the given model id of the specified group"""
     raise NotImplementedError("Please implement this function in derived classes")

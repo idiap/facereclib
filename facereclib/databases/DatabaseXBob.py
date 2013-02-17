@@ -134,6 +134,15 @@ class DatabaseXBob (Database):
     return self.sort(files)
 
 
+  def probe_filesets(self, model_id = None, group = 'dev'):
+    """Returns the list of probe File objects (for the given model id, if given)."""
+    if model_id:
+      filesets = self.m_database.object_sets(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'probe')
+    else:
+      filesets = self.m_database.object_sets(protocol = self.protocol, groups = group, purposes = 'probe')
+    return self.sort(filesets)
+
+
   def annotations(self, file):
     """Returns the annotations for the given File object, if available."""
     if self.has_internal_annotations:
@@ -169,4 +178,10 @@ class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
     """Returns the list of Z-probe File objects."""
     files = self.m_database.zobjects(protocol = self.protocol, groups = group)
     return self.sort(files)
+
+
+  def z_probe_filesets(self, group = 'dev'):
+    """Returns the list of Z-probe Fileset objects."""
+    filesets = self.m_database.zobject_sets(protocol = self.protocol, groups = group)
+    return self.sort(filesets)
 

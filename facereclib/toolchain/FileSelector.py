@@ -36,7 +36,7 @@ class FileSelector:
     self.score_directories = score_directories
     self.zt_score_directories = zt_score_directories
     self.default_extension = default_extension
-
+    self.use_fileset = hasattr(self.m_database, 'm_database') and hasattr(self.m_database.m_database, 'has_fileset') and self.m_database.m_database.has_fileset(self.m_database.protocol) 
 
   def get_paths(self, files, directory_type = None, directory = None, extension = None):
     """Returns the list of file names for the given list of File objects."""
@@ -55,10 +55,19 @@ class FileSelector:
       extension = self.default_extension
 
     # return the paths, while removing duplicate entries
-    known = set()
-    return [file.make_path(directory, extension) for file in files if file.path not in known and not known.add(file.path)]
-
-
+    if files:
+      # List of Filesets
+      if hasattr(files[0], 'files'):
+        res = []
+        for fileset in files:
+          res.append([f.make_path(directory, extension) for f in fileset.files])
+        return res
+      # List of files
+      else:
+        known = set()
+        return [file.make_path(directory, extension) for file in files if file.path not in known and not known.add(file.path)]
+    else:
+      return files
 
   ### List of files that will be used for all files
   def original_image_list(self):
@@ -125,13 +134,19 @@ class FileSelector:
   def probe_objects(self, group):
     """Returns the probe File objects used to compute the raw scores."""
     # get the probe files for all models
-    return self.m_database.probe_files(group = group)
+    if self.use_fileset:
+      return self.m_database.probe_filesets(group = group)
+    else:
+      return self.m_database.probe_files(group = group)
 
   def probe_objects_for_model(self, model_id, group):
     """Returns the probe File objects used to compute the raw scores for the given model id.
     This is actually a sub-set of all probe_objects()."""
     # get the probe files for the specific model
-    return self.m_database.probe_files(model_id = model_id, group = group)
+    if self.use_fileset:
+      return self.m_database.probe_filesets(model_id = model_id, group = group)
+    else:
+      return self.m_database.probe_files(model_id = model_id, group = group)
 
 
   def t_model_ids(self, group):
@@ -150,8 +165,10 @@ class FileSelector:
   def z_probe_objects(self, group):
     """Returns the probe File objects used to compute the Z-Norm."""
     # get the probe files for all models
-    return self.m_database.z_probe_files(group = group)
-
+    if self.use_fileset:
+      return self.m_database.z_probe_filesets(group = group)
+    else:
+      return self.m_database.z_probe_files(group = group)
 
 
   ### ZT-Normalization
