@@ -21,7 +21,7 @@ import os
 from .. import utils
 
 class File:
-  """This class defines the minimum interface of a file information that needs to be exported"""
+  """This class defines the minimum interface of a file that needs to be exported"""
 
   def __init__(self, file_id, client_id, path):
     # The **unique** id of the file
@@ -31,6 +31,9 @@ class File:
     # The **relative** path of the file according to the base directory of the database, without file extension
     self.path = path
 
+  def __lt__(self, other):
+    # compare two File objects by comparing their IDs
+    return self.id < other.id
 
 
 class Database:
@@ -89,7 +92,9 @@ class Database:
   def sort(self, files):
     """Returns a sorted version of the given list of File's (or other structures that define an 'id' data member).
     The files will be sorted according to their id, and duplicate entries will be removed."""
-    sorted_files = sorted(files, cmp=lambda x,y: cmp(x.id, y.id))
+    # sort files using their sort function
+    sorted_files = sorted(files)
+
     return [f for i,f in enumerate(sorted_files) if not i or sorted_files[i-1].id != f.id]
 
   def arrange_by_client(self, files):
