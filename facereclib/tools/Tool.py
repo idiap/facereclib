@@ -73,7 +73,7 @@ class Tool:
     and fuses the scores using the fusion method specified in the constructor of this class.
     Usually this function is called from derived class 'score' functions."""
     if isinstance(models, list):
-      return self.m_model_fusion_function([self.score(model, probe) for probe in probes])
+      return self.m_model_fusion_function([self.score(model, probe) for model in models])
     elif isinstance(models, numpy.ndarray):
       return self.m_model_fusion_function([self.score(models[i,:], probe) for i in range(models.shape[0])])
     else:
