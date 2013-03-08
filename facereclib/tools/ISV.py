@@ -183,11 +183,15 @@ class ISVTool (UBMGMMTool):
     return [gmmstats, Ux]
 
   def score(self, model, probe):
-    """Computes the score for the given model and the given probe using the scoring function from the config file"""
+    """Computes the score for the given model and the given probe."""
     gmmstats = probe[0]
     Ux = probe[1]
     return model.forward_ux(gmmstats, Ux)
 
+  def score_for_multiple_probes(self, model, probes):
+    """This function computes the score between the given model and several given probe files."""
+    # TODO: Implement this function for ISV
+    raise NotImplementedError("Please implement me!")
 
 
 

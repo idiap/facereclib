@@ -110,3 +110,12 @@ class JFATool (UBMGMMTool):
     model.forward([probe], scores)
     return scores[0]
 
+  def score_for_multiple_probes(self, model, probes):
+    """This function computes the score between the given model and several given probe files."""
+    # TODO: Check if this is correct
+    utils.warn("This function needs to be verified!")
+    scores = numpy.ndarray((len(probes),), 'float64')
+    model.forward(probes, scores)
+    return scores[0]
+
+

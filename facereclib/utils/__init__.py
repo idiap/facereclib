@@ -12,6 +12,7 @@ from annotations import read_annotations
 
 import os
 import bob
+import numpy
 
 def ensure_dir(dirname):
   """ Creates the directory dirname if it does not already exist,
@@ -20,6 +21,15 @@ def ensure_dir(dirname):
       exists. """
   bob.db.utils.makedirs_safe(dirname)
 
+
+def score_fusion_strategy(strategy_name = 'avarage'):
+  """Returns a function to compute a fusion strategy between different scores."""
+  return {
+      'average' : numpy.average,
+      'min' : min,
+      'max' : max,
+      'median' : numpy.median
+  }[strategy_name]
 
 def gray_channel(image, channel = 'gray'):
   """Returns the desired channel of the given image. Currently, gray, red, green and blue channels are supported."""

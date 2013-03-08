@@ -296,15 +296,14 @@ class ToolChain:
   def __scores__(self, model, probe_files):
     """Compute simple scores for the given model."""
     scores = numpy.ndarray((1,len(probe_files)), 'float64')
-    if isinstance(probe_files[0], list):
+    if self.m_file_selector.uses_probe_file_sets():
+      assert isinstance(probe_files[0], list)
       # Loops over the probe sets
       for i in range(len(probe_files)):
         # read probes from probe sets
-        probe_lst = []
-        for j in range(len(probe_files[i])):
-          probe_lst.append(self.m_tool.read_probe(str(probe_files[i][j])))
+        probes = [self.m_tool.read_probe(str(probe_file)) for probe_file in probe_files[i]]
         # compute score
-        scores[0,i] = self.m_tool.score(model, probe_lst)
+        scores[0,i] = self.m_tool.score_for_multiple_probes(model, probes)
     else:
       # Loops over the probes
       for i in range(len(probe_files)):
@@ -360,10 +359,8 @@ class ToolChain:
       all_probe_objects = self.m_file_selector.probe_objects(group)
       all_probe_files = self.m_file_selector.get_paths(self.m_file_selector.probe_objects(group), 'projected' if self.m_use_projected_dir else 'features')
       # read all probe files into memory
-      if self.m_file_selector.use_fileset:
-        all_preloaded_probes = []
-        for fileset in all_probe_files:
-          all_preloaded_probes.append([self.m_tool.read_probe(str(probe_file)) for probe_file in fileset])
+      if self.m_file_selector.uses_probe_file_sets():
+        all_preloaded_probes = [[self.m_tool.read_probe(str(probe_file)) for probe_file in file_set] for file_set in all_probe_files]
       else:
         all_preloaded_probes = [self.m_tool.read_probe(str(probe_file)) for probe_file in all_probe_files]
 
@@ -407,10 +404,8 @@ class ToolChain:
     if preload_probes:
       utils.info("- Scoring: preloading Z-probe files of group '%s'" % group)
       # read all probe files into memory
-      if self.m_file_selector.use_fileset:
-        preloaded_z_probes = []
-        for fileset in z_probe_files:
-          preloaded_z_probes.append([self.m_tool.read_probe(str(z_probe_file)) for z_probe_file in fileset])
+      if self.m_file_selector.uses_probe_file_sets():
+        preloaded_z_probes = [[self.m_tool.read_probe(str(z_probe_file)) for z_probe_file in file_set] for file_set in z_probe_files]
       else:
         preloaded_z_probes = [self.m_tool.read_probe(str(z_probe_file)) for z_probe_file in z_probe_files]
 
@@ -440,10 +435,8 @@ class ToolChain:
     if preload_probes:
       utils.info("- Scoring: preloading probe files of group '%s'" % group)
       # read all probe files into memory
-      if self.m_file_selector.use_fileset:
-        preloaded_probes = []
-        for fileset in probe_files:
-          preloaded_probes.append([self.m_tool.read_probe(str(probe_file)) for probe_file in fileset])
+      if self.m_file_selector.uses_probe_file_sets():
+        preloaded_probes = [[self.m_tool.read_probe(str(probe_file)) for probe_file in file_set] for file_set in all_probe_files]
       else:
         preloaded_probes = [self.m_tool.read_probe(str(probe_file)) for probe_file in probe_files]
 
@@ -473,10 +466,8 @@ class ToolChain:
     if preload_probes:
       utils.info("- Scoring: preloading Z-probe files of group '%s'" % group)
       # read all probe files into memory
-      if self.m_file_selector.use_fileset:
-        preloaded_z_probes = []
-        for fileset in z_probe_files:
-          preloaded_z_probes.append([self.m_tool.read_probe(str(z_probe_file)) for z_probe_file in fileset])
+      if self.m_file_selector.uses_probe_file_sets():
+        preloaded_z_probes = [[self.m_tool.read_probe(str(z_probe_file)) for z_probe_file in file_set] for file_set in z_probe_files]
       else:
         preloaded_z_probes = [self.m_tool.read_probe(str(z_probe_file)) for z_probe_file in z_probe_files]
 

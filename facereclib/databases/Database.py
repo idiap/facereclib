@@ -36,6 +36,24 @@ class File:
     return self.id < other.id
 
 
+class FileSet:
+  """This class defines the minimum interface of a file set that needs to be exported"""
+
+  def __init__(self, file_set_id, client_id, file_set_name):
+    # The **unique** id of the file set
+    self.id = file_set_id
+    # The id of the client that is attached to the file
+    self.client_id = client_id
+    # A name of the file set
+    self.path = file_set_name
+    # The list of files contained in this set
+    self.files = []
+
+  def __lt__(self, other):
+    # compare two File set objects by comparing their IDs
+    return self.id < other.id
+
+
 class Database:
   """This class represents the basic API for database access.
   Please use this class as a base class for your database access classes.
@@ -121,6 +139,12 @@ class Database:
       return None
 
 
+  def uses_probe_file_sets(self):
+    """Defines if, for the current protocol, the database uses several probe files to generate a score.
+    By default, False is returned. Overwrite the default if you need different behavior."""
+    return False
+
+
   ###########################################################################
   ### Interface functions that you need to implement in your class.
   ###########################################################################
@@ -154,7 +178,7 @@ class Database:
     """Returns a list of probe File object in a specific format that should be compared with the model belonging to the given model id of the specified group"""
     raise NotImplementedError("Please implement this function in derived classes")
 
-  
+
   def probe_file_sets(self, model_id = None, group = 'dev'):
     """Returns a list of probe Fileset object in a specific format that should be compared with the model belonging to the given model id of the specified group"""
     raise NotImplementedError("Please implement this function in derived classes")
@@ -176,7 +200,7 @@ class DatabaseZT (Database):
   def z_probe_files(self, model_id = None, group = 'dev'):
     """Returns a list of Z-probe objects in a specific format that should be compared with the model belonging to the given model id of the specified group"""
     raise NotImplementedError("Please implement this function in derived classes")
-  
+
   def z_probe_file_sets(self, model_id = None, group = 'dev'):
     """Returns a list of Z-probesets object in a specific format that should be compared with the model belonging to the given model id of the specified group"""
     raise NotImplementedError("Please implement this function in derived classes")

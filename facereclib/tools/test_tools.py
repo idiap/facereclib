@@ -211,7 +211,7 @@ class ToolTest(unittest.TestCase):
 
     # test the calculation of the subspace dimension based on percentage of variance,
     # and the usage of a different way to compute the final score in case of multiple features per model
-    tool = facereclib.tools.LDATool(5, .9, multiple_feature_scoring = 'median')
+    tool = facereclib.tools.LDATool(5, .9, multiple_model_scoring = 'median')
     tool.train_projector(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=20, minimum=0., maximum=255.), t)
     self.assertEqual(tool.m_pca_subspace, 334)
     tool.load_projector(t)

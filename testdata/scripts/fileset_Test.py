@@ -8,33 +8,7 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
     facereclib.databases.DatabaseXBobZT.__init__(
         self,
         database = xbob.db.atnt.Database(),
-        name = 'test',
-        image_directory = "/idiap/group/biometric/databases/orl/",
-        image_extension = ".pgm"
-    )
-
-  def t_model_ids(self, group = 'dev'):
-    return self.model_ids(group)
-
-
-  def t_enroll_files(self, model_id, group = 'dev'):
-    return self.enroll_files(model_id, group)
-
-
-  def z_probe_files(self, group = 'dev'):
-    return self.probe_files(None, group)
-
-database = TestDatabase()
-
-
-class TestFileSetDatabase (facereclib.databases.DatabaseXBobZT):
-
-  def __init__(self):
-    # call base class constructor with useful parameters
-    facereclib.databases.DatabaseXBobZT.__init__(
-        self,
-        database = xbob.db.atnt.Database(),
-        name = 'test',
+        name = 'test2',
         image_directory = "/idiap/group/biometric/databases/orl/",
         image_extension = ".pgm"
     )
@@ -49,7 +23,7 @@ class TestFileSetDatabase (facereclib.databases.DatabaseXBobZT):
     file_sets = []
     for client_files in files:
       # generate file set for each client
-      file_set = facereclib.database.FileSet(client_files[0].client_id, client_files[0].client_id, client_files[0].path)
+      file_set = facereclib.databases.FileSet(client_files[0].client_id, client_files[0].client_id, client_files[0].path)
       file_set.files = client_files
       file_sets.append(file_set)
     return file_sets
@@ -64,6 +38,9 @@ class TestFileSetDatabase (facereclib.databases.DatabaseXBobZT):
 
 
   def z_probe_files(self, group = 'dev'):
+    return self.probe_files(None, group)
+
+  def z_probe_file_sets(self, group = 'dev'):
     return self.probe_file_sets(None, group)
 
 database = TestDatabase()

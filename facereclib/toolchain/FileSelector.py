@@ -36,7 +36,11 @@ class FileSelector:
     self.score_directories = score_directories
     self.zt_score_directories = zt_score_directories
     self.default_extension = default_extension
-    self.use_fileset = hasattr(self.m_database, 'm_database') and hasattr(self.m_database.m_database, 'has_fileset') and self.m_database.m_database.has_fileset(self.m_database.protocol) 
+
+
+  def uses_probe_file_sets(self):
+    """Returns true if the given protocol enables several probe files for scoring."""
+    return self.m_database.uses_probe_file_sets()
 
   def get_paths(self, files, directory_type = None, directory = None, extension = None):
     """Returns the list of file names for the given list of File objects."""
@@ -54,20 +58,14 @@ class FileSelector:
     if not extension:
       extension = self.default_extension
 
-    # return the paths, while removing duplicate entries
-    if files:
-      # List of Filesets
-      if hasattr(files[0], 'files'):
-        res = []
-        for fileset in files:
-          res.append([f.make_path(directory, extension) for f in fileset.files])
-        return res
-      # List of files
-      else:
-        known = set()
-        return [file.make_path(directory, extension) for file in files if file.path not in known and not known.add(file.path)]
+    # return the paths of the files
+    if self.uses_probe_file_sets() and files and hasattr(files[0], 'files'):
+      # List of Filesets: do not remove duplicates
+      return [[f.make_path(directory, extension) for f in file_set.files] for file_set in files]
     else:
-      return files
+      # List of files, remove duplicate entries
+      known = set()
+      return [file.make_path(directory, extension) for file in files if file.path not in known and not known.add(file.path)]
 
   ### List of files that will be used for all files
   def original_image_list(self):
@@ -78,7 +76,6 @@ class FileSelector:
     """Returns the list of annotations, if existing."""
     known = set()
     return [file for file in self.m_database.all_files() if file.path not in known and not known.add(file.path)]
-
 
   def get_annotations(self, annotation_file):
     """Reads the annotation of the given file."""
@@ -96,7 +93,6 @@ class FileSelector:
   def projected_list(self):
     """Returns the list of projected feature files."""
     return self.get_paths(self.m_database.all_files(), "projected")
-
 
 
   ### Training lists
@@ -134,8 +130,8 @@ class FileSelector:
   def probe_objects(self, group):
     """Returns the probe File objects used to compute the raw scores."""
     # get the probe files for all models
-    if self.use_fileset:
-      return self.m_database.probe_filesets(group = group)
+    if self.uses_probe_file_sets():
+      return self.m_database.probe_file_sets(group = group)
     else:
       return self.m_database.probe_files(group = group)
 
@@ -143,8 +139,8 @@ class FileSelector:
     """Returns the probe File objects used to compute the raw scores for the given model id.
     This is actually a sub-set of all probe_objects()."""
     # get the probe files for the specific model
-    if self.use_fileset:
-      return self.m_database.probe_filesets(model_id = model_id, group = group)
+    if self.uses_probe_file_sets():
+      return self.m_database.probe_file_sets(model_id = model_id, group = group)
     else:
       return self.m_database.probe_files(model_id = model_id, group = group)
 
@@ -165,8 +161,8 @@ class FileSelector:
   def z_probe_objects(self, group):
     """Returns the probe File objects used to compute the Z-Norm."""
     # get the probe files for all models
-    if self.use_fileset:
-      return self.m_database.z_probe_filesets(group = group)
+    if self.uses_probe_file_sets():
+      return self.m_database.z_probe_file_sets(group = group)
     else:
       return self.m_database.z_probe_files(group = group)
 

@@ -17,21 +17,24 @@ class PCATool (Tool):
       distance_function = bob.math.euclidean_distance,
       is_distance_function = True,
       uses_variances = False,
-      multiple_feature_scoring = 'average',
-      score_set = 'average'
+      multiple_model_scoring = 'average',
+      multiple_probe_scoring = 'average'
   ):
 
     """Initializes the PCA tool with the given setup"""
     # call base class constructor and register that the tool performs a projection
-    Tool.__init__(self, performs_projection = True)
+    Tool.__init__(
+        self,
+        performs_projection = True,
+        multiple_model_scoring = multiple_model_scoring,
+        multiple_probe_scoring = multiple_probe_scoring
+    )
 
     self.m_subspace_dim = subspace_dimension
     self.m_machine = None
     self.m_distance_function = distance_function
     self.m_factor = -1 if is_distance_function else 1.
     self.m_uses_variances = uses_variances
-    self.m_multiple_feature_scoring = {'average':numpy.average, 'min':min, 'max':max, 'median':numpy.median}[multiple_feature_scoring]
-    self.m_score_set = {'average':(lambda lst: sum(lst) / float(len(lst))), 'min':min, 'max':max}[score_set]
 
 
   def train_projector(self, training_features, projector_file):
@@ -97,21 +100,12 @@ class PCATool (Tool):
   def score(self, model, probe):
     """Computes the distance of the model to the probe using the distance function taken from the config file"""
     # return the negative distance (as a similarity measure)
-    if not isinstance(probe, (list,)):
-      if self.m_uses_variances:
-        scores = [self.m_factor * self.m_distance_function(model[n], probe, self.m_variances) for n in range(model.shape[0])]
-      else:
-        scores = [self.m_factor * self.m_distance_function(model[n], probe) for n in range(model.shape[0])]
-      # compute the desired mixture of scores
-      return self.m_multiple_feature_scoring(scores)
+    if len(model.shape) == 2:
+      # we have multiple models, so we use the multiple model scoring
+      return self.score_for_multiple_models(model, probe)
+    elif self.m_uses_variances:
+      # single model, single probe (multiple probes have already been handled)
+      return self.m_factor * self.m_distance_function(model, probe, self.m_variances)
     else:
-      if self.m_uses_variances:
-        scores = []
-        for probe_ in probe:
-          scores.append(self.m_multiple_feature_scoring([self.m_factor * self.m_distance_function(model[n], probe_, self.m_variances) for n in range(model.shape[0])]))
-      else:
-        scores = []
-        for probe_ in probe:
-          scores.append(self.m_multiple_feature_scoring([self.m_factor * self.m_distance_function(model[n], probe_) for n in range(model.shape[0])]))
-      # compute the desired mixture of scores
-      return self.m_score_set(scores)
+      # single model, single probe (multiple probes have already been handled)
+      return self.m_factor * self.m_distance_function(model, probe)
