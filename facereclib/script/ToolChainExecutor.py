@@ -280,5 +280,5 @@ class ToolChainExecutor:
 
       self.kill_recursive(job_manager, job_id)
     except Exception as e:
-      utils.warning("Deleting dependent jobs raised exception '%s'" % e)
+      utils.warn("Deleting dependent jobs raised exception '%s'" % e)
 

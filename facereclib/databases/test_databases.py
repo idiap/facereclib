@@ -89,6 +89,7 @@ class DatabaseTest(unittest.TestCase):
 
 
   def test06_multipie(self):
+    raise SkipTest('This test definitely takes too much time. If you want the tests enabled, please disable this exception temporarily.')
     self.check_database_zt(self.config('multipie'))
     self.check_database_zt(self.config('multipie_P'))
     self.check_database_zt(self.config('multipie_left_profile'))
