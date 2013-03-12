@@ -88,6 +88,7 @@ class ToolChain:
       if self.__check_file__(extractor_file, force, 1000):
         utils.info("- Extraction: extractor '%s' already exists." % extractor_file)
       else:
+        utils.ensure_dir(os.path.dirname(extractor_file))
         # read training files
         if extractor.split_training_images_by_client:
           train_files = self.m_file_selector.training_list('preprocessed', 'train_extractor', arrange_by_client = True)
@@ -98,7 +99,6 @@ class ToolChain:
           train_images = self.__read_images__(train_files, preprocessor)
           utils.info("- Extraction: training extractor '%s' using %d training files: " %(extractor_file, len(train_files)))
         # train model
-        utils.ensure_dir(os.path.dirname(extractor_file))
         extractor.train(train_images, extractor_file)
 
 
@@ -154,6 +154,7 @@ class ToolChain:
       if self.__check_file__(projector_file, force, 1000):
         utils.info("- Projection: projector '%s' already exists." % projector_file)
       else:
+        utils.ensure_dir(os.path.dirname(projector_file))
         # train projector
         if tool.split_training_features_by_client:
           train_files = self.m_file_selector.training_list('features', 'train_projector', arrange_by_client = True)
@@ -165,7 +166,6 @@ class ToolChain:
           utils.info("- Projection: training projector '%s' using %d training files: " %(projector_file, len(train_files)))
 
         # perform training
-        utils.ensure_dir(os.path.dirname(projector_file))
         tool.train_projector(train_features, str(projector_file))
 
 
@@ -213,6 +213,7 @@ class ToolChain:
       if self.__check_file__(enroller_file, force, 1000):
         utils.info("- Enrollment: enroller '%s' already exists." % enroller_file)
       else:
+        utils.ensure_dir(os.path.dirname(enroller_file))
         # first, load the projector
         tool.load_projector(str(self.m_file_selector.projector_file))
         # training models
@@ -221,7 +222,6 @@ class ToolChain:
 
         # perform training
         utils.info("- Enrollment: training enroller '%s' using %d identities: " %(enroller_file, len(train_features)))
-        utils.ensure_dir(os.path.dirname(enroller_file))
         tool.train_enroller(train_features, str(enroller_file))
 
 

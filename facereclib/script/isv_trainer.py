@@ -272,7 +272,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       # Saves the GMM statistics to the file
       utils.ensure_dir(os.path.dirname(stats_file))
       gmm_stats.save(bob.io.HDF5File(stats_file, 'w'))
-      utils.info("ISV training: Wrote GMM stats f'%s'" % (stats_file))
+      utils.info("ISV training: Wrote GMM stats '%s'" % (stats_file))
 
 
   def gmm_mstep(self, counts, force=False):
@@ -472,11 +472,13 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
 
     # feature projection training
     if not self.m_args.skip_isv:
+      # check if we have a special queue for the ISV training (which usually needs a lot of memory)
+      queue = self.m_grid_config.isv_training_queue if hasattr(self.m_grid_config, 'isv_training_queue') else self.m_grid_config.training_queue
       job_ids['isv_training'] = self.submit_grid_job(
               'train-isv',
               name="isv",
               dependencies = deps,
-              **self.m_grid_config.training_queue)
+              **queue)
       deps.append(job_ids['isv_training'])
 
 

@@ -5,6 +5,9 @@
 # default queue used for training
 training_queue = { 'queue':'q1d', 'memfree':'4G' }
 
+# the queue that is used solely for the final ISV training step
+isv_training_queue = { 'queue':'q1wm', 'memfree':'32G', 'pe_opt':'pe_mth 4', 'hvmem':'8G' }
+
 # number of images that one job should preprocess
 number_of_images_per_job = 1000
 preprocessing_queue = {}
