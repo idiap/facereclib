@@ -83,6 +83,9 @@ class ToolTest(unittest.TestCase):
     sim = tool.score(model, feature)
     self.assertAlmostEqual(sim, 1.)
 
+    sim2 = tool.score_for_multiple_probes(model, [feature, feature])
+    self.assertAlmostEqual(sim, sim2)
+
 
   def test02_lgbphs(self):
     # read input
@@ -441,6 +444,10 @@ class ToolTest(unittest.TestCase):
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
     self.assertAlmostEqual(sim, 0.00273881973989)
+
+    # score with a concatenation of the probe
+    sim2 = tool.score_for_multiple_probes(model, [probe, probe])
+    self.assertAlmostEqual(sim, sim2, places=5)
 
 
   def test07a_isv_video(self):

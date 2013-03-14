@@ -110,6 +110,14 @@ class GaborJetTool (Tool):
 
   def score_for_multiple_probes(self, model, probes):
     """This function computes the score between the given model graph(s) and several given probe graphs."""
-    # TODO: Implement this function for Graphs
-    raise NotImplementedError("Please implement me!")
+    if self.m_jet_scoring is None:
+      # compute sum of Gabor jet similarities between averaged model graph and probe graphs
+      return numpy.average([self.m_similarity_function(model[n], probes[p][n]) for n in range(model.shape[0]) for p in len(probes)])
+    else:
+      # compute all Gabor jet similarities
+      scores = [[self.m_similarity_function(model[c,n], probes[p][n]) for n in range(model.shape[1])] for p in range(len(probes)) for c in range(model.shape[0])]
+      # for each jet location, compute the desired score averaging
+      return self.m_graph_scoring(self.m_jet_scoring(scores, axis=0))
+
+
 

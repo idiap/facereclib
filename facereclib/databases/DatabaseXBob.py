@@ -81,7 +81,7 @@ class DatabaseXBob (Database):
 
   def uses_probe_file_sets(self):
     """Defines if, for the current protocol, the database uses several probe files to generate a score."""
-    return self.m_database.provides_file_set_for_protocol(self.protocol)
+    return self.protocol != 'None' and self.m_database.provides_file_set_for_protocol(self.protocol)
 
 
   def all_files(self):

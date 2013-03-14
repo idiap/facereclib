@@ -191,8 +191,12 @@ class ISVTool (UBMGMMTool):
   def score_for_multiple_probes(self, model, probes):
     """This function computes the score between the given model and several given probe files."""
     # TODO: Implement this function for ISV
-    raise NotImplementedError("Please implement me!")
-
+    gmmstats_acc = bob.machine.GMMStats(probes[0][0])
+    for i in range(1,len(probes)):
+      gmmstats_acc += probes[i][0]
+    projected_isv_acc = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
+    model.estimate_ux(gmmstats_acc, projected_isv_acc)
+    return model.forward_ux(gmmstats_acc, projected_isv_acc)
 
 
 
