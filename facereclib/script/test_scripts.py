@@ -60,6 +60,12 @@ class TestScript (unittest.TestCase):
     shutil.rmtree(test_dir)
 
 
+  def grid_available(self):
+    try:
+      import gridtk
+    except ImportError:
+      raise SkipTest("Skipping test since gridtk is not available")
+
 
   def test01_faceverify_local(self):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
@@ -122,6 +128,10 @@ class TestScript (unittest.TestCase):
 
 
   def test01x_faceverify_fl(self):
+    try:
+      import xbob.db.faceverif_fl
+    except ImportError:
+      raise SkipTest("Skipping test since xbob.db.faceverif_fl is not available")
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
@@ -166,6 +176,7 @@ class TestScript (unittest.TestCase):
 
 
   def test02_faceverify_grid(self):
+    self.grid_available()
     # define dummy parameters including the dry-run
     parameters = [
         '-d', os.path.join(base_dir, 'testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'),
@@ -209,6 +220,7 @@ class TestScript (unittest.TestCase):
 
 
   def test04_faceverify_lfw_grid(self):
+    self.grid_available()
     # try to import the lfw database
     try:
       facereclib.utils.resources.load_resource('lfw','database')
@@ -255,6 +267,7 @@ class TestScript (unittest.TestCase):
 
 
   def test06_faceverify_gbu_grid(self):
+    self.grid_available()
     # try to import the gbu database
     try:
       facereclib.utils.resources.load_resource('gbu','database')
@@ -280,6 +293,7 @@ class TestScript (unittest.TestCase):
 
 
   def test11_baselines_api(self):
+    self.grid_available()
     # test that all of the baselines would execute
     from facereclib.script.baselines import available_databases, all_algorithms, main
 
@@ -302,6 +316,7 @@ class TestScript (unittest.TestCase):
 
 
   def test21_parameter_script(self):
+    self.grid_available()
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # tests that the parameter_test.py script works properly
     import parameter_test

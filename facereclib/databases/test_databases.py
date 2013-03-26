@@ -118,11 +118,17 @@ class DatabaseTest(unittest.TestCase):
 
 
   def test20_faceverif_fl(self):
+    try:
+      db1 = facereclib.utils.resources.load_resource(os.path.join('testdata', 'scripts', 'atnt_Test.py'), 'database')
+    except Exception as e:
+      raise SkipTest("This test is skipped since the atnt database is not available.")
+    try:
+      db2 = facereclib.utils.resources.load_resource(os.path.join('testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'), 'database')
+    except Exception as e:
+      raise SkipTest("This test is skipped since the faceverif_fl database is not available.")
     # The test of the faceverif_fl database is a bit different.
     # here, we test the output of two different ways of querying the AT&T database
     # where actually both ways are uncommon...
-    db1 = facereclib.utils.resources.load_resource(os.path.join('testdata', 'scripts', 'atnt_Test.py'), 'database')
-    db2 = facereclib.utils.resources.load_resource(os.path.join('testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'), 'database')
 
     # assure that different kind of queries result in the same file lists
     self.assertEqual(set([str(id) for id in db1.model_ids()]), set(db2.model_ids()))
