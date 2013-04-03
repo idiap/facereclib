@@ -32,7 +32,7 @@ config_dir = os.path.join(base_dir, 'facereclib', 'configurations')
 
 class TestScript (unittest.TestCase):
 
-  def __face_verify__(self, parameters, test_dir, sub_dir):
+  def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier=""):
     import faceverify
     faceverify.main(parameters)
 
@@ -42,7 +42,7 @@ class TestScript (unittest.TestCase):
     self.assertTrue(os.path.exists(score_files[1]))
 
     # also assert that the scores are still the same -- though they have no real meaning
-    reference_files = (os.path.join(base_dir, 'testdata', 'scripts', 'scores-nonorm-dev'), os.path.join(base_dir, 'testdata', 'scripts', 'scores-ztnorm-dev'))
+    reference_files = (os.path.join(base_dir, 'testdata', 'scripts', 'scores-nonorm%s-dev'%ref_modifier), os.path.join(base_dir, 'testdata', 'scripts', 'scores-ztnorm%s-dev'%ref_modifier))
 
     for i in (0,1):
       # read reference and new data
@@ -50,7 +50,7 @@ class TestScript (unittest.TestCase):
         d1 = numpy.array([line.rstrip().split() for line in f1])
       with open(reference_files[i], 'r') as f2:
         d2 = numpy.array([line.rstrip().split() for line in f2])
-  
+
       self.assertTrue(d1.shape, d2.shape)
       # assert that the data order is still correct
       self.assertTrue((d1[:,0:3] == d2[:, 0:3]).all())
@@ -290,6 +290,24 @@ class TestScript (unittest.TestCase):
     import faceverify_gbu
     faceverify_gbu.main(parameters)
 
+
+  def test10_faceverify_file_set(self):
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
+    # define dummy parameters
+    parameters = [
+        '-d', os.path.join(base_dir, 'testdata', 'scripts', 'fileset_Test.py'),
+        '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
+        '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
+        '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
+        '--zt-norm',
+        '-b', 'test',
+        '--temp-directory', test_dir,
+        '--user-directory', test_dir
+    ]
+
+    print ' '.join(parameters)
+
+    self.__face_verify__(parameters, test_dir, 'test', ref_modifier="-fileset")
 
 
   def test11_baselines_api(self):

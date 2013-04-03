@@ -18,7 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import bob
+import numpy
 import os
+from .. import utils
 
 class Tool:
   """This is the base class for all face recognition tools.
@@ -31,7 +33,10 @@ class Tool:
       requires_projector_training = True, # by default, the projector needs training, if projection is enabled
       split_training_features_by_client = False, # enable if your projector training needs the training files sorted by client
       use_projected_features_for_enrollment = True, # by default, the enroller used projected features for enrollment, if projection is enabled.
-      requires_enroller_training = False # enable if your enroller needs training
+      requires_enroller_training = False, # enable if your enroller needs training
+
+      multiple_model_scoring = 'average', # by default, compute the average between several models and the probe
+      multiple_probe_scoring = 'average'  # by default, compute the average between the model and several probes
   ):
     """Initializes the Tool.
     Call this constructor in derived class implementations.
@@ -44,6 +49,8 @@ class Tool:
     self.split_training_features_by_client = split_training_features_by_client
     self.use_projected_features_for_enrollment = performs_projection and use_projected_features_for_enrollment
     self.requires_enroller_training = requires_enroller_training
+    self.m_model_fusion_function = utils.score_fusion_strategy(multiple_model_scoring)
+    self.m_probe_fusion_function = utils.score_fusion_strategy(multiple_probe_scoring)
 
 
   def enroll(self, enroll_features):
@@ -58,6 +65,29 @@ class Tool:
     It must be overwritten by derived classes.
     """
     raise NotImplementedError("Please overwrite this function in your derived class")
+
+
+  def score_for_multiple_models(self, models, probe):
+    """This function computes the score between the given model list and the given probe.
+    In this base class implementation, it computes the scores for each model using the 'score' method,
+    and fuses the scores using the fusion method specified in the constructor of this class.
+    Usually this function is called from derived class 'score' functions."""
+    if isinstance(models, list):
+      return self.m_model_fusion_function([self.score(model, probe) for model in models])
+    elif isinstance(models, numpy.ndarray):
+      return self.m_model_fusion_function([self.score(models[i,:], probe) for i in range(models.shape[0])])
+    else:
+      raise ValueError("The model does not have the desired format (list, array, ...)")
+
+
+  def score_for_multiple_probes(self, model, probes):
+    """This function computes the score between the given model and the given probe files.
+    In this base class implementation, it computes the scores for each probe file using the 'score' method,
+    and fuses the scores using the fusion method specified in the constructor of this class."""
+    if isinstance(probes, list):
+      return self.m_probe_fusion_function([self.score(model, probe) for probe in probes])
+    else:
+      return self.score(model, probes)
 
 
   ############################################################

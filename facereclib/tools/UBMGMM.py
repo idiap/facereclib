@@ -171,10 +171,6 @@ class UBMGMMTool (Tool):
     self._save_projector(projector_file)
 
 
-
-
-
-
   #######################################################
   ############## GMM training using UBM #################
 
@@ -240,7 +236,10 @@ class UBMGMMTool (Tool):
     """Computes the score for the given model and the given probe using the scoring function from the config file"""
     return self.m_scoring_function([model], self.m_ubm, [probe], [], frame_length_normalisation = True)[0][0]
 
-
+  def score_for_multiple_probes(self, model, probes):
+    """This function computes the score between the given model and several given probe files."""
+    utils.warn("Please verify that this function is correct")
+    return self.m_probe_fusion_function(self.m_scoring_function([model], self.m_ubm, probes, [], frame_length_normalisation = True))
 
 
 

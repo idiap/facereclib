@@ -17,7 +17,8 @@ class LDATool (Tool):
       pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA; might be integral or float
       distance_function = bob.math.euclidean_distance,
       is_distance_function = True,
-      multiple_feature_scoring = 'average'
+      multiple_model_scoring = 'average',
+      multiple_probe_scoring = 'average'
   ):
     """Initializes the LDA tool with the given configuration"""
 
@@ -25,7 +26,9 @@ class LDATool (Tool):
     Tool.__init__(
         self,
         performs_projection = True,
-        split_training_features_by_client = True
+        split_training_features_by_client = True,
+        multiple_model_scoring = multiple_model_scoring,
+        multiple_probe_scoring = multiple_probe_scoring
     )
 
     # copy information
@@ -37,7 +40,6 @@ class LDATool (Tool):
     self.m_machine = None
     self.m_distance_function = distance_function
     self.m_factor = -1 if is_distance_function else 1.
-    self.m_multiple_feature_scoring = {'average':numpy.average, 'min':min, 'max':max, 'median':numpy.median}[multiple_feature_scoring]
 
 
   def __read_data__(self, training_files):
@@ -144,5 +146,9 @@ class LDATool (Tool):
   def score(self, model, probe):
     """Computes the distance of the model to the probe using the distance function taken from the config file"""
     # return the negative distance (as a similarity measure)
-    scores = [self.m_factor * self.m_distance_function(model[n], probe) for n in range(model.shape[0])]
-    return self.m_multiple_feature_scoring(scores)
+    if len(model.shape) == 2:
+      # we have multiple models, so we use the multiple model scoring
+      return self.score_for_multiple_models(model, probe)
+    else:
+      # single model, single probe (multiple probes have already been handled)
+      return self.m_factor * self.m_distance_function(model, probe)

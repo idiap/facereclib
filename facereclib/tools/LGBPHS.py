@@ -14,12 +14,13 @@ class LGBPHSTool (Tool):
   def __init__(
       self,
       distance_function = bob.math.chi_square,
-      is_distance_function = True
+      is_distance_function = True,
+      multiple_probe_scoring = 'average'
   ):
     """Initializes the local Gabor binary pattern histogram sequence tool"""
 
     # call base class constructor
-    Tool.__init__(self)
+    Tool.__init__(self, multiple_probe_scoring = multiple_probe_scoring)
 
     # remember distance function
     self.m_distance_function = distance_function

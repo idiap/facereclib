@@ -82,6 +82,7 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, feature)
     self.assertAlmostEqual(sim, 1.)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature, feature]), 1.)
 
 
   def test02_lgbphs(self):
@@ -99,6 +100,7 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, feature2)
     self.assertAlmostEqual(sim, 33600.0)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature2, feature2]), sim)
 
 
   def test03_pca(self):
@@ -159,6 +161,7 @@ class ToolTest(unittest.TestCase):
     model = tool.enroll([projected, projected])
     self.assertTrue(model.shape == (2,334))
     self.assertAlmostEqual(tool.score(model, projected), 0.)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [projected, projected]), 0.)
 
 
   def test04_lda(self):
@@ -211,7 +214,7 @@ class ToolTest(unittest.TestCase):
 
     # test the calculation of the subspace dimension based on percentage of variance,
     # and the usage of a different way to compute the final score in case of multiple features per model
-    tool = facereclib.tools.LDATool(5, .9, multiple_feature_scoring = 'median')
+    tool = facereclib.tools.LDATool(5, .9, multiple_model_scoring = 'median')
     tool.train_projector(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=20, minimum=0., maximum=255.), t)
     self.assertEqual(tool.m_pca_subspace, 334)
     tool.load_projector(t)
@@ -220,6 +223,7 @@ class ToolTest(unittest.TestCase):
     model = tool.enroll([projected, projected])
     self.assertTrue(model.shape == (2,5))
     self.assertAlmostEqual(tool.score(model, projected), 0.)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [projected, projected]), 0.)
 
 
   def test05_bic(self):
@@ -328,6 +332,8 @@ class ToolTest(unittest.TestCase):
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(reference_model, probe)
     self.assertAlmostEqual(sim, 0.25472347774)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim)
+
 
   def test06a_gmm_regular(self):
     # read input
@@ -442,6 +448,9 @@ class ToolTest(unittest.TestCase):
     sim = tool.score(model, probe)
     self.assertAlmostEqual(sim, 0.00273881973989)
 
+    # score with a concatenation of the probe
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim, places=5)
+
 
   def test07a_isv_video(self):
     # assure that the config file is readable
@@ -522,6 +531,8 @@ class ToolTest(unittest.TestCase):
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
     self.assertAlmostEqual(sim, 0.25459651295)
+    # score with a concatenation of the probe
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim)
 
 
   def test09_plda(self):
@@ -573,4 +584,6 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, feature)
     self.assertAlmostEqual(sim, 0.)
+    # score with a concatenation of the probe
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature, feature]), 0.)
 

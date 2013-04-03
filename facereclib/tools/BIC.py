@@ -21,10 +21,17 @@ class BICTool (Tool):
       maximum_training_pair_count = None,  # if set, limit the number of training pairs to the given number in a non-random manner
       subspace_dimensions = None, # if set as a pair (intra_dim, extra_dim), PCA subspace truncation for the two classes is performed
       uses_dffs = False, # use the distance from feature space; only valid when PCA truncation is enabled; WARNING: uses this flag with care
+      multiple_model_scoring = 'average',
+      multiple_probe_scoring = 'average'
   ):
 
     # call base class function and register that this tool requires training for the enrollment
-    Tool.__init__(self, requires_enroller_training = True)
+    Tool.__init__(
+        self,
+        requires_enroller_training = True,
+        multiple_model_scoring = multiple_model_scoring,
+        multiple_probe_scoring = multiple_probe_scoring
+    )
 
     # set up the BIC tool
     self.m_distance_function = distance_function
@@ -130,8 +137,4 @@ class BICTool (Tool):
   def score(self, model, probe):
     """Computes the IEC score for the given model and probe pair"""
     # compute average score for the models
-    s = 0
-    for i in range(model.shape[0]):
-      s += self.__iec_score__(model[i], probe)
-
-    return s / model.shape[0]
+    return self.m_model_fusion_function([self.__iec_score__(model[i], probe) for i in range(model.shape[0])])

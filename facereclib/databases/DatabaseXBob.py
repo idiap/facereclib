@@ -79,6 +79,11 @@ class DatabaseXBob (Database):
     self.enroller_training_options = enroller_training_options
 
 
+  def uses_probe_file_sets(self):
+    """Defines if, for the current protocol, the database uses several probe files to generate a score."""
+    return self.protocol != 'None' and self.m_database.provides_file_set_for_protocol(self.protocol)
+
+
   def all_files(self):
     """Returns all File objects of the database for the current protocol. If the current protocol is 'None' (a string), None (NoneType) will be used instead"""
     files = self.m_database.objects(protocol = self.protocol if self.protocol != 'None' else None, **self.all_files_options)
@@ -134,6 +139,15 @@ class DatabaseXBob (Database):
     return self.sort(files)
 
 
+  def probe_file_sets(self, model_id = None, group = 'dev'):
+    """Returns the list of probe File objects (for the given model id, if given)."""
+    if model_id:
+      file_sets = self.m_database.object_sets(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'probe')
+    else:
+      file_sets = self.m_database.object_sets(protocol = self.protocol, groups = group, purposes = 'probe')
+    return self.sort(file_sets)
+
+
   def annotations(self, file):
     """Returns the annotations for the given File object, if available."""
     if self.has_internal_annotations:
@@ -169,4 +183,10 @@ class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
     """Returns the list of Z-probe File objects."""
     files = self.m_database.zobjects(protocol = self.protocol, groups = group)
     return self.sort(files)
+
+
+  def z_probe_file_sets(self, group = 'dev'):
+    """Returns the list of Z-probe Fileset objects."""
+    file_sets = self.m_database.zobject_sets(protocol = self.protocol, groups = group)
+    return self.sort(file_sets)
 
