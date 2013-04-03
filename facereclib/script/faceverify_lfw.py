@@ -29,7 +29,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     self.m_configuration.features_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.features_directory, protocol)
     self.m_configuration.projected_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.projected_features_directory, protocol)
 
-    self.m_configuration.extractor_file = os.path.join(self.m_configuration.temp_directory, view, self.m_args.extractor_file)
+    self.m_configuration.extractor_file = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.extractor_file)
     self.m_configuration.projector_file = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.projector_file)
     self.m_configuration.enroller_file = os.path.join(self.m_configuration.temp_directory, protocol, self.m_args.enroller_file)
 
@@ -162,7 +162,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     deps = external_dependencies[:]
 
     protocol = self.m_database.protocol
-    pshort = protocol[0] + protocol[4]
+    pshort = protocol[0] + str(int(protocol[4:]) % 10)
     default_opt = ' --protocol %s'%protocol
     # image preprocessing; never has any dependencies.
     if not self.m_args.skip_preprocessing:
