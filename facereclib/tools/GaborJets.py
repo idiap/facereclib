@@ -16,7 +16,6 @@ class GaborJetTool (Tool):
       # parameters for the tool
       gabor_jet_similarity_type,
       multiple_model_scoring = 'max_jet',
-      multiple_probe_scoring = 'max_jet',
       # some similarity functions might need a GaborWaveletTransform class, so we have to provide the parameters here as well...
       gabor_directions = 8,
       gabor_scales = 5,

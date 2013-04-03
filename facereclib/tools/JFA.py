@@ -7,6 +7,7 @@ import numpy
 
 from .Tool import Tool
 from . import UBMGMMTool
+from .. import utils
 
 
 class JFATool (UBMGMMTool):

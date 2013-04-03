@@ -82,9 +82,7 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, feature)
     self.assertAlmostEqual(sim, 1.)
-
-    sim2 = tool.score_for_multiple_probes(model, [feature, feature])
-    self.assertAlmostEqual(sim, sim2)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature, feature]), 1.)
 
 
   def test02_lgbphs(self):
@@ -102,6 +100,7 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, feature2)
     self.assertAlmostEqual(sim, 33600.0)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature2, feature2]), sim)
 
 
   def test03_pca(self):
@@ -162,6 +161,7 @@ class ToolTest(unittest.TestCase):
     model = tool.enroll([projected, projected])
     self.assertTrue(model.shape == (2,334))
     self.assertAlmostEqual(tool.score(model, projected), 0.)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [projected, projected]), 0.)
 
 
   def test04_lda(self):
@@ -223,6 +223,7 @@ class ToolTest(unittest.TestCase):
     model = tool.enroll([projected, projected])
     self.assertTrue(model.shape == (2,5))
     self.assertAlmostEqual(tool.score(model, projected), 0.)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [projected, projected]), 0.)
 
 
   def test05_bic(self):
@@ -331,6 +332,8 @@ class ToolTest(unittest.TestCase):
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(reference_model, probe)
     self.assertAlmostEqual(sim, 0.25472347774)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim)
+
 
   def test06a_gmm_regular(self):
     # read input
@@ -446,8 +449,7 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.00273881973989)
 
     # score with a concatenation of the probe
-    sim2 = tool.score_for_multiple_probes(model, [probe, probe])
-    self.assertAlmostEqual(sim, sim2, places=5)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim, places=5)
 
 
   def test07a_isv_video(self):
@@ -529,6 +531,8 @@ class ToolTest(unittest.TestCase):
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
     self.assertAlmostEqual(sim, 0.25459651295)
+    # score with a concatenation of the probe
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim)
 
 
   def test09_plda(self):
@@ -580,4 +584,6 @@ class ToolTest(unittest.TestCase):
     # score
     sim = tool.score(model, feature)
     self.assertAlmostEqual(sim, 0.)
+    # score with a concatenation of the probe
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature, feature]), 0.)
 

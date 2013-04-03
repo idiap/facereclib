@@ -37,7 +37,7 @@ Please specify a descriptive name for your experiment to be able to remember, ho
 
 Managing resources
 ~~~~~~~~~~~~~~~~~~
-The |project| is designed in a way that makes it very easy to select
+The |project| is designed in a way that makes it very easy to select the setup of your experiments.
 Basically, you can specify your algorithm and its configuration in three different ways:
 
 1. You choose one of the registered resources.
@@ -46,6 +46,7 @@ Basically, you can specify your algorithm and its configuration in three differe
    How this is done is detailed in section :ref:`register-resources`.
 
    Example:
+
    .. code-block:: sh
 
      $ bin/faceverify.py --database atnt
@@ -54,6 +55,7 @@ Basically, you can specify your algorithm and its configuration in three differe
    How to define a new configuration file, please read section :ref:`configuration-files`.
 
    Example:
+
    .. code-block:: sh
 
      $ bin/faceverify.py --preprocessing facereclib/configurations/preprocessing/tan_triggs.py
@@ -141,7 +143,7 @@ Implemented database interfaces:
 
   - BANCA
 
-  .. TODO:
+  .. TODO::
     complete the list of implemented database interfaces and add references to the xbob databases and to the web-sites where to obtain the original data.
 
 

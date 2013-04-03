@@ -52,7 +52,7 @@ setup(
         'caspeal           = facereclib.configurations.databases.caspeal_lighting:database',
         'frgc              = facereclib.configurations.databases.frgc_201:database',
         'gbu               = facereclib.configurations.databases.gbu_Good:database',
-        'lfw               = facereclib.configurations.databases.lfw_view1_restricted:database',
+        'lfw               = facereclib.configurations.databases.lfw_view1_unrestricted:database',
         'mobio             = facereclib.configurations.databases.mobio_male:database',
         'multipie          = facereclib.configurations.databases.multipie_U:database',
         'scface            = facereclib.configurations.databases.scface_combined:database',
