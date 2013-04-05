@@ -2,7 +2,7 @@
 
 import facereclib
 
-tool = facereclib.tools.JFATool(
+tool = facereclib.tools.JFA(
     # JFA Training
     subspace_dimension_of_u = 2, # U subspace dimension
     subspace_dimension_of_v = 2, # V subspace dimension

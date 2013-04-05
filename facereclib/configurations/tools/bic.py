@@ -3,7 +3,7 @@
 import facereclib
 import numpy
 
-tool = facereclib.tools.BICTool(
+tool = facereclib.tools.BIC(
     # Distance measure to compare two features in input space
     distance_function = numpy.subtract,
     # Limit the number of training pairs

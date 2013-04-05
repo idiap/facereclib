@@ -8,14 +8,14 @@ import math
 
 from .Tool import Tool
 
-class GaborJetTool (Tool):
+class GaborJets (Tool):
   """Tool chain for computing Gabor jets, Gabor graphs, and Gabor graph comparisons"""
 
   def __init__(
       self,
       # parameters for the tool
       gabor_jet_similarity_type,
-      multiple_model_scoring = 'max_jet',
+      multiple_feature_scoring = 'max_jet',
       # some similarity functions might need a GaborWaveletTransform class, so we have to provide the parameters here as well...
       gabor_directions = 8,
       gabor_scales = 5,
@@ -56,7 +56,7 @@ class GaborJetTool (Tool):
         'min_graph' : numpy.average, # for each model graph, compute the minimum average similarity
         'max_graph' : numpy.average, # for each model graph, compute the maximum average similarity
         'med_graph' : numpy.average, # for each model graph, compute the median average similarity
-    }[multiple_model_scoring]
+    }[multiple_feature_scoring]
 
     self.m_graph_scoring = {
         'average_model' : None, # compute an average model
@@ -67,7 +67,7 @@ class GaborJetTool (Tool):
         'min_graph' : numpy.min, # for each model graph, compute the minimum average similarity
         'max_graph' : numpy.max, # for each model graph, compute the maximum average similarity
         'med_graph' : numpy.median, # for each model graph, compute the median average similarity
-    }[multiple_model_scoring]
+    }[multiple_feature_scoring]
 
 
   def enroll(self, enroll_features):

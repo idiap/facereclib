@@ -24,7 +24,7 @@ import bob
 from .. import utils
 
 
-class DummyTool (Tool):
+class Dummy (Tool):
   """This class is used to test all the possible functions of the tool chain, but it does basically nothing."""
 
   def __init__(self):

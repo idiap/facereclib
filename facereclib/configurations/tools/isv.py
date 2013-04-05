@@ -2,7 +2,7 @@
 
 import facereclib
 
-tool = facereclib.tools.ISVTool(
+tool = facereclib.tools.ISV(
     # ISV parameters
     subspace_dimension_of_u = 160,
     # GMM parameters

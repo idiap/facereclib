@@ -8,8 +8,8 @@ import numpy
 from .Tool import Tool
 from .. import utils
 
-class UBMGMMTool (Tool):
-  """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
+class UBMGMM (Tool):
+  """Tool for computing Universal Background Models and Gaussian Mixture Models of the features"""
 
   def __init__(
       self,
@@ -245,14 +245,14 @@ class UBMGMMTool (Tool):
 
 
 
-class UBMGMMRegularTool (UBMGMMTool):
+class UBMGMMRegular (UBMGMM):
   """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
 
   def __init__(self, **kwargs):
     """Initializes the local UBM-GMM tool chain with the given file selector object"""
     utils.warn("This class must be checked. Please verify that I didn't do any mistake here. I had to rename 'train_projector' into a 'train_enroller'!")
     # initialize the UBMGMM base class
-    UBMGMMTool.__init__(self, **kwargs)
+    UBMGMM.__init__(self, **kwargs)
     # register a different set of functions in the Tool base class
     Tool.__init__(self, requires_enroller_training = True)
 
@@ -285,7 +285,7 @@ class UBMGMMRegularTool (UBMGMMTool):
        The score are Log-Likelihood.
        Therefore, the log of the likelihood ratio is obtained by computing the following difference."""
 
-    utils.warn("This class must be checked. Please verify that I didn't do any mistake here. For identical tests, this function gives a different score than the normal UBMGMMTool (see test_tools.py:test06a)")
+    utils.warn("This class must be checked. Please verify that I didn't do any mistake here. For identical tests, this function gives a different score than the normal UBMGMM (see test_tools.py:test06a)")
     score = 0
     for i in range(probe.shape[0]):
       score += model.forward(probe[i,:]) - self.m_ubm.forward(probe[i,:])
@@ -298,7 +298,7 @@ class UBMGMMRegularTool (UBMGMMTool):
 
 
 
-class UBMGMMVideoTool(UBMGMMTool):
+class UBMGMMVideo(UBMGMM):
   """Tool chain for computing Universal Background Models and Gaussian Mixture Models of the features"""
 
   def __init__(
@@ -310,7 +310,7 @@ class UBMGMMVideoTool(UBMGMMTool):
   ):
 
     # initialize base class with its set of parameters
-    UBMGMMTool.__init__(self, **kwargs)
+    UBMGMM.__init__(self, **kwargs)
 
     self.m_frame_selector_for_projector_training = frame_selector_for_projector_training
     self.m_frame_selector_for_projection = frame_selector_for_projection

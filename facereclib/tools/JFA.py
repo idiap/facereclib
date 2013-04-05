@@ -6,12 +6,12 @@ import bob
 import numpy
 
 from .Tool import Tool
-from . import UBMGMMTool
+from . import UBMGMM
 from .. import utils
 
 
-class JFATool (UBMGMMTool):
-  """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
+class JFA (UBMGMM):
+  """Tool for computing Unified Background Models and Gaussian Mixture Models of the features and project it via JFA"""
 
   def __init__(
       self,
@@ -26,7 +26,7 @@ class JFATool (UBMGMMTool):
   ):
     """Initializes the local UBM-GMM tool with the given file selector object"""
     # call base class constructor
-    UBMGMMTool.__init__(self, **kwargs)
+    UBMGMM.__init__(self, **kwargs)
 
     # call tool constructor to overwrite what was set before
     Tool.__init__(

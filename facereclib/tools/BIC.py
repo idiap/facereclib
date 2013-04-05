@@ -9,7 +9,7 @@ import math
 from .Tool import Tool
 from .. import utils
 
-class BICTool (Tool):
+class BIC (Tool):
   """Computes the Intrapersonal/Extrapersonal classifier"""
 
   def sqr(self, x):

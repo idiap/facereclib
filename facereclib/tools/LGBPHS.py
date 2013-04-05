@@ -8,7 +8,7 @@ import numpy
 from .Tool import Tool
 from .. import utils
 
-class LGBPHSTool (Tool):
+class LGBPHS (Tool):
   """Tool chain for computing local Gabor binary pattern histogram sequences"""
 
   def __init__(

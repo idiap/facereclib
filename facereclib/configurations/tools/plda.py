@@ -2,7 +2,7 @@
 
 import facereclib
 
-tool = facereclib.tools.PLDATool(
+tool = facereclib.tools.PLDA(
     subspace_dimension_of_f = 16, # Size of subspace F
     subspace_dimension_of_g = 16 # Size of subspace G
 )

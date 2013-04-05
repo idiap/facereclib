@@ -19,8 +19,8 @@ class DCTBlocks (Extractor):
       block_size = 12,    # 1 or two parameters for block size
       block_overlap = 11, # 1 or two parameters for block overlap
       number_of_dct_coefficients = 45,
-      norm_block = True,
-      norm_dct = True
+      normalize_blocks = True,
+      normalize_dcts = True
   ):
 
     # call base class constructor
@@ -30,8 +30,8 @@ class DCTBlocks (Extractor):
     self.m_block_size = block_size if isinstance(block_size, (tuple, list)) else (block_size, block_size)
     self.m_block_overlap = block_overlap if isinstance(block_overlap, (tuple, list)) else (block_overlap, block_overlap)
     self.m_number_of_dct_coefficients = number_of_dct_coefficients
-    self.norm_block = norm_block
-    self.norm_dct = norm_dct
+    self.norm_block = normalize_blocks
+    self.norm_dct = normalize_dcts
     if self.m_block_size[0] < self.m_block_overlap[0] or self.m_block_size[1] < self.m_block_overlap[1]:
       raise ValueError("The overlap '%s' is bigger than the block size '%s'. This won't work. Please check your setup!"%(self.m_block_overlap, self.m_block_size))
     if self.m_block_size[0] * self.m_block_size[1] <= self.m_number_of_dct_coefficients:

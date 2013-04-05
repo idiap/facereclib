@@ -3,7 +3,7 @@
 
 preprocessor = "facereclib.preprocessing.FaceCrop(cropped_image_size = (#1, #1*4/5), cropped_positions = {'reye':(#1/5, #1/5-1), 'leye':(#1/5, #1*3/5)}, offset=#4)"
 
-tool = "facereclib.tools.LGBPHSTool(distance_function = #2, is_distance_function = #3)"
+tool = "facereclib.tools.LGBPHS(distance_function = #2, is_distance_function = #3)"
 
 
 replace = {

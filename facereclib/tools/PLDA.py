@@ -9,7 +9,7 @@ from .Tool import Tool
 from .. import utils
 
 
-class PLDATool (Tool):
+class PLDA (Tool):
   """Tool chain for computing PLDA (over PCA-dimensionality reduced) features"""
 
   def __init__(

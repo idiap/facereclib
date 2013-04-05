@@ -78,6 +78,9 @@ class DatabaseXBob (Database):
     self.projector_training_options = projector_training_options
     self.enroller_training_options = enroller_training_options
 
+    if self.has_internal_annotations and not hasattr(self.m_database, 'annotations'):
+      raise AssertionError("The database is supposed to have internal annotations, but does not provide an 'annotations' function.")
+
 
   def uses_probe_file_sets(self):
     """Defines if, for the current protocol, the database uses several probe files to generate a score."""

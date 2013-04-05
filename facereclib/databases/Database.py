@@ -66,7 +66,6 @@ class Database:
      original_extension,
      annotation_directory = None,
      annotation_extension = '.pos',
-     has_internal_annotations = False,
      annotation_type = None,
      protocol = 'Default'
   ):
@@ -87,9 +86,6 @@ class Database:
 
     annotation_directory
       The file extension of the annotation files.
-
-    has_internal_annotations
-      The annotations are stored in the database itself.
 
     protocol
       The name of the protocol that defines the default experimental setup for this database.

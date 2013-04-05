@@ -2,7 +2,7 @@
 
 import facereclib
 
-tool = facereclib.tools.ISVVideoTool(
+tool = facereclib.tools.ISVVideo(
     # frame selectors
     frame_selector_for_projector_training = facereclib.utils.video.FirstNFrameSelector(1), # Frames for UBM training
     frame_selector_for_enroll             = facereclib.utils.video.AllFrameSelector(),     # Frames for enrollment

@@ -108,10 +108,10 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is read
     tool = self.config('pca')
-    self.assertTrue(isinstance(tool, facereclib.tools.PCATool))
+    self.assertTrue(isinstance(tool, facereclib.tools.PCA))
 
     # generate tool with a lower number of dimensions
-    tool = facereclib.tools.PCATool(10)
+    tool = facereclib.tools.PCA(10)
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
     self.assertTrue(tool.use_projected_features_for_enrollment)
@@ -152,7 +152,7 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.)
 
     # test the calculation of the subspace dimension based on percentage of variance
-    tool = facereclib.tools.PCATool(.9)
+    tool = facereclib.tools.PCA(.9)
     tool.train_projector(facereclib.utils.tests.random_training_set(feature.shape, count=400, minimum=0., maximum=255.), t)
     self.assertEqual(tool.m_subspace_dim, 334)
     tool.load_projector(t)
@@ -169,13 +169,13 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is loadable
     tool = self.config('lda')
-    self.assertTrue(isinstance(tool, facereclib.tools.LDATool))
+    self.assertTrue(isinstance(tool, facereclib.tools.LDA))
     # assure that the config file is loadable
     tool = self.config('pca+lda')
-    self.assertTrue(isinstance(tool, facereclib.tools.LDATool))
+    self.assertTrue(isinstance(tool, facereclib.tools.LDA))
 
     # here we use a reduced tool
-    tool = facereclib.tools.LDATool(5,10)
+    tool = facereclib.tools.LDA(5,10)
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
     self.assertTrue(tool.use_projected_features_for_enrollment)
@@ -214,7 +214,7 @@ class ToolTest(unittest.TestCase):
 
     # test the calculation of the subspace dimension based on percentage of variance,
     # and the usage of a different way to compute the final score in case of multiple features per model
-    tool = facereclib.tools.LDATool(5, .9, multiple_model_scoring = 'median')
+    tool = facereclib.tools.LDA(5, .9, multiple_model_scoring = 'median')
     tool.train_projector(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=20, minimum=0., maximum=255.), t)
     self.assertEqual(tool.m_pca_subspace, 334)
     tool.load_projector(t)
@@ -231,10 +231,10 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     # check that the config file is readable
     tool = self.config('bic')
-    self.assertTrue(isinstance(tool, facereclib.tools.BICTool))
+    self.assertTrue(isinstance(tool, facereclib.tools.BIC))
 
     # here, we use a reduced complexity for test purposes
-    tool = facereclib.tools.BICTool(numpy.subtract, 100, (5,7))
+    tool = facereclib.tools.BIC(numpy.subtract, 100, (5,7))
     self.assertFalse(tool.performs_projection)
     self.assertTrue(tool.requires_enroller_training)
 
@@ -262,7 +262,7 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.31276072)
 
     # now, test without PCA
-    tool = facereclib.tools.BICTool(numpy.subtract, 100)
+    tool = facereclib.tools.BIC(numpy.subtract, 100)
     # train the enroller
     t = tempfile.mkstemp('iec.hdf5', prefix='frltest_')[1]
     tool.train_enroller(facereclib.utils.tests.random_training_set_by_id(feature.shape, count=10, minimum=0., maximum=255.), t)
@@ -288,10 +288,10 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('gmm')
-    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMTool))
+    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMM))
 
     # here, we use a reduced complexity for test purposes
-    tool = facereclib.tools.UBMGMMTool(
+    tool = facereclib.tools.UBMGMM(
         number_of_gaussians = 2,
         k_means_training_iterations = 1,
         gmm_training_iterations = 1
@@ -340,10 +340,10 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('ubm_gmm_regular_scoring')
-    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMRegularTool))
+    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMRegular))
 
     # here, we use a reduced complexity for test purposes
-    tool = facereclib.tools.UBMGMMRegularTool(
+    tool = facereclib.tools.UBMGMMRegular(
         number_of_gaussians = 2,
         k_means_training_iterations = 1,
         gmm_training_iterations = 1
@@ -374,7 +374,7 @@ class ToolTest(unittest.TestCase):
   def test06b_gmm_video(self):
     # assure that the config file is readable
     tool = self.config('ubm_gmm_video')
-    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMVideoTool))
+    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMVideo))
     raise SkipTest("This test is not yet implemented")
 
 
@@ -383,10 +383,10 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('isv')
-    self.assertTrue(isinstance(tool, facereclib.tools.ISVTool))
+    self.assertTrue(isinstance(tool, facereclib.tools.ISV))
 
     # Here, we use a reduced complexity for test purposes
-    tool = facereclib.tools.ISVTool(
+    tool = facereclib.tools.ISV(
         number_of_gaussians = 2,
         subspace_dimension_of_u = 160,
         k_means_training_iterations = 1,
@@ -455,7 +455,7 @@ class ToolTest(unittest.TestCase):
   def test07a_isv_video(self):
     # assure that the config file is readable
     tool = self.config('isv_video')
-    self.assertTrue(isinstance(tool, facereclib.tools.ISVVideoTool))
+    self.assertTrue(isinstance(tool, facereclib.tools.ISVVideo))
     raise SkipTest("This test is not yet implemented")
 
 
@@ -465,10 +465,10 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('jfa')
-    self.assertTrue(isinstance(tool, facereclib.tools.JFATool))
+    self.assertTrue(isinstance(tool, facereclib.tools.JFA))
 
     # here, we use a reduced complexity for test purposes
-    tool = facereclib.tools.JFATool(
+    tool = facereclib.tools.JFA(
         number_of_gaussians = 2,
         subspace_dimension_of_u = 2,
         subspace_dimension_of_v = 2,
@@ -540,10 +540,10 @@ class ToolTest(unittest.TestCase):
     feature = bob.io.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is readable
     tool = self.config('pca+plda')
-    self.assertTrue(isinstance(tool, facereclib.tools.PLDATool))
+    self.assertTrue(isinstance(tool, facereclib.tools.PLDA))
 
     # here, we use a reduced complexity for test purposes
-    tool = facereclib.tools.PLDATool(
+    tool = facereclib.tools.PLDA(
         subspace_dimension_of_f = 2,
         subspace_dimension_of_g = 2,
         subspace_dimension_pca = 10,

@@ -3,4 +3,4 @@
 import facereclib
 import bob
 
-tool = facereclib.tools.UBMGMMRegularTool(number_of_gaussians = 512)
+tool = facereclib.tools.UBMGMMRegular(number_of_gaussians = 512)

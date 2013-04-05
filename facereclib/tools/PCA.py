@@ -8,7 +8,7 @@ import numpy
 from .Tool import Tool
 from .. import utils
 
-class PCATool (Tool):
+class PCA (Tool):
   """Tool for computing eigenfaces"""
 
   def __init__(

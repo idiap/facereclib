@@ -5,7 +5,7 @@ import bob
 import math
 
 # setup of the tool chain
-tool = facereclib.tools.GaborJetTool(
+tool = facereclib.tools.GaborJets(
     # Gabor jet comparison
     gabor_jet_similarity_type = bob.machine.gabor_jet_similarity_type.PHASE_DIFF_PLUS_CANBERRA,
     # Gabor wavelet setup

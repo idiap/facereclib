@@ -8,7 +8,7 @@ import numpy
 from .Tool import Tool
 from .. import utils
 
-class LDATool (Tool):
+class LDA (Tool):
   """Tool for computing linear discriminant analysis (so-called Fisher faces)"""
 
   def __init__(

@@ -3,7 +3,7 @@
 import xbob.db.caspeal
 import facereclib
 
-database = facereclib.databases.DatabaseXBobZT(
+database = facereclib.databases.DatabaseXBob(
     database = xbob.db.caspeal.Database(),
     name = "caspeal",
     image_directory = "/idiap/resource/database/CAS-PEAL",

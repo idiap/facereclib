@@ -92,7 +92,8 @@ def lda():
   features      = 'eigenfaces'
   tool          = 'lda'
   grid          = 'grid'
-  return (features, tool, grid)
+  preprocessing = 'face-crop'
+  return (features, tool, grid, preprocessing)
 
 def gaborgraph():
   """Gabor grid graphs using a Gabor phase based similarity measure"""

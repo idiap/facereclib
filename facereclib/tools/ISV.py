@@ -7,12 +7,12 @@ import numpy
 import types
 
 from .Tool import Tool
-from .UBMGMM import UBMGMMTool, UBMGMMVideoTool
+from .UBMGMM import UBMGMM, UBMGMMVideo
 from .. import utils
 
 
-class ISVTool (UBMGMMTool):
-  """Tool chain for computing Unified Background Models and Gaussian Mixture Models of the features"""
+class ISV (UBMGMM):
+  """Tool for computing Unified Background Models and Gaussian Mixture Models of the features"""
 
 
   def __init__(
@@ -27,7 +27,7 @@ class ISVTool (UBMGMMTool):
   ):
     """Initializes the local UBM-GMM tool with the given file selector object"""
     # call base class constructor with its set of parameters
-    UBMGMMTool.__init__(self, **kwargs)
+    UBMGMM.__init__(self, **kwargs)
 
     # call tool constructor to overwrite what was set before
     Tool.__init__(
@@ -51,7 +51,7 @@ class ISVTool (UBMGMMTool):
       for feature in client_features:
         # Initializes GMMStats object
         self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
-        list.append(UBMGMMTool.project(self, feature))
+        list.append(UBMGMM.project(self, feature))
       data2.append(list)
 
 
@@ -69,7 +69,7 @@ class ISVTool (UBMGMMTool):
 
     data1 = numpy.vstack([feature for client in train_features for feature in client])
 
-    UBMGMMTool._train_projector_using_array(self, data1)
+    UBMGMM._train_projector_using_array(self, data1)
     # to save some memory, we might want to delete these data
     del data1
 
@@ -128,7 +128,7 @@ class ISVTool (UBMGMMTool):
   def project(self, feature_array):
     """Computes GMM statistics against a UBM, then corresponding Ux vector"""
 
-    projected_ubm = UBMGMMTool.project(self,feature_array)
+    projected_ubm = UBMGMM.project(self,feature_array)
 
     projected_isv = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
 
@@ -207,20 +207,20 @@ class ISVTool (UBMGMMTool):
 
 # Parent classes:
 # - Warning: This class uses multiple inheritance! (Note: Python's resolution rule is: depth-first, left-to-right)
-# - ISVTool extends UBMGMMTool by providing some additional methods for training the session variability subspace, etc.
-# - UBMGMMVideoTool extends UBMGMMTool to support UBM training/enrollment/testing with video.FrameContainers
+# - ISV extends UBMGMM by providing some additional methods for training the session variability subspace, etc.
+# - UBMGMMVideo extends UBMGMM to support UBM training/enrollment/testing with video.FrameContainers
 #
 # Here we extend the parent classes by overriding methods:
-# -- read_feature --> overridden (use UBMGMMVideoTool's, to read a video.FrameContainer)
-# -- train_projector --> overridden (use UBMGMMVideoTool's)
-# -- train_enroller --> overridden (based on ISVTool's, but projects only selected frames)
-# -- project --> overridden (use UBMGMMVideoTool's)
-# -- enroll --> overridden (based on ISVTool, but first projects only selected frames)
-# -- read_model --> inherited from ISVTool (because it's inherited first)
-# -- read_probe --> inherited from ISVTool (because it's inherited first)
-# -- score --> inherited from ISVTool (because it's inherited first)
+# -- read_feature --> overridden (use UBMGMMVideo's, to read a video.FrameContainer)
+# -- train_projector --> overridden (use UBMGMMVideo's)
+# -- train_enroller --> overridden (based on ISV's, but projects only selected frames)
+# -- project --> overridden (use UBMGMMVideo's)
+# -- enroll --> overridden (based on ISV, but first projects only selected frames)
+# -- read_model --> inherited from ISV (because it's inherited first)
+# -- read_probe --> inherited from ISV (because it's inherited first)
+# -- score --> inherited from ISV (because it's inherited first)
 
-class ISVVideoTool (ISVTool, UBMGMMVideoTool):
+class ISVVideo (ISV, UBMGMMVideo):
   """Tool chain for video-to-video face recognition using inter-session variability modelling (ISV)."""
 
   def __init__(
@@ -232,7 +232,7 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
   ):
 
     # call only one base class constructor...
-    ISVTool.__init__(self, **kwargs)
+    ISV.__init__(self, **kwargs)
 
     # call tool constructor to overwrite what was set before
     Tool.__init__(
@@ -249,10 +249,10 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
     utils.warn("In its current version, this class has not been tested. Use it with care!")
 
 
-  # Overrides ISVTool.train_enroller
+  # Overrides ISV.train_enroller
   def train_enroller(self, train_features, enroller_file):
-    utils.debug(" .... ISVVideoTool.train_enroller")
-    ########## (same as ISVTool.train_enroller)
+    utils.debug(" .... ISVVideo.train_enroller")
+    ########## (same as ISV.train_enroller)
     # create a JFABasemachine with the UBM from the base class
     self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_subspace_dimension_of_u)
     self.m_jfabase.ubm = self.m_ubm
@@ -262,13 +262,13 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
     for client_features in train_features: # loop over clients
       gmm_stats_client = []
       for frame_container in client_features: # loop over videos of client k
-        this_gmm_stats = UBMGMMVideoTool.project(self, frame_container, self.m_frame_selector_for_enroller_training)
+        this_gmm_stats = UBMGMMVideo.project(self, frame_container, self.m_frame_selector_for_enroller_training)
         gmm_stats_client.append(this_gmm_stats)
       gmm_stats.append(gmm_stats_client)
 
     utils.debug(" .... got gmm_stats for " + str(len(gmm_stats)) + " clients")
 
-    ########## (same as ISVTool.train_enroller)
+    ########## (same as ISV.train_enroller)
     t = bob.trainer.JFABaseTrainer(self.m_jfabase)
     t.train_isv(gmm_stats, self.m_jfa_training_iterations, self.m_relevance_factor)
 
@@ -276,25 +276,25 @@ class ISVVideoTool (ISVTool, UBMGMMVideoTool):
     self.m_jfabase.save(bob.io.HDF5File(enroller_file, "w"))
 
   def enroll(self, frame_containers):
-    utils.debug(" .... ISVVideoTool.enroll")
+    utils.debug(" .... ISVVideo.enroll")
     enroll_features = []
     for frame_container in frame_containers:
-      this_enroll_features = UBMGMMVideoTool.project(self, frame_container, self.m_frame_selector_for_enroll)
+      this_enroll_features = UBMGMMVideo.project(self, frame_container, self.m_frame_selector_for_enroll)
       enroll_features.append(this_enroll_features)
     utils.debug(" .... got " + str(len(enroll_features)) + " enroll_features")
 
-    ########## (same as ISVTool.enroll)
+    ########## (same as ISV.enroll)
     self.m_trainer.enroll(enroll_features, self.m_jfa_enroll_iterations)
     return self.m_machine
 
   def read_feature(self, feature_file):
-    return UBMGMMVideoTool.read_feature(self,str(feature_file))
+    return UBMGMMVideo.read_feature(self,str(feature_file))
 
   def project(self, frame_container):
     """Computes GMM statistics against a UBM, given an input video.FrameContainer"""
-    return UBMGMMVideoTool.project(self,frame_container)
+    return UBMGMMVideo.project(self,frame_container)
 
   def train_projector(self, train_files, projector_file):
     """Computes the Universal Background Model from the training ("world") data"""
-    return UBMGMMVideoTool.train_projector(self,train_files, projector_file)
+    return UBMGMMVideo.train_projector(self,train_files, projector_file)
 

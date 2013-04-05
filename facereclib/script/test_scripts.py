@@ -113,7 +113,7 @@ class TestScript (unittest.TestCase):
         '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
         '-p', 'face-crop',
         '-f', 'facereclib.features.Eigenface(subspace_dimension', '=', '100)',
-        '-t', 'facereclib.tools.DummyTool()',
+        '-t', 'facereclib.tools.Dummy()',
         '--zt-norm',
         '-b', 'test_b',
         '--temp-directory', test_dir,
