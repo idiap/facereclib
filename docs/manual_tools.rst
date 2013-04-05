@@ -14,8 +14,8 @@ Basic recognition algorithm interface
 
 .. automodule:: facereclib.tools.Tool
 
-Implemented face recognition algorithm
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Implemented face recognition algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: facereclib.tools.PCA
 .. automodule:: facereclib.tools.LDA

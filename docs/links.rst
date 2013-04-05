@@ -16,4 +16,5 @@
 .. _buildout: http://www.buildout.org/
 .. _nist: http://www.nist.gov/itl/iad/ig/focs.cfm
 .. _pypi: http://pypi.python.org
+.. _sge: https://wiki.idiap.ch/linux/SunGridEngine
 

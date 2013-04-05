@@ -12,21 +12,22 @@ Setting up your database
 ------------------------
 
 As already mentioned, the image databases are not included in this package, so you have to download them.
-For example, you can easily download the images of the `AT&T database`_.
-After extracting the images, you have to modify the according configuration file, e.g. **facereclib/configurations/databases/atnt_Default.py** by correcting the ``image_directory`` entry.
+For example, you can easily download the images of the `AT&T database`_, for links to other utilizable image databases please read the :ref:`databases` section.
 
-.. note::
-  If you don't want to modify the sources of the facereclib, or you do not have the rights to do so, please read the :ref:`managing-resources` section.
+By default, the |project| does not know, where the images are located.
+Hence, before running experiments you have to specify the image database directories by modifying the accordant configuration files.
+For further information on these topic, you might want to read the :ref:`managing-resources` and the :ref:`databases` sections.
+To make the baseline algorithms work, e.g., on the `AT&T database`_, you have to correct the  ``image_directory`` entry in the `facereclib/configurations/databases/atnt_Default.py <../facereclib/configurations/databases/atnt_Default.py>`_ file.
 
 .. note::
   The directories in the configuration files are preset to the right directories at Idiap_.
-  Hence, at Idiap_ you don't need to care about that.
+  Hence, at Idiap_ you don't need to care about that at all.
 
 
 Structure of an experiment in the |project|
 -------------------------------------------
 
-Each experiment is divided into several steps.
+Each face recognition experiment that is run with the |project| is divided into several steps.
 The steps are:
 
 1. Image preprocessing: Raw images are aligned and photometrically enhanced.
@@ -102,12 +103,20 @@ The algorithms present an (incomplete) set of state-of-the-art face recognition 
 
 * ``bic``: In the *Bayesian Intrapersonal/Extrapersonal Classifier* (BIC) [MWP98]_, a pixel-based difference image is classified to be intrapersonal (i.e., both images are from the same person) or extrapersonal.
 
-
+.. note::
+  The ``plda`` and ``bic`` algorithms are currently under construction and the setup is not yet useful.
 
 Baseline results
 ----------------
 
-The results of the baseline experiments are generated using the ``--evaluate`` option of the ``bin/baselines.py`` script.
+The results of the baseline experiments are generated using:
+
+.. code-block:: sh
+
+  $ bin/baselines.py --evaluate
+
+If you specified other parameters for the execution of the algorithms, e.g., the ``--directory`` flag, you have to add these options here as well.
+
 For the `AT&T database`_ the results should be as follows:
 
 .. table:: The HTER results of the baseline algorithms on the AT&T database
@@ -115,7 +124,7 @@ For the `AT&T database`_ the results should be as follows:
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
   |  eigenface  |     lda     |  gaborgraph |    lgbphs   |     gmm     |     isv     |    plda     |     bic     |
   +=============+=============+=============+=============+=============+=============+=============+=============+
-  |   30.842%   |   33.079%   |    7.000%   |   10.000%   |    1.000%   |    0.053%   |   44.000%   |   47.895%   |
+  |   9.026%    |   12.000%   |   7.000%    |    10.000%  |    1.000%   |    0.053%   |   45.000%   |   45.000%   |
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
 
 .. note::

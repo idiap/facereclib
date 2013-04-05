@@ -12,7 +12,7 @@ Download
 |project|
 ~~~~~~~~~
 Currently the library is only available as a private project of `Idiap at GitHub`_.
-To check out the current version of the |project|, go to the console, move to any place you like and call::
+To check out the current version of the |project|, go to the console, move to any place you like and call:
 
 .. code-block:: sh
 
@@ -22,13 +22,13 @@ Bob
 ~~~
 
 The |project| is a satellite package of Bob_, where most of the image processing, feature extraction, and face recognition algorithms, as well as the evaluation techniques are implemented.
-To run properly, |project| requires Bob_ at least in version 1.1.0.
+To run properly, |project| requires Bob_ at least in version 1.2.0.
 If you have not installed Bob_ or your version is to old, please visit `Bob's GitHub page`_ and download the latest version.
-If you prefer not to install Bob_ in its default location, you have to adapt the ``eggs-directories`` of the **buildout.cfg** configuration file, which sits in the main directory of the |project|.
+If you prefer not to install Bob_ in its default location, you have to adapt the ``prefixes`` of the buildout.cfg_ configuration file, which sits in the main directory of the |project|.
 
 .. note::
-  Currently, the version 1.1.0 of Bob is not yet released.
-  Hence, if you are not at Idiap_ (see **Using |project| at Idiap** below) you have bad luck.
+  Currently, the version 1.2.0 of Bob is not yet released.
+  Hence, if you are not at Idiap_ (see `Using Bob at Idiap`_ below) you need to clone `Bob's GitHub page`_ and compile Bob yourself.
 
 .. note::
   Currently, there is no MS Windows version of Bob_.
@@ -36,20 +36,19 @@ If you prefer not to install Bob_ in its default location, you have to adapt the
 Using Bob at Idiap
 ~~~~~~~~~~~~~~~~~~
 
-At Idiap, you can use the latest version of Bob_ by changing the ``eggs-directories`` to **/idiap/group/torch5spro/nightlies/last/install/linux-x86_64-release/lib** (the current default).
-But if you prefer to use the latest stable version, just comment out the ``eggs-directories``.
+At Idiap, you can use the latest version of Bob_ by changing the ``prefixes`` to **/idiap/group/torch5spro/nightlies/last/install/linux-x86_64-release** (the current default).
+But if you prefer to use the latest stable version, just comment out the ``prefixes``.
 
 .. note::
   Currently, the latest stable version of Bob_ is not compatible with the |project|.
 
-Of course, you can also use your own private copy of Bob_, just set the right ``eggs-directories``.
+Of course, you can also use your own private copy of Bob_, just set the right ``prefixes``.
 
-Usually, the database satellite packages (called ``xbob.db.[...]``) are automatically downloaded from PyPI_.
-If you prefer to use the latest version of them, just add ``find-links = http://www.idiap.ch/software/bob/packages/xbob/nightlies/last`` into your **buildout.cfg** file.
+Usually, all possible database satellite packages (called ``xbob.db.[...]``) are automatically downloaded from PyPI_.
+If you don't want to download the databases, please edit the ``eggs`` section of the buildout.cfg_ configuration file by removing the databases that you don't want.
 
-.. note::
-  Currently, the database packages are not yet uploaded to PyPI_.
-  Hence, you **have to** use the latest versions.
+Also, the ``gridtk`` tool kit for submitting jobs to the Idiap SGE_ grid is only useful at Idiap_.
+You can safely remove this line from the buildout.cfg_ if you are not at Idiap or if you don't want to launch your experiments in the SGE_ grid.
 
 Image databases
 ~~~~~~~~~~~~~~~
@@ -57,8 +56,9 @@ Image databases
 With the |project| you will run face recognition experiments using some default facial image databases.
 Though the verification protocols are implemented in the |project|, the images (and the hand-labelled annotations) are **not included**.
 To download the image databases, please refer to the according Web-pages.
-For a start, you might want to try the small, but freely available image database called the `AT&T database`_ (formerly known as the ORL database).
 
+For a start, you might want to try the small, but freely available image database called the `AT&T database`_ (formerly known as the ORL database).
+Other database URL's will be given in the :ref:`databases` section.
 
 Set-up your |project|
 ---------------------
@@ -72,16 +72,8 @@ To proceed, open a terminal in your |project| main directory and call:
   $ python bootstrap.py
   $ bin/buildout
 
-The first step will generate a **bin** directory in the main directory of the |project|.
+The first step will generate a `bin <file:../bin>`_ directory in the main directory of the |project|.
 The second step automatically downloads all dependencies (except for Bob_) of the |project| and creates all required scripts that we will need soon.
-
-.. note::
-  At Idiap_, you should not use the default python interpreter to call the bootstrapping.
-  To get all the dependencies of Bob_ right, you should instead use:
-
-  .. code-block:: sh
-
-    $ /idiap/group/torch5spro/externals/v3/ubuntu-10.04-x86_64/bin/python bootstrap.py
 
 
 Test your installation
@@ -92,10 +84,26 @@ To verify your installation, you should run the script by calling:
 
 .. code-block:: sh
 
-  $ bin/tests
+  $ bin/nosetests
+
+Some of the tests that are run require the images of the `AT&T database`_ database.
+If you want these tests to pass you have to:
+
+1. Download the `AT&T database`_ database and extract it to the directory of your choice.
+2. Set an environment variable ``ATNT_DATABASE_DIRECTORY`` to the directory, where you extracted the database to.
+   For example, in a ``bash`` you can call
+
+.. code-block:: sh
+
+  $ export ATNT_DATABASE_DIRECTORY=/path/to/your/copy/of/atnt
 
 .. note::
-  In case any of the tests fail, please file a bug through the `GitHub bug system`_.
+  To set the directory permanently, you can also change it in the files `testdata/scripts/atnt_Test.py <file:../testdata/scripts/atnt_Test.py>`_ and `testdata/scripts/fileset_Test.py <file:../testdata/scripts/fileset_Test.py>`_.
+  In this case, there is no need to set the environment variable any more.
+  Currently, these files by default include the directory that is valid for Idiap_.
+
+In case any of the tests fail for unexplainable reasons, please file a bug report through the `GitHub bug system`_.
+
 
 Generate this documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,15 +112,16 @@ To generate this documentation, you call:
 
 .. code-block:: sh
 
-  $ bin/sphinx
+  $ bin/sphinx-build docs/ sphinx
 
 Afterwards, the documentation is available and you can read it, e.g., by using:
 
 .. code-block:: sh
 
-  $ firefox sphinx/html/index.html
+  $ firefox sphinx/index.html
 
 (Since you are reading the documentation, you already have done this step, right?)
 
+.. _buildout.cfg: file:../buildout.cfg
 
 .. include:: links.rst

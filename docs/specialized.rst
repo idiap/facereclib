@@ -26,7 +26,7 @@ For these databases, different scripts are provided.
 These databases are:
 
 The LFW database
-----------------
+~~~~~~~~~~~~~~~~
 For the `Labeled Faces in the Wild` (LFW) database, there is another script to calculate the experiments, strictly following the LFW protocols.
 
 .. TODO::
