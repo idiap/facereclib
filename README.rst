@@ -32,17 +32,14 @@ After downloading, you should go to the console and write::
 
   $ python bootstrap.py
   $ bin/buildout
-  $ bin/sphinx
+  $ bin/sphinx-build docs sphinx
 
-.. note::
-  Here at Idiap_, please replace the first command by::
-
-    $ /idiap/group/torch5spro/externals/v3/ubuntu-10.04-x86_64/bin/python bootstrap.py
-
+This will download all required packages and install them locally.
+If you don't want all the database packages to be downloaded, please remove the xbob.db.[database] lines from the ``eggs`` section of the file **buildout.cfg** in the main directory before calling the three commands above.
 
 Now, you can open the documentation by typing::
 
-  $ firefox sphinx/html/index.html
+  $ firefox sphinx/index.html
 
 and read further instructions on how to use this library.
 
