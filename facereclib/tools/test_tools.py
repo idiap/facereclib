@@ -566,7 +566,7 @@ class ToolTest(unittest.TestCase):
     test_file.cd('/pca')
     pca_machine = bob.machine.LinearMachine(test_file)
     test_file.cd('/plda')
-    plda_machine = bob.machine.PLDABaseMachine(test_file)
+    plda_machine = bob.machine.PLDABase(test_file)
     # TODO: compare the PCA machines
     #self.assertEqual(pca_machine, tool.m_pca_machine)
     # TODO: compare the PLDA machines

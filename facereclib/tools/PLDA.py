@@ -18,7 +18,6 @@ class PLDA (Tool):
       subspace_dimension_of_g, # Size of subspace G
       subspace_dimension_pca = None,  # if given, perform PCA on data and reduce the PCA subspace to the given dimension
       plda_training_iterations = 200, # Maximum number of iterations for the EM loop
-      plda_training_threshold = 1e-6, # Threshold for ending the EM loop
       # TODO: refactor the remaining parameters!
       INIT_SEED = 0, # seed for initializing
       INIT_F_METHOD = bob.trainer.init_f_method.BETWEEN_SCATTER,
@@ -38,7 +37,6 @@ class PLDA (Tool):
     self.m_subspace_dimension_of_g = subspace_dimension_of_g
     self.m_subspace_dimension_pca = subspace_dimension_pca
     self.m_plda_training_iterations = plda_training_iterations
-    self.m_plda_training_threshold = plda_training_threshold
     self.m_score_set = {'joint_likelihood': 'joint_likelihood', 'average':numpy.average, 'min':min, 'max':max}[multiple_probe_scoring]
 
     # TODO: refactor
@@ -85,7 +83,7 @@ class PLDA (Tool):
   def train_enroller(self, training_features, projector_file):
     """Generates the PLDA base model from a list of arrays (one per identity),
        and a set of training parameters. If PCA is requested, it is trained on the same data.
-       Both the trained PLDABaseMachine and the PCA machine are written."""
+       Both the trained PLDABase and the PCA machine are written."""
 
 
     # train PCA and perform PCA on training data
@@ -97,12 +95,11 @@ class PLDA (Tool):
 
     utils.info("  -> Training PLDA base machine")
     # create trainer
-    t = bob.trainer.PLDABaseTrainer(
-        self.m_plda_training_threshold,
+    t = bob.trainer.PLDATrainer(
         self.m_plda_training_iterations,
-        False)
+        )
 
-    t.seed = self.m_init[0]
+    t.rng.seed = self.m_init[0]
     t.init_f_method = self.m_init[1]
     t.init_f_ratio = self.m_init[2]
     t.init_g_method = self.m_init[3]
@@ -111,8 +108,8 @@ class PLDA (Tool):
     t.init_sigma_ratio = self.m_init[6]
 
     # train machine
-    self.m_plda_base_machine = bob.machine.PLDABaseMachine(input_dimension, self.m_subspace_dimension_of_f, self.m_subspace_dimension_of_g)
-    t.train(self.m_plda_base_machine, training_features)
+    self.m_plda_base = bob.machine.PLDABase(input_dimension, self.m_subspace_dimension_of_f, self.m_subspace_dimension_of_g)
+    t.train(self.m_plda_base, training_features)
 
     # write machines to file
     proj_hdf5file = bob.io.HDF5File(str(projector_file), "w")
@@ -122,7 +119,7 @@ class PLDA (Tool):
       self.m_pca_machine.save(proj_hdf5file)
     proj_hdf5file.create_group('/plda')
     proj_hdf5file.cd('/plda')
-    self.m_plda_base_machine.save(proj_hdf5file)
+    self.m_plda_base.save(proj_hdf5file)
 
 
   def load_enroller(self, projector_file):
@@ -133,9 +130,9 @@ class PLDA (Tool):
       proj_hdf5file.cd('/pca')
       self.m_pca_machine = bob.machine.LinearMachine(proj_hdf5file)
     proj_hdf5file.cd('/plda')
-    self.m_plda_base_machine = bob.machine.PLDABaseMachine(proj_hdf5file)
-    #self.m_plda_base_machine = bob.machine.PLDABaseMachine(bob.io.HDF5File(projector_file))
-    self.m_plda_machine = bob.machine.PLDAMachine(self.m_plda_base_machine)
+    self.m_plda_base = bob.machine.PLDABase(proj_hdf5file)
+    #self.m_plda_base = bob.machine.PLDABase(bob.io.HDF5File(projector_file))
+    self.m_plda_machine = bob.machine.PLDAMachine(self.m_plda_base)
     self.m_plda_trainer = bob.trainer.PLDATrainer()
 
   def enroll(self, enroll_features):
@@ -149,10 +146,8 @@ class PLDA (Tool):
 
   def read_model(self, model_file):
     """Reads the model, which in this case is a PLDA-Machine"""
-    # read machine
-    plda_machine = bob.machine.PLDAMachine(bob.io.HDF5File(model_file))
-    # attach base machine
-    plda_machine.plda_base = self.m_plda_base_machine
+    # read machine and attach base machine
+    plda_machine = bob.machine.PLDAMachine(bob.io.HDF5File(model_file), self.m_plda_base)
     return plda_machine
 
   def score(self, model, probe):
