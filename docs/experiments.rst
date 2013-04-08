@@ -105,8 +105,8 @@ Currently, all implemented databases are taken from Bob_.
 To define a common API for all of the databases, the |project| defines the wrapper classes `facereclib.databases.DatabaseXBob <file:../facereclib/databases/DatabaseXBob.py>`_ and `facereclib.databases.DatabaseXBobZT  <file:../facereclib/databases/DatabaseXBob.py>`_ for these databases.
 The parameters of this wrapper class are:
 
-Required parameters:
-********************
+Required parameters
+*******************
 
 * ``name``: The name of the database, in lowercase letters without special characters.
   This name will be used as a default sub-directory to separate resulting files of different experiments.
@@ -114,8 +114,8 @@ Required parameters:
 * ``image_directory``: The base directory, where the image of the database are stored.
 * ``image_extension``: The file extension of the images in the database.
 
-Optional parameters:
-********************
+Optional parameters
+*******************
 
 * ``has_internal_annotations``: Set to true if the database stores the annotations directly.
    In this case, the actual database object needs to provide a ``annotations`` function.
@@ -135,8 +135,8 @@ Usually, there is no need to specify them, but in case your algorithm requires t
 * ``projector_training_options``: Special options that are passed to the query, e.g., to reduce the number of images in the projector training.
 * ``enroller_training_options``: Special options that are passed to the query, e.g., to reduce the number of images in the enroller training.
 
-Implemented database interfaces:
-********************************
+Implemented database interfaces
+*******************************
 Here we list the database interfaces that are currently available in the |project|.
 By clicking on the database name, you open one configuration file of the database.
 If you have an ``image_directory`` different to the one specified in the file, please change the directory accordingly to be able to use the database.
@@ -144,20 +144,33 @@ If you have an ``image_directory`` different to the one specified in the file, p
 
 * `facereclib.database.DatabaseXBob <file:../facereclib/databases/DatabaseXBob.py>`_:
 
-  - `AR face <file:../facereclib/configurations/databases/arface_all.py>`_
+  - `AR face <file:../facereclib/configurations/databases/arface_all.py>`_ : http://www2.ece.ohio-state.edu/~aleix/ARdatabase.html
+
+  .. note::
+    At Idiap we might not have the latest version of this database.
+    We tried to contact the responsible author of the database, but he didn't reply over years.
+    Good luck for your trial to get the data.
+
   - `AT&T <file:../facereclib/configurations/databases/atnt_Default.py>`_ : http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
-  - `CAS-PEAL <file:../facereclib/configurations/databases/caspeal_lighting.py>`_
-  - `Face Recognition Grand Challenge ver2.0 (FRGC) <file:../facereclib/configurations/databases/frgc_201.py>`_
-  - `The Good, The Bad & The Ugly (GBU) <file:../facereclib/configurations/databases/gbu_Good.py>`_
-  - `Labeled Faces in the Wild (LFW) <file:../facereclib/configurations/databases/lfw_view1.py>`_
+  - `CAS-PEAL <file:../facereclib/configurations/databases/caspeal_lighting.py>`_: http://www.jdl.ac.cn/peal/index.html
+  - `Face Recognition Grand Challenge ver2.0 (FRGC) <file:../facereclib/configurations/databases/frgc_201.py>`_ : http://www.nist.gov/itl/iad/ig/frgc.cfm
+  - `The Good, The Bad & The Ugly (GBU) <file:../facereclib/configurations/databases/gbu_Good.py>`_ : http://www.nist.gov/itl/iad/ig/focs.cfm
+
+  .. note::
+    The GBU database uses the data from the MBGC http://www.nist.gov/itl/iad/ig/mbgc.cfm database of the NIST.
+    The directory structure of the MBGC seems to be changed lately.
+    Hence, the ``xbob.db.gbu`` database might not be up to date.
+    Please refer to the documentation of this database on how to adapt the database to the new structure.
+
+  - `Labeled Faces in the Wild (LFW) <file:../facereclib/configurations/databases/lfw_view1.py>`_ : http://vis-www.cs.umass.edu/lfw/
 
 * ``facereclib.database.DatabaseXBobZT``:
 
   - `BANCA <file:../facereclib/configurations/databases/banca_P.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/banca
-  - `MOBIO <file:../facereclib/configurations/databases/mobio_male.py>`_
-  - `Multi-PIE <file:../facereclib/configurations/databases/multipie_P.py>`_
-  - `Surveillance Camera (SC) face <file:../facereclib/configurations/databases/scface_combined.py>`_
-  - `Extended M2VTS <file:../facereclib/configurations/databases/xm2vts_lp1.py>`_
+  - `MOBIO <file:../facereclib/configurations/databases/mobio_male.py>`_ : http://www.idiap.ch/dataset/mobio
+  - `Multi-PIE <file:../facereclib/configurations/databases/multipie_P.py>`_ : http://www.multipie.org
+  - `Surveillance Camera (SC) face database <file:../facereclib/configurations/databases/scface_combined.py>`_ : http://www.scface.org
+  - `Extended M2VTS (XM2VTS) <file:../facereclib/configurations/databases/xm2vts_lp1.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/xm2vtsdb
 
 There is also one interface for the ``xbob.db.faceverif_fl`` database, which contains a file-based API to define simple evaluation protocols for other databases.
 An example, which is based on the `AT&T database`, on how to configure and use this database can be found in `testdata/databases/atnt_fl/atnt_fl_database.py <file:../testdata/databases/atnt_fl/atnt_fl_database.py>`_.
@@ -171,8 +184,8 @@ Preprocessors
 Currently, all image preprocessors that are defined in |project| perform an automatic image alignment to the hand-labeled eye positions as provided by the :ref:`databases`.
 Hence, most preprocessors that are defined in `facereclib/preprocessing <file:../facereclib/preprocessing>`_ have a common set of parameters:
 
-Face cropping parameters:
-*************************
+Face cropping parameters
+************************
 
 * ``cropped_image_size``: The resolution of the cropped image, defined as a tuple (image_height, image_width).
   If not specified, no face cropping is performed.
@@ -191,8 +204,8 @@ Face cropping parameters:
   If you want a different color channel, please implement it in the ``gray_channel`` function of the `facereclib/utils/__init__.py <file:../facereclib/utils/__init__.py>`_ file.
 * ``offset``: If your feature extraction step needs some surrounding information of the image (e.g. the ``LGBPHS`` feature extractor reduces the image size), you can add an offset here, so that the actual returned image will be larger.
 
-Preprocessor classes:
-*********************
+Preprocessor classes
+********************
 
 * `facereclib.preprocessing.FaceCrop <file:../facereclib/preprocessing/FaceCrop.py>`_: Crops the image to the desired resolution and puts the specified annotations to the specified positions in the image.
 * `facereclib.preprocessing.HistogramEqualization <file:../facereclib/preprocessing/HistogramEqualization.py>`_: Face cropping and gray value histogram equalization.
@@ -370,8 +383,8 @@ Here is a list of the most important algorithms and their parameters:
     Document the JFA tool
 
 
-Parameters of the SGE_ grid:
-----------------------------
+Parameters of the SGE_ grid
+---------------------------
 By default, all jobs of the face recognition tool chain run sequentially on the local machine.
 To speed up the processing, some jobs can be parallelized using the SGE_ grid.
 For this purpose, there is another option:

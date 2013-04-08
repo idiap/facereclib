@@ -19,7 +19,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     # call base class constructor
     ToolChainExecutor.ToolChainExecutor.__init__(self, args)
 
-    if not isinstance(self.m_tool, tools.ISVTool):
+    if not isinstance(self.m_tool, tools.ISV):
       raise ValueError("This script is specifically designed to compute ISV tests. Please select an according tool.")
 
     self.m_configuration.normalized_directory = os.path.join(self.m_configuration.temp_directory, 'normalized_features')
