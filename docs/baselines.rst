@@ -79,7 +79,7 @@ Usually it is a good idea to have at least verbose level 2 (i.e., calling ``bin/
 
 .. note::
   The directories are set up such that you should usually be able to use them at Idiap_ without further modifications.
-  If you are new at Idiap, you might want to ask the system administration for quota on **/idiap/temp/${USER}/** and **/idiap/user/${USER}/**, or simply choose another directory, e.g., a sub-directory of the local disk **/srcatch/${USER}/**
+  If you are new at Idiap_, you might want to ask the system administration for quota on **/idiap/temp/${USER}/** and **/idiap/user/${USER}/**, or simply choose another ``--directory``, e.g., a sub-directory of the local disk **/srcatch/${USER}/**
 
 
 The algorithms

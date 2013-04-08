@@ -95,9 +95,7 @@ class PLDA (Tool):
 
     utils.info("  -> Training PLDA base machine")
     # create trainer
-    t = bob.trainer.PLDATrainer(
-        self.m_plda_training_iterations,
-        )
+    t = bob.trainer.PLDATrainer(self.m_plda_training_iterations)
 
     t.rng.seed = self.m_init[0]
     t.init_f_method = self.m_init[1]
