@@ -56,7 +56,7 @@ class INormLBP (FaceCrop):
     )
 
     # lbp extraction
-    self.m_lgb_extractor = bob.ip.LBP8R(radius, is_circular, compare_to_average, add_average_bit, is_uniform, is_rotation_invariant, 0)
+    self.m_lgb_extractor = bob.ip.LBP(8, radius, is_circular, compare_to_average, add_average_bit, is_uniform, is_rotation_invariant, bob.ip.ELBPType.REGULAR)
     if self.m_perform_image_cropping:
       self.m_i_norm_image = numpy.ndarray([size - 2*radius for size in self.m_cropped_image.shape], numpy.uint16)
     else:
