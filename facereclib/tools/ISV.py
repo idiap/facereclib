@@ -19,9 +19,9 @@ class ISV (UBMGMM):
       self,
       # ISV training
       subspace_dimension_of_u,       # U subspace dimension
-      jfa_training_iterations = 10,  # Number of EM iterations for the JFA training
+      isv_training_iterations = 10,  # Number of EM iterations for the ISV training
       # ISV enrollment
-      jfa_enroll_iterations = 1,     # Number of iterations for the enrollment phase
+      isv_enroll_iterations = 1,     # Number of iterations for the enrollment phase
       # parameters of the GMM
       **kwargs
   ):
@@ -39,8 +39,8 @@ class ISV (UBMGMM):
     )
 
     self.m_subspace_dimension_of_u = subspace_dimension_of_u
-    self.m_jfa_training_iterations = jfa_training_iterations
-    self.m_jfa_enroll_iterations = jfa_enroll_iterations
+    self.m_isv_training_iterations = isv_training_iterations
+    self.m_isv_enroll_iterations = isv_enroll_iterations
 
 
   def _train_isv(self, train_features):
@@ -56,12 +56,11 @@ class ISV (UBMGMM):
 
 
     utils.info("  -> Training ISV enroller")
-    self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_subspace_dimension_of_u)
-    self.m_jfabase.ubm = self.m_ubm
+    self.m_isvbase = bob.machine.ISVBase(self.m_ubm, self.m_subspace_dimension_of_u)
 
     # train ISV model
-    t = bob.trainer.JFABaseTrainer(self.m_jfabase)
-    t.train_isv(data2, self.m_jfa_training_iterations, self.m_relevance_factor)
+    t = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
+    t.train(self.m_isvbase, data2)
 
 
   def train_projector(self, train_features, projector_file):
@@ -76,7 +75,7 @@ class ISV (UBMGMM):
     # train ISV
     self._train_isv(train_features)
 
-    # Save the JFA base AND the UBM into the same file
+    # Save the ISV base AND the UBM into the same file
     self._save_projector(projector_file)
 
 
@@ -90,7 +89,7 @@ class ISV (UBMGMM):
     hdf5file.cd('/')
     hdf5file.create_group('Enroller')
     hdf5file.cd('Enroller')
-    self.m_jfabase.save(hdf5file)
+    self.m_isvbase.save(hdf5file)
 
 
 
@@ -111,13 +110,12 @@ class ISV (UBMGMM):
     hdf5file.cd('/')
     # Load Enroller
     hdf5file.cd('Enroller')
-    self.m_jfabase = bob.machine.JFABaseMachine(hdf5file)
+    self.m_isvbase = bob.machine.ISVBase(hdf5file)
     # add UBM model from base class
-    self.m_jfabase.ubm = self.m_ubm
+    self.m_isvbase.ubm = self.m_ubm
 
-    self.m_machine = bob.machine.JFAMachine(self.m_jfabase)
-    self.m_base_trainer = bob.trainer.JFABaseTrainer(self.m_jfabase)
-    self.m_trainer = bob.trainer.JFATrainer(self.m_machine, self.m_base_trainer)
+    self.m_machine = bob.machine.ISVMachine(self.m_isvbase)
+    self.m_trainer = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
 
 
   #######################################################
@@ -132,12 +130,12 @@ class ISV (UBMGMM):
 
     projected_isv = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
 
-    model = bob.machine.JFAMachine(self.m_jfabase)
+    model = bob.machine.ISVMachine(self.m_isvbase)
     model.estimate_ux(projected_ubm, projected_isv)
     return [projected_ubm, projected_isv]
 
   #######################################################
-  ################## JFA model enroll ####################
+  ################## ISV model enroll ####################
 
   def save_feature(self, data, feature_file):
     hdf5file = bob.io.HDF5File(feature_file, "w")
@@ -160,7 +158,7 @@ class ISV (UBMGMM):
 
   def enroll(self, enroll_features):
     """Performs ISV enrollment"""
-    self.m_trainer.enrol(enroll_features, self.m_jfa_enroll_iterations)
+    self.m_trainer.enrol(self.m_machine, enroll_features, self.m_isv_enroll_iterations)
     # return the resulting gmm
     return self.m_machine
 
@@ -168,9 +166,9 @@ class ISV (UBMGMM):
   ######################################################
   ################ Feature comparison ##################
   def read_model(self, model_file):
-    """Reads the JFA Machine that holds the model"""
-    machine = bob.machine.JFAMachine(bob.io.HDF5File(model_file))
-    machine.jfa_base = self.m_jfabase
+    """Reads the ISV Machine that holds the model"""
+    machine = bob.machine.ISVMachine(bob.io.HDF5File(model_file))
+    machine.isv_base = self.m_isvbase
     return machine
 
   def read_probe(self, probe_file):
@@ -253,9 +251,8 @@ class ISVVideo (ISV, UBMGMMVideo):
   def train_enroller(self, train_features, enroller_file):
     utils.debug(" .... ISVVideo.train_enroller")
     ########## (same as ISV.train_enroller)
-    # create a JFABasemachine with the UBM from the base class
-    self.m_jfabase = bob.machine.JFABaseMachine(self.m_ubm, self.m_subspace_dimension_of_u)
-    self.m_jfabase.ubm = self.m_ubm
+    # create a ISVBase with the UBM from the base class
+    self.m_isvbase = bob.machine.ISVBase(self.m_ubm, self.m_subspace_dimension_of_u)
 
     ########## calculate GMM stats from video.FrameContainers, using frame_selector_for_train_enroller
     gmm_stats = []
@@ -269,11 +266,11 @@ class ISVVideo (ISV, UBMGMMVideo):
     utils.debug(" .... got gmm_stats for " + str(len(gmm_stats)) + " clients")
 
     ########## (same as ISV.train_enroller)
-    t = bob.trainer.JFABaseTrainer(self.m_jfabase)
-    t.train_isv(gmm_stats, self.m_jfa_training_iterations, self.m_relevance_factor)
+    t = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
+    t.train(self.m_isvbase, gmm_stats)
 
-    # Save the JFA base AND the UBM into the same file
-    self.m_jfabase.save(bob.io.HDF5File(enroller_file, "w"))
+    # Save the ISV base AND the UBM into the same file
+    self.m_isvbase.save(bob.io.HDF5File(enroller_file, "w"))
 
   def enroll(self, frame_containers):
     utils.debug(" .... ISVVideo.enroll")
@@ -284,7 +281,7 @@ class ISVVideo (ISV, UBMGMMVideo):
     utils.debug(" .... got " + str(len(enroll_features)) + " enroll_features")
 
     ########## (same as ISV.enroll)
-    self.m_trainer.enroll(enroll_features, self.m_jfa_enroll_iterations)
+    self.m_trainer.enroll(self.m_machine, enroll_features, self.m_isv_enroll_iterations)
     return self.m_machine
 
   def read_feature(self, feature_file):
