@@ -27,18 +27,20 @@ import facereclib
 import bob
 from nose.plugins.skip import SkipTest
 
+import pkg_resources
+
 regenerate_refs = False
 
 
 class FeatureExtractionTest(unittest.TestCase):
 
   def input_dir(self, file):
-    return os.path.join('testdata', 'preprocessing', file)
+    return pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'preprocessing', file))
 
   def reference_dir(self, file):
-    dir = os.path.join('testdata', 'features')
-    facereclib.utils.ensure_dir(dir)
-    return os.path.join(dir, file)
+    ref = pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'features', file))
+    facereclib.utils.ensure_dir(os.path.dirname(ref))
+    return ref
 
   def config(self, resource):
     return facereclib.utils.tests.configuration_file(resource, 'feature_extractor', 'features')

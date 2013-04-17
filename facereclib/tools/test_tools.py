@@ -26,18 +26,19 @@ import facereclib
 import bob
 from nose.plugins.skip import SkipTest
 
-regenerate_refs = False
+import pkg_resources
 
+regenerate_refs = False
 
 class ToolTest(unittest.TestCase):
 
   def input_dir(self, file):
-    return os.path.join('testdata', 'features', file)
+    return pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'features', file))
 
   def reference_dir(self, file):
-    dir = os.path.join('testdata', 'tools')
-    facereclib.utils.ensure_dir(dir)
-    return os.path.join(dir, file)
+    ref = pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'tools', file))
+    facereclib.utils.ensure_dir(os.path.dirname(ref))
+    return ref
 
   def config(self, resource):
     return facereclib.utils.tests.configuration_file(resource, 'tool', 'tools')

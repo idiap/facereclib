@@ -34,6 +34,7 @@ setup(
     packages=find_packages(),
 
     entry_points={
+      # console scripts that will be created in bin/
       'console_scripts': [
         'faceverify.py = facereclib.script.faceverify:main',
         'faceverify_gbu.py = facereclib.script.faceverify_gbu:main',
@@ -45,6 +46,7 @@ setup(
         'resources.py = facereclib.utils.resources:print_all_resources'
       ],
 
+      # registered database short cuts
       'facereclib.database': [
         'arface            = facereclib.configurations.databases.arface_all:database',
         'atnt              = facereclib.configurations.databases.atnt_Default:database',
@@ -61,6 +63,7 @@ setup(
         'audio_banca_g     = facereclib.configurations.databases.audio_banca_G:database',
       ],
 
+      # registered preprocessors
       'facereclib.preprocessor': [
         'face-crop         = facereclib.configurations.preprocessing.face_crop:preprocessor',
         'histogram-equalize= facereclib.configurations.preprocessing.histogram_equalize:preprocessor',
@@ -70,6 +73,7 @@ setup(
         'audio-preprocessor= facereclib.configurations.preprocessing.audio_preprocessor:preprocessor',
       ],
 
+      # registered feature extractors
       'facereclib.feature_extractor': [
         'dct               = facereclib.configurations.features.dct_blocks:feature_extractor',
         'eigenfaces        = facereclib.configurations.features.eigenfaces:feature_extractor',
@@ -80,6 +84,7 @@ setup(
         'cepstral          = facereclib.configurations.features.cepstral:feature_extractor',
       ],
 
+      # registered face recognition algorithms
       'facereclib.tool': [
         'bic               = facereclib.configurations.tools.bic:tool',
         'gabor-jet         = facereclib.configurations.tools.gabor_jet:tool',
@@ -94,6 +99,7 @@ setup(
         'gmm               = facereclib.configurations.tools.ubm_gmm:tool',
       ],
 
+      # registered SGE grid configuration files
       'facereclib.grid': [
         'grid              = facereclib.configurations.grid.grid',
         'demanding         = facereclib.configurations.grid.demanding',
@@ -102,6 +108,14 @@ setup(
         'lfw               = facereclib.configurations.grid.lfw',
         'small             = facereclib.configurations.grid.small',
         'isv               = facereclib.configurations.grid.isv_training',
+      ],
+
+      # registered tests (will, e.g., be run in the xbob.db.aggregator)
+      'bob.test' : [
+        'databases         = facereclib.databases.test_databases:DatabaseTest',
+        'feature_extractors= facereclib.features.test_features:FeatureExtractionTest',
+        'tools             = facereclib.tools.test_tools:ToolTest',
+        'scripts           = facereclib.script.test_scripts:TestScript'
       ]
     },
 

@@ -25,17 +25,19 @@ import facereclib
 import bob
 from nose.plugins.skip import SkipTest
 
+import pkg_resources
+
 regenerate_refs = False
 
 class PreprocessingTest(unittest.TestCase):
 
   def input_dir(self, file):
-    return os.path.join('testdata', file)
+    return pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', file))
 
-  def reference_dir(self, file = None):
-    dir = os.path.join('testdata', 'preprocessing')
-    facereclib.utils.ensure_dir(dir)
-    return os.path.join(dir, file)
+  def reference_dir(self, file):
+    ref = pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'preprocessing', file))
+    facereclib.utils.ensure_dir(os.path.dirname(ref))
+    return ref
 
   def input(self):
     return (bob.io.load(self.input_dir("testimage.jpg")), facereclib.utils.read_annotations(self.input_dir("testimage.pos"), 'named'))
