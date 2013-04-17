@@ -27,8 +27,10 @@ import numpy
 import facereclib
 from nose.plugins.skip import SkipTest
 
-base_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-config_dir = os.path.join(base_dir, 'facereclib', 'configurations')
+import pkg_resources
+
+base_dir = pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata'))
+config_dir = pkg_resources.resource_filename('facereclib', 'configurations')
 
 class TestScript (unittest.TestCase):
 
@@ -42,7 +44,7 @@ class TestScript (unittest.TestCase):
     self.assertTrue(os.path.exists(score_files[1]))
 
     # also assert that the scores are still the same -- though they have no real meaning
-    reference_files = (os.path.join(base_dir, 'testdata', 'scripts', 'scores-nonorm%s-dev'%ref_modifier), os.path.join(base_dir, 'testdata', 'scripts', 'scores-ztnorm%s-dev'%ref_modifier))
+    reference_files = (os.path.join(base_dir, 'scripts', 'scores-nonorm%s-dev'%ref_modifier), os.path.join(base_dir, 'scripts', 'scores-ztnorm%s-dev'%ref_modifier))
 
     for i in (0,1):
       # read reference and new data
@@ -71,7 +73,7 @@ class TestScript (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
-        '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
         '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -90,7 +92,7 @@ class TestScript (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
-        '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-p', 'face-crop',
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -110,7 +112,7 @@ class TestScript (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
-        '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-p', 'face-crop',
         '-f', 'facereclib.features.Eigenface(subspace_dimension', '=', '100)',
         '-t', 'facereclib.tools.Dummy()',
@@ -135,7 +137,7 @@ class TestScript (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
-        '-d', os.path.join(base_dir, 'testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'),
+        '-d', os.path.join(base_dir, 'databases', 'atnt_fl', 'atnt_fl_database.py'),
         '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
         '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -156,7 +158,7 @@ class TestScript (unittest.TestCase):
     self.assertTrue(os.path.exists(score_files[1]))
 
     # assert that the scores are are identical
-    reference_files = (os.path.join(base_dir, 'testdata', 'scripts', 'scores-nonorm-dev'), os.path.join(base_dir, 'testdata', 'scripts', 'scores-ztnorm-dev'))
+    reference_files = (os.path.join(base_dir, 'scripts', 'scores-nonorm-dev'), os.path.join(base_dir, 'scripts', 'scores-ztnorm-dev'))
 
     import bob
     for i in (0,1):
@@ -179,7 +181,7 @@ class TestScript (unittest.TestCase):
     self.grid_available()
     # define dummy parameters including the dry-run
     parameters = [
-        '-d', os.path.join(base_dir, 'testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py'),
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-p', 'face-crop',
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -295,7 +297,7 @@ class TestScript (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
-        '-d', os.path.join(base_dir, 'testdata', 'scripts', 'fileset_Test.py'),
+        '-d', os.path.join(base_dir, 'scripts', 'fileset_Test.py'),
         '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
         '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -341,8 +343,8 @@ class TestScript (unittest.TestCase):
 
     # first test without grid option
     parameters = [
-        '-c', os.path.join(base_dir, 'testdata', 'scripts', 'parameter_Test.py'),
-        '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+        '-c', os.path.join(base_dir, 'scripts', 'parameter_Test.py'),
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-f', 'lgbphs',
         '-b', 'test_p',
         '-s', test_dir,
@@ -359,8 +361,8 @@ class TestScript (unittest.TestCase):
 
     # now, in the grid...
     parameters = [
-        '-c', os.path.join(base_dir, 'testdata', 'scripts', 'parameter_Test.py'),
-        '-d', os.path.join(base_dir, 'testdata', 'scripts', 'atnt_Test.py'),
+        '-c', os.path.join(base_dir, 'scripts', 'parameter_Test.py'),
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-f', 'lgbphs',
         '-b', 'test_p',
         '-s', test_dir,
