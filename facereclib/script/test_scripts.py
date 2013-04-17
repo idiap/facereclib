@@ -32,7 +32,7 @@ import pkg_resources
 base_dir = pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata'))
 config_dir = pkg_resources.resource_filename('facereclib', 'configurations')
 
-class TestScript (unittest.TestCase):
+class ScriptTest (unittest.TestCase):
 
   def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier=""):
     import faceverify
