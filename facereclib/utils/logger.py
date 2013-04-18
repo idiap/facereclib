@@ -42,12 +42,19 @@ def set_verbosity_level(level):
   if level not in range(0,4):
     raise ValueError("The verbosity level %d does not exist. Please reduce the number of '--verbose' parameters in your call" % level)
   # set up the verbosity level of the logging system
-  logger.setLevel({
+  log_level = {
       0: logging.ERROR,
       1: logging.WARNING,
       2: logging.INFO,
       3: logging.DEBUG
-    }[level])
+    }[level]
+
+  # set this log level to the facereclib logger
+  logger.setLevel(log_level)
+
+  # set the same level for the bob logger
+  logging.getLogger('bob').setLevel(log_level)
+
 
 def add_bob_handlers(logger_name, set_format=True, set_log_level=True):
   """Sets the logging handler of 'bob' to the logger with the given name"""
