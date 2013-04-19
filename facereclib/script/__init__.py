@@ -5,3 +5,9 @@
 """Scripts to run face verification experiments"""
 
 import ToolChainExecutor
+
+import baselines
+import faceverify
+import faceverify_gbu
+import faceverify_lfw
+import parameter_test

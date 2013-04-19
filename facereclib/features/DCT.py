@@ -20,7 +20,8 @@ class DCTBlocks (Extractor):
       block_overlap = 11, # 1 or two parameters for block overlap
       number_of_dct_coefficients = 45,
       normalize_blocks = True,
-      normalize_dcts = True
+      normalize_dcts = True,
+      auto_reduce_coefficients = False
   ):
 
     # call base class constructor
@@ -35,7 +36,10 @@ class DCTBlocks (Extractor):
     if self.m_block_size[0] < self.m_block_overlap[0] or self.m_block_size[1] < self.m_block_overlap[1]:
       raise ValueError("The overlap '%s' is bigger than the block size '%s'. This won't work. Please check your setup!"%(self.m_block_overlap, self.m_block_size))
     if self.m_block_size[0] * self.m_block_size[1] <= self.m_number_of_dct_coefficients:
-      raise ValueError("You selected more coefficients %d than your blocks have %d. This won't work. Please check your setup!"%(self.m_number_of_dct_coefficients, self.m_block_size[0] * self.m_block_size[1]))
+      if auto_reduce_coefficients:
+        self.m_number_of_dct_coefficients = self.m_block_size[0] * self.m_block_size[1] - 1
+      else:
+        raise ValueError("You selected more coefficients %d than your blocks have %d. This won't work. Please check your setup!"%(self.m_number_of_dct_coefficients, self.m_block_size[0] * self.m_block_size[1]))
 
   def __call__(self, image):
     """Computes and returns DCT blocks for the given input image"""
