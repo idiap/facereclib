@@ -1,3 +1,3 @@
 include README.rst bootstrap.py *.cfg
 recursive-include docs *.py *.rst
-recursive-include facereclib/tests *.hdf5
+recursive-include facereclib/tests testimage.* *.hdf5 *.py *.lst scores-*
