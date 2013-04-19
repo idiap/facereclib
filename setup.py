@@ -112,11 +112,11 @@ setup(
 
       # registered tests (will, e.g., be run in the xbob.db.aggregator)
       'bob.test' : [
-        'databases         = facereclib.databases.test_databases:DatabaseTest',
-        'preprocessors     = facereclib.preprocessing.test_preprocessing:PreprocessingTest',
-        'feature_extractors= facereclib.features.test_features:FeatureExtractionTest',
-        'tools             = facereclib.tools.test_tools:ToolTest',
-        'scripts           = facereclib.script.test_scripts:ScriptTest'
+        'databases         = facereclib.tests.test_databases:DatabaseTest',
+        'preprocessors     = facereclib.tests.test_preprocessing:PreprocessingTest',
+        'feature_extractors= facereclib.tests.test_features:FeatureExtractionTest',
+        'tools             = facereclib.tests.test_tools:ToolTest',
+        'scripts           = facereclib.tests.test_scripts:ScriptTest'
       ]
     },
 
