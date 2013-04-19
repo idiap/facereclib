@@ -22,6 +22,9 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     if not isinstance(self.m_tool, tools.ISV):
       raise ValueError("This script is specifically designed to compute ISV tests. Please select an according tool.")
 
+    if args.protocol:
+      self.m_database.protocol = args.protocol
+
     self.m_configuration.normalized_directory = os.path.join(self.m_configuration.temp_directory, 'normalized_features')
     self.m_configuration.kmeans_file = os.path.join(self.m_configuration.temp_directory, 'k_means.hdf5')
     self.m_configuration.kmeans_intermediate_file = os.path.join(self.m_configuration.temp_directory, 'kmeans_temp', 'i_%05d', 'k_means.hdf5')
@@ -569,6 +572,8 @@ def parse_args(command_line_parameters):
   # add the arguments required for all tool chains
   config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorISV.required_command_line_options(parser)
 
+  config_group.add_argument('-P', '--protocol', metavar='PROTOCOL',
+      help = 'Overwrite the protocol that is stored in the database by the given one (might not by applicable for all databases).')
   config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', default = 'isv',
       help = 'ISV-based face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
   config_group.add_argument('-g', '--grid', metavar = 'x', required=True,
@@ -581,7 +586,7 @@ def parse_args(command_line_parameters):
       help = 'Force to erase former data if already exist')
 
   other_group.add_argument('-l', '--limit-training-examples', type=int,
-      help = 'Limit the number of training examples used for KMeans initialization, GMM initialization and ISV training')
+      help = 'Limit the number of training examples used for KMeans initialization and the GMM initialization')
 
   other_group.add_argument('-K', '--kmeans-training-iterations', type=int, default=10,
       help = 'Specify the number of training iterations for the KMeans training')
