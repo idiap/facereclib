@@ -32,10 +32,10 @@ regenerate_refs = False
 class PreprocessingTest(unittest.TestCase):
 
   def input_dir(self, file):
-    return pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', file))
+    return pkg_resources.resource_filename('facereclib.tests', file)
 
   def reference_dir(self, file):
-    ref = pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'preprocessing', file))
+    ref = pkg_resources.resource_filename('facereclib.tests', os.path.join('preprocessing', file))
     facereclib.utils.ensure_dir(os.path.dirname(ref))
     return ref
 

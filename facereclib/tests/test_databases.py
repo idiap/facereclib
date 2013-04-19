@@ -120,11 +120,11 @@ class DatabaseTest(unittest.TestCase):
 
   def test20_faceverif_fl(self):
     try:
-      db1 = facereclib.utils.resources.load_resource(pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'scripts', 'atnt_Test.py')), 'database')
+      db1 = facereclib.utils.resources.load_resource(pkg_resources.resource_filename('facereclib.tests', os.path.join('scripts', 'atnt_Test.py')), 'database')
     except Exception as e:
       raise SkipTest("This test is skipped since the atnt database is not available.")
     try:
-      db2 = facereclib.utils.resources.load_resource(pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'databases', 'atnt_fl', 'atnt_fl_database.py')), 'database')
+      db2 = facereclib.utils.resources.load_resource(pkg_resources.resource_filename('facereclib.tests', os.path.join('databases', 'atnt_fl', 'atnt_fl_database.py')), 'database')
     except Exception as e:
       raise SkipTest("This test is skipped since the faceverif_fl database is not available.")
     # The test of the faceverif_fl database is a bit different.

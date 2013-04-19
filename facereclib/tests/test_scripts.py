@@ -29,14 +29,13 @@ from nose.plugins.skip import SkipTest
 
 import pkg_resources
 
-base_dir = pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata'))
+base_dir = pkg_resources.resource_filename('facereclib', 'tests')
 config_dir = pkg_resources.resource_filename('facereclib', 'configurations')
 
 class ScriptTest (unittest.TestCase):
 
   def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier=""):
-    import faceverify
-    faceverify.main(parameters)
+    facereclib.script.faceverify.main(parameters)
 
     # assert that the score file exists
     score_files = (os.path.join(test_dir, sub_dir, 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, sub_dir, 'scores', 'Default', 'ztnorm', 'scores-dev'))
@@ -149,8 +148,7 @@ class ScriptTest (unittest.TestCase):
 
     print ' '.join(parameters)
 
-    import faceverify
-    faceverify.main(parameters)
+    facereclib.script.faceverify.main(parameters)
 
     # assert that the score file exists
     score_files = (os.path.join(test_dir, 'test_x', 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test_x', 'scores', 'Default', 'ztnorm', 'scores-dev'))
@@ -194,8 +192,7 @@ class ScriptTest (unittest.TestCase):
     print ' '.join(parameters)
 
     # run the test; should not execute anything...
-    import faceverify
-    faceverify.main(parameters)
+    facereclib.script.faceverify.main(parameters)
 
 
   def test03_faceverify_lfw_local(self):
@@ -217,8 +214,7 @@ class ScriptTest (unittest.TestCase):
     print ' '.join(parameters)
 
     # run the test; should not execute anything...
-    import faceverify_lfw
-    faceverify_lfw.main(parameters)
+    facereclib.script.faceverify_lfw.main(parameters)
 
 
   def test04_faceverify_lfw_grid(self):
@@ -241,8 +237,7 @@ class ScriptTest (unittest.TestCase):
     print ' '.join(parameters)
 
     # run the test; should not execute anything...
-    import faceverify_lfw
-    faceverify_lfw.main(parameters)
+    facereclib.script.faceverify_lfw.main(parameters)
 
 
   def test05_faceverify_gbu_local(self):
@@ -264,8 +259,7 @@ class ScriptTest (unittest.TestCase):
     print ' '.join(parameters)
 
     # run the test; should not execute anything...
-    import faceverify_gbu
-    faceverify_gbu.main(parameters)
+    facereclib.script.faceverify_gbu.main(parameters)
 
 
   def test06_faceverify_gbu_grid(self):
@@ -289,8 +283,7 @@ class ScriptTest (unittest.TestCase):
     print ' '.join(parameters)
 
     # run the test; should not execute anything...
-    import faceverify_gbu
-    faceverify_gbu.main(parameters)
+    facereclib.script.faceverify_gbu.main(parameters)
 
 
   def test10_faceverify_file_set(self):
@@ -339,7 +332,6 @@ class ScriptTest (unittest.TestCase):
     self.grid_available()
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # tests that the parameter_test.py script works properly
-    import parameter_test
 
     # first test without grid option
     parameters = [
@@ -352,12 +344,12 @@ class ScriptTest (unittest.TestCase):
         '--temp-directory', test_dir,
         '--user-directory', test_dir
     ]
-    parameter_test.main(parameters)
+    facereclib.script.parameter_test.main(parameters)
 
     # number of jobs should be 12
-    self.assertEqual(parameter_test.task_count, 12)
+    self.assertEqual(facereclib.script.parameter_test.task_count, 12)
     # but no job in the grid
-    self.assertEqual(parameter_test.job_count, 0)
+    self.assertEqual(facereclib.script.parameter_test.job_count, 0)
 
     # now, in the grid...
     parameters = [
@@ -371,11 +363,11 @@ class ScriptTest (unittest.TestCase):
         '--temp-directory', test_dir,
         '--user-directory', test_dir
     ]
-    parameter_test.main(parameters)
+    facereclib.script.parameter_test.main(parameters)
 
     # number of jobs should be 12
-    self.assertEqual(parameter_test.task_count, 12)
+    self.assertEqual(facereclib.script.parameter_test.task_count, 12)
     # number of jobs in the grid: 42 (including best possible re-use of files)
-    self.assertEqual(parameter_test.job_count, 42)
+    self.assertEqual(facereclib.script.parameter_test.job_count, 42)
 
     shutil.rmtree(test_dir)

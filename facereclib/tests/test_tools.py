@@ -33,10 +33,10 @@ regenerate_refs = False
 class ToolTest(unittest.TestCase):
 
   def input_dir(self, file):
-    return pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'features', file))
+    return pkg_resources.resource_filename('facereclib.tests', os.path.join('features', file))
 
   def reference_dir(self, file):
-    ref = pkg_resources.resource_filename('facereclib', os.path.join('..', 'testdata', 'tools', file))
+    ref = pkg_resources.resource_filename('facereclib.tests', os.path.join('tools', file))
     facereclib.utils.ensure_dir(os.path.dirname(ref))
     return ref
 
