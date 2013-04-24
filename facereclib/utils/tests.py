@@ -20,7 +20,7 @@
 from .resources import resource_keys, load_resource
 import numpy
 
-def configuration_file(name, resource, dir = None):
+def configuration_file(name, resource, dir = None, module = 'facereclib.configurations'):
   """Reads configuration file or the registered resource with the given name."""
   # test if the resource is known
   if name in resource_keys(resource):
@@ -28,10 +28,10 @@ def configuration_file(name, resource, dir = None):
     return load_resource(name, resource)
   else: # resource not registered, but available...
     # import resource (actually this is a hack, but better than dealing with file names...)
-    exec "from facereclib.configurations." + dir + " import " + name
+    exec "from " + module + "." + dir + " import " + name
     # get the database defined in the resource
     return eval(name + "." + resource)
-    
+
 def random_training_set(shape, count, minimum = 0, maximum = 1):
   """Returns a random training set with the given shape and the given number of elements."""
   # generate a random sequence of features

@@ -170,7 +170,13 @@ class ToolChainExecutor:
     self.m_fake_job_id = fake_job_id
 
     # define the dir from which the current executable was called
-    self.m_bin_directory = os.path.realpath(os.path.dirname(sys.argv[0]))
+    #TODO: Find a more clever way to get the directory, where the script is installed.
+    if os.path.exists(sys.argv[0]):
+      self.m_bin_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+    else:
+      # This should happen only during nose testing under some weird conditions.
+      # Since nose tests should not actually run anything in the grid, we can use a fake directory here.
+      self.m_bin_directory = './bin'
     self.m_executable = os.path.join(self.m_bin_directory, os.path.basename(calling_file))
     # generate job manager and set the temp dir
     self.m_job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
