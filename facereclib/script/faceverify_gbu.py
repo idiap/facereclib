@@ -451,10 +451,10 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     return {}
 
 
-def main(command_line_parameters = sys.argv[1:]):
+def main(command_line_parameters = sys.argv):
   """Executes the main function"""
   # do the command line parsing
-  args = parse_args(command_line_parameters)
+  args = parse_args(command_line_parameters[1:])
   # perform face verification test
   face_verify(args, command_line_parameters)
 

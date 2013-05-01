@@ -164,15 +164,15 @@ class ToolChainExecutor:
     utils.add_bob_handlers('gridtk')
 
     # we want to have the executable with the name of this file, which is laying in the bin directory
-    self.m_common_parameters = [p for p in parameters if not '--skip' in p and not '--no' in p and p not in ('-q', '--dry-run')]
+    self.m_common_parameters = [p for p in parameters[1:] if not '--skip' in p and not '--no' in p and p not in ('-q', '--dry-run')]
 
     # job id used for the dry-run
     self.m_fake_job_id = fake_job_id
 
     # define the dir from which the current executable was called
     #TODO: Find a more clever way to get the directory, where the script is installed.
-    if os.path.exists(sys.argv[0]):
-      self.m_bin_directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+    if os.path.exists(parameters[0]):
+      self.m_bin_directory = os.path.dirname(os.path.realpath(parameters[0]))
     else:
       # This should happen only during nose testing under some weird conditions.
       # Since nose tests should not actually run anything in the grid, we can use a fake directory here.

@@ -20,6 +20,7 @@
 
 import unittest
 import os
+import sys
 import shutil
 import tempfile
 import numpy
@@ -35,7 +36,7 @@ config_dir = pkg_resources.resource_filename('facereclib', 'configurations')
 class ScriptTest (unittest.TestCase):
 
   def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier=""):
-    facereclib.script.faceverify.main(parameters)
+    facereclib.script.faceverify.main([sys.argv[0]] + parameters)
 
     # assert that the score file exists
     score_files = (os.path.join(test_dir, sub_dir, 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, sub_dir, 'scores', 'Default', 'ztnorm', 'scores-dev'))
@@ -136,6 +137,7 @@ class ScriptTest (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
+        sys.argv[0],
         '-d', os.path.join(base_dir, 'databases', 'atnt_fl', 'atnt_fl_database.py'),
         '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
         '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
@@ -179,6 +181,7 @@ class ScriptTest (unittest.TestCase):
     self.grid_available()
     # define dummy parameters including the dry-run
     parameters = [
+        sys.argv[0],
         '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-p', 'face-crop',
         '-f', 'eigenfaces',
@@ -204,6 +207,7 @@ class ScriptTest (unittest.TestCase):
 
     # define dummy parameters
     parameters = [
+        sys.argv[0],
         '-p', 'face-crop',
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -226,6 +230,7 @@ class ScriptTest (unittest.TestCase):
       raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'xbob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
     # define dummy parameters
     parameters = [
+        sys.argv[0],
         '-p', 'face-crop',
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -249,6 +254,7 @@ class ScriptTest (unittest.TestCase):
 
     # define dummy parameters
     parameters = [
+        sys.argv[0],
         '-p', 'face-crop',
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -272,6 +278,7 @@ class ScriptTest (unittest.TestCase):
 
     # define dummy parameters
     parameters = [
+        sys.argv[0],
         '-p', 'face-crop',
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -311,7 +318,7 @@ class ScriptTest (unittest.TestCase):
     from facereclib.script.baselines import available_databases, all_algorithms, main
 
     for database in available_databases:
-      parameters = ['-d', database, '--dry-run']
+      parameters = [sys.argv[0], '-d', database, '--dry-run']
       main(parameters)
       parameters.append('-g')
       main(parameters)
@@ -319,7 +326,7 @@ class ScriptTest (unittest.TestCase):
       main(parameters)
 
     for algorithm in all_algorithms:
-      parameters = ['-a', algorithm, '--dry-run']
+      parameters = [sys.argv[0], '-a', algorithm, '--dry-run']
       main(parameters)
       parameters.append('-g')
       main(parameters)
@@ -335,6 +342,7 @@ class ScriptTest (unittest.TestCase):
 
     # first test without grid option
     parameters = [
+        sys.argv[0],
         '-c', os.path.join(base_dir, 'scripts', 'parameter_Test.py'),
         '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-f', 'lgbphs',
@@ -353,6 +361,7 @@ class ScriptTest (unittest.TestCase):
 
     # now, in the grid...
     parameters = [
+        sys.argv[0],
         '-c', os.path.join(base_dir, 'scripts', 'parameter_Test.py'),
         '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-f', 'lgbphs',

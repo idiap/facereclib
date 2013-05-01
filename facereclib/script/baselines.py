@@ -140,10 +140,10 @@ def bic():
 
 
 
-def main(command_line_parameters = sys.argv[1:]):
+def main(command_line_parameters = sys.argv):
 
   # Collect command line arguments
-  args = command_line_arguments(command_line_parameters)
+  args = command_line_arguments(command_line_parameters[1:])
 
   # Check the database configuration file
   has_zt_norm = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface')

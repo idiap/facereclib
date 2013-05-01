@@ -142,7 +142,7 @@ def create_command_line(replacements):
   for key in configuration.replace:
     values.update(extract_values(configuration.replace[key], replacements))
   # replace the place holders with the values
-  call = ['--database', args.database]
+  call = [sys.argv[0], '--database', args.database]
   if args.protocol:
     call += ['--protocol', args.protocol]
   return call + [
@@ -258,7 +258,7 @@ def execute_dependent_task(command_line, directories, dependency_level):
     command_file = os.path.join(os.path.dirname(command_line[index+1]), args.write_commands)
     with open(command_file, 'w') as f:
       f.write('bin/faceverify.py ')
-      for p in command_line:
+      for p in command_line[1:]:
         f.write(p + ' ')
       f.close()
     utils.info("Wrote command line into file '%s'" % command_file)
@@ -274,7 +274,7 @@ def execute_dependent_task(command_line, directories, dependency_level):
   # execute the command
   new_job_ids = {}
   try:
-    verif_args = faceverify.parse_args(command_line)
+    verif_args = faceverify.parse_args(command_line[1:])
     if args.dry_run:
       print "Would have executed job",
       print " ".join(command_line)
@@ -339,7 +339,7 @@ def create_recursive(replace_dict, step_index, directories, dependency_level, ke
           new_dependency_level = step_index
 
 
-def main(command_line_parameters = sys.argv[1:]):
+def main(command_line_parameters = sys.argv):
   """Main entry point for the parameter test. Try --help to see the parameters that can be specified."""
 
   global task_count, job_count, job_ids
@@ -347,7 +347,7 @@ def main(command_line_parameters = sys.argv[1:]):
   task_count = 0
   job_ids = {}
 
-  command_line_options(command_line_parameters)
+  command_line_options(command_line_parameters[1:])
 
   global configuration, place_holder_key
   configuration = utils.resources.read_config_file(args.configuration_file)

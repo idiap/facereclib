@@ -502,16 +502,16 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
       this_file = this_file[0:-1]
 
     # initialize the executor to submit the jobs to the grid
-    executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = external_fake_job_id )
+    executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = external_fake_job_id)
 
     # add the jobs
     return executor.add_jobs_to_grid(external_dependencies)
 
 
-def main(command_line_parameters = sys.argv[1:]):
+def main(command_line_parameters = sys.argv):
   """Executes the main function"""
   # do the command line parsing
-  args = parse_args(command_line_parameters)
+  args = parse_args(command_line_parameters[1:])
 
   # perform face verification test
   face_verify(args, command_line_parameters)
