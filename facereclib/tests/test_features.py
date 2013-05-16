@@ -46,7 +46,7 @@ class FeatureExtractionTest(unittest.TestCase):
     return facereclib.utils.tests.configuration_file(resource, 'feature_extractor', 'features')
 
 
-  def execute(self, extractor, image, reference):
+  def execute(self, extractor, image, reference, epsilon = 1e-5):
     # execute the preprocessor
     feature = extractor(image)
     if regenerate_refs:
@@ -54,7 +54,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
     ref = bob.io.load(self.reference_dir(reference))
     self.assertEqual(ref.shape, feature.shape)
-    self.assertTrue((numpy.abs(ref - feature) < 1e-5).all())
+    self.assertTrue((numpy.abs(ref - feature) < epsilon).all())
     return feature
 
 
@@ -183,7 +183,7 @@ class FeatureExtractionTest(unittest.TestCase):
     image = preprocessor.read_image(self.input_dir('key_points.hdf5'))
     # now, we extract features from it
     extractor = self.config('sift')
-    feature = self.execute(extractor, image, 'sift.hdf5')
+    feature = self.execute(extractor, image, 'sift.hdf5', epsilon=1e-4)
     self.assertEqual(len(feature.shape), 1)
 
 

@@ -276,7 +276,7 @@ class ToolTest(unittest.TestCase):
     # compare the resulting machines
     new_machine = bob.machine.BICMachine(tool.m_use_dffs)
     new_machine.load(bob.io.HDF5File(t))
-    self.assertEqual(tool.m_bic_machine, new_machine)
+    self.assertTrue(tool.m_bic_machine.is_similar_to(new_machine))
     os.remove(t)
 
     # score and compare to the weird reference score ...
@@ -313,7 +313,7 @@ class ToolTest(unittest.TestCase):
     tool.load_projector(self.reference_dir('gmm_projector.hdf5'))
     # compare GMM projector with reference
     new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
-    self.assertEqual(tool.m_ubm, new_machine)
+    self.assertTrue(tool.m_ubm.is_similar_to(new_machine))
     os.remove(t)
 
     # project the feature
@@ -321,14 +321,14 @@ class ToolTest(unittest.TestCase):
     if regenerate_refs:
       projected.save(bob.io.HDF5File(self.reference_dir('gmm_feature.hdf5'), 'w'))
     probe = tool.read_probe(self.reference_dir('gmm_feature.hdf5'))
-    self.assertEqual(projected, probe)
+    self.assertTrue(projected.is_similar_to(probe))
 
     # enroll model with the unprojected feature
     model = tool.enroll([feature])
     if regenerate_refs:
       model.save(bob.io.HDF5File(self.reference_dir('gmm_model.hdf5'), 'w'))
     reference_model = tool.read_model(self.reference_dir('gmm_model.hdf5'))
-    self.assertEqual(model, reference_model)
+    self.assertTrue(model.is_similar_to(reference_model))
 
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(reference_model, probe)
@@ -361,7 +361,7 @@ class ToolTest(unittest.TestCase):
     # enroll model with the unprojected feature
     model = tool.enroll([feature])
     reference_model = tool.read_model(self.reference_dir('gmm_model.hdf5'))
-    self.assertEqual(model, reference_model)
+    self.assertTrue(model.is_similar_to(reference_model))
 
     # score with unprojected feature and compare to the weird reference score ...
     probe = tool.read_probe(self.input_dir('dct_blocks.hdf5'))
@@ -414,7 +414,7 @@ class ToolTest(unittest.TestCase):
     hdf5file = bob.io.HDF5File(t)
     hdf5file.cd('Projector')
     projector_reference = bob.machine.GMMMachine(hdf5file)
-    self.assertEqual(tool.m_ubm, projector_reference)
+    self.assertTrue(tool.m_ubm.is_similar_to(projector_reference))
 
     # compare ISV enroller with reference
     hdf5file.cd('/')
@@ -431,7 +431,7 @@ class ToolTest(unittest.TestCase):
 
     # compare the projected feature with the reference
     projected_reference = tool.read_feature(self.reference_dir('isv_feature.hdf5'))
-    self.assertEqual(projected[0], projected_reference)
+    self.assertTrue(projected[0].is_similar_to(projected_reference))
 
     # enroll model with the projected feature
     model = tool.enroll([projected[0]])
@@ -443,7 +443,7 @@ class ToolTest(unittest.TestCase):
 
     # check that the read_probe function reads the correct values
     probe = tool.read_probe(self.reference_dir('isv_feature.hdf5'))
-    self.assertEqual(probe[0], projected[0])
+    self.assertTrue(probe[0].is_similar_to(projected[0]))
     self.assertEqual(probe[1].any(), projected[1].any())
 
     # score with projected feature and compare to the weird reference score ...
@@ -495,7 +495,7 @@ class ToolTest(unittest.TestCase):
     tool.load_projector(self.reference_dir('jfa_projector.hdf5'))
     # compare JFA projector with reference
     new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
-    self.assertEqual(tool.m_ubm, new_machine)
+    self.assertTrue(tool.m_ubm.is_similar_to(new_machine))
     os.remove(t)
 
     # project the feature
@@ -504,7 +504,7 @@ class ToolTest(unittest.TestCase):
       projected.save(bob.io.HDF5File(self.reference_dir('jfa_feature.hdf5'), 'w'))
     # compare the projected feature with the reference
     projected_reference = tool.read_feature(self.reference_dir('jfa_feature.hdf5'))
-    self.assertEqual(projected, projected_reference)
+    self.assertTrue(projected.is_similar_to(projected_reference))
 
     # train the enroller
     t = tempfile.mkstemp('enroll.hdf5', prefix='frltest_')[1]
@@ -529,7 +529,7 @@ class ToolTest(unittest.TestCase):
 
     # check that the read_probe function reads the requested data
     probe = tool.read_probe(self.reference_dir('jfa_feature.hdf5'))
-    self.assertEqual(probe, projected)
+    self.assertTrue(probe.is_similar_to(projected))
 
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
