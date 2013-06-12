@@ -574,7 +574,7 @@ def parse_args(command_line_parameters):
 
   config_group.add_argument('-P', '--protocol', metavar='PROTOCOL',
       help = 'Overwrite the protocol that is stored in the database by the given one (might not by applicable for all databases).')
-  config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', default = 'isv',
+  config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', default = ['isv'],
       help = 'ISV-based face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
   config_group.add_argument('-g', '--grid', metavar = 'x', required=True,
       help = 'Configuration file for the grid setup; needs to be specified.')
