@@ -13,10 +13,11 @@ class LDA (Tool):
 
   def __init__(
       self,
-      lda_subspace_dimension = None, # if set, the LDA subspace will be truncated to the given number of dimensions
+      lda_subspace_dimension = None, # if set, the LDA subspace will be truncated to the given number of dimensions; by default it is limited to the number of classes in the training set
       pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA; might be integral or float
       distance_function = bob.math.euclidean_distance,
       is_distance_function = True,
+      uses_variances = False,
       multiple_model_scoring = 'average',
       multiple_probe_scoring = 'average'
   ):
@@ -40,6 +41,7 @@ class LDA (Tool):
     self.m_machine = None
     self.m_distance_function = distance_function
     self.m_factor = -1 if is_distance_function else 1.
+    self.m_uses_variances = uses_variances
 
 
   def __read_data__(self, training_files):
@@ -100,8 +102,8 @@ class LDA (Tool):
       data = self.__perform_pca__(pca_machine, data)
 
     utils.info("  -> Training LinearMachine using LDA")
-    t = bob.trainer.FisherLDATrainer()
-    self.m_machine, __eig_vals = t.train(data)
+    t = bob.trainer.FisherLDATrainer(self.m_lda_subspace if self.m_lda_subspace else 0)
+    self.m_machine, self.m_variances = t.train(data)
 
     if self.m_pca_subspace:
       # compute combined PCA/LDA projection matrix
@@ -110,17 +112,20 @@ class LDA (Tool):
       self.m_machine = bob.machine.LinearMachine(combined_matrix)
       self.m_machine.input_subtract = pca_machine.input_subtract
 
-    # resize the machine if desired
-    if self.m_lda_subspace:
-      self.m_machine.resize(self.m_machine.shape[0], self.m_lda_subspace)
-
-    self.m_machine.save(bob.io.HDF5File(projector_file, "w"))
+    f = bob.io.HDF5File(projector_file, "w")
+    f.set("Eigenvalues", self.m_variances)
+    f.create_group("Machine")
+    f.cd("/Machine")
+    self.m_machine.save(f)
 
 
   def load_projector(self, projector_file):
-    """Reads the UBM model from file"""
+    """Reads the LDA projection matrix from file"""
     # read PCA projector
-    self.m_machine = bob.machine.LinearMachine(bob.io.HDF5File(projector_file))
+    f = bob.io.HDF5File(projector_file)
+    self.m_variances = f.read("Eigenvalues")
+    f.cd("/Machine")
+    self.m_machine = bob.machine.LinearMachine(f)
     # Allocates an array for the projected data
     self.m_projected_feature = numpy.ndarray(self.m_machine.shape[1], numpy.float64)
 
@@ -149,6 +154,9 @@ class LDA (Tool):
     if len(model.shape) == 2:
       # we have multiple models, so we use the multiple model scoring
       return self.score_for_multiple_models(model, probe)
+    elif self.m_uses_variances:
+      # single model, single probe (multiple probes have already been handled)
+      return self.m_factor * self.m_distance_function(model, probe, self.m_variances)
     else:
       # single model, single probe (multiple probes have already been handled)
       return self.m_factor * self.m_distance_function(model, probe)
