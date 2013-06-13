@@ -13,7 +13,7 @@ class LDA (Tool):
 
   def __init__(
       self,
-      lda_subspace_dimension = None, # if set, the LDA subspace will be truncated to the given number of dimensions
+      lda_subspace_dimension = None, # if set, the LDA subspace will be truncated to the given number of dimensions; by default it is limited to the number of classes in the training set
       pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA; might be integral or float
       distance_function = bob.math.euclidean_distance,
       is_distance_function = True,
@@ -100,8 +100,8 @@ class LDA (Tool):
       data = self.__perform_pca__(pca_machine, data)
 
     utils.info("  -> Training LinearMachine using LDA")
-    t = bob.trainer.FisherLDATrainer()
-    self.m_machine, __eig_vals = t.train(data)
+    t = bob.trainer.FisherLDATrainer(self.m_lda_subspace if self.m_lda_subspace else 0)
+    self.m_machine, _eigen_values = t.train(data)
 
     if self.m_pca_subspace:
       # compute combined PCA/LDA projection matrix
@@ -109,10 +109,6 @@ class LDA (Tool):
       # set new weight matrix (and new mean vector) of novel machine
       self.m_machine = bob.machine.LinearMachine(combined_matrix)
       self.m_machine.input_subtract = pca_machine.input_subtract
-
-    # resize the machine if desired
-    if self.m_lda_subspace:
-      self.m_machine.resize(self.m_machine.shape[0], self.m_lda_subspace)
 
     self.m_machine.save(bob.io.HDF5File(projector_file, "w"))
 
