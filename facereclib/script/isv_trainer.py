@@ -22,6 +22,8 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     if not isinstance(self.m_tool, tools.ISV):
       raise ValueError("This script is specifically designed to compute ISV tests. Please select an according tool.")
 
+    self.m_tool.m_gmm_isv_split = True
+
     if args.protocol:
       self.m_database.protocol = args.protocol
 
@@ -29,9 +31,36 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     self.m_configuration.kmeans_file = os.path.join(self.m_configuration.temp_directory, 'k_means.hdf5')
     self.m_configuration.kmeans_intermediate_file = os.path.join(self.m_configuration.temp_directory, 'kmeans_temp', 'i_%05d', 'k_means.hdf5')
     self.m_configuration.kmeans_stats_file = os.path.join(self.m_configuration.temp_directory, 'kmeans_temp', 'i_%05d', 'stats_%05d-%05d.hdf5')
-    self.m_configuration.gmm_file = os.path.join(self.m_configuration.temp_directory, 'gmm.hdf5')
+    self.m_tool.m_gmm_filename = os.path.join(self.m_configuration.temp_directory, 'gmm.hdf5')
     self.m_configuration.gmm_intermediate_file = os.path.join(self.m_configuration.temp_directory, 'gmm_temp', 'i_%05d', 'gmm.hdf5')
     self.m_configuration.gmm_stats_file = os.path.join(self.m_configuration.temp_directory, 'gmm_temp', 'i_%05d', 'stats_%05d-%05d.hdf5')
+    self.m_tool.m_isv_filename = os.path.join(self.m_configuration.temp_directory, 'isv.hdf5')
+    self.m_tool.m_projected_toreplace = 'projected'
+    self.m_tool.m_projected_gmm = 'projected_gmm'
+    self.m_tool.m_projected_isv = 'projected_isv'
+    self.m_tool.m_projector_toreplace = self.m_configuration.projector_file
+
+
+    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[0], self.m_database.protocol)
+    self.m_configuration.scores_no_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[0])
+    # add specific configuration for ZT-normalization
+    if args.zt_norm:
+      self.m_configuration.t_norm_models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[1], self.m_database.protocol)
+      models_directories = (self.m_configuration.models_directory, self.m_configuration.t_norm_models_directory)
+
+      self.m_configuration.scores_zt_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[1])
+      score_directories = (self.m_configuration.scores_no_norm_directory, self.m_configuration.scores_zt_norm_directory)
+
+      self.m_configuration.zt_norm_A_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[0])
+      self.m_configuration.zt_norm_B_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[1])
+      self.m_configuration.zt_norm_C_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[2])
+      self.m_configuration.zt_norm_D_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[3])
+      self.m_configuration.zt_norm_D_sameValue_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[4])
+      zt_score_directories = (self.m_configuration.zt_norm_A_directory, self.m_configuration.zt_norm_B_directory, self.m_configuration.zt_norm_C_directory, self.m_configuration.zt_norm_D_directory, self.m_configuration.zt_norm_D_sameValue_directory)
+    else:
+      models_directories = (self.m_configuration.models_directory,)
+      score_directories = (self.m_configuration.scores_no_norm_directory,)
+      zt_score_directories = None
 
     # specify the file selector to be used
     self.m_file_selector = toolchain.FileSelector(
@@ -41,10 +70,10 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
         features_directory = self.m_configuration.features_directory,
         projector_file = self.m_configuration.projector_file,
         projected_directory = self.m_configuration.projected_directory,
-        enroller_file = None,
-        model_directories =  None,
-        score_directories = None,
-        zt_score_directories = None
+        enroller_file = self.m_configuration.enroller_file,
+        model_directories = models_directories,
+        score_directories = score_directories,
+        zt_score_directories = zt_score_directories
     )
 
     # create the tool chain to be used to actually perform the parts of the experiments
@@ -94,7 +123,6 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     else:
       # read data
       utils.info("ISV training: initializing kmeans")
-      # TODO: limit the number of data here...
       training_list = self.training_list()
       data = numpy.vstack([self.m_extractor.read_feature(str(training_list[index])) for index in utils.quasi_random_indices(len(training_list), self.m_args.limit_training_examples)])
 
@@ -323,7 +351,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       utils.ensure_dir(os.path.dirname(new_machine_file))
       gmm_machine.save(bob.io.HDF5File(new_machine_file, 'w'))
       import shutil
-      shutil.copy(new_machine_file, self.m_configuration.gmm_file)
+      shutil.copy(new_machine_file, self.m_tool.m_gmm_filename)
 
     if self.m_args.clean_intermediate and self.m_args.iteration > 0:
       old_file = self.m_configuration.gmm_intermediate_file % (self.m_args.iteration-1)
@@ -331,29 +359,91 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       shutil.rmtree(os.path.dirname(old_file))
 
 
+  def gmm_project(self, indices, force=False):
+    """Performs GMM projection"""
+    # read UBM into the ISV class
+    self.m_tool._load_projector_gmm_resolved(self.m_tool.m_gmm_filename)
+      
+    feature_files = self.m_file_selector.feature_list()
+    projected_files = self.m_file_selector.projected_list()
+
+    # select a subset of indices to iterate
+    if indices != None:
+      index_range = range(indices[0], indices[1])
+      utils.info("- Projection: splitting of index range %s" % str(indices))
+    else:
+      index_range = range(len(feature_files))
+
+    #utils.ensure_dir(self.m_file_selector.projected_directory)
+    utils.info("- Projection: projecting %d images from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.features_directory, self.m_tool._resolve_projected_gmm(self.m_file_selector.projected_directory)))
+    # extract the features
+    for i in index_range:
+      feature_file = feature_files[i]
+      projected_file = projected_files[i]
+      projected_file_resolved = self.m_tool._resolve_projected_gmm(projected_file)
+
+      if not self.m_tool_chain.__check_file__(projected_file_resolved, force):
+        # load feature
+        feature = self.m_extractor.read_feature(str(feature_file))
+        # project feature
+        projected = tools.UBMGMM.project(self.m_tool, feature)
+        # write it
+        utils.ensure_dir(os.path.dirname(projected_file_resolved))
+        self.m_tool._save_feature_gmm(projected, str(projected_file))
+
+
   def isv_training(self, force=False):
     """Finally, the UBM is used to train the ISV projector/enroller."""
-    isv_file = self.m_configuration.projector_file
-
-    if self.m_tool_chain.__check_file__(isv_file, force, 800):
-      utils.info("ISV training: Skipping ISV training since '%s' already exists" % isv_file)
+    if self.m_tool_chain.__check_file__(self.m_tool.m_isv_filename, force, 800):
+      utils.info("ISV training: Skipping ISV training since '%s' already exists" % self.m_tool.m_isv_filename)
     else:
       # read UBM into the ISV class
-      self.m_tool.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(self.m_configuration.gmm_file))
+      self.m_tool.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(self.m_tool.m_gmm_filename))
 
       # read training data
-      training_list = self.m_file_selector.training_list('features', 'train_projector', arrange_by_client = True)
-      train_features = self.m_tool_chain.__read_features_by_client__(training_list, self.m_extractor)
-
+      training_list = self.m_file_selector.training_list('projected', 'train_projector', arrange_by_client = True)
+      train_features = self.m_tool_chain.__read_features_by_client__(training_list, self.m_tool)
 
       # perform ISV training
       utils.info("ISV training: training ISV with %d clients" % len(train_features))
       self.m_tool._train_isv(train_features)
-      utils.ensure_dir(os.path.dirname(isv_file))
-      self.m_tool._save_projector(isv_file)
-      utils.info("ISV training: saved ISV matrix to '%s'" % isv_file)
+      utils.ensure_dir(os.path.dirname(self.m_tool.m_isv_filename))
+      self.m_tool._save_projector_isv_resolved(self.m_tool.m_isv_filename)
+      utils.info("ISV training: saved ISV matrix to '%s'" % self.m_tool.m_isv_filename)
+      self.m_tool._save_projector_together(self.m_configuration.projector_file)
 
 
+  def isv_project(self, indices, force=False):
+    """Performs ISV projection"""
+    # read UBM into the ISV class
+    self.m_tool._load_projector_gmm_resolved(self.m_tool.m_gmm_filename)
+    #isv_file = self.m_configuration.projector_file
+    self.m_tool._load_projector_isv_resolved(self.m_tool.m_isv_filename)
+      
+    projected_files = self.m_file_selector.projected_list()
+
+    # select a subset of indices to iterate
+    if indices != None:
+      index_range = range(indices[0], indices[1])
+      utils.info("- Projection: splitting of index range %s" % str(indices))
+    else:
+      index_range = range(len(projected_files))
+
+    utils.info("- Projection: projecting %d gmm stats from directory '%s' to directory '%s'" % (len(index_range), self.m_tool._resolve_projected_gmm(self.m_file_selector.projected_directory), self.m_tool._resolve_projected_isv(self.m_file_selector.projected_directory)))
+    # extract the features
+    for i in index_range:
+      projected_file = projected_files[i]
+      projected_file_gmm_resolved = self.m_tool._resolve_projected_gmm(projected_file)
+      projected_file_isv_resolved = self.m_tool._resolve_projected_isv(projected_file)
+
+      if not self.m_tool_chain.__check_file__(projected_file_isv_resolved, force):
+        # load feature
+        feature = self.m_tool.read_feature(str(projected_file))
+        # project feature
+        projected = self.m_tool._project_isv(feature)
+        # write it
+        utils.ensure_dir(os.path.dirname(projected_file_isv_resolved))
+        self.m_tool._save_feature_isv(projected, str(projected_file))
 
 #######################################################################################
 ##############  Functions dealing with submission and execution of jobs  ##############
@@ -472,6 +562,16 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       # add dependence to the last m step
       deps.append(job_ids['gmm-m-step'])
 
+    # gmm projection
+    if not self.m_args.skip_gmm_projection:
+      job_ids['gmm-project'] = self.submit_grid_job(
+              'gmm-project',
+              name = 'g-project',
+              list_to_split = self.m_file_selector.feature_list(),
+              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              dependencies = deps,
+              **self.m_grid_config.projection_queue)
+      deps.append(job_ids['gmm-project'])
 
     # feature projection training
     if not self.m_args.skip_isv:
@@ -484,6 +584,97 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
               **queue)
       deps.append(job_ids['isv_training'])
 
+    # isv projection
+    if not self.m_args.skip_isv_projection:
+      job_ids['isv-project'] = self.submit_grid_job(
+              'isv-project',
+              name = 'isv-project',
+              list_to_split = self.m_file_selector.projected_list(),
+              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              dependencies = deps,
+              **self.m_grid_config.projection_queue)
+      deps.append(job_ids['isv-project'])
+
+    # enroll models
+    enroll_deps_n = {}
+    enroll_deps_t = {}
+    score_deps = {}
+    concat_deps = {}
+    for group in self.m_args.groups:
+      enroll_deps_n[group] = deps[:]
+      enroll_deps_t[group] = deps[:]
+      if not self.m_args.skip_enrollment:
+        job_ids['enroll_%s_N'%group] = self.submit_grid_job(
+                'enroll --group %s --model-type N'%group,
+                name = "enr-N-%s"%group,
+                list_to_split = self.m_file_selector.model_ids(group),
+                number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
+                dependencies = deps,
+                **self.m_grid_config.enroll_queue)
+        enroll_deps_n[group].append(job_ids['enroll_%s_N'%group])
+
+        if self.m_args.zt_norm:
+          job_ids['enroll_%s_T'%group] = self.submit_grid_job(
+                  'enroll --group %s --model-type T'%group,
+                  name = "enr-T-%s"%group,
+                  list_to_split = self.m_file_selector.t_model_ids(group),
+                  number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
+                  dependencies = deps,
+                  **self.m_grid_config.enroll_queue)
+          enroll_deps_t[group].append(job_ids['enroll_%s_T'%group])
+
+      # compute A,B,C, and D scores
+      if not self.m_args.skip_score_computation:
+        job_ids['score_%s_A'%group] = self.submit_grid_job(
+                'compute-scores --group %s --score-type A'%group,
+                name = "score-A-%s"%group,
+                list_to_split = self.m_file_selector.model_ids(group),
+                number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                dependencies = enroll_deps_n[group],
+                **self.m_grid_config.score_queue)
+        concat_deps[group] = [job_ids['score_%s_A'%group]]
+
+        if self.m_args.zt_norm:
+          job_ids['score_%s_B'%group] = self.submit_grid_job(
+                  'compute-scores --group %s --score-type B'%group,
+                  name = "score-B-%s"%group,
+                  list_to_split = self.m_file_selector.model_ids(group),
+                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  dependencies = enroll_deps_n[group],
+                  **self.m_grid_config.score_queue)
+
+          job_ids['score_%s_C'%group] = self.submit_grid_job(
+                  'compute-scores --group %s --score-type C'%group,
+                  name = "score-C-%s"%group,
+                  list_to_split = self.m_file_selector.t_model_ids(group),
+                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  dependencies = enroll_deps_t[group],
+                  **self.m_grid_config.score_queue)
+
+          job_ids['score_%s_D'%group] = self.submit_grid_job(
+                  'compute-scores --group %s --score-type D'%group,
+                  name = "score-D-%s"%group,
+                  list_to_split = self.m_file_selector.t_model_ids(group),
+                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  dependencies = enroll_deps_t[group],
+                  **self.m_grid_config.score_queue)
+
+          # compute zt-norm
+          score_deps[group] = [job_ids['score_%s_A'%group], job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group]]
+          job_ids['score_%s_Z'%group] = self.submit_grid_job(
+                  'compute-scores --group %s --score-type Z'%group,
+                  name = "score-Z-%s"%group,
+                  dependencies = score_deps[group])
+          concat_deps[group].extend([job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group], job_ids['score_%s_Z'%group]])
+      else:
+        concat_deps[group] = []
+
+      # concatenate results
+      if not self.m_args.skip_concatenation:
+        job_ids['concat_%s'%group] = self.submit_grid_job(
+                'concatenate --group %s'%group,
+                name = "concat-%s"%group,
+                dependencies = concat_deps[group])
 
     # return the job ids, in case anyone wants to know them
     return job_ids
@@ -552,10 +743,75 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
           counts = self.m_grid_config.number_of_projections_per_job,
           force = self.m_args.force)
 
+    # project using the gmm ubm
+    elif self.m_args.sub_task == 'gmm-project':
+      self.gmm_project(
+          indices = self.indices(self.m_file_selector.feature_list(), self.m_grid_config.number_of_projections_per_job),
+          force = self.m_args.force)
+
     # train the feature projector
     elif self.m_args.sub_task == 'train-isv':
       self.isv_training(
           force = self.m_args.force)
+
+    # project using isv
+    elif self.m_args.sub_task == 'isv-project':
+      self.isv_project(
+          indices = self.indices(self.m_file_selector.projected_list(), self.m_grid_config.number_of_projections_per_job),
+          force = self.m_args.force)
+
+    # enroll the models
+    elif self.m_args.sub_task == 'enroll':
+      if self.m_args.model_type == 'N':
+        self.m_tool_chain.enroll_models(
+            self.m_tool,
+            self.m_extractor,
+            self.m_args.zt_norm,
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
+            groups = [self.m_args.group],
+            types = ['N'],
+            force = self.m_args.force)
+
+      else:
+        self.m_tool_chain.enroll_models(
+            self.m_tool,
+            self.m_extractor,
+            self.m_args.zt_norm,
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
+            groups = [self.m_args.group],
+            types = ['T'],
+            force = self.m_args.force)
+
+    # compute scores
+    elif self.m_args.sub_task == 'compute-scores':
+      if self.m_args.score_type in ['A', 'B']:
+        self.m_tool_chain.compute_scores(
+            self.m_tool,
+            self.m_args.zt_norm,
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
+            groups = [self.m_args.group],
+            types = [self.m_args.score_type],
+            preload_probes = self.m_args.preload_probes,
+            force = self.m_args.force)
+
+      elif self.m_args.score_type in ['C', 'D']:
+        self.m_tool_chain.compute_scores(
+            self.m_tool,
+            self.m_args.zt_norm,
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
+            groups = [self.m_args.group],
+            types = [self.m_args.score_type],
+            preload_probes = self.m_args.preload_probes,
+            force = self.m_args.force)
+
+      else:
+        self.m_tool_chain.zt_norm(groups = [self.m_args.group])
+
+    # concatenate
+    elif self.m_args.sub_task == 'concatenate':
+      self.m_tool_chain.concatenate(
+          self.m_args.zt_norm,
+          groups = [self.m_args.group])
 
     # Test if the keyword was processed
     else:
@@ -579,11 +835,26 @@ def parse_args(command_line_parameters):
   config_group.add_argument('-g', '--grid', metavar = 'x', required=True,
       help = 'Configuration file for the grid setup; needs to be specified.')
 
+  sub_dir_group.add_argument('--models-directories', metavar = 'DIR', nargs = 2,
+      default = ['models', 'tmodels'],
+      help = 'Sub-directories (of --temp-directory) where the models should be stored')
+  sub_dir_group.add_argument('--zt-temp-directories', metavar = 'DIR', nargs = 5,
+      default = ['zt_norm_A', 'zt_norm_B', 'zt_norm_C', 'zt_norm_D', 'zt_norm_D_sameValue'],
+      help = 'Sub-directories (of --temp-directory) where to write the ZT-norm values')
+  sub_dir_group.add_argument('--zt-score-directories', metavar = 'DIR', nargs = 2,
+      default = ['nonorm', 'ztnorm'],
+      help = 'Sub-directories (of --user-directory) where to write the results to')
 
   #######################################################################################
   ############################ other options ############################################
+  other_group.add_argument('-z', '--zt-norm', action='store_true',
+      help = 'Enable the computation of ZT norms')
   other_group.add_argument('-F', '--force', action='store_true',
       help = 'Force to erase former data if already exist')
+  other_group.add_argument('-w', '--preload-probes', action='store_true',
+      help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
+  other_group.add_argument('--groups', metavar = 'GROUP', nargs = '+', default = ['dev'],
+      help = "The group (i.e., 'dev' or  'eval') for which the models and scores should be generated")
 
   other_group.add_argument('-l', '--limit-training-examples', type=int,
       help = 'Limit the number of training examples used for KMeans initialization and the GMM initialization')
@@ -608,17 +879,26 @@ def parse_args(command_line_parameters):
       help = "Skip the KMeans step")
   skip_group.add_argument('--skip-gmm', '--nog', action='store_true',
       help = "Skip the GMM step")
+  skip_group.add_argument('--skip-gmm-projection', '--nogp', action='store_true',
+      help = "Skip the GMM projection step")
   skip_group.add_argument('--skip-isv', '--noi', action='store_true',
       help = "Skip the ISV step")
+  skip_group.add_argument('--skip-isv-projection', '--noip', action='store_true',
+      help = "Skip the GMM isv projection")
 
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
   parser.add_argument('--sub-task',
-      choices = ('preprocess', 'train-extractor', 'extract', 'normalize-features', 'kmeans-init', 'kmeans-e-step', 'kmeans-m-step', 'gmm-init', 'gmm-e-step', 'gmm-m-step', 'train-isv'),
+      choices = ('preprocess', 'train-extractor', 'extract', 'normalize-features', 'kmeans-init', 'kmeans-e-step', 'kmeans-m-step', 'gmm-init', 'gmm-e-step', 'gmm-m-step', 'gmm-project', 'train-isv', 'isv-project', 'enroll', 'compute-scores', 'concatenate'),
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
   parser.add_argument('--iteration', type=int,
       help = argparse.SUPPRESS) #'The current iteration of KMeans or GMM training'
-
+  parser.add_argument('--model-type', choices = ['N', 'T'],
+      help = argparse.SUPPRESS) #'Which type of models to generate (Normal or TModels)'
+  parser.add_argument('--score-type', choices = ['A', 'B', 'C', 'D', 'Z'],
+      help = argparse.SUPPRESS) #'The type of scores that should be computed'
+  parser.add_argument('--group',
+      help = argparse.SUPPRESS) #'The group for which the current action should be performed'
 
   return parser.parse_args(command_line_parameters)
 
@@ -663,10 +943,10 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     return executor.add_jobs_to_grid(external_dependencies)
 
 
-def main(command_line_parameters = sys.argv[1:]):
+def main(command_line_parameters = sys.argv):
   """Executes the main function"""
   # do the command line parsing
-  args = parse_args(command_line_parameters)
+  args = parse_args(command_line_parameters[1:])
 
   # perform face verification test
   face_verify(args, command_line_parameters)

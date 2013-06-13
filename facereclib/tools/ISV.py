@@ -22,6 +22,14 @@ class ISV (UBMGMM):
       isv_training_iterations = 10,  # Number of EM iterations for the ISV training
       # ISV enrollment
       isv_enroll_iterations = 1,     # Number of iterations for the enrollment phase
+      # Parameters when splitting GMM and ISV files
+      gmm_isv_split = False,
+      projected_toreplace = 'projected', # 'Magic' string in path that will be replaced by the GMM or ISV one
+      projected_gmm = 'projected_gmm', # subdirectory for the projected gmm
+      projected_isv = 'projected_isv', # subdirectory for the projected isv
+      projector_toreplace = 'Projector.hdf5', # 'Magic' string in path that will be replaced by the GMM or ISV one
+      gmm_filename = 'gmm.hdf5', # filename for the GMM model
+      isv_filename = 'isv.hdf5', # filename for the ISV model
       # parameters of the GMM
       **kwargs
   ):
@@ -42,26 +50,35 @@ class ISV (UBMGMM):
     self.m_isv_training_iterations = isv_training_iterations
     self.m_isv_enroll_iterations = isv_enroll_iterations
 
+    self.m_gmm_isv_split = gmm_isv_split
+    self.m_projected_toreplace = projected_toreplace
+    self.m_projected_gmm = projected_gmm
+    self.m_projected_isv = projected_isv
+    self.m_projector_toreplace = projector_toreplace
+    self.m_gmm_filename = gmm_filename
+    self.m_isv_filename = isv_filename
 
-  def _train_isv(self, train_features):
+  def _train_isv(self, data):
+    """Train the ISV model given a dataset""" 
+    utils.info("  -> Training ISV enroller")
+    self.m_isvbase = bob.machine.ISVBase(self.m_ubm, self.m_subspace_dimension_of_u)
+    # train ISV model
+    t = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
+    t.train(self.m_isvbase, data)
+   
+
+  def _load_train_isv(self, train_features):
     utils.info("  -> Projecting training data")
-    data2 = []
+    data = []
     for client_features in train_features:
       list = []
       for feature in client_features:
         # Initializes GMMStats object
         self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
         list.append(UBMGMM.project(self, feature))
-      data2.append(list)
+      data.append(list)
 
-
-    utils.info("  -> Training ISV enroller")
-    self.m_isvbase = bob.machine.ISVBase(self.m_ubm, self.m_subspace_dimension_of_u)
-
-    # train ISV model
-    t = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
-    t.train(self.m_isvbase, data2)
-
+    self._train_isv(data)
 
   def train_projector(self, train_features, projector_file):
     """Train Projector and Enroller at the same time"""
@@ -73,46 +90,107 @@ class ISV (UBMGMM):
     del data1
 
     # train ISV
-    self._train_isv(train_features)
+    self._load_train_isv(train_features)
 
     # Save the ISV base AND the UBM into the same file
     self._save_projector(projector_file)
 
 
-  def _save_projector(self, projector_file):
-
+  def _save_projector_together(self, projector_file):
+    """Save the GMM and the ISV model in the same HDF5 file"""
     hdf5file = bob.io.HDF5File(projector_file, "w")
     hdf5file.create_group('Projector')
     hdf5file.cd('Projector')
     self.m_ubm.save(hdf5file)
-
+   
     hdf5file.cd('/')
     hdf5file.create_group('Enroller')
     hdf5file.cd('Enroller')
     self.m_isvbase.save(hdf5file)
 
 
+  def _resolve_gmm_filename(self, projector_file):
+    return projector_file.replace(self.m_projector_toreplace, self.m_gmm_filename)
+
+  def _resolve_isv_filename(self, projector_file):
+    return projector_file.replace(self.m_projector_toreplace, self.m_isv_filename)
+
+  def _resolve_projected_gmm(self, projected_file):
+    return projected_file.replace(self.m_projected_toreplace, self.m_projected_gmm)
+
+  def _resolve_projected_isv(self, projected_file):
+    return projected_file.replace(self.m_projected_toreplace, self.m_projected_isv)
+
+
+  def _save_projector_gmm_resolved(self, gmm_filename):
+    self.m_ubm.save(bob.io.HDF5File(gmm_filename, "w"))
+
+  def _save_projector_gmm(self, projector_file):
+    gmm_filename = self._resolve_gmm_filename(projector_file)
+    self._save_projector_gmm_resolved(gmm_filename)
+
+  def _save_projector_isv_resolved(self, isv_filename):
+    self.m_isvbase.save(bob.io.HDF5File(isv_filename, "w"))
+
+  def _save_projector_isv(self, projector_file):
+    isv_filename = self._resolve_isv_filename(projector_file)
+    self._save_projector_isv_resolved(isv_filename)
+
+  def _save_projector(self, projector_file):
+    """Save the GMM and the ISV model"""
+    if not self.m_gmm_isv_split:
+      self._save_projector_together(projector_file)
+    else:
+      self._save_projector_gmm(projector_file)
+      self._save_projector_isv(projector_file)
+
 
   # Here, we just need to load the UBM from the projector file.
-  def load_projector(self, projector_file):
-    """Reads the UBM model from file"""
+  def _load_projector_gmm_resolved(self, gmm_filename):
+    self.m_ubm = bob.machine.GMMMachine(bob.io.HDF5File(gmm_filename))
+    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
+    # Initializes GMMStats object
+    self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
 
+  def _load_projector_gmm(self, projector_file):
+    gmm_filename = self._resolve_gmm_filename(projector_file)
+    self._load_projector_gmm_resolved(gmm_filename)
+
+  def _load_projector_isv_resolved(self, isv_filename):
+    self.m_isvbase = bob.machine.ISVBase(bob.io.HDF5File(isv_filename))
+    # add UBM model from base class
+    self.m_isvbase.ubm = self.m_ubm
+
+  def _load_projector_isv(self, projector_file):
+    isv_filename = self._resolve_isv_filename(projector_file)
+    self._load_projector_isv_resolved(isv_filename)
+
+  def _load_projector_together(self, projector_file):
+    """Load the GMM and the ISV model from the same HDF5 file"""
     hdf5file = bob.io.HDF5File(projector_file)
 
     # Load Projector
-    hdf5file.cd('Projector')
+    hdf5file.cd('/Projector')
     # read UBM
     self.m_ubm = bob.machine.GMMMachine(hdf5file)
     self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
     # Initializes GMMStats object
     self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
 
-    hdf5file.cd('/')
     # Load Enroller
-    hdf5file.cd('Enroller')
+    hdf5file.cd('/Enroller')
     self.m_isvbase = bob.machine.ISVBase(hdf5file)
     # add UBM model from base class
     self.m_isvbase.ubm = self.m_ubm
+
+  def load_projector(self, projector_file):
+    """Reads the UBM model from file"""
+
+    if not self.m_gmm_isv_split: 
+      self._load_projector_together(projector_file)
+    else:
+      self._load_projector_gmm(projector_file)
+      self._load_projector_isv(projector_file)
 
     self.m_machine = bob.machine.ISVMachine(self.m_isvbase)
     self.m_trainer = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
@@ -120,39 +198,58 @@ class ISV (UBMGMM):
 
   #######################################################
   ################ ISV training #########################
+  def _project_gmm(self, feature_array):
+    return UBMGMM.project(self,feature_array)
 
-
+  def _project_isv(self, projected_ubm):
+    projected_isv = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
+    model = bob.machine.ISVMachine(self.m_isvbase)
+    model.estimate_ux(projected_ubm, projected_isv)
+    return projected_isv
 
   def project(self, feature_array):
     """Computes GMM statistics against a UBM, then corresponding Ux vector"""
-
-    projected_ubm = UBMGMM.project(self,feature_array)
-
-    projected_isv = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
-
-    model = bob.machine.ISVMachine(self.m_isvbase)
-    model.estimate_ux(projected_ubm, projected_isv)
+    projected_ubm = self._project_gmm(feature_array)
+    projected_isv = self._project_isv(projected_ubm)
     return [projected_ubm, projected_isv]
 
   #######################################################
   ################## ISV model enroll ####################
 
-  def save_feature(self, data, feature_file):
+  def _save_feature_together(self, gmmstats, Ux, feature_file):
     hdf5file = bob.io.HDF5File(feature_file, "w")
-    gmmstats = data[0]
-    Ux = data[1]
     hdf5file.create_group('gmmstats')
     hdf5file.cd('gmmstats')
     gmmstats.save(hdf5file)
     hdf5file.cd('/')
     hdf5file.set('Ux', Ux)
 
+  def _save_feature_gmm(self, data, feature_file):
+    feature_file_gmm = self._resolve_projected_gmm(feature_file)
+    data.save(bob.io.HDF5File(str(feature_file_gmm), 'w'))
+
+  def _save_feature_isv(self, data, feature_file):
+    feature_file_isv = self._resolve_projected_isv(feature_file)
+    bob.io.save(data, str(feature_file_isv))
+
+  def save_feature(self, data, feature_file):
+    gmmstats = data[0]
+    Ux = data[1]
+    if not self.m_gmm_isv_split:
+      self._save_feature_together(gmmstats, Ux, feature_file)
+    else: 
+      self._save_feature_gmm(gmmstats, feature_file)
+      self._save_feature_isv(Ux, feature_file)
 
   def read_feature(self, feature_file):
     """Read the type of features that we require, namely GMMStats"""
-    hdf5file = bob.io.HDF5File(feature_file)
-    hdf5file.cd('gmmstats')
-    gmmstats = bob.machine.GMMStats(hdf5file)
+    if not self.m_gmm_isv_split: 
+      hdf5file = bob.io.HDF5File(feature_file)
+      hdf5file.cd('gmmstats')
+      gmmstats = bob.machine.GMMStats(hdf5file)
+    else:
+      feature_file_gmm = self._resolve_projected_gmm(feature_file)
+      gmmstats = bob.machine.GMMStats(bob.io.HDF5File(str(feature_file_gmm)))
     return gmmstats
 
 
@@ -173,11 +270,17 @@ class ISV (UBMGMM):
 
   def read_probe(self, probe_file):
     """Read the type of features that we require, namely GMMStats"""
-    hdf5file = bob.io.HDF5File(probe_file)
-    hdf5file.cd('gmmstats')
-    gmmstats = bob.machine.GMMStats(hdf5file)
-    hdf5file.cd('/')
-    Ux = hdf5file.read('Ux')
+    if self.m_gmm_isv_split:
+      probe_file_gmm = self._resolve_projected_gmm(probe_file)
+      gmmstats = bob.machine.GMMStats(bob.io.HDF5File(str(probe_file_gmm)))
+      probe_file_isv = self._resolve_projected_isv(probe_file)
+      Ux = bob.io.load(str(probe_file_isv))
+    else:
+      hdf5file = bob.io.HDF5File(probe_file)
+      hdf5file.cd('gmmstats')
+      gmmstats = bob.machine.GMMStats(hdf5file)
+      hdf5file.cd('/')
+      Ux = hdf5file.read('Ux')
     return [gmmstats, Ux]
 
   def score(self, model, probe):
