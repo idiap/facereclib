@@ -175,8 +175,9 @@ class ToolTest(unittest.TestCase):
     tool = self.config('pca+lda')
     self.assertTrue(isinstance(tool, facereclib.tools.LDA))
 
-    # here we use a reduced tool
-    tool = facereclib.tools.LDA(5,10)
+    # here we use a reduced tool, using the scaled Euclidean distance (mahalanobis) from scipy
+    import scipy.spatial
+    tool = facereclib.tools.LDA(5, 10, scipy.spatial.distance.seuclidean, True, True)
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
     self.assertTrue(tool.use_projected_features_for_enrollment)
@@ -192,8 +193,13 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('pca+lda_projector.hdf5'))
     # compare the resulting machines
-    new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
+    f = bob.io.HDF5File(t)
+    new_variances = f.read("Eigenvalues")
+    f.cd("/Machine")
+    new_machine = bob.machine.LinearMachine(f)
+    del f
     self.assertEqual(tool.m_machine.shape, new_machine.shape)
+    self.assertTrue(numpy.abs(tool.m_variances - new_variances < 1e-5).all())
     # ... rotation direction might change, hence either the sum or the difference should be 0
     for i in range(5):
       self.assertTrue(numpy.abs(tool.m_machine.weights[:,i] - new_machine.weights[:,i] < 1e-5).all() or numpy.abs(tool.m_machine.weights[:,i] + new_machine.weights[:,i] < 1e-5).all())
