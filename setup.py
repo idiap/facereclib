@@ -40,6 +40,7 @@ setup(
         'faceverify_gbu.py = facereclib.script.faceverify_gbu:main',
         'faceverify_lfw.py = facereclib.script.faceverify_lfw:main',
         'isv_trainer.py = facereclib.script.isv_trainer:main',
+        'ivector_trainer.py = facereclib.script.ivector_trainer:main',
 #        'faceverify_pose.py = facereclib.script.faceverify_pose:main',
         'parameter_test.py = facereclib.script.parameter_test:main',
         'baselines.py = facereclib.script.baselines:main',
@@ -89,6 +90,7 @@ setup(
         'bic               = facereclib.configurations.tools.bic:tool',
         'gabor-jet         = facereclib.configurations.tools.gabor_jet:tool',
         'isv               = facereclib.configurations.tools.isv:tool',
+        'ivector           = facereclib.configurations.tools.ivector:tool',
         'jfa               = facereclib.configurations.tools.jfa:tool',
         'lda               = facereclib.configurations.tools.lda:tool',
         'pca+lda           = facereclib.configurations.tools.pca_lda:tool',
@@ -108,6 +110,7 @@ setup(
         'lfw               = facereclib.configurations.grid.lfw',
         'small             = facereclib.configurations.grid.small',
         'isv               = facereclib.configurations.grid.isv_training',
+        'ivector           = facereclib.configurations.grid.ivector_training',
       ],
 
       # registered tests (will, e.g., be run in the xbob.db.aggregator)

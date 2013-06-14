@@ -11,6 +11,7 @@ from LGBPHS import LGBPHS
 from UBMGMM import UBMGMM, UBMGMMRegular, UBMGMMVideo
 from JFA import JFA
 from ISV import ISV, ISVVideo
+from IVector import IVector
 from PCA import PCA
 from LDA import LDA
 from PLDA import PLDA
