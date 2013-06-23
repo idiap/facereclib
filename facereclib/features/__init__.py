@@ -11,4 +11,5 @@ from LGBPHS import LGBPHS
 from GridGraph import GridGraph
 from Eigenface import Eigenface
 from SIFTKeypoints import SIFTKeypoints
+from SIFTBobKeypoints import SIFTBobKeypoints
 from Cepstral import Cepstral
