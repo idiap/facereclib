@@ -39,8 +39,8 @@ def read_annotations(file_name, annotation_type):
     line = f.readline()
     positions = line.split()
     assert len(positions) == 4
-    annotations['reye'] = (int(positions[1]),int(positions[0]))
-    annotations['leye'] = (int(positions[3]),int(positions[2]))
+    annotations['reye'] = (float(positions[1]),float(positions[0]))
+    annotations['leye'] = (float(positions[3]),float(positions[2]))
 
   elif str(annotation_type) == 'multipie':
     # multiple lines, one header line, each line contains one position
@@ -75,7 +75,7 @@ def read_annotations(file_name, annotation_type):
       line = f.readline()
       positions = line.split()
       assert len(positions) == 2
-      annotations[labels[i]] = (int(positions[1]),int(positions[0]))
+      annotations[labels[i]] = (float(positions[1]),float(positions[0]))
 
   elif str(annotation_type) == 'scface':
     # multiple lines, no header line, each line contains one position
@@ -85,13 +85,13 @@ def read_annotations(file_name, annotation_type):
       assert len(positions) == 2
       if i == 0:
         # first line is the right eye
-        annotations['reye'] = (int(positions[1]),int(positions[0]))
+        annotations['reye'] = (float(positions[1]),float(positions[0]))
       elif i == 1:
         # second line is the left eye
-        annotations['leye'] = (int(positions[1]),int(positions[0]))
+        annotations['leye'] = (float(positions[1]),float(positions[0]))
       else:
         # enumerate all other annotations
-        annotations['key%d'%(i-1)] = (int(positions[1]),int(positions[0]))
+        annotations['key%d'%(i-1)] = (float(positions[1]),float(positions[0]))
       i = i + 1
 
   elif str(annotation_type) == 'named':
@@ -99,7 +99,7 @@ def read_annotations(file_name, annotation_type):
     for line in f:
       positions = line.split()
       assert len(positions) == 3
-      annotations[positions[0]] = (int(positions[2]),int(positions[1]))
+      annotations[positions[0]] = (float(positions[2]),float(positions[1]))
 
   elif str(annotation_type) == 'cosmin':
     # special file format of cosmin
@@ -110,7 +110,7 @@ def read_annotations(file_name, annotation_type):
     parts = line.split()
     # skip the first 7 items: type, pos, id, bounding-box
     for i in range(7,len(parts),3):
-      annotations[parts[i]] = (int(parts[i+2]),int(parts[i+1]))
+      annotations[parts[i]] = (float(parts[i+2]),float(parts[i+1]))
 
     # HACK! left and right eye positions are exchanged; change them
     if 'leye' in annotations and 'reye' in annotations:
