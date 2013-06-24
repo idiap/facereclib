@@ -149,7 +149,7 @@ class PreprocessingTest(unittest.TestCase):
 #    self.execute(preprocessor, image, None, 'histogram.hdf5')
 
 
-  def test06_key_points(self):
+  def test06a_key_points(self):
     # read input
     image, annotation = self.input()
     preprocessor = self.config('keypoints')
@@ -165,6 +165,24 @@ class PreprocessingTest(unittest.TestCase):
     imag2, annot2 = reference
     self.assertTrue((numpy.abs(image - imag2) < 1e-5).all())
     self.assertTrue((annots == annot2).all())
+
+  def test06b_key_points(self):
+    # read input
+    image, annotation = self.input()
+    preprocessor = self.config('keypoints_lfw')
+
+    # execute preprocessor
+    preprocessed = preprocessor(image, annotation)
+    if regenerate_refs:
+      preprocessor.save_image(preprocessed, self.reference_dir('key_points_cropped.hdf5'))
+
+    reference = preprocessor.read_image(self.reference_dir('key_points_cropped.hdf5'))
+    # check if it is near the reference image and positions
+    image, annots = preprocessed
+    imag2, annot2 = reference
+    self.assertTrue((numpy.abs(image - imag2) < 1e-5).all())
+    self.assertTrue((annots == annot2).all())
+
 
 
   def test07_lfcc(self):
