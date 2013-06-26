@@ -158,6 +158,16 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               self.m_args.zt_norm,
               groups = self.m_args.groups)
 
+    # calibration of scores
+    if self.m_args.calibrate_scores:
+      if self.m_args.dry_run:
+        print "Would have calibrated the scores of groups %s ..." % self.m_args.groups
+      else:
+        self.m_tool_chain.calibrate_scores(
+            norms = ['nonorm', 'ztnorm'] if self.m_args.zt_norm else ['nonorm'],
+            groups = self.m_args.groups)
+
+
 
   def add_jobs_to_grid(self, external_dependencies):
     """Adds all (desired) jobs of the tool chain to the grid."""
@@ -305,6 +315,14 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                 name = "concat-%s"%group,
                 dependencies = concat_deps[group])
 
+    # calibrate the scores
+    if self.m_args.calibrate_scores:
+      calib_deps = [job_ids['concat_%s'%g] for g in self.m_args.groups if 'concat_%s'%g in job_ids]
+      job_ids['calibrate'] = self.submit_grid_job(
+              'calibrate',
+              dependencies = calib_deps)
+
+
     # return the job ids, in case anyone wants to know them
     return job_ids
 
@@ -408,6 +426,12 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
           self.m_args.zt_norm,
           groups = [self.m_args.group])
 
+    # calibrate scores
+    elif self.m_args.sub_task == 'calibrate':
+      self.m_tool_chain.calibrate_scores(
+          norms = ['nonorm', 'ztnorm'] if self.m_args.zt_norm else ['nonorm'],
+          groups = self.m_args.groups)
+
     # Test if the keyword was processed
     else:
       raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors." % self.m_args.sub_task)
@@ -439,6 +463,8 @@ def parse_args(command_line_parameters):
   ############################ other options ############################################
   other_group.add_argument('-z', '--zt-norm', action='store_true',
       help = 'Enable the computation of ZT norms')
+  other_group.add_argument('-c', '--calibrate-scores', action='store_true',
+      help = 'Performs score calibration after the scores are computed.')
   other_group.add_argument('-F', '--force', action='store_true',
       help = 'Force to erase former data if already exist')
   other_group.add_argument('-w', '--preload-probes', action='store_true',
@@ -449,7 +475,7 @@ def parse_args(command_line_parameters):
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
   parser.add_argument('--sub-task',
-      choices = ('preprocess', 'train-extractor', 'extract', 'train-projector', 'project', 'train-enroller', 'enroll', 'compute-scores', 'concatenate'),
+      choices = ('preprocess', 'train-extractor', 'extract', 'train-projector', 'project', 'train-enroller', 'enroll', 'compute-scores', 'concatenate', 'calibrate'),
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
   parser.add_argument('--model-type', choices = ['N', 'T'],
       help = argparse.SUPPRESS) #'Which type of models to generate (Normal or TModels)'
@@ -463,10 +489,10 @@ def parse_args(command_line_parameters):
 
 def face_verify(args, command_line_parameters, external_dependencies = [], external_fake_job_id = 0):
   """This is the main entry point for computing face verification experiments.
-  You just have to specify configuration scripts for any of the steps of the toolchain, which are:
+  You just have to specify configurations for any of the steps of the toolchain, which are:
   -- the database
   -- feature extraction (including image preprocessing)
-  -- the score computation tool
+  -- the face recognition tool
   -- and the grid configuration (in case, the function should be executed in the grid).
   Additionally, you can skip parts of the toolchain by selecting proper --skip-... parameters.
   If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.

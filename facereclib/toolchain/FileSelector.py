@@ -240,3 +240,10 @@ class FileSelector:
     zt_norm_dir = self.score_directories[1]
     utils.ensure_dir(zt_norm_dir)
     return os.path.join(zt_norm_dir, "scores-" + group)
+
+  def calibrated_score_file(self, group, zt_norm=False):
+    """Returns the directory where calibrated scores can be found."""
+    calibration_dir = self.score_directories[1 if zt_norm else 0]
+    utils.ensure_dir(calibration_dir)
+    return os.path.join(calibration_dir, "calibrated-" + group)
+
