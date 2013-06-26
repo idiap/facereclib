@@ -33,7 +33,8 @@ class DatabaseTest(unittest.TestCase):
     except Exception as e:
       raise SkipTest("The resource for database '%s' could not be loaded; probably you didn't define the 'xbob.db.%s' in your *buildout.cfg*. Here is the import error: '%s'" % (resource, resource, e))
 
-  def check_database(self, database, groups = ('dev',)):
+  def check_database(self, database, groups = ('dev',), protocol = None):
+    if protocol: database.protocol = protocol
     self.assertTrue(len(database.all_files()) > 0)
     self.assertTrue(len(database.training_files('train_extractor')) > 0)
     self.assertTrue(len(database.training_files('train_enroller', arrange_by_client = True)) > 0)
@@ -45,13 +46,14 @@ class DatabaseTest(unittest.TestCase):
       self.assertTrue(len(database.enroll_files(model_ids[0], group)) > 0)
       self.assertTrue(len(database.probe_files(model_ids[0], group)) > 0)
 
-  def check_database_zt(self, database, groups = ('dev', 'eval')):
+  def check_database_zt(self, database, groups = ('dev', 'eval'), protocol = None):
+    if protocol: database.protocol = protocol
     self.check_database(database, groups)
 
     for group in groups:
       t_model_ids = database.t_model_ids(group)
       self.assertTrue(len(t_model_ids) > 0)
-      self.assertTrue(database.client_id_from_model_id(t_model_ids[0]) != None)
+      self.assertTrue(database.client_id_from_model_id(t_model_ids[0]) is not None)
       self.assertTrue(len(database.t_enroll_files(t_model_ids[0], group)) > 0)
       self.assertTrue(len(database.z_probe_files(group)) > 0)
 
@@ -67,14 +69,16 @@ class DatabaseTest(unittest.TestCase):
 
   def test02_banca(self):
     self.check_database_zt(self.config('banca'))
-    self.check_database_zt(self.config('banca_Ua_twothirds'))
-    self.check_database_zt(self.config('banca_Ua_twothirds_video'))
+    self.check_database_zt(self.config('banca_twothirds'))
+    self.check_database_zt(self.config('banca_video'))
+    self.check_database(self.config('banca_audio_G'))
+    self.check_database(self.config('banca_audio_P'))
     self.check_annotations(self.config('banca'))
 
 
   def test03_xm2vts(self):
     self.check_database(self.config('xm2vts'), groups=('dev', 'eval'))
-    self.check_database(self.config('xm2vts_darkened'), groups=('dev', 'eval'))
+    self.check_database(self.config('xm2vts'), groups=('dev', 'eval'), protocol = 'darkened-lp1')
     self.check_annotations(self.config('xm2vts'))
 
 
@@ -85,6 +89,8 @@ class DatabaseTest(unittest.TestCase):
 
   def test05_mobio(self):
     self.check_database_zt(self.config('mobio'))
+    self.check_database_zt(self.config('mobio'), protocol = 'female')
+    self.check_database_zt(self.config('mobio_male'))
     self.check_database_zt(self.config('mobio_female'))
     self.check_annotations(self.config('mobio'))
 
@@ -93,28 +99,35 @@ class DatabaseTest(unittest.TestCase):
     raise SkipTest('This test definitely takes too much time. If you want the tests enabled, please disable this exception temporarily.')
     self.check_database_zt(self.config('multipie'))
     self.check_database_zt(self.config('multipie_P'))
-    self.check_database_zt(self.config('multipie_left_profile'))
+    self.check_database_zt(self.config('multipie_P110'))
     self.check_annotations(self.config('multipie'))
 
 
   def test07_lfw(self):
     self.check_database(self.config('lfw'))
-    self.check_database(self.config('lfw_view1_unrestricted'))
+    self.check_database(self.config('lfw'), protocol = 'fold1')
+    self.check_database(self.config('lfw_unrestricted'))
+
 
   def test08_arface(self):
     self.check_database(self.config('arface'), groups=('dev', 'eval'))
     self.check_annotations(self.config('arface'))
 
+
   def test09_gbu(self):
     self.check_database(self.config('gbu'))
     self.check_annotations(self.config('gbu'))
 
+
   def test10_frgc(self):
     self.check_database(self.config('frgc'))
+    self.check_database(self.config('frgc'), protocol = '2.0.2')
     self.check_annotations(self.config('frgc'))
+
 
   def test11_caspeal(self):
     self.check_database(self.config('caspeal'))
+    self.check_database(self.config('caspeal'), protocol = 'aging')
     self.check_annotations(self.config('caspeal'))
 
 

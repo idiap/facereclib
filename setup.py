@@ -49,19 +49,17 @@ setup(
 
       # registered database short cuts
       'facereclib.database': [
-        'arface            = facereclib.configurations.databases.arface_all:database',
-        'atnt              = facereclib.configurations.databases.atnt_Default:database',
-        'banca             = facereclib.configurations.databases.banca_P:database',
-        'caspeal           = facereclib.configurations.databases.caspeal_lighting:database',
-        'frgc              = facereclib.configurations.databases.frgc_201:database',
-        'gbu               = facereclib.configurations.databases.gbu_Good:database',
-        'lfw               = facereclib.configurations.databases.lfw_view1_unrestricted:database',
-        'mobio             = facereclib.configurations.databases.mobio_male:database',
-        'multipie          = facereclib.configurations.databases.multipie_U:database',
-        'scface            = facereclib.configurations.databases.scface_combined:database',
-        'xm2vts            = facereclib.configurations.databases.xm2vts_lp1:database',
-        'audio_banca_p     = facereclib.configurations.databases.audio_banca_P:database',
-        'audio_banca_g     = facereclib.configurations.databases.audio_banca_G:database',
+        'arface            = facereclib.configurations.databases.arface:database',
+        'atnt              = facereclib.configurations.databases.atnt:database',
+        'banca             = facereclib.configurations.databases.banca:database',
+        'caspeal           = facereclib.configurations.databases.caspeal:database',
+        'frgc              = facereclib.configurations.databases.frgc:database',
+        'gbu               = facereclib.configurations.databases.gbu:database',
+        'lfw               = facereclib.configurations.databases.lfw_unrestricted:database',
+        'mobio             = facereclib.configurations.databases.mobio:database',
+        'multipie          = facereclib.configurations.databases.multipie:database',
+        'scface            = facereclib.configurations.databases.scface:database',
+        'xm2vts            = facereclib.configurations.databases.xm2vts:database',
       ],
 
       # registered preprocessors
@@ -129,6 +127,5 @@ setup(
       "setuptools", # for whatever
       "bob >= 1.1.1",      # base signal proc./machine learning library
       "xbob.db.atnt",      # for test purposes, the (freely available) AT&T database is required
-      "pysox",
     ],
 )

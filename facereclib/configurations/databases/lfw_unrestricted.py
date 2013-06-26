@@ -10,8 +10,8 @@ database = facereclib.databases.DatabaseXBob(
     image_extension = ".jpg",
     protocol = 'view1',
 
-    all_files_options = { 'world_type' : 'unrestricted' },
-    extractor_training_options = { 'world_type' : 'unrestricted'}, # 'subworld' : 'twofolds'
+    all_files_options = {'world_type' : 'unrestricted'},
+    extractor_training_options = {'world_type' : 'unrestricted'}, # 'subworld' : 'twofolds'
     projector_training_options = {'world_type' : 'unrestricted'}, # 'subworld' : 'twofolds'
-    enroller_training_options = { 'world_type' : 'unrestricted'} # 'subworld' : 'twofolds'
+    enroller_training_options =  {'world_type' : 'unrestricted'} # 'subworld' : 'twofolds'
 )

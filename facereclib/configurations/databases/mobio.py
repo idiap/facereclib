@@ -10,11 +10,5 @@ database = facereclib.databases.DatabaseXBobZT(
     image_extension = ".jpg",
     annotation_directory = "/idiap/group/biometric/annotations/mobio/",
     annotation_type = 'eyecenter',
-    protocol = 'female',
-
-    all_files_options = { 'gender' : 'female' },
-    extractor_training_options = { 'gender' : 'female' },
-    projector_training_options = { 'gender' : 'female' },
-    enroller_training_options = { 'gender' : 'female' },
-    z_probe_options = { 'gender' : 'female' }
+    protocol = 'male'
 )

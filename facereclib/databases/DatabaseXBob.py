@@ -163,9 +163,15 @@ class DatabaseXBob (Database):
 class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
   """This class can be used whenever you have a database that follows the default XBob database interface defining file lists for ZT score normalization."""
 
-  def __init__(self, **kwargs):
+  def __init__(
+      self,
+      z_probe_options = {}, # Limit the z-probes
+      **kwargs
+  ):
     # call base class constructor, passing all the parameters to it
     DatabaseXBob.__init__(self, **kwargs)
+
+    self.m_z_probe_options = z_probe_options
 
 
   def t_model_ids(self, group = 'dev'):
@@ -184,12 +190,12 @@ class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
 
   def z_probe_files(self, group = 'dev'):
     """Returns the list of Z-probe File objects."""
-    files = self.m_database.zobjects(protocol = self.protocol, groups = group)
+    files = self.m_database.zobjects(protocol = self.protocol, groups = group, **self.m_z_probe_options)
     return self.sort(files)
 
 
   def z_probe_file_sets(self, group = 'dev'):
     """Returns the list of Z-probe Fileset objects."""
-    file_sets = self.m_database.zobject_sets(protocol = self.protocol, groups = group)
+    file_sets = self.m_database.zobject_sets(protocol = self.protocol, groups = group, **self.m_z_probe_options)
     return self.sort(file_sets)
 

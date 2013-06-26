@@ -8,8 +8,6 @@ database = facereclib.databases.DatabaseXBobZT(
     name = "mobio",
     image_directory = "/idiap/temp/ekhoury/databases/MOBIO/denoisedDATA_16k/",
     image_extension = ".sph",
-    annotation_directory = "",
-    annotation_type = '',
     protocol = 'female',
 
     all_files_options = { 'gender' : 'female' },
