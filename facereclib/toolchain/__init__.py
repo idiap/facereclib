@@ -4,11 +4,5 @@
 
 """Tool chain for computing verification scores"""
 
-from FileSelectorZT import FileSelectorZT
-from ToolChainZT import ToolChainZT
-
-from FileSelectorGBU import FileSelectorGBU
-from ToolChainGBU import ToolChainGBU
-
 from FileSelector import FileSelector
 from ToolChain import ToolChain
