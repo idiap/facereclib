@@ -42,8 +42,8 @@ class PCA (Tool):
     # Initializes the data
     data = numpy.vstack([feature.flatten() for feature in training_features])
 
-    utils.info("  -> Training LinearMachine using PCA (SVD)")
-    t = bob.trainer.SVDPCATrainer()
+    utils.info("  -> Training LinearMachine using PCA")
+    t = bob.trainer.PCATrainer()
     self.m_machine, self.m_variances = t.train(data)
 
     # compute variance percentage, if desired

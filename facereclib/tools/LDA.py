@@ -13,7 +13,7 @@ class LDA (Tool):
 
   def __init__(
       self,
-      lda_subspace_dimension = None, # if set, the LDA subspace will be truncated to the given number of dimensions; by default it is limited to the number of classes in the training set
+      lda_subspace_dimension = 0, # if set, the LDA subspace will be truncated to the given number of dimensions; by default it is limited to the number of classes in the training set
       pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA; might be integral or float
       distance_function = bob.math.euclidean_distance,
       is_distance_function = True,
@@ -61,8 +61,8 @@ class LDA (Tool):
     data_list = [feature for client in training_set for feature in client]
     data = numpy.vstack(data_list)
 
-    utils.info("  -> Training LinearMachine using PCA (SVD)")
-    t = bob.trainer.SVDPCATrainer()
+    utils.info("  -> Training LinearMachine using PCA")
+    t = bob.trainer.PCATrainer()
     machine, eigen_values = t.train(data)
 
     if isinstance(self.m_pca_subspace, float):
@@ -102,8 +102,11 @@ class LDA (Tool):
       data = self.__perform_pca__(pca_machine, data)
 
     utils.info("  -> Training LinearMachine using LDA")
-    t = bob.trainer.FisherLDATrainer(self.m_lda_subspace if self.m_lda_subspace else 0)
+    t = bob.trainer.FisherLDATrainer(strip_to_rank = (self.m_lda_subspace == 0))
     self.m_machine, self.m_variances = t.train(data)
+    if self.m_lda_subspace:
+      self.m_machine.resize(self.m_machine.shape[0], self.m_lda_subspace)
+      self.m_variances.resize(self.m_lda_subspace)
 
     if self.m_pca_subspace:
       # compute combined PCA/LDA projection matrix

@@ -52,8 +52,8 @@ class PLDA (Tool):
         data_list.append(feature)
     data = numpy.vstack(data_list)
 
-    utils.info("  -> Training LinearMachine using PCA (SVD)")
-    t = bob.trainer.SVDPCATrainer()
+    utils.info("  -> Training LinearMachine using PCA ")
+    t = bob.trainer.PCATrainer()
     machine, __eig_vals = t.train(data)
     # limit number of pcs
     machine.resize(machine.shape[0], self.m_subspace_dimension_pca)
