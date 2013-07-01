@@ -20,11 +20,11 @@ class PLDA (Tool):
       plda_training_iterations = 200, # Maximum number of iterations for the EM loop
       # TODO: refactor the remaining parameters!
       INIT_SEED = 0, # seed for initializing
-      INIT_F_METHOD = bob.trainer.init_f_method.BETWEEN_SCATTER,
+      INIT_F_METHOD = bob.trainer.PLDATrainer.BETWEEN_SCATTER,
       INIT_F_RATIO = 1,
-      INIT_G_METHOD = bob.trainer.init_g_method.WITHIN_SCATTER,
+      INIT_G_METHOD = bob.trainer.PLDATrainer.WITHIN_SCATTER,
       INIT_G_RATIO = 1,
-      INIT_S_METHOD = bob.trainer.init_sigma_method.VARIANCE_DATA,
+      INIT_S_METHOD = bob.trainer.PLDATrainer.VARIANCE_DATA,
       INIT_S_RATIO = 1,
       multiple_probe_scoring = 'joint_likelihood'
   ):
