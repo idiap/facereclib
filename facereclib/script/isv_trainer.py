@@ -114,7 +114,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
         utils.debug("Saved normalized feature %s" %str(normalized_list[index]))
 
 
-  def kmeans_initialization(self, force=False):
+  def kmeans_initialize(self, force=False):
     """Initializes the K-Means training (non-parallel)."""
     output_file = self.m_configuration.kmeans_intermediate_file % 0
 
@@ -130,7 +130,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       kmeans_machine = bob.machine.KMeansMachine(self.m_tool.m_gaussians, data.shape[1])
       # Creates the KMeansTrainer and call the initialization procedure
       kmeans_trainer = bob.trainer.KMeansTrainer()
-      kmeans_trainer.initialization(kmeans_machine, data)
+      kmeans_trainer.initialize(kmeans_machine, data)
       utils.ensure_dir(os.path.dirname(output_file))
       kmeans_machine.save(bob.io.HDF5File(output_file, 'w'))
       utils.info("ISV training: saved initial KMeans machine to '%s'" % output_file)
@@ -154,7 +154,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
 
       kmeans_trainer = bob.trainer.KMeansTrainer()
       t = bob.machine.KMeansMachine(self.m_tool.m_gaussians, data.shape[1]) # Temporary Kmeans machine required for trainer initialization
-      kmeans_trainer.initialization(t, data)
+      kmeans_trainer.initialize(t, data)
 
       # Performs the E-step
       kmeans_trainer.e_step(kmeans_machine, data)
@@ -221,7 +221,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       kmeans_trainer = bob.trainer.KMeansTrainer()
       # Creates the KMeansMachine
       kmeans_machine = bob.machine.KMeansMachine(bob.io.HDF5File(old_machine_file))
-      kmeans_trainer.initialization(kmeans_machine, data)
+      kmeans_trainer.initialize(kmeans_machine, data)
 
       kmeans_trainer.zeroeth_order_statistics = zeroeth
       kmeans_trainer.first_order_statistics = first
@@ -243,7 +243,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       shutil.rmtree(os.path.dirname(old_file))
 
 
-  def gmm_initialization(self, force=False):
+  def gmm_initialize(self, force=False):
     """Initializes the GMM calculation with the result of the K-Means algorithm (non-parallel).
     This might require a lot of memory."""
     output_file = self.m_configuration.gmm_intermediate_file % 0
@@ -294,7 +294,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
 
       gmm_trainer = bob.trainer.ML_GMMTrainer(self.m_tool.m_update_means, self.m_tool.m_update_variances, self.m_tool.m_update_weights)
       gmm_trainer.responsibilities_threshold = self.m_tool.m_responsibility_threshold
-      gmm_trainer.initialization(gmm_machine, data)
+      gmm_trainer.initialize(gmm_machine, data)
 
       # Calls the E-step and extracts the GMM statistics
       gmm_trainer.e_step(gmm_machine, data)
@@ -341,7 +341,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       # initialize the trainer
       gmm_trainer = bob.trainer.ML_GMMTrainer(self.m_tool.m_update_means, self.m_tool.m_update_variances, self.m_tool.m_update_weights)
       gmm_trainer.responsibilities_threshold = self.m_tool.m_responsibility_threshold
-      gmm_trainer.initialization(gmm_machine, data)
+      gmm_trainer.initialize(gmm_machine, data)
       gmm_trainer.gmm_statistics = gmm_stats
 
       # Calls M-step
@@ -712,7 +712,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
 
     # train the feature projector
     elif self.m_args.sub_task == 'kmeans-init':
-      self.kmeans_initialization(
+      self.kmeans_initialize(
           force = self.m_args.force)
 
     # train the feature projector
@@ -728,7 +728,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
           force = self.m_args.force)
 
     elif self.m_args.sub_task == 'gmm-init':
-      self.gmm_initialization(
+      self.gmm_initialize(
           force = self.m_args.force)
 
     # train the feature projector
