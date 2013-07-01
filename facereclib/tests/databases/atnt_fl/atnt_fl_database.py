@@ -2,12 +2,10 @@ import xbob.db.faceverif_fl
 import facereclib
 import os
 
-image_directory = os.environ['ATNT_DATABASE_DIRECTORY'] if 'ATNT_DATABASE_DIRECTORY' in os.environ else "/idiap/group/biometric/databases/orl/"
-
-
 class TestDatabase (facereclib.databases.DatabaseXBobZT):
 
   def __init__(self):
+
     # call base class constructor with useful parameters
     facereclib.databases.DatabaseXBobZT.__init__(
         self,
@@ -23,7 +21,7 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
             keep_read_lists_in_memory = True
         ),
         name = 'test_fl',
-        image_directory = image_directory,
+        image_directory = facereclib.utils.tests.atnt_database_directory(),
         image_extension = ".pgm"
     )
 

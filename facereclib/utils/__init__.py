@@ -31,6 +31,7 @@ def score_fusion_strategy(strategy_name = 'avarage'):
       'median' : numpy.median
   }[strategy_name]
 
+
 def gray_channel(image, channel = 'gray'):
   """Returns the desired channel of the given image. Currently, gray, red, green and blue channels are supported."""
   if image.ndim == 2:
