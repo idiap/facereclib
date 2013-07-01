@@ -94,7 +94,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
         utils.debug("Saved normalized feature %s" %str(normalized_list[index]))
 
 
-  def kmeans_initialization(self, force=False):
+  def kmeans_initialize(self, force=False):
     """Initializes the K-Means training (non-parallel)."""
     output_file = self.m_configuration.kmeans_intermediate_file % 0
 
@@ -110,7 +110,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
       kmeans_machine = bob.machine.KMeansMachine(self.m_tool.m_gaussians, data.shape[1])
       # Creates the KMeansTrainer and call the initialization procedure
       kmeans_trainer = bob.trainer.KMeansTrainer()
-      kmeans_trainer.initialization(kmeans_machine, data)
+      kmeans_trainer.initialize(kmeans_machine, data)
       utils.ensure_dir(os.path.dirname(output_file))
       kmeans_machine.save(bob.io.HDF5File(output_file, 'w'))
       utils.info("IVector training: saved initial KMeans machine to '%s'" % output_file)
@@ -134,7 +134,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
 
       kmeans_trainer = bob.trainer.KMeansTrainer()
       t = bob.machine.KMeansMachine(self.m_tool.m_gaussians, data.shape[1]) # Temporary Kmeans machine required for trainer initialization
-      kmeans_trainer.initialization(t, data)
+      kmeans_trainer.initialize(t, data)
 
       # Performs the E-step
       kmeans_trainer.e_step(kmeans_machine, data)
@@ -201,7 +201,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
       kmeans_trainer = bob.trainer.KMeansTrainer()
       # Creates the KMeansMachine
       kmeans_machine = bob.machine.KMeansMachine(bob.io.HDF5File(old_machine_file))
-      kmeans_trainer.initialization(kmeans_machine, data)
+      kmeans_trainer.initialize(kmeans_machine, data)
 
       kmeans_trainer.zeroeth_order_statistics = zeroeth
       kmeans_trainer.first_order_statistics = first
@@ -223,7 +223,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
       shutil.rmtree(os.path.dirname(old_file))
 
 
-  def gmm_initialization(self, force=False):
+  def gmm_initialize(self, force=False):
     """Initializes the GMM calculation with the result of the K-Means algorithm (non-parallel).
     This might require a lot of memory."""
     output_file = self.m_configuration.gmm_intermediate_file % 0
@@ -274,7 +274,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
 
       gmm_trainer = bob.trainer.ML_GMMTrainer(self.m_tool.m_update_means, self.m_tool.m_update_variances, self.m_tool.m_update_weights)
       gmm_trainer.responsibilities_threshold = self.m_tool.m_responsibility_threshold
-      gmm_trainer.initialization(gmm_machine, data)
+      gmm_trainer.initialize(gmm_machine, data)
 
       # Calls the E-step and extracts the GMM statistics
       gmm_trainer.e_step(gmm_machine, data)
@@ -321,7 +321,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
       # initialize the trainer
       gmm_trainer = bob.trainer.ML_GMMTrainer(self.m_tool.m_update_means, self.m_tool.m_update_variances, self.m_tool.m_update_weights)
       gmm_trainer.responsibilities_threshold = self.m_tool.m_responsibility_threshold
-      gmm_trainer.initialization(gmm_machine, data)
+      gmm_trainer.initialize(gmm_machine, data)
       gmm_trainer.gmm_statistics = gmm_stats
 
       # Calls M-step
@@ -372,7 +372,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
         self.m_tool._save_feature_gmm(projected, str(projected_file))
 
 
-  def ivector_initialization(self, force=False):
+  def ivector_initialize(self, force=False):
     """Initializes the IVector training (non-parallel)."""
     output_file = self.m_configuration.ivector_intermediate_file % 0
 
@@ -388,7 +388,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
       ivector_machine.variance_threshold = self.m_tool.m_variance_threshold
       # Creates the IVectorTrainer and call the initialization procedure
       ivector_trainer = bob.trainer.IVectorTrainer(update_sigma=self.m_tool.m_update_sigma, max_iterations=self.m_tool.m_tv_training_iterations)
-      ivector_trainer.initialization(ivector_machine, data)
+      ivector_trainer.initialize(ivector_machine, data)
       utils.ensure_dir(os.path.dirname(output_file))
       ivector_machine.save(bob.io.HDF5File(output_file, 'w'))
       utils.info("IVector training: saved initial IVector machine to '%s'" % output_file)
@@ -418,7 +418,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
 
       # Creates the IVectorTrainer and call the initialization procedure
       ivector_trainer = bob.trainer.IVectorTrainer(update_sigma=self.m_tool.m_update_sigma, max_iterations=self.m_tool.m_tv_training_iterations)
-      ivector_trainer.initialization(m, data)
+      ivector_trainer.initialize(m, data)
 
       # Performs the E-step
       ivector_trainer.e_step(ivector_machine, data)
@@ -490,7 +490,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
 
       # Creates the IVectorTrainer and call the initialization procedure
       ivector_trainer = bob.trainer.IVectorTrainer(update_sigma=self.m_tool.m_update_sigma, max_iterations=self.m_tool.m_tv_training_iterations)
-      ivector_trainer.initialization(m, data)
+      ivector_trainer.initialize(m, data)
 
       # Performs the M-step
       ivector_trainer.acc_nij_wij2 = acc_nij_wij2
@@ -752,7 +752,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
 
     # train the feature projector
     elif self.m_args.sub_task == 'kmeans-init':
-      self.kmeans_initialization(
+      self.kmeans_initialize(
           force = self.m_args.force)
 
     # train the feature projector
@@ -768,7 +768,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
           force = self.m_args.force)
 
     elif self.m_args.sub_task == 'gmm-init':
-      self.gmm_initialization(
+      self.gmm_initialize(
           force = self.m_args.force)
 
     # train the feature projector
@@ -791,7 +791,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
 
     # I-vector initialization
     elif self.m_args.sub_task == 'ivec-init':
-      self.ivector_initialization(
+      self.ivector_initialize(
           force = self.m_args.force)
 
     # I-vector e-step
