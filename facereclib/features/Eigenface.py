@@ -22,7 +22,7 @@ class Eigenface (Extractor):
     data = numpy.vstack([image.flatten() for image in image_list])
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
-    t = bob.trainer.SVDPCATrainer()
+    t = bob.trainer.PCATrainer()
     self.m_machine, __eig_vals = t.train(data)
     # Machine: get shape, then resize
     self.m_machine.resize(self.m_machine.shape[0], self.m_subspace_dimension)

@@ -37,8 +37,8 @@ class Preprocessor:
     """This is the call function that you have to overwrite in the derived class.
     The parameters that this function will receive are:
 
-     image
-       The image that needs preprocessing
+    image
+      The image that needs preprocessing
 
     annotations:
       The annotations (if any), as a dictionary from annotation type to the position.
@@ -53,7 +53,7 @@ class Preprocessor:
 
   def read_original_image(self, image_name):
     """Reads the *original* image from file.
-    In this base class implementation, it uses bob.io.load to do that.
+    In this base class implementation, it uses ``bob.io.load`` to do that.
     If you have different format (e.g., not even images), please overwrite this function.
     """
     return bob.io.load(image_name)
@@ -63,9 +63,9 @@ class Preprocessor:
     """Saves the given *preprocessed* image to a file with the given name.
     In this base class implementation:
 
-    - If the given image has a 'save' attribute, it calls image.save(bob.io.HDF5File(image_file), 'w').
+    - If the given image has a ``save`` attribute, it calls ``image.save(bob.io.HDF5File(image_file), 'w')``.
       In this case, the given image_file might be either a file name or a bob.io.HDF5File.
-    - Otherwise, it uses bob.io.save to do that.
+    - Otherwise, it uses ``bob.io.save`` to do that.
 
     If you have a different format (e.g. not images), please overwrite this function.
     """
@@ -79,7 +79,7 @@ class Preprocessor:
 
   def read_image(self, image_name):
     """Reads the *preprocessed* image from file.
-    In this base class implementation, it uses bob.io.load to do that.
+    In this base class implementation, it uses ``bob.io.load`` to do that.
     If you have different format (e.g., not even images), please overwrite this function.
     """
     return bob.io.load(image_name)

@@ -42,7 +42,6 @@ def command_line_arguments(command_line_parameters):
 
   # - just print?
   parser.add_argument('-x', '--dry-run', action = 'store_true', help = 'Just print the commands, but do not execute them.')
-  utils.add_logger_command_line_option(parser)
 
   # - evaluate the algorithm (after it has finished)
   parser.add_argument('-e', '--evaluate', action = 'store_true', help = 'Evaluate the results of the algorithms (instead of running them).')
@@ -50,6 +49,7 @@ def command_line_arguments(command_line_parameters):
   # - other parameters that are passed to the underlying script
   parser.add_argument('parameters', nargs = argparse.REMAINDER, help = 'Parameters directly passed to the face verification script.')
 
+  utils.add_logger_command_line_option(parser)
   args = parser.parse_args(command_line_parameters)
   if args.all:
     args.algorithms = all_algorithms[1:]

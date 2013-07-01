@@ -5,16 +5,16 @@
 .. This file contains all links we use for documentation in a centralized place
 
 .. _idiap: http://www.idiap.ch
-.. _github: www.github.com/idiap
+.. _github: http://www.github.com/idiap
 .. _bob: http://www.idiap.ch/software/bob
 .. _facereclib: http://www.github.com/bioidiap/facereclib
-.. _github bug system: https://github.com/bioidiap/facereclib/issues
+.. _github bug system: http://github.com/bioidiap/facereclib/issues
 .. _idiap at github: http://www.github.com/bioidiap
 .. _at&t database: http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
 .. _bob's github page: http://idiap.github.com/bob/
-.. _gridtk: https://github.com/idiap/gridtk
+.. _gridtk: http://github.com/idiap/gridtk
 .. _buildout: http://www.buildout.org/
 .. _nist: http://www.nist.gov/itl/iad/ig/focs.cfm
 .. _pypi: http://pypi.python.org
-.. _sge: https://wiki.idiap.ch/linux/SunGridEngine
+.. _sge: http://wiki.idiap.ch/linux/SunGridEngine
 

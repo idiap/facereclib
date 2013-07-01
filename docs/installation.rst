@@ -87,7 +87,9 @@ To verify your installation, you should run the script by calling:
   $ bin/nosetests
 
 Some of the tests that are run require the images of the `AT&T database`_ database.
-If you want these tests to pass you have to:
+If the database is not found on your system, it will automatically download and extract the `AT&T database`_ a temporary directory (which will not be erased).
+
+To avoid the download, please:
 
 1. Download the `AT&T database`_ database and extract it to the directory of your choice.
 2. Set an environment variable ``ATNT_DATABASE_DIRECTORY`` to the directory, where you extracted the database to.
@@ -98,9 +100,9 @@ If you want these tests to pass you have to:
   $ export ATNT_DATABASE_DIRECTORY=/path/to/your/copy/of/atnt
 
 .. note::
-  To set the directory permanently, you can also change it in the files `testdata/scripts/atnt_Test.py <file:../testdata/scripts/atnt_Test.py>`_ and `testdata/scripts/fileset_Test.py <file:../testdata/scripts/fileset_Test.py>`_.
+  To set the directory permanently, you can also change the ``atnt_default_directory`` in the file `facereclib/utils/tests.py <file:../facereclib/utils/tests.py>`_.
   In this case, there is no need to set the environment variable any more.
-  Currently, these files by default include the directory that is valid for Idiap_.
+  Currently, the default is set to the directory that is valid for Idiap_.
 
 In case any of the tests fail for unexplainable reasons, please file a bug report through the `GitHub bug system`_.
 

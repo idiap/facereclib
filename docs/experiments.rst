@@ -8,7 +8,7 @@
 Running non-baseline experiments
 ================================
 
-The ``bin/baselines.py`` script is just a wrapper for the ``bin/faceverify.py`` script.
+The ``bin/baselines.py`` script that we have discussed in the previous section is just a wrapper for the ``bin/faceverify.py`` script.
 When the former script is executed, it always prints the call to the latter script.
 The latter script is actually doing all the work.
 If you want to run experiments with a different setup than the baselines, you should use the ``bin/faceverify.py`` script directly.
@@ -22,7 +22,7 @@ Required command line arguments
 To run a face recognition experiment using the |project|, you have to tell the ``bin/faceverify.py`` script, which database, preprocessing, features, and algorithm should be used.
 To use this script, you have to specify at least these command line arguments (see also the ``--help`` option):
 
-* ``--database``: The database and the according protocol.
+* ``--database``: The database to run the experiments on, and which protocol to use.
 * ``--preprocessing``: The image preprocessing and its parameters.
 * ``--features``: The features to extract and their options.
 * ``--tool``: The face recognition algorithm and all its required parameters.
@@ -144,17 +144,17 @@ If you have an ``image_directory`` different to the one specified in the file, p
 
 * `facereclib.database.DatabaseXBob <file:../facereclib/databases/DatabaseXBob.py>`_:
 
-  - `AR face <file:../facereclib/configurations/databases/arface_all.py>`_ : http://www2.ece.ohio-state.edu/~aleix/ARdatabase.html
+  - `AR face <file:../facereclib/configurations/databases/arface.py>`_ : http://www2.ece.ohio-state.edu/~aleix/ARdatabase.html
 
   .. note::
     At Idiap we might not have the latest version of this database.
     We tried to contact the responsible author of the database, but he didn't reply over years.
     Good luck for your trial to get the data.
 
-  - `AT&T <file:../facereclib/configurations/databases/atnt_Default.py>`_ : http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
-  - `CAS-PEAL <file:../facereclib/configurations/databases/caspeal_lighting.py>`_: http://www.jdl.ac.cn/peal/index.html
-  - `Face Recognition Grand Challenge ver2.0 (FRGC) <file:../facereclib/configurations/databases/frgc_201.py>`_ : http://www.nist.gov/itl/iad/ig/frgc.cfm
-  - `The Good, The Bad & The Ugly (GBU) <file:../facereclib/configurations/databases/gbu_Good.py>`_ : http://www.nist.gov/itl/iad/ig/focs.cfm
+  - `AT&T <file:../facereclib/configurations/databases/atnt.py>`_ : http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
+  - `CAS-PEAL <file:../facereclib/configurations/databases/caspeal.py>`_: http://www.jdl.ac.cn/peal/index.html
+  - `Face Recognition Grand Challenge ver2.0 (FRGC) <file:../facereclib/configurations/databases/frgc.py>`_ : http://www.nist.gov/itl/iad/ig/frgc.cfm
+  - `The Good, The Bad & The Ugly (GBU) <file:../facereclib/configurations/databases/gbu.py>`_ : http://www.nist.gov/itl/iad/ig/focs.cfm
 
   .. note::
     The GBU database uses the data from the MBGC http://www.nist.gov/itl/iad/ig/mbgc.cfm database of the NIST.
@@ -162,18 +162,18 @@ If you have an ``image_directory`` different to the one specified in the file, p
     Hence, the ``xbob.db.gbu`` database might not be up to date.
     Please refer to the documentation of this database on how to adapt the database to the new structure.
 
-  - `Labeled Faces in the Wild (LFW) <file:../facereclib/configurations/databases/lfw_view1.py>`_ : http://vis-www.cs.umass.edu/lfw/
+  - `Labeled Faces in the Wild (LFW) <file:../facereclib/configurations/databases/lfw.py>`_ : http://vis-www.cs.umass.edu/lfw/
 
 * ``facereclib.database.DatabaseXBobZT``:
 
-  - `BANCA <file:../facereclib/configurations/databases/banca_P.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/banca
-  - `MOBIO <file:../facereclib/configurations/databases/mobio_male.py>`_ : http://www.idiap.ch/dataset/mobio
-  - `Multi-PIE <file:../facereclib/configurations/databases/multipie_P.py>`_ : http://www.multipie.org
-  - `Surveillance Camera (SC) face database <file:../facereclib/configurations/databases/scface_combined.py>`_ : http://www.scface.org
-  - `Extended M2VTS (XM2VTS) <file:../facereclib/configurations/databases/xm2vts_lp1.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/xm2vtsdb
+  - `BANCA <file:../facereclib/configurations/databases/banca.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/banca
+  - `MOBIO <file:../facereclib/configurations/databases/mobio.py>`_ : http://www.idiap.ch/dataset/mobio
+  - `Multi-PIE <file:../facereclib/configurations/databases/multipie.py>`_ : http://www.multipie.org
+  - `Surveillance Camera (SC) face database <file:../facereclib/configurations/databases/scface.py>`_ : http://www.scface.org
+  - `Extended M2VTS (XM2VTS) <file:../facereclib/configurations/databases/xm2vts.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/xm2vtsdb
 
 There is also one interface for the ``xbob.db.faceverif_fl`` database, which contains a file-based API to define simple evaluation protocols for other databases.
-An example, which is based on the `AT&T database`, on how to configure and use this database can be found in `testdata/databases/atnt_fl/atnt_fl_database.py <file:../testdata/databases/atnt_fl/atnt_fl_database.py>`_.
+An example, which is based on the `AT&T database`, on how to configure and use this database can be found in `facereclib/tests/databases/atnt_fl/atnt_fl_database.py <file:../facereclib/tests/databases/atnt_fl/atnt_fl_database.py>`_.
 For more information, please also read the :ref:`faceverif-fl` section.
 
 
@@ -267,7 +267,7 @@ Here is the list of classes to perform feature extraction and its parameters.
       In this case, the parameters ``nodes_between_eyes``, ``nodes_along_eyes``, ``nodes_above_eyes``, and ``nodes_below_eyes`` will be taken into consideration.
 
     + If ``eyes`` are not specified, a regular grid is placed according to the ``first_node``, ``node_distance``, and ``image_resolution`` parameters.
-      In this case, if the ``first_node```is omitted (i.e. ``None``), it is calculated automatically to equally cover the whole image.
+      In this case, if the ``first_node`` is omitted (i.e. ``None``), it is calculated automatically to equally cover the whole image.
 
 * `facereclib.features.LGBPHS <file:../facereclib/features/LGBPHS.py>`_: Extracts *Local Gabor Binary Pattern Histogram Sequences* (LGBPHS) [ZSG+05]_ from the images:
 
@@ -297,7 +297,7 @@ These parameters mainly deal with how to compute a single score when more than o
 
 - ``multiple_model_scoring``: Strategy to combine several features in a models.
   Possible values are (see also `facereclib.utils.score_fusion_strategy <file:../facereclib/utils/__init__.py>`_):  ``'average'``, ``'min'``, ``'max'``, ``'median'``, default is ``'average'``.
-- ``multiple_model_scoring``: Strategy to combine several probe scores.
+- ``multiple_probe_scoring``: Strategy to combine several probe scores.
   Possible values are (see also `facereclib.utils.score_fusion_strategy <file:../facereclib/utils/__init__.py>`_):  ``'average'``, ``'min'``, ``'max'``, ``'median'``, default is ``'average'``.
 
 Here is a list of the most important algorithms and their parameters:
@@ -305,7 +305,7 @@ Here is a list of the most important algorithms and their parameters:
 
 * `facereclib.tools.PCA <file:../facereclib/tools/PCA.py>`_: Computes a PCA projection on the given training features, projects the features to face space and computes the distance of two projected features in face space.
 
-  - ``subspace_dimension``: If integral: the number of kept eigenvalues in the projection matrix; if float: the percentage of variance to keep.
+  - ``subspace_dimension``: If integral: the number of kept eigenvalues in the projection matrix; if float in range[0,1]: the percentage of variance to keep.
   - ``distance_function``: The distance function to be used to compare two features in face space. Default: ``bob.math.euclidean_distance``.
   - ``is_distance_function``: Specifies, if the ``distance_function`` is a distance or a similarity function. Default: ``True``.
   - ``uses_variances``: Does the ``distance_function`` require the PCA variances? Default: ``False``.
@@ -313,11 +313,15 @@ Here is a list of the most important algorithms and their parameters:
 * `facereclib.tools.LDA <file:../facereclib/tools/LDA.py>`_: Computes an LDA or a PCA+LDA projection on the given features.
 
   - ``lda_subspace_dimension``: **(optional)** Limit the number of dimensions of the LDA subspace.
-    If this parameter is not specified, no truncation is applied.
+    If this parameter is not specified, the maximum useful dimensions, i.e, the number of training clients-1 is returned.
+    The ``lda_subspace_dimension`` can actually be higher then the useful limit, in which case eignevectors with vanishing eigenvalues are used.
   - ``pca_subspace_dimension``: **(optional)** If given, the computed projection matrix will be a PCA+LDA matrix, where ``pca_subspace_dimension`` defines the size of the PCA subspace.
     If ``pca_subspace_dimension`` is integral, it is the number of kept eigenvalues in the projection matrix; if is is float, it stands for the percentage of variance to keep.
   - ``distance_function``: The distance function to be used to compare two features in Fisher space. Default: ``bob.math.euclidean_distance``.
   - ``is_distance_function``: Specifies, if the ``distance_function`` is a distance or a similarity function. Default: ``True``.
+  - ``uses_variances``: Does the ``distance_function`` require the LDA variances? Default: ``False``.
+
+    .. note:: If ``lda_subspace_dimension`` is higher than the useful limit, vanishing eigenvalues will be used. In this case, avoid distance functions that require the eigenvalues.
 
 * `facereclib.tools.PLDA <file:../facereclib/tools/PLDA.py>`_: Computes a probabilistic LDA
 
@@ -409,7 +413,7 @@ Here are the parameters that you can set:
 
 When calling the ``bin/faceverify.py`` script with the ``--grid ...`` argument, the script will submit all the jobs to the SGE_ by taking care of the dependencies between the jobs **and it will exit immediately**.
 It will write a database file that you can monitor using the ``bin/jman`` command.
-Please refer to ``bin/jman --help`` to see the command line arguments of this tool.
+Please refer to ``bin/jman --help`` or the `GridTK documentation <http://github.com/idiap/gridtk>`_ to see the command line arguments of this tool.
 The name of the database file by default is **submitted.db**, but you can change the name (and its path) using the argument:
 
 * ``--submit-db-file``
@@ -427,8 +431,6 @@ By default, the verification result will be written to directory **/idiap/user/<
 * <SCOREDIR>: Another user-specified name (``--score-sub-directory`` argument below), e.g., to specify different options of the experiment.
 * <PROTOCOL>: The protocol which is read from the database configuration file.
 
-Changing directories
-~~~~~~~~~~~~~~~~~~~~
 These default directories can be overwritten using the following command line arguments, which expects relative or absolute paths:
 
 * ``--temp-directory``
@@ -474,13 +476,13 @@ In this case, you could simply specify a:
 
 * ``--score-sub-directory``
 
-In this case, no feature or model is recomputed (unless you use the ``--force`` option), but only the scores are re-calculated.
+In this case, no feature or model is recomputed (unless you use the ``--force`` option), but only new scores are calculated.
 
 Database-dependent arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Many databases define several protocols that can be executed.
 For example, the GBU database provides the three protocols ``'Good'``, ``'Bad'``, ``'Ugly'``.
-Usually, the configuration file, e.g., `facereclib.configurations.databases.gbu_Good.py <File:../facereclib/configurations/databases/gbu_Good.py>`_ contains only one protocol.
+Usually, the configuration file, e.g., `facereclib.configurations.databases.gbu.py <File:../facereclib/configurations/databases/gbu.py>`_ contains only one protocol.
 To change the protocol, you can either modify the configuration file, or simply use the option:
 
 * ``--protocol``
@@ -514,6 +516,14 @@ argument.
 
 Other arguments
 ---------------
+
+For some applications it is interesting to get calibrated scores. Simply add the:
+
+* ``--calibrate-scores``
+
+option and another set of score files will be created by training the score calibration on the scores of the 'dev' group and execute it to all available groups .
+The scores will be located at the same directory as the **nonorm** and **ztnorm** scores, and the file names are **calibrated-dev** (and **calibrated-eval** if applicable) .
+
 During score computation, the probe files usually will be loaded on need.
 Since file IO might take a while, you might want to use the argument:
 

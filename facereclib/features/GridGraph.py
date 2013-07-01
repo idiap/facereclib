@@ -71,7 +71,7 @@ class GridGraph (Extractor):
         first_node = [0,0]
         for i in (0,1):
           offset = (image_resolution[i] - image_resolution[i]/node_distance[i]*node_distance[i]) / 2
-          if offset < node_distance[i]/2:
+          if offset < node_distance[i]/2: # This is not tested, but should ALWAYS be the case.
             offset += node_distance[i]/2
           first_node[i] = offset
       last_node = [image_resolution[i] - max(first_node[i],1) for i in (0,1)]

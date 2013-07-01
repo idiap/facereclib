@@ -37,6 +37,15 @@ class TanTriggs (FaceCrop):
       **kwargs
   ):
 
+    """Parameters of the constructor of this preprocessor:
+
+    gamma, sigma0, sigma1, size, threshold, alpha
+      Please refer to the [TT10]_ original paper (see FaceRecLib documentation).
+
+    kwargs
+      The parameters directly passed to the :class:`facereclib.preprocessing.FaceCrop` base class constructor.
+    """
+
     # call base class constructor with its set of parameters
     FaceCrop.__init__(self, **kwargs)
 

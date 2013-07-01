@@ -17,7 +17,7 @@ For example, you can easily download the images of the `AT&T database`_, for lin
 By default, the |project| does not know, where the images are located.
 Hence, before running experiments you have to specify the image database directories by modifying the accordant configuration files.
 For further information on these topic, you might want to read the :ref:`managing-resources` and the :ref:`databases` sections.
-To make the baseline algorithms work, e.g., on the `AT&T database`_, you have to correct the  ``image_directory`` entry in the `facereclib/configurations/databases/atnt_Default.py <../facereclib/configurations/databases/atnt_Default.py>`_ file.
+To make the baseline algorithms work, e.g., on the `AT&T database`_, you have to correct the  ``image_directory`` entry in the `facereclib/configurations/databases/atnt.py <../facereclib/configurations/databases/atnt.py>`_ file.
 
 .. note::
   The directories in the configuration files are preset to the right directories at Idiap_.

@@ -35,6 +35,29 @@ class FaceCrop (Preprocessor):
       offset = 0,                # if your feature extractor requires a specific offset, you might want to specify it here
       supported_annotations = (('reye', 'leye'), ('eye', 'mouth')) # The set of annotations that this cropper excepts
   ):
+    """Parameters of the constructor of this preprocessor:
+
+    cropped_image_size
+      The size of the resulting cropped images.
+
+    cropped_positions
+      The coordinates in the cropped image, where the annotated points should be put to.
+      This parameter is a dictionary with usually two elements, e.g., {'reye':(RIGHT_EYE_Y, RIGHT_EYE_X) , 'leye':(LEFT_EYE_Y, LEFT_EYE_X)}.
+
+    fixed_positions
+      If specified, ignore the annotations from the database and use these fixed positions throughout.
+
+    color_channel
+      In case of color images, which color channel should be used?
+
+    offset
+      An offset for feature extraction; will affect the cropped_image_size and the cropped_image_positions
+
+    supported_annotations
+      A list of supported pairs of annotations.
+      If the database has different names for the annotations, they should be put here (used mainly for testing purposes).
+
+    """
 
     # call base class constructor
     Preprocessor.__init__(self)

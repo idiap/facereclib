@@ -54,7 +54,6 @@ In this case, you have to derive your class from the `facereclib.databases.Datab
   In this case, you can just ignore the ``model_id``.
   If the ``model_id`` is ``None``, this function is supposed to return *all* probe files for all models of the given group.
 
-
 Additionally, you can define more lists that can be used for ZT score normalization.
 In this case, derive you class from ``facereclib.databases.DatabaseZT`` instead, and additionally overwrite the following functions:
 
@@ -65,12 +64,12 @@ In this case, derive you class from ``facereclib.databases.DatabaseZT`` instead,
 .. note:
   For a proper face recognition protocol, the identities from the models and the T-Norm models, as well as the Z-probes should be different.
 
-For some protocols, a single probe consists of features from several images.
+For some protocols, a single probe consists of features from several images, see :ref:`algorithms` about strategies how to incorporate several probe files into one score.
 If your database should provide this functionality, please overwrite:
 
 * ``uses_probe_file_sets(self)``: Return ``True`` if the current protocol of the database provides multiple files for one probe.
-* ``probe_file_sets(self, model_id=None, group='dev')``: Returns a list of lists of probe files.
-* ``z_probe_file_sets(self, model_id=None, group='dev')``: Returns a list of lists of Z-probe files (only needed if the base class is ``facereclib.databases.DatabaseZT``).
+* ``probe_file_sets(self, model_id=None, group='dev')``: Returns a list of lists of ``facereclib.databases.FileSet`` objects.
+* ``z_probe_file_sets(self, model_id=None, group='dev')``: Returns a list of lists of Z-probe ``facereclib.databases.FileSet`` objects (only needed if the base class is ``facereclib.databases.DatabaseZT``).
 
 
 Image preprocessors
