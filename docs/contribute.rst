@@ -227,9 +227,14 @@ For this, it might also be a good idea to use a small image database, like ``--d
 Adding tests
 ------------
 To make sure that your peace of code it working properly, you should add a test case for your class.
+The |project|, as well as Bob_ rely on `nose tests <http://pypi.python.org/pypi/nose>`_ to run the unit tests.
+To implement a unit test for your contribution, you simply can create a python file with a name containing 'test' in your package.
+In the |project|, these files are located in `facereclib/tests/ <file:../facereclib/tests>`_.
 
-.. TODO::
-  explain how to write tests properly.
+In the test file, please write a test class that derives from ``unittest.TestCase``.
+Any function name containing the string ``test`` will be automatically found and executed when running ``bin/nosetests``.
+In your test function, please assure that all aspects of your contribution are thoroughly tested and that all test cases pass the tests.
+Also remember that your tests need to run on different machines with various operating systems, so don't test floating point values for equality.
 
 
 .. _configuration-files:
@@ -245,7 +250,7 @@ Depending on your type of contribution, you should write a line like:
 * ``feature_extractor = facereclib.features.<YourExtractor>(<YourParameters>)``
 * ``tool = facereclib.tools.<YourAlgorithm>(<YourParameters>)``
 
-and save the configuration file into the according subdirectory of `facereclib/configurations <file:../facereclib/configurations>`_.
+and save the configuration file into the according sub-directory of `facereclib/configurations <file:../facereclib/configurations>`_.
 
 
 .. _register-resources:
@@ -264,13 +269,6 @@ Depending on your type of algorithm, you have to add:
 After re-running ``bin/buildout``, your new resource should be listed in the output of ``bin/resources.py``.
 
 
-Contributing your code
-----------------------
-When you invented a completely new type of image preprocessing, features, or face recognition algorithm, and you want to share your result with the world, you are highly welcome **and encouraged** to do so.
-Please make sure that every part of your code is documented and tested.
-
-.. TODO:
-  Add documentation how to upload a new satellite package to github and/or create a PyPI package from your satellite package.
 
 
 .. include:: links.rst

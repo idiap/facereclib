@@ -8,9 +8,40 @@
 Creating your own satellite package
 ===================================
 
-Please refer to the satellite package explanation of Bob_: http://www.idiap.ch/software/bob/docs/releases/last/sphinx/html/OrganizeYourCode.html
+The simplest and most clean way to test your own code in the |project| is to add it in a satellite package.
+In principle, you can choose a name that fits you, but it is preferable to have a package name that starts with ``xfacereclib.`` to show that it is a satellite package to the |project|.
+Please refer to the `satellite package explanation of Bob <http://www.idiap.ch/software/bob/docs/releases/last/sphinx/html/OrganizeYourCode.html>`_, which explains in detail how to start.
+
+Depending on of what nature is your contribution, you have to register it in the `setup.py` file of your satellite package.
+In case, your contribution is a face recognition algorithm, you might want to :ref:`register it <register-resources>`.
+After doing that, you can simply use the ``bin/faceverify.py`` (or any other script of the |project|) with your registered tool, as if it would be part of the |project|.
+As one example of providing a source code package, you might want to have a look into the `wrapper classes <http://pypi.python.org/pypi/xfacereclib.PythonFaceEvaluation>`_ for the `CSU face recognition resources <http://www.cs.colostate.edu/evalfacerec/news2010.php>`_
 
 .. TODO::
-  Explain how to create a satellite package after you have successfully done that.
+  Publish the source code for the CSU python face evaluation.
+
+Another contribution of code is to provide the source code to rerun the experiments as published in a paper.
+In this case, the contribution is more about scripts that can be used to run experiments.
+To cause the buildout_ system to create a python script in the `bin <file:../bin>`_ directory, you have to register the script in your `setup.py` file under the ``console_scripts`` section.
+One working example of providing source code to rerun experiments for [GMW12] can be found in http://pypi.python.org/pypi/xfacereclib.paper.BeFIT2012.
+
+.. TODO::
+  Publish the source code for the BeFIT2012 code (write documentation!).
+
+
+Contributing your code
+----------------------
+When you invented a completely new type of image preprocessing, features, or face recognition algorithm and you want to share them with the world, or you want other researchers to be able to rerun your experiments, you are highly welcome **and encouraged** to do so.
+Please make sure that every part of your code is documented and tested.
+
+To upload your satellite package to the world (more specifically to PyPI_) you have to create an account and register an ssh key.
+Add the required packages in the `setup.py` file and under the ``install_requires`` section, provide the other information and upload the package to PyPI via:
+
+.. code-block:: sh
+
+  $ python setup.py register
+  $ python setup.py sdist --formats zip upload
+
+Now, all other researchers can make use of your invention, with the effect that your paper will be cited more often, simply by adding your project to the `setup.py` in their satellite package.
 
 .. include:: links.rst

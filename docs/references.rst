@@ -23,3 +23,5 @@ References
 .. [ZSQ+09]  W. Zhang, S. Shan, L. Qing, X. Chen and W. Gao. Are Gabor phases really useless for face recognition?. Pattern Analysis & Applications, 12:301-307, 2009.
 .. [GW09]    M. Günther and R.P. Würtz. Face detection and recognition using maximum likelihood classifiers on Gabor graphs. International Journal of Pattern Recognition and Artificial Intelligence, 23(3):433-461, 2009.
 
+.. [GWM12]   M. Günther, R. Wallace and S. Marcel. An Open Source Framework for Standardized Comparisons of Face Recognition Algorithms. Computer Vision - ECCV 2012. Workshops and Demonstrations, LNCS, 7585, 547-556, 2012.
+

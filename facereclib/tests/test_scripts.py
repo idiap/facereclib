@@ -334,6 +334,13 @@ class ScriptTest (unittest.TestCase):
       main(parameters)
 
 
+  def test16_collect_results(self):
+    # simply test that the collect_results script works
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
+    from facereclib.script.collect_results import main
+    main(['--directory', test_dir, '--sort', '--sort-key', 'dir', '--criterion', 'FAR', '--self-test'])
+    os.rmdir(test_dir)
+
 
   def test21_parameter_script(self):
     self.grid_available()

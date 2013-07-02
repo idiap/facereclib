@@ -49,8 +49,8 @@ def command_line_options(command_line_parameters):
   parser.add_argument('-b', '--sub-directory', required = True,
       help = 'The sub-directory where the files of the current experiment should be stored. Please specify a directory name with a name describing your experiment.')
 
-  parser.add_argument('-p', '--preprocessor',
-      help = "The preprocessor to be used (will overwrite the 'preprocessor' in the configuration file)")
+  parser.add_argument('-p', '--preprocessing',
+      help = "The preprocessing to be used (will overwrite the 'preprocessor' in the configuration file)")
 
   parser.add_argument('-f', '--features',
       help = "The features to be extracted (will overwrite the 'feature_extractor' in the configuration file)")
@@ -353,8 +353,8 @@ def main(command_line_parameters = sys.argv):
   configuration = utils.resources.read_config_file(args.configuration_file)
   place_holder_key = args.place_holder_key
 
-  if args.preprocessor:
-    configuration.preprocessor = args.preprocessor
+  if args.preprocessing:
+    configuration.preprocessor = args.preprocessing
   if args.features:
     configuration.feature_extractor = args.features
   if args.tool:

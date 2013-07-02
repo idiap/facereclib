@@ -25,11 +25,11 @@ setup(
     version='1.0.0a1',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
-    #url='http://pypi.python.org/pypi/TowelStuff/',
+    url='https://github.com/bioidiap/facereclib',
     #license='LICENSE.txt',
 
     author='Manuel Guenther',
-    author_email='Manuel.Guenther@idiap.ch',
+    author_email='manuel.guenther@idiap.ch',
 
     packages=find_packages(),
 
@@ -44,7 +44,8 @@ setup(
 #        'faceverify_pose.py = facereclib.script.faceverify_pose:main',
         'parameter_test.py = facereclib.script.parameter_test:main',
         'baselines.py = facereclib.script.baselines:main',
-        'resources.py = facereclib.utils.resources:print_all_resources'
+        'resources.py = facereclib.utils.resources:print_all_resources',
+        'collect_results.py = facereclib.script.collect_results:main'
       ],
 
       # registered database short cuts

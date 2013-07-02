@@ -17,6 +17,8 @@ In the following sections the available command line arguments are listed.
 Sometimes, arguments have a long version starting with ``--`` and a short one starting with a single ``-``.
 In this section, only the long names of the arguments are listed, please refer to ``bin/faceverify.py --help`` (or short: ``bin/faceverify.py -h``) for the abbreviations.
 
+.. _required:
+
 Required command line arguments
 -------------------------------
 To run a face recognition experiment using the |project|, you have to tell the ``bin/faceverify.py`` script, which database, preprocessing, features, and algorithm should be used.
