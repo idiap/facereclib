@@ -1,6 +1,5 @@
-==============================
- The Face Recognition Library
-==============================
+The Face Recognition Library
+============================
 
 Welcome to the Face Recognition Library.
 This library is designed to perform a fair comparison of face recognition algorithms.

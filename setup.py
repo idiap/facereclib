@@ -31,6 +31,8 @@ setup(
     author='Manuel Guenther',
     author_email='manuel.guenther@idiap.ch',
 
+    long_description=open('README.rst').read(),
+
     packages=find_packages(),
 
     entry_points={

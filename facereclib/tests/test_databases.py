@@ -71,9 +71,14 @@ class DatabaseTest(unittest.TestCase):
     self.check_database_zt(self.config('banca'))
     self.check_database_zt(self.config('banca_twothirds'))
     self.check_database_zt(self.config('banca_video'))
-    self.check_database(self.config('banca_audio_G'))
-    self.check_database(self.config('banca_audio_P'))
     self.check_annotations(self.config('banca'))
+    try:
+      import xbob.db.faceverif_fl
+      self.check_database(self.config('banca_audio_G'))
+      self.check_database(self.config('banca_audio_P'))
+    except ImportError as e:
+      raise SkipTest("The resource for database '%s' could not be loaded; probably you didn't define the 'xbob.db.%s' in your *buildout.cfg*. Here is the import error: '%s'" % ('xbob.db.faceverif_fl', 'xbob.db.faceverif_fl', e))
+
 
 
   def test03_xm2vts(self):
