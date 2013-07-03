@@ -41,7 +41,7 @@ def command_line_arguments(command_line_parameters):
   parser.add_argument('-g', '--grid', action = 'store_true', help = 'Execute the algorithm in the SGE grid.')
 
   # - just print?
-  parser.add_argument('-x', '--dry-run', action = 'store_true', help = 'Just print the commands, but do not execute them.')
+  parser.add_argument('-q', '--dry-run', action = 'store_true', help = 'Just print the commands, but do not execute them.')
 
   # - evaluate the algorithm (after it has finished)
   parser.add_argument('-e', '--evaluate', action = 'store_true', help = 'Evaluate the results of the algorithms (instead of running them).')
