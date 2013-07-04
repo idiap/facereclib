@@ -31,7 +31,7 @@ def configuration_file(name, resource, dir = None, module = 'facereclib.configur
   # test if the resource is known
   if name in resource_keys(resource):
     # resource registered, just load it
-    return load_resource(name, resource)
+    return load_resource(name, resource, preferred_distribution=module.split('.')[0])
   else: # resource not registered, but available...
     # import resource (actually this is a hack, but better than dealing with file names...)
     exec "from " + module + "." + dir + " import " + name

@@ -128,7 +128,7 @@ setup(
 
     install_requires=[
       "setuptools", # for whatever
-      "bob >= 1.1.1",      # base signal proc./machine learning library
+      "bob >= 1.2.0a0",    # base signal proc./machine learning library
       "xbob.db.atnt",      # for test purposes, the (freely available) AT&T database is required
     ],
 )
