@@ -91,7 +91,7 @@ class ToolChainExecutor:
     dir_group = parser.add_argument_group('\nDirectories that can be changed according to your requirements')
     dir_group.add_argument('-T', '--temp-directory', metavar = 'DIR',
         help = 'The directory for temporary files; if not specified, /idiap/temp/$USER/database-name/sub-directory (or /scratch/$USER/database-name/sub-directory, when executed locally) is used.')
-    dir_group.add_argument('-U', '--user-directory', metavar = 'DIR',
+    dir_group.add_argument('-U', '--result-directory', '--user-directory', metavar = 'DIR', dest='user_directory',
         help = 'The directory for resulting score files; if not specified, /idiap/user/$USER/database-name/sub-directory is used.')
     dir_group.add_argument('-s', '--score-sub-directory', metavar = 'DIR', default = 'scores',
         help = 'The sub-directory where to write the scores to.')

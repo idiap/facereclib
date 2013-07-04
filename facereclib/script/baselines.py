@@ -250,7 +250,7 @@ def main(command_line_parameters = sys.argv):
 
       # set the directories, if desired; we set both directories to be identical.
       if args.directory:
-        command.extend(['--temp-directory', os.path.join(args.directory, args.database), '--user-directory', os.path.join(args.directory, args.database)])
+        command.extend(['--temp-directory', os.path.join(args.directory, args.database), '--result-directory', os.path.join(args.directory, args.database)])
 
       # set the verbosity level
       if args.verbose:

@@ -436,7 +436,7 @@ By default, the verification result will be written to directory **/idiap/user/<
 These default directories can be overwritten using the following command line arguments, which expects relative or absolute paths:
 
 * ``--temp-directory``
-* ``--user-directory``
+* ``--result-directory`` (for compatibility reasons also ``--user-directory`` can be used)
 
 Re-using parts of experiments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -67,7 +67,7 @@ Here is an almost complete extract:
   By default, only the *eigenface* algorithm is executed.
 * ``--all``: Execute all algorithms that are implemented.
 * ``--directory``: The directory where the files of the experiments are put to.
-  If not specified, by default the files are split up into the temporary files and the result files, see the ``--temp-directory`` and the ``--user-directory`` of ``bin/faceverify.py --help``.
+  If not specified, by default the files are split up into the temporary files and the result files, see the ``--temp-directory`` and the ``--result-directory`` of ``bin/faceverify.py --help``.
   In this script, if the ``--directory`` option is specified, all files will be put into the given directory.
 * ``--evaluate``: After running the experiments, the resulting score files will be evaluated, and the result is written to console.
 * ``--dry-run``: Instead of executing the algorithm (or the evaluation), only print the command that would have been executed.
