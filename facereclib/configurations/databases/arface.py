@@ -8,7 +8,6 @@ database = facereclib.databases.DatabaseXBob(
     name = 'arface',
     image_directory = "/idiap/resource/database/AR_Face/images",
     image_extension = ".ppm",
-    annotation_directory = "/idiap/user/mguenther/annotations/ARface",
-    annotation_type = 'eyecenter',
+    has_internal_annotations = True,
     protocol = 'all'
 )

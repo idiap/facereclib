@@ -9,7 +9,6 @@ database = facereclib.databases.DatabaseXBob(
     name = "xm2vts",
     image_directory = "/idiap/resource/database/xm2vtsdb/images/",
     image_extension = ".ppm",
-    annotation_directory = "/idiap/user/mguenther/annotations/XM2VTS/",
-    annotation_type = 'eyecenter',
+    has_internal_annotations = True,
     protocol = 'lp1'
 )
