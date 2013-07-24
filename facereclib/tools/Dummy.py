@@ -20,6 +20,7 @@
 from .Tool import Tool
 
 import numpy
+import scipy.spatial
 import bob
 from .. import utils
 
@@ -107,5 +108,5 @@ class Dummy (Tool):
 
   def score(self, model, probe):
     """Returns the Euclidean distance between model and probe"""
-    return bob.math.euclidean_distance(model, probe)
+    return scipy.spatial.distance.euclidean(model, probe)
 

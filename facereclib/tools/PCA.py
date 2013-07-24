@@ -4,6 +4,7 @@
 
 import bob
 import numpy
+import scipy.spatial
 
 from .Tool import Tool
 from .. import utils
@@ -14,7 +15,7 @@ class PCA (Tool):
   def __init__(
       self,
       subspace_dimension,  # if int, number of subspace dimensions; if float, percentage of variance to keep
-      distance_function = bob.math.euclidean_distance,
+      distance_function = scipy.spatial.distance.euclidean,
       is_distance_function = True,
       uses_variances = False,
       multiple_model_scoring = 'average',

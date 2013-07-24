@@ -4,6 +4,7 @@
 
 import bob
 import numpy
+import scipy.spatial
 
 from .Tool import Tool
 from .. import utils
@@ -15,7 +16,7 @@ class LDA (Tool):
       self,
       lda_subspace_dimension = 0, # if set, the LDA subspace will be truncated to the given number of dimensions; by default it is limited to the number of classes in the training set
       pca_subspace_dimension = None, # if set, a PCA subspace truncation is performed before applying LDA; might be integral or float
-      distance_function = bob.math.euclidean_distance,
+      distance_function = scipy.spatial.distance.euclidean,
       is_distance_function = True,
       uses_variances = False,
       multiple_model_scoring = 'average',
