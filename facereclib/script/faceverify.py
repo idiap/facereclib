@@ -7,7 +7,7 @@ import sys, os
 import argparse
 
 from . import ToolChainExecutor
-from .. import toolchain
+from .. import toolchain, utils
 
 class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
   """Class that executes the ZT tool chain (locally or in the grid)."""
@@ -502,9 +502,24 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
   # generate tool chain executor
   executor = ToolChainExecutorZT(args)
   # as the main entry point, check whether the grid option was given
-  if not args.grid:
+  if not args.grid and not args.parallel_jobs:
+    if args.timer is not None and not len(args.timer):
+      args.timer = ('real', 'system', 'user')
     # not in a grid, use default tool chain sequentially
+    if args.timer:
+      utils.info("- Timer: Starting timer")
+      start_time = os.times()
+
     executor.execute_tool_chain()
+
+    if args.timer:
+      end_time = os.times()
+      utils.info("- Timer: Stopped timer")
+
+      for t in args.timer:
+        index = {'real':4, 'system':1, 'user':0}[t]
+        print "Elapsed", t ,"time:", end_time[index] - start_time[index], "seconds"
+
     return {}
 
   elif args.sub_task:
@@ -527,11 +542,21 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     if this_file[-1] == 'c':
       this_file = this_file[0:-1]
 
+    run_locally = args.parallel_jobs is not None
     # initialize the executor to submit the jobs to the grid
-    executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = external_fake_job_id)
+    executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = external_fake_job_id, run_locally = run_locally)
 
     # add the jobs
-    return executor.add_jobs_to_grid(external_dependencies)
+    job_ids = executor.add_jobs_to_grid(external_dependencies)
+
+    if run_locally:
+      executor.m_job_manager.save()
+      utils.info("Starting parallel jobs on local machine...")
+      executor.m_job_manager.run(parallel_jobs = args.parallel_jobs)
+      return {}
+    else:
+      return job_ids
+
 
 
 def main(command_line_parameters = sys.argv):

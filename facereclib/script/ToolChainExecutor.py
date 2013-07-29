@@ -24,7 +24,7 @@ class Configuration:
     if args.temp_directory:
       self.temp_directory = os.path.join(args.temp_directory, args.sub_directory)
     else:
-      if not args.grid:
+      if not args.grid or args.parallel_jobs:
         self.temp_directory = os.path.join("/scratch", user_name, database_name, args.sub_directory)
       else:
         self.temp_directory = os.path.join("/idiap/temp", user_name, database_name, args.sub_directory)
@@ -81,6 +81,8 @@ class ToolChainExecutor:
         help = 'Face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
     config_group.add_argument('-g', '--grid', metavar = 'x',
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine.')
+    config_group.add_argument('-l', '--parallel-jobs', metavar='count', type = int,
+        help = 'The number of jobs run on the local machine in parallel')
     config_group.add_argument('--imports', metavar = 'LIB', nargs = '+', default = ['facereclib'],
         help = 'If one of your configuration files is an actual command, please specify the lists of required imports to execute this command')
     config_group.add_argument('-b', '--sub-directory', metavar = 'DIR', required = True,
@@ -119,6 +121,8 @@ class ToolChainExecutor:
         help = 'Only report the commands that will be executed, but do not execute them.')
     other_group.add_argument('-R', '--delete-dependent-jobs-on-failure', action='store_true',
         help = 'Try to recursively delete the dependent jobs from the SGE grid queue, when a job failed')
+    other_group.add_argument('-D', '--timer', choices=('real', 'system', 'user'), nargs = '*',
+        help = 'Measure and report the time required by the execution of the tool chain (only on local machine)')
 
     utils.add_logger_command_line_option(other_group)
 
@@ -154,7 +158,7 @@ class ToolChainExecutor:
 
 
 
-  def set_common_parameters(self, calling_file, parameters, fake_job_id = 0, temp_dir = None):
+  def set_common_parameters(self, calling_file, parameters, fake_job_id = 0, temp_dir = None, run_locally = False):
     """Sets the parameters that the grid jobs require to be called.
     Just hand over all parameters of the faceverify script, and this function will do the rest.
     Please call this function before submitting jobs to the grid using the submit_jobs_to_grid function"""
@@ -179,7 +183,10 @@ class ToolChainExecutor:
       self.m_bin_directory = './bin'
     self.m_executable = os.path.join(self.m_bin_directory, os.path.basename(calling_file))
     # generate job manager and set the temp dir
-    self.m_job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
+    if run_locally:
+      self.m_job_manager = gridtk.local.JobManager()
+    else:
+      self.m_job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
     self.m_logs_directory = os.path.join(temp_dir if temp_dir else self.m_configuration.temp_directory, "grid_tk_logs")
 
 
@@ -212,10 +219,10 @@ class ToolChainExecutor:
     # create the command to be executed
     cmd = [
             self.m_executable,
-            '--sub-task',
-            command
+            '--sub-task'
           ]
-    cmd.extend(self.m_common_parameters)
+    cmd += command.split()
+    cmd += self.m_common_parameters
 
     # if no job name is specified, create one
     if name == None:
