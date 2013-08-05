@@ -131,9 +131,9 @@ class ScriptTest (unittest.TestCase):
 
   def test01x_faceverify_fl(self):
     try:
-      import xbob.db.faceverif_fl
+      import xbob.db.verification.filelist
     except ImportError:
-      raise SkipTest("Skipping test since xbob.db.faceverif_fl is not available")
+      raise SkipTest("Skipping test since xbob.db.verification.filelist is not available")
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [

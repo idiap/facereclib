@@ -73,11 +73,11 @@ class DatabaseTest(unittest.TestCase):
     self.check_database_zt(self.config('banca_video'))
     self.check_annotations(self.config('banca'))
     try:
-      import xbob.db.faceverif_fl
+      import xbob.db.verification.filelist
       self.check_database(self.config('banca_audio_G'))
       self.check_database(self.config('banca_audio_P'))
     except ImportError as e:
-      raise SkipTest("The resource for database '%s' could not be loaded; probably you didn't define the 'xbob.db.%s' in your *buildout.cfg*. Here is the import error: '%s'" % ('xbob.db.faceverif_fl', 'xbob.db.faceverif_fl', e))
+      raise SkipTest("The resource for database '%s' could not be loaded; probably you didn't define the 'xbob.db.%s' in your *buildout.cfg*. Here is the import error: '%s'" % ('xbob.db.verification.filelist', 'xbob.db.verification.filelist', e))
 
 
 
@@ -136,7 +136,7 @@ class DatabaseTest(unittest.TestCase):
     self.check_annotations(self.config('caspeal'))
 
 
-  def test20_faceverif_fl(self):
+  def test20_verification_filelist(self):
     try:
       db1 = facereclib.utils.resources.load_resource(pkg_resources.resource_filename('facereclib.tests', os.path.join('scripts', 'atnt_Test.py')), 'database')
     except Exception as e:
@@ -144,8 +144,8 @@ class DatabaseTest(unittest.TestCase):
     try:
       db2 = facereclib.utils.resources.load_resource(pkg_resources.resource_filename('facereclib.tests', os.path.join('databases', 'atnt_fl', 'atnt_fl_database.py')), 'database')
     except Exception as e:
-      raise SkipTest("This test is skipped since the faceverif_fl database is not available.")
-    # The test of the faceverif_fl database is a bit different.
+      raise SkipTest("This test is skipped since the verification.filelist database is not available.")
+    # The test of the verification.filelist database is a bit different.
     # here, we test the output of two different ways of querying the AT&T database
     # where actually both ways are uncommon...
 

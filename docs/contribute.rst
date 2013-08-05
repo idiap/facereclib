@@ -31,10 +31,10 @@ Here, we describe the second way, which is to add functionality to |project| dir
 
 Image databases
 ~~~~~~~~~~~~~~~
-If you have your own database of images that you want to execute the recognition experiments on, you should first check if you could use the ``xbob.db.faceverif_fl`` database interface by defining appropriate file lists for the training set, the model set, and the probes.
+If you have your own database of images that you want to execute the recognition experiments on, you should first check if you could use the ``xbob.db.verification.filelist`` database interface by defining appropriate file lists for the training set, the model set, and the probes.
 If you can do this, just write your own configuration file that uses the ``facereclib.databases.DatabaseXBob`` and ``facereclib.databases.DatabaseXBobZT`` interface (see :ref:`databases` for details).
-In most of the cases, the ``xbob.db.faceverif_fl`` should be sufficient to run experiments.
-Please refer to the documentation: https://github.com/bioidiap/xbob.db.faceverif_fl/blob/master/docs/index.rst (which is currently wrong) of this database for more instructions on how to configure this database.
+In most of the cases, the ``xbob.db.verification.filelist`` should be sufficient to run experiments.
+Please refer to the documentation: https://github.com/bioidiap/xbob.db.verification.filelist/blob/master/docs/index.rst (which is currently wrong) of this database for more instructions on how to configure this database.
 
 In case you want to have a more complicated interface to your database, you are welcome to write your own database wrapper class.
 In this case, you have to derive your class from the `facereclib.databases.Database <file:../facereclib/databases/Database.py>`_, and provide the following functions:

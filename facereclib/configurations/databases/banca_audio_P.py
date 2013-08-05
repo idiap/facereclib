@@ -2,10 +2,10 @@
 
 import xbob.db.banca
 import facereclib
-import xbob.db.faceverif_fl
+import xbob.db.verification.filelist
 
 database = facereclib.databases.DatabaseXBobZT(
-    database = xbob.db.faceverif_fl.Database('/idiap/user/ekhoury/databases_protocols/banca/P1'),
+    database = xbob.db.verification.filelist.Database('/idiap/user/ekhoury/databases_protocols/banca/P1'),
     name = "audio_banca_p",
     image_directory = "/idiap/temp/ekhoury/databases/banca/wav_from_johnny/",
     image_extension = ".wav",

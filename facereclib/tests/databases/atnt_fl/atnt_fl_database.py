@@ -1,4 +1,4 @@
-import xbob.db.faceverif_fl
+import xbob.db.verification.filelist
 import facereclib
 import os
 
@@ -9,7 +9,7 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
     # call base class constructor with useful parameters
     facereclib.databases.DatabaseXBobZT.__init__(
         self,
-        database = xbob.db.faceverif_fl.Database(
+        database = xbob.db.verification.filelist.Database(
             base_dir = os.path.realpath(os.path.dirname(__file__)),
             dev_subdir = '.',
             eval_subdir = '.',
