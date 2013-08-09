@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='facereclib',
-    version='1.0.0a1',
+    version='1.0.1a0',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
     url='https://github.com/bioidiap/facereclib',
@@ -104,14 +104,14 @@ setup(
 
       # registered SGE grid configuration files
       'facereclib.grid': [
-        'grid              = facereclib.configurations.grid.grid',
-        'demanding         = facereclib.configurations.grid.demanding',
-        'very-demanding    = facereclib.configurations.grid.very_demanding',
-        'gbu               = facereclib.configurations.grid.gbu',
-        'lfw               = facereclib.configurations.grid.lfw',
-        'small             = facereclib.configurations.grid.small',
-        'isv               = facereclib.configurations.grid.isv_training',
-        'ivector           = facereclib.configurations.grid.ivector_training',
+        'grid              = facereclib.configurations.grid.grid:queue',
+        'demanding         = facereclib.configurations.grid.demanding:queue',
+        'very-demanding    = facereclib.configurations.grid.very_demanding:queue',
+        'gbu               = facereclib.configurations.grid.gbu:queue',
+        'lfw               = facereclib.configurations.grid.lfw:queue',
+        'small             = facereclib.configurations.grid.small:queue',
+        'isv               = facereclib.configurations.grid.isv_training:queue',
+        'ivector           = facereclib.configurations.grid.ivector_training:queue',
       ],
 
       # registered tests (will, e.g., be run in the xbob.db.aggregator)

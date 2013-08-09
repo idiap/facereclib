@@ -107,7 +107,6 @@ class ScriptTest (unittest.TestCase):
     self.__face_verify__(parameters, test_dir, 'test_a')
 
 
-
   def test01b_faceverify_commandline(self):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
@@ -125,6 +124,28 @@ class ScriptTest (unittest.TestCase):
     print ' '.join(parameters)
 
     self.__face_verify__(parameters, test_dir, 'test_b')
+
+
+  def test01c_faceverify_parallel(self):
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
+    test_database = os.path.join(test_dir, "database.sql3")
+
+    # define dummy parameters
+    parameters = [
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
+        '-p', 'face-crop',
+        '-f', 'facereclib.features.Eigenface(subspace_dimension', '=', '100)',
+        '-t', 'facereclib.tools.Dummy()',
+        '--zt-norm',
+        '-b', 'test_c',
+        '--temp-directory', test_dir,
+        '--user-directory', test_dir,
+        '-g', 'grid', '--local', '1', '-G', test_database
+    ]
+
+    print ' '.join(parameters)
+
+    self.__face_verify__(parameters, test_dir, 'test_c')
 
 
 

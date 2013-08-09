@@ -167,9 +167,9 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               'preprocess' + default_opt,
               name = 'pre-%s' % self.m_database.protocol,
               list_to_split = self.m_file_selector.original_image_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_images_per_job,
+              number_of_files_per_job = self.m_grid.number_of_preprocessings_per_job,
               dependencies = preprocessing_deps,
-              **self.m_grid_config.preprocessing_queue)
+              **self.m_grid.preprocessing_queue)
       deps.append(job_ids['preprocessing'])
       if self.m_perform_training:
         training_deps.append(job_ids['preprocessing'])
@@ -180,7 +180,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               'train-extractor' + default_opt,
               name = 'f-train',
               dependencies = training_deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid.training_queue)
     if 'extraction_training' in job_ids:
       deps.append(job_ids['extraction_training'])
 
@@ -189,9 +189,9 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               'extract' + default_opt,
               name = 'extr-%s' % self.m_database.protocol,
               list_to_split = self.m_file_selector.preprocessed_image_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
+              number_of_files_per_job = self.m_grid.number_of_extracted_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.extraction_queue)
+              **self.m_grid.extraction_queue)
       deps.append(job_ids['feature_extraction'])
       if self.m_perform_training:
         training_deps.append(job_ids['feature_extraction'])
@@ -202,7 +202,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               'train-projector' + default_opt,
               name = "p-train",
               dependencies = training_deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid.training_queue)
     if 'projector_training' in job_ids:
       deps.append(job_ids['projector_training'])
 
@@ -211,9 +211,9 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               'project' + default_opt,
               name="pro-%s" % self.m_database.protocol,
               list_to_split = self.m_file_selector.feature_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.projection_queue)
+              **self.m_grid.projection_queue)
       deps.append(job_ids['feature_projection'])
       if self.m_perform_training:
         training_deps.append(job_ids['feature_projection'])
@@ -224,7 +224,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               'train-enroller' + default_opt,
               name="e-train",
               dependencies = training_deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid.training_queue)
     if 'enrollment_training' in job_ids:
       deps.append(job_ids['enrollment_training'])
 
@@ -234,9 +234,9 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               'enroll' + default_opt,
               name = "enr-%s" % self.m_database.protocol,
               list_to_split = self.m_file_selector.model_ids('dev'),
-              number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
+              number_of_files_per_job = self.m_grid.number_of_enrolled_models_per_job,
               dependencies = deps,
-              **self.m_grid_config.enroll_queue)
+              **self.m_grid.enrollment_queue)
       deps.append(job_ids['enroll'])
 
     # compute scores
@@ -245,9 +245,9 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
               'compute-scores' + default_opt,
               name = "score-%s" % self.m_database.protocol,
               list_to_split = self.m_file_selector.model_ids('dev'),
-              number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+              number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
               dependencies = deps,
-              **self.m_grid_config.score_queue)
+              **self.m_grid.scoring_queue)
       deps.append(job_ids['score'])
 
     # concatenate results
@@ -267,7 +267,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_images(
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid_config.number_of_images_per_job),
+          indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid.number_of_preprocessings_per_job),
           force = self.m_args.force)
 
     # train the feature extractor
@@ -282,7 +282,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.extract_features(
           self.m_extractor,
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_features_per_job),
+          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid.number_of_extracted_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
@@ -297,7 +297,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.project_features(
           self.m_tool,
           self.m_extractor,
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the model enroller
@@ -312,7 +312,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.enroll_models(
           self.m_tool,
           self.m_extractor,
-          indices = self.indices(self.m_file_selector.model_ids('dev'), self.m_grid_config.number_of_models_per_enroll_job),
+          indices = self.indices(self.m_file_selector.model_ids('dev'), self.m_grid.number_of_enrolled_models_per_job),
           compute_zt_norm = False,
           groups = ['dev'],
           force = self.m_args.force)
@@ -321,7 +321,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     elif self.m_args.sub_task == 'compute-scores':
       self.m_tool_chain.compute_scores(
           self.m_tool,
-          indices = self.indices(self.m_file_selector.model_ids('dev'), self.m_grid_config.number_of_models_per_score_job),
+          indices = self.indices(self.m_file_selector.model_ids('dev'), self.m_grid.number_of_models_per_scoring_job),
           compute_zt_norm = False,
           groups = ['dev'],
           preload_probes = self.m_args.preload_probes,

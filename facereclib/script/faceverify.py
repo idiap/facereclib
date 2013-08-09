@@ -182,9 +182,9 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess',
               list_to_split = self.m_file_selector.original_image_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_images_per_job,
+              number_of_files_per_job = self.m_grid.number_of_preprocessings_per_job,
               dependencies = [],
-              **self.m_grid_config.preprocessing_queue)
+              **self.m_grid.preprocessing_queue)
       deps.append(job_ids['preprocessing'])
 
     # feature extraction training
@@ -193,7 +193,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               'train-extractor',
               name = 'train-f',
               dependencies = deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid.training_queue)
       deps.append(job_ids['extractor-training'])
 
     # feature extraction
@@ -201,9 +201,9 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       job_ids['extraction'] = self.submit_grid_job(
               'extract',
               list_to_split = self.m_file_selector.preprocessed_image_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
+              number_of_files_per_job = self.m_grid.number_of_extracted_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.extraction_queue)
+              **self.m_grid.extraction_queue)
       deps.append(job_ids['extraction'])
 
     # feature projection training
@@ -212,7 +212,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               'train-projector',
               name="train-p",
               dependencies = deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid.training_queue)
       deps.append(job_ids['projector_training'])
 
     # feature projection
@@ -220,9 +220,9 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       job_ids['projection'] = self.submit_grid_job(
               'project',
               list_to_split = self.m_file_selector.feature_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.projection_queue)
+              **self.m_grid.projection_queue)
       deps.append(job_ids['projection'])
 
     # model enrollment training
@@ -231,7 +231,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
               'train-enroller',
               name = "train-e",
               dependencies = deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid.training_queue)
       deps.append(job_ids['enroller_training'])
 
     # enroll models
@@ -247,9 +247,9 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                 'enroll --group %s --model-type N'%group,
                 name = "enr-N-%s"%group,
                 list_to_split = self.m_file_selector.model_ids(group),
-                number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
+                number_of_files_per_job = self.m_grid.number_of_enrolled_models_per_job,
                 dependencies = deps,
-                **self.m_grid_config.enroll_queue)
+                **self.m_grid.enrollment_queue)
         enroll_deps_n[group].append(job_ids['enroll_%s_N'%group])
 
         if self.m_args.zt_norm:
@@ -257,9 +257,9 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                   'enroll --group %s --model-type T'%group,
                   name = "enr-T-%s"%group,
                   list_to_split = self.m_file_selector.t_model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
+                  number_of_files_per_job = self.m_grid.number_of_enrolled_models_per_job,
                   dependencies = deps,
-                  **self.m_grid_config.enroll_queue)
+                  **self.m_grid.enrollment_queue)
           enroll_deps_t[group].append(job_ids['enroll_%s_T'%group])
 
       # compute A,B,C, and D scores
@@ -268,9 +268,9 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                 'compute-scores --group %s --score-type A'%group,
                 name = "score-A-%s"%group,
                 list_to_split = self.m_file_selector.model_ids(group),
-                number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
                 dependencies = enroll_deps_n[group],
-                **self.m_grid_config.score_queue)
+                **self.m_grid.scoring_queue)
         concat_deps[group] = [job_ids['score_%s_A'%group]]
 
         if self.m_args.zt_norm:
@@ -278,25 +278,25 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
                   'compute-scores --group %s --score-type B'%group,
                   name = "score-B-%s"%group,
                   list_to_split = self.m_file_selector.model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
                   dependencies = enroll_deps_n[group],
-                  **self.m_grid_config.score_queue)
+                  **self.m_grid.scoring_queue)
 
           job_ids['score_%s_C'%group] = self.submit_grid_job(
                   'compute-scores --group %s --score-type C'%group,
                   name = "score-C-%s"%group,
                   list_to_split = self.m_file_selector.t_model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
                   dependencies = enroll_deps_t[group],
-                  **self.m_grid_config.score_queue)
+                  **self.m_grid.scoring_queue)
 
           job_ids['score_%s_D'%group] = self.submit_grid_job(
                   'compute-scores --group %s --score-type D'%group,
                   name = "score-D-%s"%group,
                   list_to_split = self.m_file_selector.t_model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
                   dependencies = enroll_deps_t[group],
-                  **self.m_grid_config.score_queue)
+                  **self.m_grid.scoring_queue)
 
           # compute zt-norm
           score_deps[group] = [job_ids['score_%s_A'%group], job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group]]
@@ -333,7 +333,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_images(
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid_config.number_of_images_per_job),
+          indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid.number_of_preprocessings_per_job),
           force = self.m_args.force)
 
     # train the feature extractor
@@ -348,7 +348,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.extract_features(
           self.m_extractor,
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_features_per_job),
+          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid.number_of_extracted_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
@@ -363,7 +363,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.project_features(
           self.m_tool,
           self.m_extractor,
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the model enroller
@@ -380,7 +380,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
             self.m_tool,
             self.m_extractor,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid.number_of_enrolled_models_per_job),
             groups = [self.m_args.group],
             types = ['N'],
             force = self.m_args.force)
@@ -390,7 +390,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
             self.m_tool,
             self.m_extractor,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid.number_of_enrolled_models_per_job),
             groups = [self.m_args.group],
             types = ['T'],
             force = self.m_args.force)
@@ -401,7 +401,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.compute_scores(
             self.m_tool,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid.number_of_models_per_scoring_job),
             groups = [self.m_args.group],
             types = [self.m_args.score_type],
             preload_probes = self.m_args.preload_probes,
@@ -411,7 +411,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.compute_scores(
             self.m_tool,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid.number_of_models_per_scoring_job),
             groups = [self.m_args.group],
             types = [self.m_args.score_type],
             preload_probes = self.m_args.preload_probes,
@@ -502,7 +502,7 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
   # generate tool chain executor
   executor = ToolChainExecutorZT(args)
   # as the main entry point, check whether the grid option was given
-  if not args.grid and not args.parallel_jobs:
+  if not args.grid:
     if args.timer is not None and not len(args.timer):
       args.timer = ('real', 'system', 'user')
     # not in a grid, use default tool chain sequentially
@@ -542,18 +542,18 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     if this_file[-1] == 'c':
       this_file = this_file[0:-1]
 
-    run_locally = args.parallel_jobs is not None
     # initialize the executor to submit the jobs to the grid
-    executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = external_fake_job_id, run_locally = run_locally)
+    executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = external_fake_job_id)
 
     # add the jobs
     job_ids = executor.add_jobs_to_grid(external_dependencies)
 
-    if run_locally:
-      executor.m_job_manager.save()
-      utils.info("Starting parallel jobs on local machine...")
-      executor.m_job_manager.run(parallel_jobs = args.parallel_jobs)
+    if args.local: # is not None and args.local > 0:
+      # start the jman local deamon using the specified number of parallel jobs
+      utils.info("Starting jman deamon to finally run the jobs on the local machine.")
+      executor.execute_local_deamon(args.local)
       return {}
+
     else:
       return job_ids
 

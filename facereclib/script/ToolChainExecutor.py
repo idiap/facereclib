@@ -24,7 +24,7 @@ class Configuration:
     if args.temp_directory:
       self.temp_directory = os.path.join(args.temp_directory, args.sub_directory)
     else:
-      if not args.grid or args.parallel_jobs:
+      if not args.grid or args.local is not None:
         self.temp_directory = os.path.join("/scratch", user_name, database_name, args.sub_directory)
       else:
         self.temp_directory = os.path.join("/idiap/temp", user_name, database_name, args.sub_directory)
@@ -56,7 +56,9 @@ class ToolChainExecutor:
 
     # load configuration files specified on command line
     if args.grid:
-      self.m_grid_config = utils.resources.read_file_resource(args.grid, 'grid')
+      self.m_grid = utils.resources.load_resource(' '.join(args.grid), 'grid', imports = args.imports)
+      if args.local is not None:
+        self.m_grid.grid_type = 'local'
 
     # generate configuration
     self.m_configuration = Configuration(args, self.m_database.name)
@@ -79,10 +81,12 @@ class ToolChainExecutor:
         help = 'Feature extraction; registered feature extractors are: %s'%utils.resources.resource_keys('feature_extractor'))
     config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', required = True,
         help = 'Face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
-    config_group.add_argument('-g', '--grid', metavar = 'x',
+    config_group.add_argument('-g', '--grid', metavar = 'x', nargs = '+',
         help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine.')
-    config_group.add_argument('-l', '--parallel-jobs', metavar='count', type = int,
-        help = 'The number of jobs run on the local machine in parallel')
+    config_group.add_argument('-l', '--local', nargs='?', type=int, const=0,
+        help = 'Instead of using the grid, use the local machine to run the jobs in parallel (using the gridtk local scheduler); only valid with the --grid option. '
+          'If the number of parallel jobs is specified, the local scheduler is started at the end of the submission. ' +
+          'Otherwise, please start the gridtk local deamon using the database specified with the --submit-db-file option.')
     config_group.add_argument('--imports', metavar = 'LIB', nargs = '+', default = ['facereclib'],
         help = 'If one of your configuration files is an actual command, please specify the lists of required imports to execute this command')
     config_group.add_argument('-b', '--sub-directory', metavar = 'DIR', required = True,
@@ -105,8 +109,8 @@ class ToolChainExecutor:
         help = 'Name of the file to write the feature projector into.')
     file_group.add_argument('--enroller-file' , metavar = 'FILE', default = 'Enroller.hdf5',
         help = 'Name of the file to write the model enroller into.')
-    file_group.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.db', dest = 'gridtk_database_file',
-        help = 'The db file in which the submitted jobs will be written (only valid with the --grid option).')
+    file_group.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.sql3', dest = 'gridtk_database_file',
+        help = 'The database file in which the submitted jobs will be written (only valid with the --grid option).')
 
     sub_dir_group = parser.add_argument_group('\nSubdirectories of certain parts of the tool chain. You can specify directories in case you want to reuse parts of the experiments (e.g. extracted features) in other experiments. Please note that these directories are relative to the --temp-directory, but you can also specify absolute paths')
     sub_dir_group.add_argument('--preprocessed-image-directory', metavar = 'DIR', default = 'preprocessed',
@@ -158,7 +162,7 @@ class ToolChainExecutor:
 
 
 
-  def set_common_parameters(self, calling_file, parameters, fake_job_id = 0, temp_dir = None, run_locally = False):
+  def set_common_parameters(self, calling_file, parameters, fake_job_id = 0, temp_dir = None):
     """Sets the parameters that the grid jobs require to be called.
     Just hand over all parameters of the faceverify script, and this function will do the rest.
     Please call this function before submitting jobs to the grid using the submit_jobs_to_grid function"""
@@ -182,15 +186,18 @@ class ToolChainExecutor:
       # Since nose tests should not actually run anything in the grid, we can use a fake directory here.
       self.m_bin_directory = './bin'
     self.m_executable = os.path.join(self.m_bin_directory, os.path.basename(calling_file))
+    self.m_jman = os.path.join(self.m_bin_directory, 'jman')
     # generate job manager and set the temp dir
-    if run_locally:
-      self.m_job_manager = gridtk.local.JobManager()
+    if self.m_grid.grid_type == 'local':
+      self.m_job_manager = gridtk.local.JobManagerLocal(database = self.m_args.gridtk_database_file, wrapper_script = self.m_jman)
+    elif self.m_grid.grid_type == 'sge':
+      self.m_job_manager = gridtk.sge.JobManagerSGE(database = self.m_args.gridtk_database_file, wrapper_script = self.m_jman)
     else:
-      self.m_job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
+      raise ValueError("The JobManager type '%s' is not supported.")
     self.m_logs_directory = os.path.join(temp_dir if temp_dir else self.m_configuration.temp_directory, "grid_tk_logs")
 
 
-  def __generate_job_array__(self, list_to_split, number_of_files_per_job):
+  def _generate_job_array(self, list_to_split, number_of_files_per_job):
     """Generates an array for the list to be split and the number of files that one job should generate."""
     n_jobs = int(math.ceil(len(list_to_split) / float(number_of_files_per_job)))
     return (1,n_jobs,1)
@@ -225,7 +232,7 @@ class ToolChainExecutor:
     cmd += self.m_common_parameters
 
     # if no job name is specified, create one
-    if name == None:
+    if name is None:
       name = command.split(' ')[0]
       log_sub_dir = command.replace(' ','__')
     else:
@@ -234,26 +241,29 @@ class ToolChainExecutor:
     logdir = os.path.join(self.m_logs_directory, log_sub_dir)
 
     # generate job array
-    if list_to_split != None:
-      array = self.__generate_job_array__(list_to_split, number_of_files_per_job)
+    if list_to_split is not None:
+      array = self._generate_job_array(list_to_split, number_of_files_per_job)
     else:
-      array = (1,1,1)
-
-    # create the grid wrapper for the command
-    use_cmd = ['-S', os.path.join(self.m_bin_directory, 'python')] + cmd
+      array = None
 
     # submit the job to the job manager
     if not self.m_args.dry_run:
-      job = self.m_job_manager.submit(use_cmd, deps=dependencies, cwd=True,
-          stdout=logdir, stderr=logdir, name=name, array=array,
-          **kwargs)
-
-      utils.info('submitted: %s\nwith dependencies %s' % (job, dependencies))
-      return job.id()
+      job_id = self.m_job_manager.submit(
+          command_line = cmd,
+          name = name,
+          array = array,
+          dependencies = dependencies,
+          log_dir = logdir,
+          **kwargs
+      )
+      utils.info("submitted: job '%s' with id '%d' and dependencies '%s'" % (name, job_id, dependencies))
+      return job_id
     else:
       self.m_fake_job_id += 1
-      print 'would have submitted job', name, 'with id', self.m_fake_job_id, 'with parameters', kwargs, 'using', array[1], 'parallel jobs as:'
-      print ' '.join(use_cmd[2:]), '\nwith dependencies', dependencies
+      print 'would have submitted job', name, 'with id', self.m_fake_job_id, 'with parameters', kwargs,
+      if array:
+        print 'using', array[1], 'parallel jobs',
+      print 'as:', ' '.join(cmd), '\nwith dependencies', dependencies
       return self.m_fake_job_id
 
 
@@ -263,35 +273,6 @@ class ToolChainExecutor:
       return int(id)
     return id
 
-
-  def kill_recursive(self, job_manager, job_id):
-    # get all listed jobs
-    for other_id in job_manager.keys():
-      # check if we still have to process the id (i.e., if it was not yet deleted by a recursive call)
-      if other_id != job_id and job_manager.has_key(other_id):
-        other_job = job_manager[other_id]
-        if other_job.is_dependent_on(job_id):
-          print >> sys.stderr, "Note: deleting dependent job id %d ('%s')" %(other_id, other_job.given_name())
-          self.kill_recursive(job_manager, other_id)
-          del job_manager[other_id]
-
-  def delete_dependent_grid_jobs(self):
-    if not self.m_args.delete_dependent_jobs_on_failure:
-      return
-
-    job_id = self.grid_job_id()
-
-    # if the job id is not specified, we are not in the grid,
-    #   so we don't need to kill the dependencies
-    if job_id is None:
-      return
-
-    # try to kill the jobs (might fail, e.g. if a MemoryError triggered the job deletion)
-    try:
-      import gridtk
-      job_manager = gridtk.manager.JobManager(statefile = self.m_args.gridtk_database_file)
-
-      self.kill_recursive(job_manager, job_id)
-    except Exception as e:
-      utils.warn("Deleting dependent jobs raised exception '%s'" % e)
-
+  def execute_local_deamon(self, number_of_parallel_jobs = 1):
+    """Starts the local deamon and waits until it has finished."""
+    self.m_job_manager.run_scheduler(parallel_jobs=number_of_parallel_jobs, die_when_finished=True)
