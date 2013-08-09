@@ -140,7 +140,7 @@ class ScriptTest (unittest.TestCase):
         '-b', 'test_c',
         '--temp-directory', test_dir,
         '--user-directory', test_dir,
-        '-g', 'grid', '--local', '1', '-G', test_database
+        '-g', 'local-p4', '-G', test_database
     ]
 
     print ' '.join(parameters)

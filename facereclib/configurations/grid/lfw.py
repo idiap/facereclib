@@ -1,7 +1,7 @@
 import facereclib
 
 # define a queue specifically for the xbob.db.lfw database
-queue = facereclib.utils.GridParameters(
+grid = facereclib.utils.GridParameters(
   training_queue = '16G',
   # preprocessing
   number_of_preprocessings_per_job = 1000,

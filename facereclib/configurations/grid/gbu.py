@@ -1,7 +1,7 @@
 import facereclib
 
 # define a queue specifically for the xbob.db.gbu database
-queue = facereclib.utils.GridParameters(
+grid = facereclib.utils.GridParameters(
   training_queue = '32G',
   # preprocessing
   number_of_preprocessings_per_job = 1000,

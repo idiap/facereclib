@@ -548,10 +548,9 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     # add the jobs
     job_ids = executor.add_jobs_to_grid(external_dependencies)
 
-    if args.local: # is not None and args.local > 0:
-      # start the jman local deamon using the specified number of parallel jobs
-      utils.info("Starting jman deamon to finally run the jobs on the local machine.")
-      executor.execute_local_deamon(args.local)
+    if executor.m_grid.is_local():
+      # start the jman local deamon
+      executor.execute_local_deamon()
       return {}
 
     else:

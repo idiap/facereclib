@@ -1,7 +1,7 @@
 import facereclib
 
 # define a queue with parameters to train ISV
-queue = facereclib.utils.GridParameters(
+grid = facereclib.utils.GridParameters(
   training_queue = '4G-io-big',
   # preprocessing
   number_of_preprocessings_per_job = 1000,
@@ -19,5 +19,5 @@ queue = facereclib.utils.GridParameters(
   scoring_queue = '4G-io-big'
 )
 # add special queue parameters for the ISV training
-queue.isv_training_queue = queue.queue('Week')
+grid.isv_training_queue = queue.queue('Week')
 

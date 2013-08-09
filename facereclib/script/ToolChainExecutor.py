@@ -12,7 +12,7 @@ class Configuration:
   """This class stores the basic configuration of the experiments.
   This configuration includes directories and files that are used."""
 
-  def __init__(self, args, database_name):
+  def __init__(self, args, database_name, use_local_files):
     """Creates the default configuration based on the command line options."""
     # add command line based arguments
     user_name = os.environ['USER']
@@ -24,7 +24,7 @@ class Configuration:
     if args.temp_directory:
       self.temp_directory = os.path.join(args.temp_directory, args.sub_directory)
     else:
-      if not args.grid or args.local is not None:
+      if use_local_files:
         self.temp_directory = os.path.join("/scratch", user_name, database_name, args.sub_directory)
       else:
         self.temp_directory = os.path.join("/idiap/temp", user_name, database_name, args.sub_directory)
@@ -55,13 +55,13 @@ class ToolChainExecutor:
     self.m_tool = utils.resources.load_resource(' '.join(args.tool), 'tool', imports = args.imports)
 
     # load configuration files specified on command line
+    use_local_files = True
     if args.grid:
       self.m_grid = utils.resources.load_resource(' '.join(args.grid), 'grid', imports = args.imports)
-      if args.local is not None:
-        self.m_grid.grid_type = 'local'
+      use_local_files = self.m_grid.is_local()
 
     # generate configuration
-    self.m_configuration = Configuration(args, self.m_database.name)
+    self.m_configuration = Configuration(args, self.m_database.name, use_local_files)
 
     utils.set_verbosity_level(args.verbose)
 
@@ -82,11 +82,7 @@ class ToolChainExecutor:
     config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', required = True,
         help = 'Face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
     config_group.add_argument('-g', '--grid', metavar = 'x', nargs = '+',
-        help = 'Configuration file for the grid setup; if not specified, the commands are executed on the local machine.')
-    config_group.add_argument('-l', '--local', nargs='?', type=int, const=0,
-        help = 'Instead of using the grid, use the local machine to run the jobs in parallel (using the gridtk local scheduler); only valid with the --grid option. '
-          'If the number of parallel jobs is specified, the local scheduler is started at the end of the submission. ' +
-          'Otherwise, please start the gridtk local deamon using the database specified with the --submit-db-file option.')
+        help = 'Configuration file for the grid setup; if not specified, the commands are executed sequentially on the local machine.')
     config_group.add_argument('--imports', metavar = 'LIB', nargs = '+', default = ['facereclib'],
         help = 'If one of your configuration files is an actual command, please specify the lists of required imports to execute this command')
     config_group.add_argument('-b', '--sub-directory', metavar = 'DIR', required = True,
@@ -273,6 +269,7 @@ class ToolChainExecutor:
       return int(id)
     return id
 
-  def execute_local_deamon(self, number_of_parallel_jobs = 1):
+  def execute_local_deamon(self):
     """Starts the local deamon and waits until it has finished."""
-    self.m_job_manager.run_scheduler(parallel_jobs=number_of_parallel_jobs, die_when_finished=True)
+    utils.info("Starting jman deamon to finally run the jobs on the local machine.")
+    self.m_job_manager.run_scheduler(parallel_jobs=self.m_grid.number_of_parallel_processes, sleep_time=self.m_grid.scheduler_sleep_time, die_when_finished=True)

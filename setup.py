@@ -104,14 +104,15 @@ setup(
 
       # registered SGE grid configuration files
       'facereclib.grid': [
-        'grid              = facereclib.configurations.grid.grid:queue',
-        'demanding         = facereclib.configurations.grid.demanding:queue',
-        'very-demanding    = facereclib.configurations.grid.very_demanding:queue',
-        'gbu               = facereclib.configurations.grid.gbu:queue',
-        'lfw               = facereclib.configurations.grid.lfw:queue',
-        'small             = facereclib.configurations.grid.small:queue',
-        'isv               = facereclib.configurations.grid.isv_training:queue',
-        'ivector           = facereclib.configurations.grid.ivector_training:queue',
+        'grid              = facereclib.configurations.grid.grid:grid',
+        'demanding         = facereclib.configurations.grid.demanding:grid',
+        'very-demanding    = facereclib.configurations.grid.very_demanding:grid',
+        'gbu               = facereclib.configurations.grid.gbu:grid',
+        'lfw               = facereclib.configurations.grid.lfw:grid',
+        'small             = facereclib.configurations.grid.small:grid',
+        'isv               = facereclib.configurations.grid.isv_training:grid',
+        'ivector           = facereclib.configurations.grid.ivector_training:grid',
+        'local-p4          = facereclib.configurations.grid.local:grid'
       ],
 
       # registered tests (will, e.g., be run in the xbob.db.aggregator)

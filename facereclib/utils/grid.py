@@ -39,26 +39,33 @@ class GridParameters:
     self,
     # grid type, currently supported 'local' and 'sge'
     grid = 'sge',
-    # training
-    training_queue = '8G',
-    # preprocessing
+    # parameters for the splitting of jobs into array jobs
     number_of_preprocessings_per_job = 1000,
-    preprocessing_queue = 'default',
-    # feature extraction
     number_of_extracted_features_per_job = 1000,
-    extraction_queue = 'default',
-    # feature projection
     number_of_projected_features_per_job = 1000,
-    projection_queue = 'default',
-    # model enrollment
     number_of_enrolled_models_per_job = 50,
-    enrollment_queue = 'default',
-    # scoring
     number_of_models_per_scoring_job = 50,
-    scoring_queue = 'default'
+
+    # queue setup for the SGE grid (only used if grid = 'sge', the default)
+    training_queue = '8G',
+    preprocessing_queue = 'default',
+    extraction_queue = 'default',
+    projection_queue = 'default',
+    enrollment_queue = 'default',
+    scoring_queue = 'default',
+
+    # setup of the local submission and execution of job (only used if grid = 'local')
+    number_of_parallel_processes = 1,
+    scheduler_sleep_time = 1.0 # sleep time for scheduler in seconds
   ):
 
     self.grid_type = grid
+    # the numbers
+    self.number_of_preprocessings_per_job = number_of_preprocessings_per_job
+    self.number_of_extracted_features_per_job = number_of_extracted_features_per_job
+    self.number_of_projected_features_per_job = number_of_projected_features_per_job
+    self.number_of_enrolled_models_per_job = number_of_enrolled_models_per_job
+    self.number_of_models_per_scoring_job = number_of_models_per_scoring_job
     # the queues
     self.training_queue = self.queue(training_queue)
     self.preprocessing_queue = self.queue(preprocessing_queue)
@@ -66,12 +73,10 @@ class GridParameters:
     self.projection_queue = self.queue(projection_queue)
     self.enrollment_queue = self.queue(enrollment_queue)
     self.scoring_queue = self.queue(scoring_queue)
-    # the numbers
-    self.number_of_preprocessings_per_job = number_of_preprocessings_per_job
-    self.number_of_extracted_features_per_job = number_of_extracted_features_per_job
-    self.number_of_projected_features_per_job = number_of_projected_features_per_job
-    self.number_of_enrolled_models_per_job = number_of_enrolled_models_per_job
-    self.number_of_models_per_scoring_job = number_of_models_per_scoring_job
+    # the local setup
+    self.number_of_parallel_processes = number_of_parallel_processes
+    self.scheduler_sleep_time = scheduler_sleep_time
+
 
 
   def queue(self, params):
@@ -85,3 +90,7 @@ class GridParameters:
     else:
       raise ValueError("The given queue parameters '%s' are not in the predefined queues and neither a dictionary with values.")
 
+
+  def is_local(self):
+    """Returns whether this grid setup should use the local submission or the SGE grid."""
+    return self.grid_type == 'local'
