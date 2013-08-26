@@ -101,6 +101,33 @@ def read_annotations(file_name, annotation_type):
       assert len(positions) == 3
       annotations[positions[0]] = (float(positions[2]),float(positions[1]))
 
+  elif str(annotation_type) == 'enumerated':
+    # This is a special format where we have enumerated annotations (where 3 and 8 are the eyes), and a 'gender'
+    # attention: here a LIST of annotations is returned since sometimes several faces are in the images
+    all_annotations = []
+    single_annotations = {}
+    for line in f:
+      positions = line.split()
+      if positions:
+        if positions[0].isdigit():
+          # position field
+          assert len(positions) == 3
+          id = int(positions[0])
+          if id in (3,8):
+            single_annotations[{3:'reye',8:'leye'}[id]] = (float(positions[2]),float(positions[1]))
+          else:
+            single_annotations['key%d'%id] = (float(positions[2]),float(positions[1]))
+        else:
+          # keyword field
+          assert len(positions) == 2
+          single_annotations[positions[0]] = positions[1]
+      else: # empty line; split between annotations
+        # sanity check
+        if 'leye' in single_annotations and 'reye' in single_annotations and single_annotations['leye'][1] < single_annotations['reye'][1]:
+          warn("The eye annotations number %d in file '%s' might be exchanged!" % (len(all_annotations)+1, file_name))
+        all_annotations.append(single_annotations)
+        single_annotations = {}
+
   elif str(annotation_type) == 'cosmin':
     # special file format of cosmin
     count = int(f.readline())
