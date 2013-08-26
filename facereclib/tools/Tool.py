@@ -36,7 +36,8 @@ class Tool:
       requires_enroller_training = False, # enable if your enroller needs training
 
       multiple_model_scoring = 'average', # by default, compute the average between several models and the probe
-      multiple_probe_scoring = 'average'  # by default, compute the average between the model and several probes
+      multiple_probe_scoring = 'average', # by default, compute the average between the model and several probes
+      **kwargs                            # parameters from the derived class that should be reported in the __str__() function
   ):
     """Initializes the Tool.
     Call this constructor in derived class implementations.
@@ -51,6 +52,13 @@ class Tool:
     self.requires_enroller_training = requires_enroller_training
     self.m_model_fusion_function = utils.score_fusion_strategy(multiple_model_scoring)
     self.m_probe_fusion_function = utils.score_fusion_strategy(multiple_probe_scoring)
+    self._kwargs = kwargs
+    self._kwargs.update({'multiple_model_scoring':multiple_model_scoring, 'multiple_probe_scoring':multiple_probe_scoring})
+
+
+  def __str__(self):
+    """This function returns all parameters of this class (and its derived class)."""
+    return "%s(%s)" % (str(self.__class__), ", ".join(["%s=%s" % (key, value) for key,value in self._kwargs.iteritems() if value is not None]))
 
 
   def enroll(self, enroll_features):

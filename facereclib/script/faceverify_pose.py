@@ -14,7 +14,7 @@ class ToolChainExecutorPose (ToolChainExecutor.ToolChainExecutor):
   """Class that executes the ZT tool chain (locally or in the grid)"""
 
   def __init__(self, args):
-    utils.warn("This class is deprecated.")
+    utils.error("This class is deprecated.")
     # DO NOT call base class constructor
 #    ToolChainExecutor.ToolChainExecutor.__init__(self, args)
 

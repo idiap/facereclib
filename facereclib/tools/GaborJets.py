@@ -27,7 +27,22 @@ class GaborJets (Tool):
   ):
 
     # call base class constructor
-    Tool.__init__(self)
+    Tool.__init__(
+        self,
+
+        gabor_jet_similarity_type = str(gabor_jet_similarity_type),
+        multiple_feature_scoring = multiple_feature_scoring,
+        gabor_directions = gabor_directions,
+        gabor_scales = gabor_scales,
+        gabor_sigma = gabor_sigma,
+        gabor_maximum_frequency = gabor_maximum_frequency,
+        gabor_frequency_step = gabor_frequency_step,
+        gabor_power_of_k = gabor_power_of_k,
+        gabor_dc_free = gabor_dc_free,
+
+        multiple_model_scoring = None,
+        multiple_probe_scoring = None
+    )
 
     # graph machine for enrolling models and comparing graphs
     self.m_graph_machine = bob.machine.GaborGraphMachine()

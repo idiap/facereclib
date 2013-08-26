@@ -19,7 +19,7 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
 
   def probe_file_sets(self, model_id = None, group = 'dev'):
     """Returns the list of probe File objects (for the given model id, if given)."""
-    files = self.arrange_by_client(self.sort(self.m_database.objects(protocol = self.protocol, groups = group, purposes = 'probe')))
+    files = self.arrange_by_client(self.sort(self.m_database.objects(protocol = None, groups = group, purposes = 'probe')))
     # arrange files by clients
     file_sets = []
     for client_files in files:

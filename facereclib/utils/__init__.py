@@ -25,12 +25,16 @@ def ensure_dir(dirname):
 
 def score_fusion_strategy(strategy_name = 'avarage'):
   """Returns a function to compute a fusion strategy between different scores."""
-  return {
-      'average' : numpy.average,
-      'min' : min,
-      'max' : max,
-      'median' : numpy.median
-  }[strategy_name]
+  try:
+    return {
+        'average' : numpy.average,
+        'min' : min,
+        'max' : max,
+        'median' : numpy.median
+    }[strategy_name]
+  except KeyError:
+    warn("score fusion strategy '%s' is unknown" % strategy_name)
+    return None
 
 
 def gray_channel(image, channel = 'gray'):

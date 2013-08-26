@@ -41,7 +41,29 @@ class LGBPHS (Extractor):
     """Initializes the local Gabor binary pattern histogram sequence tool chain with the given file selector object"""
 
     # call base class constructor
-    Extractor.__init__(self)
+    Extractor.__init__(
+        self,
+
+        block_size = block_size,
+        block_overlap = block_overlap,
+        gabor_directions = gabor_directions,
+        gabor_scales = gabor_scales,
+        gabor_sigma = gabor_sigma,
+        gabor_maximum_frequency = gabor_maximum_frequency,
+        gabor_frequency_step = gabor_frequency_step,
+        gabor_power_of_k = gabor_power_of_k,
+        gabor_dc_free = gabor_dc_free,
+        use_gabor_phases = use_gabor_phases,
+        lbp_radius = lbp_radius,
+        lbp_neighbor_count = lbp_neighbor_count,
+        lbp_uniform = lbp_uniform,
+        lbp_circular = lbp_circular,
+        lbp_rotation_invariant = lbp_rotation_invariant,
+        lbp_compare_to_average = lbp_compare_to_average,
+        lbp_add_average = lbp_add_average,
+        sparse_histogram = sparse_histogram,
+        split_histogram = split_histogram
+    )
 
     # block parameters
     self.m_block_size = block_size if isinstance(block_size, (tuple, list)) else (block_size, block_size)

@@ -22,7 +22,8 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
         ),
         name = 'test_fl',
         image_directory = facereclib.utils.tests.atnt_database_directory(),
-        image_extension = ".pgm"
+        image_extension = ".pgm",
+        protocol = None
     )
 
 database = TestDatabase()

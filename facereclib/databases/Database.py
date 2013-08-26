@@ -67,7 +67,8 @@ class Database:
      annotation_directory = None,
      annotation_extension = '.pos',
      annotation_type = None,
-     protocol = 'Default'
+     protocol = 'Default',
+     **kwargs
   ):
     """
     Parameters to the constructor of the Database:
@@ -89,6 +90,9 @@ class Database:
 
     protocol
       The name of the protocol that defines the default experimental setup for this database.
+
+    kwargs
+      Ignored extra arguments.
     """
 
     self.name = name
@@ -98,6 +102,16 @@ class Database:
     self.annotation_extension = annotation_extension
     self.annotation_type = annotation_type
     self.protocol = protocol
+
+
+  def __str__(self):
+    """This function returns a string containing all parameters of this class."""
+    params = "name=%s, protocol=%s, original_directory=%s, original_extension=%s" % (self.name, self.protocol, self.original_directory, self.original_extension)
+    if self.annotation_type is not None:
+      params += ", annotation_type=%s" % annotation_type
+      if self.annotation_directory: params += ", annotation_directory=%s" % self.annotation_directory
+      params += ", annotation_extension=%s" % self.annotation_extension
+    return "%s(%s)" % (str(self.__class__), params)
 
 
   ###########################################################################

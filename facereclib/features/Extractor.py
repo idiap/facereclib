@@ -30,12 +30,14 @@ class Extractor:
   def __init__(
       self,
       requires_training = False, # enable, if your extractor needs training
-      split_training_images_by_client = False # enable, if your extractor needs the training files sorted by client
+      split_training_images_by_client = False, # enable, if your extractor needs the training files sorted by client
+      **kwargs                   # the parameters of the extractor, to be written in the __str__() method
   ):
     # Each class needs to have a constructor taking
     # all the parameters that are required for the feature extraction as arguments
     self.requires_training = requires_training
     self.split_training_images_by_client = split_training_images_by_client
+    self._kwargs = kwargs
 
 
   ############################################################
@@ -48,6 +50,11 @@ class Extractor:
     It takes the (preprocessed) image and returns the features extracted from the image.
     """
     raise NotImplementedError("Please overwrite this function in your derived class")
+
+
+  def __str__(self):
+    """This function returns a string containing all parameters of this class (and its derived class)."""
+    return "%s(%s)" % (str(self.__class__), ", ".join(["%s=%s" % (key, value) for key,value in self._kwargs.iteritems() if value is not None]))
 
 
   ############################################################

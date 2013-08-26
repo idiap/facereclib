@@ -44,6 +44,21 @@ class ISV (UBMGMM):
         use_projected_features_for_enrollment = True,
         requires_enroller_training = False, # not needed anymore because it's done while training the projector
         split_training_features_by_client = True,
+
+        subspace_dimension_of_u = subspace_dimension_of_u,
+        isv_training_iterations = isv_training_iterations,
+        isv_enroll_iterations = isv_enroll_iterations,
+        gmm_isv_split = gmm_isv_split,
+        projected_toreplace = projected_toreplace,
+        projected_gmm =projected_gmm,
+        projected_isv = projected_isv,
+        projector_toreplace = projector_toreplace,
+        gmm_filename = gmm_filename,
+        isv_filename = isv_filename,
+
+        multiple_model_scoring = None,
+        multiple_probe_scoring = None,
+        **kwargs
     )
 
     self.m_subspace_dimension_of_u = subspace_dimension_of_u
@@ -59,13 +74,13 @@ class ISV (UBMGMM):
     self.m_isv_filename = isv_filename
 
   def _train_isv(self, data):
-    """Train the ISV model given a dataset""" 
+    """Train the ISV model given a dataset"""
     utils.info("  -> Training ISV enroller")
     self.m_isvbase = bob.machine.ISVBase(self.m_ubm, self.m_subspace_dimension_of_u)
     # train ISV model
     t = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
     t.train(self.m_isvbase, data)
-   
+
 
   def _load_train_isv(self, train_features):
     utils.info("  -> Projecting training data")
@@ -102,7 +117,7 @@ class ISV (UBMGMM):
     hdf5file.create_group('Projector')
     hdf5file.cd('Projector')
     self.m_ubm.save(hdf5file)
-   
+
     hdf5file.cd('/')
     hdf5file.create_group('Enroller')
     hdf5file.cd('Enroller')
@@ -186,7 +201,7 @@ class ISV (UBMGMM):
   def load_projector(self, projector_file):
     """Reads the UBM model from file"""
 
-    if not self.m_gmm_isv_split: 
+    if not self.m_gmm_isv_split:
       self._load_projector_together(projector_file)
     else:
       self._load_projector_gmm(projector_file)
@@ -237,13 +252,13 @@ class ISV (UBMGMM):
     Ux = data[1]
     if not self.m_gmm_isv_split:
       self._save_feature_together(gmmstats, Ux, feature_file)
-    else: 
+    else:
       self._save_feature_gmm(gmmstats, feature_file)
       self._save_feature_isv(Ux, feature_file)
 
   def read_feature(self, feature_file):
     """Read the type of features that we require, namely GMMStats"""
-    if not self.m_gmm_isv_split: 
+    if not self.m_gmm_isv_split:
       hdf5file = bob.io.HDF5File(feature_file)
       hdf5file.cd('gmmstats')
       gmmstats = bob.machine.GMMStats(hdf5file)

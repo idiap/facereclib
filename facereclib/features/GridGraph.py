@@ -39,7 +39,28 @@ class GridGraph (Extractor):
   ):
 
     # call base class constructor
-    Extractor.__init__(self)
+    Extractor.__init__(
+        self,
+
+        gabor_directions = gabor_directions,
+        gabor_scales = gabor_scales,
+        gabor_sigma = gabor_sigma,
+        gabor_maximum_frequency = gabor_maximum_frequency,
+        gabor_frequency_step = gabor_frequency_step,
+        gabor_power_of_k = gabor_power_of_k,
+        gabor_dc_free = gabor_dc_free,
+        normalize_gabor_jets = normalize_gabor_jets,
+        extract_gabor_phases = extract_gabor_phases,
+        eyes = eyes,
+        nodes_between_eyes = nodes_between_eyes,
+        nodes_along_eyes = nodes_along_eyes,
+        nodes_above_eyes = nodes_above_eyes,
+        nodes_below_eyes = nodes_below_eyes,
+        node_distance = node_distance,
+        image_resolution = image_resolution,
+        first_node = first_node
+    )
+    # TODO: write my own __str__ function instead of reporting all parameters, even if they are not used
 
     # create Gabor wavelet transform class
     self.m_gwt = bob.ip.GaborWaveletTransform(

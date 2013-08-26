@@ -19,8 +19,7 @@ class LDA (Tool):
       distance_function = scipy.spatial.distance.euclidean,
       is_distance_function = True,
       uses_variances = False,
-      multiple_model_scoring = 'average',
-      multiple_probe_scoring = 'average'
+      **kwargs  # parameters directly sent to the base class
   ):
     """Initializes the LDA tool with the given configuration"""
 
@@ -29,8 +28,14 @@ class LDA (Tool):
         self,
         performs_projection = True,
         split_training_features_by_client = True,
-        multiple_model_scoring = multiple_model_scoring,
-        multiple_probe_scoring = multiple_probe_scoring
+
+        lda_subspace_dimension = lda_subspace_dimension,
+        pca_subspace_dimension = pca_subspace_dimension,
+        distance_function = str(distance_function),
+        is_distance_function = is_distance_function,
+        uses_variances = uses_variances,
+
+        **kwargs
     )
 
     # copy information

@@ -37,6 +37,8 @@ class Configuration:
     self.features_directory = os.path.join(self.temp_directory, args.features_directory)
     self.projected_directory = os.path.join(self.temp_directory, args.projected_features_directory)
 
+    self.info_file = os.path.join(self.user_directory, "Experiment.info") if not args.experiment_info_file else args.experiment_info_file
+
 
 
 class ToolChainExecutor:
@@ -64,6 +66,23 @@ class ToolChainExecutor:
     self.m_configuration = Configuration(args, self.m_database.name, use_local_files)
 
     utils.set_verbosity_level(args.verbose)
+
+  def write_info(self, command_line_parameters):
+    # write configuration
+    try:
+      utils.ensure_dir(os.path.dirname(self.m_configuration.info_file))
+      f = open(self.m_configuration.info_file, 'w')
+      f.write("Command line:\n")
+      f.write(" ".join(command_line_parameters) + "\n\n")
+      f.write("Configuration:\n")
+      f.write("Database:\n%s\n\n" % self.m_database)
+      f.write("Preprocessing:\n%s\n\n" % self.m_preprocessor)
+      f.write("Feature Extraction:\n%s\n\n" % self.m_extractor)
+      f.write("Algorithm:\n%s\n\n" % self.m_tool)
+    except IOError:
+      utils.error("Could not write the experimental setup into file '%s'" % self.m_configuration.info_file)
+
+
 
 
   @staticmethod
@@ -105,8 +124,10 @@ class ToolChainExecutor:
         help = 'Name of the file to write the feature projector into.')
     file_group.add_argument('--enroller-file' , metavar = 'FILE', default = 'Enroller.hdf5',
         help = 'Name of the file to write the model enroller into.')
-    file_group.add_argument('-G', '--submit-db-file', type = str, metavar = 'FILE', default = 'submitted.sql3', dest = 'gridtk_database_file',
+    file_group.add_argument('-G', '--submit-db-file', metavar = 'FILE', default = 'submitted.sql3', dest = 'gridtk_database_file',
         help = 'The database file in which the submitted jobs will be written (only valid with the --grid option).')
+    file_group.add_argument('--experiment-info-file', metavar = 'FILE',
+        help = 'The file where the configuration of all parts of the experiments are written. If not specified, "Experiment.info" in the --result-directory is used.')
 
     sub_dir_group = parser.add_argument_group('\nSubdirectories of certain parts of the tool chain. You can specify directories in case you want to reuse parts of the experiments (e.g. extracted features) in other experiments. Please note that these directories are relative to the --temp-directory, but you can also specify absolute paths')
     sub_dir_group.add_argument('--preprocessed-image-directory', metavar = 'DIR', default = 'preprocessed',

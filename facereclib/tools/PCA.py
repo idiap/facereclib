@@ -18,8 +18,7 @@ class PCA (Tool):
       distance_function = scipy.spatial.distance.euclidean,
       is_distance_function = True,
       uses_variances = False,
-      multiple_model_scoring = 'average',
-      multiple_probe_scoring = 'average'
+      **kwargs  # parameters directly sent to the base class
   ):
 
     """Initializes the PCA tool with the given setup"""
@@ -27,8 +26,13 @@ class PCA (Tool):
     Tool.__init__(
         self,
         performs_projection = True,
-        multiple_model_scoring = multiple_model_scoring,
-        multiple_probe_scoring = multiple_probe_scoring
+
+        subspace_dimension = subspace_dimension,
+        distance_function = str(distance_function),
+        is_distance_function = is_distance_function,
+        uses_variances = uses_variances,
+
+        **kwargs
     )
 
     self.m_subspace_dim = subspace_dimension

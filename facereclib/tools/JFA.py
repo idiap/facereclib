@@ -33,7 +33,16 @@ class JFA (UBMGMM):
         self,
         performs_projection = True,
         use_projected_features_for_enrollment = True,
-        requires_enroller_training = True
+        requires_enroller_training = True,
+
+        subspace_dimension_of_u = subspace_dimension_of_u,
+        subspace_dimension_of_v = subspace_dimension_of_v,
+        jfa_training_iterations = jfa_training_iterations,
+        jfa_enroll_iterations = jfa_enroll_iterations,
+
+        multiple_model_scoring = None,
+        multiple_probe_scoring = None,
+        **kwargs
     )
 
     self.m_subspace_dimension_of_u = subspace_dimension_of_u

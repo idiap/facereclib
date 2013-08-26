@@ -26,7 +26,7 @@ class NullPreprocessor (Preprocessor):
   (and perform gray scale conversion if required)"""
 
   def __init__(self, color_channel = 'gray'):
-    Preprocessor.__init__(self)
+    Preprocessor.__init__(self, color_channel=color_channel)
     self.m_color_channel = color_channel
 
   def __call__(self, image, annotations = None):

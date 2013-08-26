@@ -29,7 +29,7 @@ class SelfQuotientImage (FaceCrop):
 
   def __init__(self, variance = 2., **kwargs):
     # call base class function
-    FaceCrop.__init__(self, **kwargs)
+    FaceCrop.__init__(self, variance = variance, **kwargs)
 
     size = max(1, int(3. * math.sqrt(variance)))
     self.m_self_quotient = bob.ip.SelfQuotientImage(size_min = size, sigma2 = variance)

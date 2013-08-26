@@ -52,6 +52,14 @@ class INormLBP (FaceCrop):
         self,
         cropped_image_size = cropped_image_size,
         cropped_positions = cropped_positions,
+
+        radius = radius,
+        is_uniform = is_uniform,
+        is_circular = is_circular,
+        is_rotation_invariant = is_rotation_invariant,
+        compare_to_average = compare_to_average,
+        add_average_bit = add_average_bit,
+
         **kwargs
     )
 

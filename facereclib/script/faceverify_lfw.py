@@ -474,7 +474,7 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
   if args.sub_task:
     # execute the desired sub-task
-    executor = ToolChainExecutorLFW(args, protocol=args.protocol)
+    executor = ToolChainExecutorLFW(args, args.protocol)
     try:
       executor.execute_grid_job()
     except:
@@ -509,6 +509,9 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     for protocol in protocols:
       # create an executor object
       executor = ToolChainExecutorLFW(args, protocol)
+
+      executor.write_info(command_line_parameters)
+
       executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = dry_run_init)
 
       # add the jobs
@@ -541,6 +544,8 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     for protocol in protocols:
       # generate executor for the current protocol
       executor = ToolChainExecutorLFW(args, protocol)
+      executor.write_info(command_line_parameters)
+
       # execute the tool chain locally
       executor.execute_tool_chain()
 

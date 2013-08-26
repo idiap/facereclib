@@ -27,10 +27,12 @@ class Preprocessor:
   It defines the minimum requirements for all derived proprocessor classes.
   """
 
-  def __init__(self):
+  def __init__(self, **kwargs):
     # Each class needs to have a constructor taking
     # all the parameters that are required for the preprocessing as arguments
+    self._kwargs = kwargs
     pass
+
 
   # The call function (i.e. the operator() in C++ terms)
   def __call__(self, image, annotations):
@@ -46,6 +48,10 @@ class Preprocessor:
     """
     raise NotImplementedError("Please overwrite this function in your derived class")
 
+
+  def __str__(self):
+    """This function returns a string containing all parameters of this class (and its derived class)."""
+    return "%s(%s)" % (str(self.__class__), ", ".join(["%s=%s" % (key, value) for key,value in self._kwargs.iteritems() if value is not None]))
 
   ############################################################
   ### Special functions that might be overwritten on need

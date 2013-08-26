@@ -31,7 +31,25 @@ class PLDA (Tool):
 
     """Initializes the local (PCA-)PLDA tool chain with the given file selector object"""
     # call base class constructor and register that this class requires training for enrollment
-    Tool.__init__(self, requires_enroller_training = True)
+    Tool.__init__(
+        self,
+        requires_enroller_training = True,
+
+        subspace_dimension_of_f = subspace_dimension_of_f, # Size of subspace F
+        subspace_dimension_of_g = subspace_dimension_of_g, # Size of subspace G
+        subspace_dimension_pca = subspace_dimension_pca,  # if given, perform PCA on data and reduce the PCA subspace to the given dimension
+        plda_training_iterations = plda_training_iterations, # Maximum number of iterations for the EM loop
+        # TODO: refactor the remaining parameters!
+        INIT_SEED = INIT_SEED, # seed for initializing
+        INIT_F_METHOD = str(INIT_F_METHOD),
+        INIT_F_RATIO = INIT_F_RATIO,
+        INIT_G_METHOD = str(INIT_G_METHOD),
+        INIT_G_RATIO = INIT_G_RATIO,
+        INIT_S_METHOD =str(INIT_S_METHOD),
+        INIT_S_RATIO = INIT_S_RATIO,
+        multiple_probe_scoring = multiple_probe_scoring,
+        multiple_model_scoring = None
+    )
 
     self.m_subspace_dimension_of_f = subspace_dimension_of_f
     self.m_subspace_dimension_of_g = subspace_dimension_of_g

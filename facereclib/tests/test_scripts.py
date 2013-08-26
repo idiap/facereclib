@@ -150,7 +150,7 @@ class ScriptTest (unittest.TestCase):
 
 
 
-  def test01x_faceverify_fl(self):
+  def test01x_faceverify_filelist(self):
     try:
       import xbob.db.verification.filelist
     except ImportError:
@@ -160,6 +160,7 @@ class ScriptTest (unittest.TestCase):
     parameters = [
         sys.argv[0],
         '-d', os.path.join(base_dir, 'databases', 'atnt_fl', 'atnt_fl_database.py'),
+#        '--protocol', 'None',
         '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
         '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
@@ -174,7 +175,7 @@ class ScriptTest (unittest.TestCase):
     facereclib.script.faceverify.main(parameters)
 
     # assert that the score file exists
-    score_files = (os.path.join(test_dir, 'test_x', 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test_x', 'scores', 'Default', 'ztnorm', 'scores-dev'))
+    score_files = (os.path.join(test_dir, 'test_x', 'scores', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test_x', 'scores', 'ztnorm', 'scores-dev'))
     self.assertTrue(os.path.exists(score_files[0]))
     self.assertTrue(os.path.exists(score_files[1]))
 

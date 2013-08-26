@@ -21,16 +21,20 @@ class BIC (Tool):
       maximum_training_pair_count = None,  # if set, limit the number of training pairs to the given number in a non-random manner
       subspace_dimensions = None, # if set as a pair (intra_dim, extra_dim), PCA subspace truncation for the two classes is performed
       uses_dffs = False, # use the distance from feature space; only valid when PCA truncation is enabled; WARNING: uses this flag with care
-      multiple_model_scoring = 'average',
-      multiple_probe_scoring = 'average'
+      **kwargs # parameters directly sent to the base class
   ):
 
     # call base class function and register that this tool requires training for the enrollment
     Tool.__init__(
         self,
         requires_enroller_training = True,
-        multiple_model_scoring = multiple_model_scoring,
-        multiple_probe_scoring = multiple_probe_scoring
+
+        distance_function = str(distance_function),
+        maximum_training_pair_count = maximum_training_pair_count,
+        subspace_dimensions = subspace_dimensions,
+        uses_dffs = uses_dffs,
+
+        **kwargs
     )
 
     # set up the BIC tool

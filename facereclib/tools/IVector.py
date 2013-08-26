@@ -43,6 +43,22 @@ class IVector (UBMGMM):
         use_projected_features_for_enrollment = True,
         requires_enroller_training = False, # not needed anymore because it's done while training the projector
         split_training_features_by_client = False,
+
+        subspace_dimension_of_t = subspace_dimension_of_t,
+        update_sigma = update_sigma,
+        tv_training_iterations = tv_training_iterations,
+        variance_threshold = variance_threshold,
+        gmm_ivec_split = gmm_ivec_split,
+        projected_toreplace = projected_toreplace,
+        projected_gmm = projected_gmm,
+        projected_ivec = projected_ivec,
+        projector_toreplace = projector_toreplace,
+        gmm_filename = gmm_filename,
+        ivec_filename = ivec_filename,
+
+        multiple_model_scoring = None,
+        multiple_probe_scoring = None,
+        **kwargs
     )
 
     self.m_update_sigma = update_sigma
@@ -59,7 +75,7 @@ class IVector (UBMGMM):
     self.m_ivec_filename = ivec_filename
 
   def _train_ivector(self, data):
-    """Train the IVector model given a dataset""" 
+    """Train the IVector model given a dataset"""
     utils.info("  -> Training IVector enroller")
     self.m_tv = bob.machine.IVectorMachine(self.m_ubm, self.m_subspace_dimension_of_t)
     self.m_tv.variance_threshold = self.m_variance_threshold
@@ -100,7 +116,7 @@ class IVector (UBMGMM):
     hdf5file.create_group('Projector')
     hdf5file.cd('Projector')
     self.m_ubm.save(hdf5file)
-   
+
     hdf5file.cd('/')
     hdf5file.create_group('Enroller')
     hdf5file.cd('Enroller')
@@ -184,7 +200,7 @@ class IVector (UBMGMM):
   def load_projector(self, projector_file):
     """Reads the UBM model from file"""
 
-    if not self.m_gmm_ivec_split: 
+    if not self.m_gmm_ivec_split:
       self._load_projector_together(projector_file)
     else:
       self._load_projector_gmm(projector_file)
@@ -229,13 +245,13 @@ class IVector (UBMGMM):
     ivector = data[1]
     if not self.m_gmm_ivec_split:
       self._save_feature_together(gmmstats, ivector, feature_file)
-    else: 
+    else:
       self._save_feature_gmm(gmmstats, feature_file)
       self._save_feature_ivector(ivector, feature_file)
 
   def read_feature(self, feature_file):
     """Read the type of features that we require, namely GMMStats"""
-    if not self.m_gmm_ivec_split: 
+    if not self.m_gmm_ivec_split:
       hdf5file = bob.io.HDF5File(feature_file)
       hdf5file.cd('gmmstats')
       gmmstats = bob.machine.GMMStats(hdf5file)

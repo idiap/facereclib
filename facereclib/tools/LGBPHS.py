@@ -20,7 +20,15 @@ class LGBPHS (Tool):
     """Initializes the local Gabor binary pattern histogram sequence tool"""
 
     # call base class constructor
-    Tool.__init__(self, multiple_probe_scoring = multiple_probe_scoring)
+    Tool.__init__(
+        self,
+
+        distance_function = str(distance_function),
+        is_distance_function = is_distance_function,
+
+        multiple_model_scoring = None,
+        multiple_probe_scoring = multiple_probe_scoring
+    )
 
     # remember distance function
     self.m_distance_function = distance_function

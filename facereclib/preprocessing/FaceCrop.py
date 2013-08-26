@@ -33,7 +33,8 @@ class FaceCrop (Preprocessor):
       fixed_positions = None,    # dictionary of FIXED positions in the original image; if specified, annotations from the database will be ignored
       color_channel = 'gray',    # the color channel to extract from colored images, if colored images are in the database
       offset = 0,                # if your feature extractor requires a specific offset, you might want to specify it here
-      supported_annotations = (('reye', 'leye'), ('eye', 'mouth')) # The set of annotations that this cropper excepts
+      supported_annotations = None, # The set of annotations that this cropper excepts; (('reye', 'leye'), ('eye', 'mouth')) by default
+      **kwargs                   # parameters to be written in the __str__ method
   ):
     """Parameters of the constructor of this preprocessor:
 
@@ -56,18 +57,28 @@ class FaceCrop (Preprocessor):
     supported_annotations
       A list of supported pairs of annotations.
       If the database has different names for the annotations, they should be put here (used mainly for testing purposes).
+      If not specified, (('reye', 'leye'), ('eye', 'mouth')) is used.
 
     """
 
     # call base class constructor
-    Preprocessor.__init__(self)
+    Preprocessor.__init__(
+        self,
+        cropped_image_size = cropped_image_size,
+        cropped_positions = cropped_positions,
+        fixed_positions = fixed_positions,
+        color_channel = color_channel,
+        offset = offset,
+        supported_annotations = supported_annotations,
+        **kwargs
+    )
 
     self.m_cropped_image_size = cropped_image_size
     self.m_cropped_positions = cropped_positions
     self.m_fixed_postions = fixed_positions
     self.m_color_channel = color_channel
     self.m_offset = offset
-    self.m_supported_annotations = supported_annotations
+    self.m_supported_annotations = supported_annotations if supported_annotations is not None else (('reye', 'leye'), ('eye', 'mouth'))
 
     if fixed_positions:
       assert len(fixed_positions) == 2

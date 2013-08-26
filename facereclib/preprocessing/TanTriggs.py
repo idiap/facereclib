@@ -47,7 +47,18 @@ class TanTriggs (FaceCrop):
     """
 
     # call base class constructor with its set of parameters
-    FaceCrop.__init__(self, **kwargs)
+    FaceCrop.__init__(
+        self,
+
+        gamma = gamma,
+        sigma0 = sigma0,
+        sigma1 = sigma1,
+        size = size,
+        threshold = threshold,
+        alpha = alpha,
+
+        **kwargs
+    )
 
     if self.m_perform_image_cropping:
       # input image will be the output of the face cropper

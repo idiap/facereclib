@@ -25,7 +25,16 @@ class DCTBlocks (Extractor):
   ):
 
     # call base class constructor
-    Extractor.__init__(self)
+    Extractor.__init__(
+        self,
+
+        block_size = block_size,
+        block_overlap = block_overlap,
+        number_of_dct_coefficients = number_of_dct_coefficients,
+        normalize_blocks = normalize_blocks,
+        normalize_dcts = normalize_dcts,
+        auto_reduce_coefficients = auto_reduce_coefficients
+    )
 
     # block parameters
     self.m_block_size = block_size if isinstance(block_size, (tuple, list)) else (block_size, block_size)

@@ -78,8 +78,24 @@ class DatabaseXBob (Database):
     self.projector_training_options = projector_training_options
     self.enroller_training_options = enroller_training_options
 
+    self._kwargs = kwargs
+
     if self.has_internal_annotations and not hasattr(self.m_database, 'annotations'):
       raise AssertionError("The database is supposed to have internal annotations, but does not provide an 'annotations' function.")
+
+
+  def __str__(self):
+    """This function returns a string containing all parameters of this class (and its derived class)."""
+    params = ", ".join(["%s=%s" % (key, value) for key, value in self._kwargs.iteritems()])
+    params += ", image_directory=%s, image_extension=%s" % (self.original_directory, self.original_extension)
+    if self.has_internal_annotations:
+      params += ", has_internal_annotations=True"
+    if self.all_files_options: params += ", all_files_options=%s"%self.all_files_options
+    if self.extractor_training_options: params += ", extractor_training_options=%s"%self.extractor_training_options
+    if self.projector_training_options: params += ", projector_training_options=%s"%self.projector_training_options
+    if self.enroller_training_options: params += ", enroller_training_options=%s"%self.enroller_training_options
+
+    return "%s(%s)" % (str(self.__class__), params)
 
 
   def uses_probe_file_sets(self):
@@ -169,7 +185,7 @@ class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
       **kwargs
   ):
     # call base class constructor, passing all the parameters to it
-    DatabaseXBob.__init__(self, **kwargs)
+    DatabaseXBob.__init__(self, z_probe_options = z_probe_options, **kwargs)
 
     self.m_z_probe_options = z_probe_options
 

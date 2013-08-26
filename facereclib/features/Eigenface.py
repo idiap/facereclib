@@ -13,7 +13,7 @@ class Eigenface (Extractor):
 
   def __init__(self, subspace_dimension):
     # We have to register that this function will need a training step
-    Extractor.__init__(self, requires_training = True)
+    Extractor.__init__(self, requires_training = True, subspace_dimension = subspace_dimension)
     self.m_subspace_dimension = subspace_dimension
 
   def train(self, image_list, extractor_file):

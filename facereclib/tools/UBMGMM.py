@@ -37,7 +37,24 @@ class UBMGMM (Tool):
     Tool.__init__(
         self,
         performs_projection = True,
-        use_projected_features_for_enrollment = False
+        use_projected_features_for_enrollment = False,
+
+        number_of_gaussians = number_of_gaussians,
+        k_means_training_iterations = k_means_training_iterations,
+        gmm_training_iterations = gmm_training_iterations,
+        training_threshold = training_threshold,
+        variance_threshold = variance_threshold,
+        update_weights = update_weights,
+        update_means = update_means,
+        update_variances = update_variances,
+        normalize_before_k_means = normalize_before_k_means,
+        relevance_factor = relevance_factor,
+        gmm_enroll_iterations = gmm_enroll_iterations,
+        responsibility_threshold = responsibility_threshold,
+        scoring_function = str(scoring_function),
+
+        multiple_model_scoring = None,
+        multiple_probe_scoring = 'average'
     )
 
     # copy parameters

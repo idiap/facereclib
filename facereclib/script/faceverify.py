@@ -20,21 +20,23 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     if args.protocol:
       self.m_database.protocol = args.protocol
 
-    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[0], self.m_database.protocol)
-    self.m_configuration.scores_no_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[0])
+    protocol_subdir = self.m_database.protocol if self.m_database.protocol else "."
+
+    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[0], protocol_subdir)
+    self.m_configuration.scores_no_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_score_directories[0])
     # add specific configuration for ZT-normalization
     if args.zt_norm:
-      self.m_configuration.t_norm_models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[1], self.m_database.protocol)
+      self.m_configuration.t_norm_models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[1], protocol_subdir)
       models_directories = (self.m_configuration.models_directory, self.m_configuration.t_norm_models_directory)
 
-      self.m_configuration.scores_zt_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_score_directories[1])
+      self.m_configuration.scores_zt_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_score_directories[1])
       score_directories = (self.m_configuration.scores_no_norm_directory, self.m_configuration.scores_zt_norm_directory)
 
-      self.m_configuration.zt_norm_A_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[0])
-      self.m_configuration.zt_norm_B_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[1])
-      self.m_configuration.zt_norm_C_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[2])
-      self.m_configuration.zt_norm_D_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[3])
-      self.m_configuration.zt_norm_D_sameValue_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, self.m_database.protocol, self.m_args.zt_temp_directories[4])
+      self.m_configuration.zt_norm_A_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[0])
+      self.m_configuration.zt_norm_B_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[1])
+      self.m_configuration.zt_norm_C_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[2])
+      self.m_configuration.zt_norm_D_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[3])
+      self.m_configuration.zt_norm_D_sameValue_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[4])
       zt_score_directories = (self.m_configuration.zt_norm_A_directory, self.m_configuration.zt_norm_B_directory, self.m_configuration.zt_norm_C_directory, self.m_configuration.zt_norm_D_directory, self.m_configuration.zt_norm_D_sameValue_directory)
     else:
       models_directories = (self.m_configuration.models_directory,)
@@ -510,6 +512,8 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
       utils.info("- Timer: Starting timer")
       start_time = os.times()
 
+    executor.write_info(command_line_parameters)
+
     executor.execute_tool_chain()
 
     if args.timer:
@@ -541,6 +545,8 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     this_file = __file__
     if this_file[-1] == 'c':
       this_file = this_file[0:-1]
+
+    executor.write_info(command_line_parameters)
 
     # initialize the executor to submit the jobs to the grid
     executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = external_fake_job_id)
