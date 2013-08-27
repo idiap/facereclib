@@ -82,6 +82,7 @@ class IVector (UBMGMM):
 
     # train IVector model
     t = bob.trainer.IVectorTrainer(update_sigma=self.m_update_sigma, max_iterations=self.m_tv_training_iterations)
+    t.rng = bob.core.random.mt19937(self.m_init_seed)
     t.train(self.m_tv, data)
 
   def _load_train_ivector(self, train_features):

@@ -19,7 +19,7 @@ class PLDA (Tool):
       subspace_dimension_pca = None,  # if given, perform PCA on data and reduce the PCA subspace to the given dimension
       plda_training_iterations = 200, # Maximum number of iterations for the EM loop
       # TODO: refactor the remaining parameters!
-      INIT_SEED = 0, # seed for initializing
+      INIT_SEED = 5489, # seed for initializing
       INIT_F_METHOD = bob.trainer.PLDATrainer.BETWEEN_SCATTER,
       INIT_F_RATIO = 1,
       INIT_G_METHOD = bob.trainer.PLDATrainer.WITHIN_SCATTER,
@@ -115,7 +115,9 @@ class PLDA (Tool):
     # create trainer
     t = bob.trainer.PLDATrainer(self.m_plda_training_iterations)
 
-    t.rng.seed = self.m_init[0]
+    #t.rng.seed = self.m_init[0]
+    print self.m_init[0]
+    t.rng = bob.core.random.mt19937(self.m_init[0])
     t.init_f_method = self.m_init[1]
     t.init_f_ratio = self.m_init[2]
     t.init_g_method = self.m_init[3]

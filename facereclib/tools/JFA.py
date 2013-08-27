@@ -69,6 +69,7 @@ class JFA (UBMGMM):
 
     # train the JFA
     t = bob.trainer.JFATrainer(self.m_jfa_training_iterations)
+    t.rng = bob.core.random.mt19937(self.m_init_seed)
     t.train(self.m_jfabase, train_features)
 
     # Save the JFA base AND the UBM into the same file
@@ -87,6 +88,7 @@ class JFA (UBMGMM):
 
     self.m_machine = bob.machine.JFAMachine(self.m_jfabase)
     self.m_trainer = bob.trainer.JFATrainer()
+    self.m_trainer.rng = bob.core.random.mt19937(self.m_init_seed)
 
 
   def read_feature(self, feature_file):

@@ -29,6 +29,7 @@ from nose.plugins.skip import SkipTest
 import pkg_resources
 
 regenerate_refs = False
+seed_value = 5489
 
 class ToolTest(unittest.TestCase):
 
@@ -301,7 +302,8 @@ class ToolTest(unittest.TestCase):
     tool = facereclib.tools.UBMGMM(
         number_of_gaussians = 2,
         k_means_training_iterations = 1,
-        gmm_training_iterations = 1
+        gmm_training_iterations = 1,
+        INIT_SEED = seed_value,
     )
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
@@ -353,7 +355,8 @@ class ToolTest(unittest.TestCase):
     tool = facereclib.tools.UBMGMMRegular(
         number_of_gaussians = 2,
         k_means_training_iterations = 1,
-        gmm_training_iterations = 1
+        gmm_training_iterations = 1,
+        INIT_SEED = seed_value
     )
     self.assertFalse(tool.performs_projection)
     self.assertTrue(tool.requires_enroller_training)
@@ -373,8 +376,6 @@ class ToolTest(unittest.TestCase):
     probe = tool.read_probe(self.input_dir('dct_blocks.hdf5'))
     sim = tool.score(reference_model, probe)
 
-    # TODO: I don't know why, but the result differ from the original UBMGMM approach...
-#    self.assertAlmostEqual(sim, 0.25472347774)
     self.assertAlmostEqual(sim, 0.143875716)
 
 
@@ -398,7 +399,8 @@ class ToolTest(unittest.TestCase):
         subspace_dimension_of_u = 160,
         k_means_training_iterations = 1,
         gmm_training_iterations = 1,
-        isv_training_iterations = 1
+        isv_training_iterations = 1,
+        INIT_SEED = seed_value
     )
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
@@ -482,7 +484,8 @@ class ToolTest(unittest.TestCase):
         subspace_dimension_of_v = 2,
         k_means_training_iterations = 1,
         gmm_training_iterations = 1,
-        jfa_training_iterations = 1
+        jfa_training_iterations = 1,
+        INIT_SEED = seed_value
     )
     self.assertTrue(tool.performs_projection)
     self.assertTrue(tool.requires_projector_training)
@@ -556,7 +559,8 @@ class ToolTest(unittest.TestCase):
         subspace_dimension_of_f = 2,
         subspace_dimension_of_g = 2,
         subspace_dimension_pca = 10,
-        plda_training_iterations = 1
+        plda_training_iterations = 1,
+        INIT_SEED = seed_value,
     )
     self.assertFalse(tool.performs_projection)
     self.assertTrue(tool.requires_enroller_training)

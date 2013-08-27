@@ -79,6 +79,7 @@ class ISV (UBMGMM):
     self.m_isvbase = bob.machine.ISVBase(self.m_ubm, self.m_subspace_dimension_of_u)
     # train ISV model
     t = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
+    t.rng = bob.core.random.mt19937(self.m_init_seed)
     t.train(self.m_isvbase, data)
 
 
@@ -209,6 +210,7 @@ class ISV (UBMGMM):
 
     self.m_machine = bob.machine.ISVMachine(self.m_isvbase)
     self.m_trainer = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
+    self.m_trainer.rng = bob.core.random.mt19937(self.m_init_seed)
 
 
   #######################################################
@@ -385,6 +387,7 @@ class ISVVideo (ISV, UBMGMMVideo):
 
     ########## (same as ISV.train_enroller)
     t = bob.trainer.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
+    t.rng = bob.core.random.mt19937(self.m_init_seed)
     t.train(self.m_isvbase, gmm_stats)
 
     # Save the ISV base AND the UBM into the same file

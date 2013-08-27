@@ -28,6 +28,7 @@ class UBMGMM (Tool):
       relevance_factor = 4,         # Relevance factor as described in Reynolds paper
       gmm_enroll_iterations = 1,    # Number of iterations for the enrollment phase
       responsibility_threshold = 0, # If set, the weight of a particular Gaussian will at least be greater than this threshold. In the case the real weight is lower, the prior mean value will be used to estimate the current mean and variance.
+      INIT_SEED = 5489,
       # scoring
       scoring_function = bob.machine.linear_scoring
   ):
@@ -51,6 +52,7 @@ class UBMGMM (Tool):
         relevance_factor = relevance_factor,
         gmm_enroll_iterations = gmm_enroll_iterations,
         responsibility_threshold = responsibility_threshold,
+        INIT_SEED = INIT_SEED,
         scoring_function = str(scoring_function),
 
         multiple_model_scoring = None,
@@ -69,8 +71,10 @@ class UBMGMM (Tool):
     self.m_normalize_before_k_means = normalize_before_k_means
     self.m_relevance_factor = relevance_factor
     self.m_gmm_enroll_iterations = gmm_enroll_iterations
+    self.m_init_seed = INIT_SEED
     self.m_responsibility_threshold = responsibility_threshold
     self.m_scoring_function = scoring_function
+    
 
 
   #######################################################
@@ -138,6 +142,7 @@ class UBMGMM (Tool):
 
     # Creates the KMeansTrainer
     kmeans_trainer = bob.trainer.KMeansTrainer()
+    kmeans_trainer.rng = bob.core.random.mt19937(self.m_init_seed)
     kmeans_trainer.convergence_threshold = self.m_training_threshold
     kmeans_trainer.max_iterations = self.m_gmm_training_iterations
 
@@ -163,6 +168,7 @@ class UBMGMM (Tool):
     # Trains the GMM
     utils.info("  -> Training GMM")
     trainer = bob.trainer.ML_GMMTrainer(self.m_update_means, self.m_update_variances, self.m_update_weights)
+    trainer.rng = bob.core.random.mt19937(self.m_init_seed)
     trainer.convergence_threshold = self.m_training_threshold
     trainer.max_iterations = self.m_gmm_training_iterations
     trainer.train(self.m_ubm, array)
@@ -201,6 +207,7 @@ class UBMGMM (Tool):
       self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_relevance_factor, True, False, False, self.m_responsibility_threshold)
     else:
       self.m_trainer = bob.trainer.MAP_GMMTrainer(self.m_relevance_factor, True, False, False)
+    self.m_trainer.rng = bob.core.random.mt19937(self.m_init_seed)
     self.m_trainer.convergence_threshold = self.m_training_threshold
     self.m_trainer.max_iterations = self.m_gmm_enroll_iterations
     self.m_trainer.set_prior_gmm(self.m_ubm)
