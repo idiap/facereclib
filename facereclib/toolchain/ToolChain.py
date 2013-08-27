@@ -31,58 +31,57 @@ class ToolChain:
 
 
 
-  def preprocess_images(self, preprocessor, indices=None, force=False):
-    """Preprocesses the original images with the given preprocessor."""
+  def preprocess_data(self, preprocessor, indices=None, force=False):
+    """Preprocesses the original data with the given preprocessor."""
     # get the file lists
-    image_files = self.m_file_selector.original_image_list()
-    preprocessed_image_files = self.m_file_selector.preprocessed_image_list()
+    data_files = self.m_file_selector.original_data_list()
+    preprocessed_data_files = self.m_file_selector.preprocessed_data_list()
 
     # select a subset of keys to iterate
     if indices != None:
       index_range = range(indices[0], indices[1])
       utils.info("- Preprocessing: splitting of index range %s" % str(indices))
     else:
-      index_range = range(len(image_files))
+      index_range = range(len(data_files))
 
     utils.ensure_dir(self.m_file_selector.preprocessed_directory)
-    utils.info("- Preprocessing: processing %d images from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.m_database.original_directory, self.m_file_selector.preprocessed_directory))
-    # iterate through the images and perform normalization
+    utils.info("- Preprocessing: processing %d data files from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.m_database.original_directory, self.m_file_selector.preprocessed_directory))
 
-    # read eye files
+    # read annotation files
     annotation_list = self.m_file_selector.annotation_list()
 
     for i in index_range:
-      preprocessed_image_file = preprocessed_image_files[i]
+      preprocessed_data_file = preprocessed_data_files[i]
 
-      if not self.__check_file__(preprocessed_image_file, force):
-        image = preprocessor.read_original_image(str(image_files[i]))
+      if not self.__check_file__(preprocessed_data_file, force):
+        data = preprocessor.read_original_data(str(data_files[i]))
 
         # get the annotations; might be None
         annotations = self.m_file_selector.get_annotations(annotation_list[i])
 
-        # call the image preprocessor
-        preprocessed_image = preprocessor(image, annotations)
+        # call the preprocessor
+        preprocessed_data = preprocessor(data, annotations)
 
-        utils.ensure_dir(os.path.dirname(preprocessed_image_file))
-        preprocessor.save_image(preprocessed_image, str(preprocessed_image_file))
+        utils.ensure_dir(os.path.dirname(preprocessed_data_file))
+        preprocessor.save_data(preprocessed_data, str(preprocessed_data_file))
 
 
 
-  def __read_images__(self, files, preprocessor):
-    """Reads the preprocessed images from file using the given reader."""
-    return [preprocessor.read_image(str(image)) for image in files]
+  def __read_data__(self, files, preprocessor):
+    """Reads the preprocessed data from file using the given reader."""
+    return [preprocessor.read_data(str(f)) for f in files]
 
-  def __read_images_by_client__(self, files, preprocessor):
-    """Reads the preprocessed images from file using the given reader.
-    In this case, images are grouped by clients."""
+  def __read_data_by_client__(self, files, preprocessor):
+    """Reads the preprocessed data from file using the given reader.
+    In this case, the data is grouped by clients."""
     retval = []
     for client_files in files:
-      # images for the client
-      retval.append([preprocessor.read_image(str(image)) for image in client_files])
+      # data for the client
+      retval.append([preprocessor.read_data(str(f)) for f in client_files])
     return retval
 
   def train_extractor(self, extractor, preprocessor, force = False):
-    """Trains the feature extractor using preprocessed images of the 'world' set, if the feature extractor requires training."""
+    """Trains the feature extractor using preprocessed data of the 'world' set, if the feature extractor requires training."""
     if extractor.requires_training:
       extractor_file = self.m_file_selector.extractor_file
       if self.__check_file__(extractor_file, force, 1000):
@@ -90,23 +89,23 @@ class ToolChain:
       else:
         utils.ensure_dir(os.path.dirname(extractor_file))
         # read training files
-        if extractor.split_training_images_by_client:
+        if extractor.split_training_data_by_client:
           train_files = self.m_file_selector.training_list('preprocessed', 'train_extractor', arrange_by_client = True)
-          train_images = self.__read_images_by_client__(train_files, preprocessor)
+          train_data = self.__read_data_by_client__(train_files, preprocessor)
           utils.info("- Extraction: training extractor '%s' using %d identities: " %(extractor_file, len(train_files)))
         else:
           train_files = self.m_file_selector.training_list('preprocessed', 'train_extractor')
-          train_images = self.__read_images__(train_files, preprocessor)
+          train_data = self.__read_data__(train_files, preprocessor)
           utils.info("- Extraction: training extractor '%s' using %d training files: " %(extractor_file, len(train_files)))
         # train model
-        extractor.train(train_images, extractor_file)
+        extractor.train(train_data, extractor_file)
 
 
 
   def extract_features(self, extractor, preprocessor, indices = None, force=False):
-    """Extracts the features from the preprocessed images using the given extractor."""
+    """Extracts the features from the preprocessed data using the given extractor."""
     extractor.load(str(self.m_file_selector.extractor_file))
-    image_files = self.m_file_selector.preprocessed_image_list()
+    data_files = self.m_file_selector.preprocessed_data_list()
     feature_files = self.m_file_selector.feature_list()
 
     # select a subset of indices to iterate
@@ -114,19 +113,19 @@ class ToolChain:
       index_range = range(indices[0], indices[1])
       utils.info("- Extraction: splitting of index range %s" % str(indices))
     else:
-      index_range = range(len(image_files))
+      index_range = range(len(data_files))
 
     utils.ensure_dir(self.m_file_selector.features_directory)
     utils.info("- Extraction: extracting %d features from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.preprocessed_directory, self.m_file_selector.features_directory))
     for i in index_range:
-      image_file = image_files[i]
+      data_file = data_files[i]
       feature_file = feature_files[i]
 
       if not self.__check_file__(feature_file, force):
-        # load image
-        image = preprocessor.read_image(str(image_file))
+        # load data
+        data = preprocessor.read_data(str(data_file))
         # extract feature
-        feature = extractor(image)
+        feature = extractor(data)
         # Save feature
         utils.ensure_dir(os.path.dirname(feature_file))
         extractor.save_feature(feature, str(feature_file))
@@ -187,7 +186,7 @@ class ToolChain:
         index_range = range(len(feature_files))
 
       utils.ensure_dir(self.m_file_selector.projected_directory)
-      utils.info("- Projection: projecting %d images from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.features_directory, self.m_file_selector.projected_directory))
+      utils.info("- Projection: projecting %d features from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.features_directory, self.m_file_selector.projected_directory))
       # extract the features
       for i in index_range:
         feature_file = feature_files[i]

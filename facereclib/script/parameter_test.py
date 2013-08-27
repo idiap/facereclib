@@ -61,8 +61,8 @@ def command_line_options(command_line_parameters):
   parser.add_argument('-g', '--grid',
       help = 'The SGE grid configuration')
 
-  parser.add_argument('-i', '--preprocessed-image-directory',
-      help = '(optional) The directory where to read the already preprocessed images from (no preprocessing is performed in this case).')
+  parser.add_argument('-i', '--preprocessed-data-directory',
+      help = '(optional) The directory where to read the already preprocessed data from (no preprocessing is performed in this case).')
 
   parser.add_argument('-s', '--grid-database-directory', default = '.',
       help = 'Directory where the submitted.db files should be written into (will create sub-directories on need)')
@@ -188,10 +188,10 @@ def directory_parameters(directories):
 
   # add directory parameters
   # - preprocessing
-  if args.preprocessed_image_directory:
-    parameters.extend(['--preprocessed-image-directory', args.preprocessed_image_directory] + skips[1])
+  if args.preprocessed_data_directory:
+    parameters.extend(['--preprocessed-data-directory', args.preprocessed_data_directory] + skips[1])
   else:
-    parameters.extend(['--preprocessed-image-directory', join_dirs(0, 'preprocessed')])
+    parameters.extend(['--preprocessed-data-directory', join_dirs(0, 'preprocessed')])
 
   # - feature extraction
   parameters.extend(['--features-directory', join_dirs(1, 'features')])

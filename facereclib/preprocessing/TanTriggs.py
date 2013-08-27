@@ -118,8 +118,8 @@ class TanTriggsVideo (Preprocessor):
     # prepare image normalization
     self.m_tan = bob.ip.TanTriggs(gamma, sigma0, sigma1, size, threshold, alpha)
 
-  def read_original_image(self, video_file):
-    """Reads the original imge (in this case a utils.FrameContainer) from the given file"""
+  def read_original_data(self, video_file):
+    """Reads the original image (in this case a utils.FrameContainer) from the given file"""
     return utils.video.FrameContainer(str(video_file))
 
   def __call__(self, frame_container, annotations = None):
@@ -138,4 +138,4 @@ class TanTriggsVideo (Preprocessor):
 
     return output_frame_container
 
-  read_image = read_original_image
+  read_data = read_original_data

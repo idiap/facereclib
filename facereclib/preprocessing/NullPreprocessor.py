@@ -22,17 +22,17 @@ from .. import utils
 import numpy
 
 class NullPreprocessor (Preprocessor):
-  """Skips proprocessing files by simply copying the contents into an hdf5 file
+  """Skips proprocessing by simply copying the file contents into an hdf5 file
   (and perform gray scale conversion if required)"""
 
   def __init__(self, color_channel = 'gray'):
     Preprocessor.__init__(self, color_channel=color_channel)
     self.m_color_channel = color_channel
 
-  def __call__(self, image, annotations = None):
+  def __call__(self, data, annotations = None):
     """Just perform gray scale conversion, ignore the annotations."""
     # convert to grayscale
-    image = utils.gray_channel(image, self.m_color_channel)
+    image = utils.gray_channel(data, self.m_color_channel)
     return image.astype(numpy.float64)
 
 

@@ -46,9 +46,9 @@ class FeatureExtractionTest(unittest.TestCase):
     return facereclib.utils.tests.configuration_file(resource, 'feature_extractor', 'features')
 
 
-  def execute(self, extractor, image, reference, epsilon = 1e-5):
+  def execute(self, extractor, data, reference, epsilon = 1e-5):
     # execute the preprocessor
-    feature = extractor(image)
+    feature = extractor(data)
     if regenerate_refs:
       bob.io.save(feature, self.reference_dir(reference))
 
@@ -60,25 +60,25 @@ class FeatureExtractionTest(unittest.TestCase):
 
   def test01_linearize(self):
     # read input
-    image = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = bob.io.load(self.input_dir('cropped.hdf5'))
     extractor = self.config('linearize')
     # extract feature
-    feature = self.execute(extractor, image, 'linearize.hdf5')
+    feature = self.execute(extractor, data, 'linearize.hdf5')
     self.assertTrue(len(feature.shape) == 1)
 
 
   def test02_dct(self):
     # read input
-    image = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = bob.io.load(self.input_dir('cropped.hdf5'))
     extractor = self.config('dct')
     # extract feature
-    feature = self.execute(extractor, image, 'dct_blocks.hdf5')
+    feature = self.execute(extractor, data, 'dct_blocks.hdf5')
     self.assertEqual(len(feature.shape), 2)
 
     # also test extractor with tuple input
     extractor = facereclib.features.DCTBlocks((12,12), (11,11), 45)
     # extract feature
-    feature = self.execute(extractor, image, 'dct_blocks.hdf5')
+    feature = self.execute(extractor, data, 'dct_blocks.hdf5')
     self.assertEqual(len(feature.shape), 2)
 
 
@@ -89,7 +89,7 @@ class FeatureExtractionTest(unittest.TestCase):
     raise SkipTest("Video tests are currently skipped.")
     # we need the preprocessor tool to actually read the data
     preprocessor = facereclib.utils.configuration_file('tan_triggs_video', 'preprocessor', 'preprocessing')
-    video = preprocessor.read_image(self.input_dir('video.hdf5'))
+    video = preprocessor.read_data(self.input_dir('video.hdf5'))
 
     # now, we extract features from it
     feature = extractor(video)
@@ -100,10 +100,10 @@ class FeatureExtractionTest(unittest.TestCase):
 
 
   def test03_graphs(self):
-    image = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = bob.io.load(self.input_dir('cropped.hdf5'))
     extractor = self.config('grid-graph')
     # execute extractor
-    feature = self.execute(extractor, image, 'graph_with_phase.hdf5')
+    feature = self.execute(extractor, data, 'graph_with_phase.hdf5')
     self.assertEqual(len(feature.shape), 3)
 
     # generate new graph extractor without phases
@@ -111,15 +111,15 @@ class FeatureExtractionTest(unittest.TestCase):
       gabor_sigma = math.sqrt(2.) * math.pi,
       extract_gabor_phases = False,
       first_node = (6, 6),
-      image_resolution = image.shape,
+      image_resolution = data.shape,
       node_distance = (4, 4)
     )
-    feature = self.execute(extractor, image, 'graph_no_phase.hdf5')
+    feature = self.execute(extractor, data, 'graph_no_phase.hdf5')
     self.assertEqual(len(feature.shape), 2)
 
     # generate aligned graph extractor
     extractor = self.config('grid_graph_aligned')
-    feature = self.execute(extractor, image, 'graph_aligned.hdf5')
+    feature = self.execute(extractor, data, 'graph_aligned.hdf5')
     self.assertEqual(len(feature.shape), 3)
 
     # test the automatic computation of start node
@@ -134,7 +134,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
 
   def test04_lgbphs(self):
-    image = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = bob.io.load(self.input_dir('cropped.hdf5'))
     # just test if the config file loads correctly...
     extractor = self.config('lgbphs')
     self.assertTrue(isinstance(extractor, facereclib.features.LGBPHS))
@@ -149,7 +149,7 @@ class FeatureExtractionTest(unittest.TestCase):
         sparse_histogram = True
     )
     # execute feature extractor
-    feature = self.execute(extractor, image, 'lgbphs_sparse.hdf5')
+    feature = self.execute(extractor, data, 'lgbphs_sparse.hdf5')
     self.assertEqual(len(feature.shape), 2) # we use sparse histogram by default
 
     # generate new non-sparse extractor
@@ -160,7 +160,7 @@ class FeatureExtractionTest(unittest.TestCase):
         gabor_scales = 2,
         gabor_sigma = math.sqrt(2.) * math.pi,
     )
-    no_phase = self.execute(extractor, image, 'lgbphs_no_phase.hdf5')
+    no_phase = self.execute(extractor, data, 'lgbphs_no_phase.hdf5')
     self.assertEqual(len(no_phase.shape), 1)
 
     # generate new graph without phases
@@ -172,7 +172,7 @@ class FeatureExtractionTest(unittest.TestCase):
         gabor_sigma = math.sqrt(2.) * math.pi,
         use_gabor_phases = True
     )
-    with_phase = self.execute(extractor, image, 'lgbphs_with_phase.hdf5')
+    with_phase = self.execute(extractor, data, 'lgbphs_with_phase.hdf5')
     self.assertTrue(len(with_phase.shape) == 1)
     self.assertEqual(no_phase.shape[0]*2, with_phase.shape[0])
 
@@ -180,10 +180,10 @@ class FeatureExtractionTest(unittest.TestCase):
   def test05_sift_key_points(self):
     # we need the preprocessor tool to actually read the data
     preprocessor = facereclib.preprocessing.Keypoints()
-    image = preprocessor.read_image(self.input_dir('key_points.hdf5'))
+    data = preprocessor.read_data(self.input_dir('key_points.hdf5'))
     # now, we extract features from it
     extractor = self.config('sift')
-    feature = self.execute(extractor, image, 'sift.hdf5', epsilon=1e-4)
+    feature = self.execute(extractor, data, 'sift.hdf5', epsilon=1e-4)
     self.assertEqual(len(feature.shape), 1)
 
 
@@ -196,10 +196,10 @@ class FeatureExtractionTest(unittest.TestCase):
     extractor = facereclib.features.Eigenface(subspace_dimension = 5)
     self.assertTrue(extractor.requires_training)
 
-    # we read the test image (so that we have a length)
-    image = bob.io.load(self.input_dir('cropped.hdf5'))
+    # we read the test data (so that we have a length)
+    data = bob.io.load(self.input_dir('cropped.hdf5'))
     # we have to train the eigenface extractor, so we generate some data
-    train_data = facereclib.utils.tests.random_training_set(image.shape, 400, 0., 255.)
+    train_data = facereclib.utils.tests.random_training_set(data.shape, 400, 0., 255.)
     t = tempfile.mkstemp('pca.hdf5', prefix='frltest_')[1]
     extractor.train(train_data, t)
     if regenerate_refs:
@@ -216,5 +216,5 @@ class FeatureExtractionTest(unittest.TestCase):
     os.remove(t)
 
     # now, we can execute the extractor and check that the feature is still identical
-    feature = self.execute(extractor, image, 'eigenface.hdf5')
+    feature = self.execute(extractor, data, 'eigenface.hdf5')
     self.assertEqual(len(feature.shape), 1)

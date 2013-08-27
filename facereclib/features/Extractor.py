@@ -30,13 +30,13 @@ class Extractor:
   def __init__(
       self,
       requires_training = False, # enable, if your extractor needs training
-      split_training_images_by_client = False, # enable, if your extractor needs the training files sorted by client
+      split_training_data_by_client = False, # enable, if your extractor needs the training files sorted by client
       **kwargs                   # the parameters of the extractor, to be written in the __str__() method
   ):
     # Each class needs to have a constructor taking
     # all the parameters that are required for the feature extraction as arguments
     self.requires_training = requires_training
-    self.split_training_images_by_client = split_training_images_by_client
+    self.split_training_data_by_client = split_training_data_by_client
     self._kwargs = kwargs
 
 
@@ -44,10 +44,10 @@ class Extractor:
   ### functions that must be overwritten in derived classes
   ############################################################
 
-  def __call__(self, image):
+  def __call__(self, data):
     """This function will actually perform the feature extraction.
     It must be overwritten by derived classes.
-    It takes the (preprocessed) image and returns the features extracted from the image.
+    It takes the (preprocessed) data and returns the features extracted from the data.
     """
     raise NotImplementedError("Please overwrite this function in your derived class")
 
@@ -95,14 +95,14 @@ class Extractor:
     pass
 
 
-  def train(self, image_list, extractor_file):
+  def train(self, data_list, extractor_file):
     """This function can be overwritten to train the feature extractor.
     If you do this, please also register the function by calling this base class constructor
     and enabling the training by 'requires_training = True'.
 
     The training function gets two parameters:
 
-    - image_list: A list of images that can be used for training the extractor.
+    - data_list: A list of data that can be used for training the extractor.
     - extractor_file: The file to write. This file should be readable with the 'load' function (see above).
     """
     raise NotImplementedError("Please overwrite this function in your derived class, or unset the 'requires_training' option in the constructor.")

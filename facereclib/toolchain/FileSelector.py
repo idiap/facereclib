@@ -68,8 +68,8 @@ class FileSelector:
       return [file.make_path(directory, extension) for file in files if file.path not in known and not known.add(file.path)]
 
   ### List of files that will be used for all files
-  def original_image_list(self):
-    """Returns the list of original images that can be used for image preprocessing."""
+  def original_data_list(self):
+    """Returns the list of original data that can be used for preprocessing."""
     return self.get_paths(self.m_database.all_files(), directory = self.m_database.original_directory, extension = self.m_database.original_extension)
 
   def annotation_list(self):
@@ -81,8 +81,8 @@ class FileSelector:
     """Reads the annotation of the given file."""
     return self.m_database.annotations(annotation_file)
 
-  def preprocessed_image_list(self):
-    """Returns the list of preprocessed images files."""
+  def preprocessed_data_list(self):
+    """Returns the list of preprocessed data files."""
     files = self.m_database.all_files()
     return self.get_paths(files, "preprocessed")
 

@@ -28,8 +28,8 @@ class Keypoints (FaceCrop):
   """Extracts keypoints (from a possibly normalized/cropped face image)"""
 
   def __init__(
-      self, 
-      crop_image = False, # Tells if the image is cropped before extracting keypoints or not 
+      self,
+      crop_image = False, # Tells if the image is cropped before extracting keypoints or not
       color_channel = 'gray', # The color channel to keep
       fixed_annotations=None, # Fixed annotations used to all images. If set, this should be a dictionary of pairs (y,x) (or (dy,dx) if relative_annotations is set)
       cropped_domain_annotations=False, # If sets to true, the 'fixed' annotations are assumed to be in the cropped image (in the 'original' image otherwise)
@@ -95,9 +95,9 @@ class Keypoints (FaceCrop):
         if self.m_cropped_domain_annotations == True: # If annotations are in the cropped domain
           if self.m_relative_annotations: # If relative annotations, get the absolute coordinates of the keypoints
             c = 0
-            for k in sorted(annotations): 
+            for k in sorted(annotations):
               keypoints[c,:] = c_mideye + c_eye_d * numpy.array(annotations[k])
-              c += 1    
+              c += 1
           else: # Otherwise, keypoints coordinates are already absolute
             c=0
             for k in sorted(annotations):
@@ -108,9 +108,9 @@ class Keypoints (FaceCrop):
           o_mideye = numpy.array([o_mideye_y, o_mideye_x], dtype=numpy.float64)
           if self.m_relative_annotations: # If relative annotations, get the absolute coordinates of the keypoints
             c = 0
-            for k in sorted(annotations): 
+            for k in sorted(annotations):
               keypoints[c,:] = c_mideye + c_eye_d * numpy.array(annotations[k])
-              c += 1    
+              c += 1
           else: # Otherwise, convert absolute annotations from the original domain to the cropped one
             c=0
             for k in sorted(annotations):
@@ -121,14 +121,14 @@ class Keypoints (FaceCrop):
           c_eye_d, c_mideye_y, c_mideye_x = self._compute_mideye_eyed(self.m_cropped_positions)
           c_mideye = numpy.array([c_mideye_y, c_mideye_x], dtype=numpy.float64)
           c = 0
-          for k in sorted(annotations): 
+          for k in sorted(annotations):
             keypoints[c,:] = c_mideye + c_eye_d * numpy.array(annotations[k])
             c += 1
         else:
           c=0
           for k in sorted(annotations):
             keypoints[c,:] = numpy.array(annotations[k])
-            c += 1 
+            c += 1
     else:
       keypoints = numpy.ndarray(shape=(0,2), dtype=numpy.float64)
 
@@ -146,12 +146,12 @@ class Keypoints (FaceCrop):
 
     return self.extract_keypoints(image2, annotations)
 
-  def save_image(self, image, image_file):
+  def save_data(self, image, image_file):
     f = bob.io.HDF5File(image_file, 'w')
     f.set('image', image[0])
     f.set('annotations', image[1])
 
-  def read_image(self, image_file):
+  def read_data(self, image_file):
     f = bob.io.HDF5File(image_file, 'r')
     image = f.read('image')
     annotations = f.read('annotations')

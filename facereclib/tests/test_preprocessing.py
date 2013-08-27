@@ -45,9 +45,9 @@ class PreprocessingTest(unittest.TestCase):
   def config(self, resource):
     return facereclib.utils.tests.configuration_file(resource, 'preprocessor', 'preprocessing')
 
-  def execute(self, preprocessor, image, annotations, reference):
+  def execute(self, preprocessor, data, annotations, reference):
     # execute the preprocessor
-    preprocessed = preprocessor(image, annotations)
+    preprocessed = preprocessor(data, annotations)
     if regenerate_refs:
       bob.io.save(preprocessed, self.reference_dir(reference))
 
@@ -57,48 +57,48 @@ class PreprocessingTest(unittest.TestCase):
 
   def test00_null_preprocessor(self):
     # read input
-    image, annotation = self.input()
+    data, annotation = self.input()
     # the null preprocessor currently has no config file
     preprocessor = facereclib.preprocessing.NullPreprocessor()
     # execute preprocessor
-    self.execute(preprocessor, image, annotation, 'gray.hdf5')
+    self.execute(preprocessor, data, annotation, 'gray.hdf5')
 
 
   def test01_face_crop(self):
     # read input
-    image, annotation = self.input()
+    data, annotation = self.input()
     preprocessor = self.config('face-crop')
     # execute face cropper
-    self.execute(preprocessor, image, annotation, 'cropped.hdf5')
+    self.execute(preprocessor, data, annotation, 'cropped.hdf5')
 
     # test the preprocessor with fixed eye positions
     # here, we read a special config file that sets the same fixed eye positions as given in the test data
     preprocessor = facereclib.utils.resources.load_resource(self.reference_dir('face_crop_fixed.py'), 'preprocessor')
     # execute face cropper;
     # result must be identical to the original face cropper (same eyes are used)
-    self.execute(preprocessor, image, None, 'cropped.hdf5')
+    self.execute(preprocessor, data, None, 'cropped.hdf5')
 
     # test the preprocessor with offset
     preprocessor = self.config('face_crop_with_offset')
-    preprocessed = preprocessor(image, annotation)
+    preprocessed = preprocessor(data, annotation)
     # results of the inner parts must be similar
     self.assertTrue((numpy.abs(bob.io.load(self.reference_dir('cropped.hdf5')) - preprocessed[2:-2, 2:-2]) < 1e-10).all())
 
 
   def test02_tan_triggs(self):
     # read input
-    image, annotation = self.input()
+    data, annotation = self.input()
     preprocessor = self.config('tan-triggs')
     # execute preprocessor
-    self.execute(preprocessor, image, annotation, 'tan_triggs_cropped.hdf5')
+    self.execute(preprocessor, data, annotation, 'tan_triggs_cropped.hdf5')
 
     # test if the preprocessor with offset at least loads
     preprocessor = self.config('tan_triggs_with_offset')
     self.assertTrue(isinstance(preprocessor, facereclib.preprocessing.TanTriggs))
 
-    # execute the preprocessor without image cropping
+    # execute the preprocessor without cropping
     preprocessor = facereclib.preprocessing.TanTriggs()
-    self.execute(preprocessor, image, None, 'tan_triggs.hdf5')
+    self.execute(preprocessor, data, None, 'tan_triggs.hdf5')
 
 
   def test02a_tan_triggs_video(self):
@@ -111,76 +111,76 @@ class PreprocessingTest(unittest.TestCase):
       raise SkipTest("The original video '%s' for the test is not available."%f)
 
     # read the original video using the preprocessor
-    original = preprocessor.read_original_image(f)
+    original = preprocessor.read_original_data(f)
 
     # preprocess
     preprocessed = preprocessor(original)
     if regenerate_refs:
       preprocessed.save(bob.io.HDF5File(self.reference_dir('video.hdf5'), 'w'))
 
-    reference = preprocessor.read_image(self.reference_dir('video.hdf5'))
+    reference = preprocessor.read_data(self.reference_dir('video.hdf5'))
     self.assertEqual(preprocessed, reference)
 
 
   def test03_self_quotient(self):
     # read input
-    image, annotation = self.input()
+    data, annotation = self.input()
     preprocessor = self.config('self-quotient')
     # execute preprocessor
-    self.execute(preprocessor, image, annotation, 'self_quotient_cropped.hdf5')
-#    self.execute(preprocessor, image, None, 'self_quotient.hdf5')
+    self.execute(preprocessor, data, annotation, 'self_quotient_cropped.hdf5')
+#    self.execute(preprocessor, data, None, 'self_quotient.hdf5')
 
 
   def test04_inorm_lbp(self):
     # read input
-    image, annotation = self.input()
+    data, annotation = self.input()
     preprocessor = self.config('inorm-lbp')
     # execute preprocessor
-    self.execute(preprocessor, image, annotation, 'inorm_cropped.hdf5')
-#    self.execute(preprocessor, image, None, 'inorm.hdf5')
+    self.execute(preprocessor, data, annotation, 'inorm_cropped.hdf5')
+#    self.execute(preprocessor, data, None, 'inorm.hdf5')
 
 
   def test05_histogram(self):
     # read input
-    image, annotation = self.input()
+    data, annotation = self.input()
     preprocessor = self.config('histogram-equalize')
     # execute preprocessor
-    self.execute(preprocessor, image, annotation, 'histogram_cropped.hdf5')
-#    self.execute(preprocessor, image, None, 'histogram.hdf5')
+    self.execute(preprocessor, data, annotation, 'histogram_cropped.hdf5')
+#    self.execute(preprocessor, data, None, 'histogram.hdf5')
 
 
   def test06a_key_points(self):
     # read input
-    image, annotation = self.input()
+    data, annotation = self.input()
     preprocessor = self.config('keypoints')
 
     # execute preprocessor
-    preprocessed = preprocessor(image, annotation)
+    preprocessed = preprocessor(data, annotation)
     if regenerate_refs:
-      preprocessor.save_image(preprocessed, self.reference_dir('key_points.hdf5'))
+      preprocessor.save_data(preprocessed, self.reference_dir('key_points.hdf5'))
 
-    reference = preprocessor.read_image(self.reference_dir('key_points.hdf5'))
-    # check if it is near the reference image and positions
-    image, annots = preprocessed
-    imag2, annot2 = reference
-    self.assertTrue((numpy.abs(image - imag2) < 1e-5).all())
+    reference = preprocessor.read_data(self.reference_dir('key_points.hdf5'))
+    # check if it is near the reference data and positions
+    data, annots = preprocessed
+    data2, annot2 = reference
+    self.assertTrue((numpy.abs(data - data2) < 1e-5).all())
     self.assertTrue((annots == annot2).all())
 
   def test06b_key_points(self):
     # read input
-    image, annotation = self.input()
+    data, annotation = self.input()
     preprocessor = self.config('keypoints_lfw')
 
     # execute preprocessor
-    preprocessed = preprocessor(image, annotation)
+    preprocessed = preprocessor(data, annotation)
     if regenerate_refs:
-      preprocessor.save_image(preprocessed, self.reference_dir('key_points_cropped.hdf5'))
+      preprocessor.save_data(preprocessed, self.reference_dir('key_points_cropped.hdf5'))
 
-    reference = preprocessor.read_image(self.reference_dir('key_points_cropped.hdf5'))
-    # check if it is near the reference image and positions
-    image, annots = preprocessed
-    imag2, annot2 = reference
-    self.assertTrue((numpy.abs(image - imag2) < 1e-5).all())
+    reference = preprocessor.read_data(self.reference_dir('key_points_cropped.hdf5'))
+    # check if it is near the reference data and positions
+    data, annots = preprocessed
+    data2, annot2 = reference
+    self.assertTrue((numpy.abs(data - data2) < 1e-5).all())
     self.assertTrue((annots == annot2).all())
 
 

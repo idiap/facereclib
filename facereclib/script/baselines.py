@@ -30,12 +30,12 @@ def command_line_arguments(command_line_parameters):
   # - the algorithm to execute
   parser.add_argument('-a', '--algorithms', choices = all_algorithms, default = ('eigenface',), nargs = '+', help = 'Select one (or more) algorithms that you want to execute.')
   parser.add_argument('--all', action = 'store_true', help = 'Select all algorithms.')
-  # - the image database to choose
+  # - the database to choose
   parser.add_argument('-d', '--database', choices = available_databases, default = 'atnt', help = 'The database on which the baseline algorithm is executed.')
   # - the directory to write
   parser.add_argument('-f', '--directory', help = 'The directory to write the data of the experiment into. If not specified, the default directories of the faceverify script are used (see bin/faceverify.py --help).')
-  # - special option to share image preprocessing. This can be used to save some time.
-  parser.add_argument('-s', '--share-preprocessing', action = 'store_true', help = 'Share the preprocessed image directory?\nWARNING! When using this option and the --grid option, please let the first algorithm finish, until you start the next one.')
+  # - special option to share preprocessing. This can be used to save some time.
+  parser.add_argument('-s', '--share-preprocessing', action = 'store_true', help = 'Share the preprocessed data directory?\nWARNING! When using this option and the --grid option, please let the first algorithm finish, until you start the next one.')
 
   # - use the Idiap grid -- option is only useful if you are at Idiap
   parser.add_argument('-g', '--grid', action = 'store_true', help = 'Execute the algorithm in the SGE grid.')
@@ -244,9 +244,9 @@ def main(command_line_parameters = sys.argv):
       if has_eval:
         command.extend(['--groups', 'dev', 'eval'])
 
-      # we share the preprocessed images if desired, so they don't have to be re-generated
+      # we share the preprocessed data if desired, so they don't have to be re-generated
       if args.share_preprocessing and len(setup) == 3:
-        command.extend(['--preprocessed-image-directory', '../preprocessed_images'])
+        command.extend(['--preprocessed-data-directory', '../preprocessed_data'])
 
       # set the directories, if desired; we set both directories to be identical.
       if args.directory:

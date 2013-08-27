@@ -57,36 +57,36 @@ class Preprocessor:
   ### Special functions that might be overwritten on need
   ############################################################
 
-  def read_original_image(self, image_name):
-    """Reads the *original* image from file.
+  def read_original_data(self, original_file_name):
+    """Reads the *original* data (usually an image) from file.
     In this base class implementation, it uses ``bob.io.load`` to do that.
-    If you have different format (e.g., not even images), please overwrite this function.
+    If you have different format, please overwrite this function.
     """
-    return bob.io.load(image_name)
+    return bob.io.load(original_file_name)
 
 
-  def save_image(self, image, image_file):
-    """Saves the given *preprocessed* image to a file with the given name.
+  def save_data(self, data, data_file):
+    """Saves the given *preprocessed* data to a file with the given name.
     In this base class implementation:
 
-    - If the given image has a ``save`` attribute, it calls ``image.save(bob.io.HDF5File(image_file), 'w')``.
-      In this case, the given image_file might be either a file name or a bob.io.HDF5File.
+    - If the given data has a ``save`` attribute, it calls ``data.save(bob.io.HDF5File(data_file), 'w')``.
+      In this case, the given data_file might be either a file name or a bob.io.HDF5File.
     - Otherwise, it uses ``bob.io.save`` to do that.
 
     If you have a different format (e.g. not images), please overwrite this function.
     """
-    utils.ensure_dir(os.path.dirname(image_file))
-    if hasattr(image, 'save'):
+    utils.ensure_dir(os.path.dirname(data_file))
+    if hasattr(data, 'save'):
       # this is some class that supports saving itself
-      image.save(bob.io.HDF5File(image_file, "w"))
+      image.save(bob.io.HDF5File(data_file, "w"))
     else:
-      bob.io.save(image, image_file)
+      bob.io.save(data, data_file)
 
 
-  def read_image(self, image_name):
-    """Reads the *preprocessed* image from file.
+  def read_data(self, data_file):
+    """Reads the *preprocessed* data from file.
     In this base class implementation, it uses ``bob.io.load`` to do that.
-    If you have different format (e.g., not even images), please overwrite this function.
+    If you have different format, please overwrite this function.
     """
-    return bob.io.load(image_name)
+    return bob.io.load(data_file)
 

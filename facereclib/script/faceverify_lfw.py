@@ -25,7 +25,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # each fold might have its own feature extraction training and feature projection training,
     # so we have to overwrite the default directories
     view = 'view1' if protocol == 'view1' else 'view2'
-    self.m_configuration.preprocessed_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.preprocessed_image_directory, view)
+    self.m_configuration.preprocessed_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.preprocessed_data_directory, view)
     self.m_configuration.features_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.features_directory, protocol)
     self.m_configuration.projected_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.projected_features_directory, protocol)
 
@@ -68,9 +68,9 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # preprocessing
     if not self.m_args.skip_preprocessing:
       if self.m_args.dry_run:
-        print "Would have preprocessed images for protocol %s ..." % self.m_database.protocol
+        print "Would have preprocessed data for protocol %s ..." % self.m_database.protocol
       else:
-        self.m_tool_chain.preprocess_images(
+        self.m_tool_chain.preprocess_data(
               self.m_preprocessor,
               force = self.m_args.force)
 
@@ -164,12 +164,12 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     protocol = self.m_database.protocol
     pshort = protocol[0] + str(int(protocol[4:]) % 10)
     default_opt = ' --protocol %s'%protocol
-    # image preprocessing; never has any dependencies.
+    # preprocessing; never has any dependencies.
     if not self.m_args.skip_preprocessing:
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess' + default_opt,
               name = 'pre-%s'%pshort,
-              list_to_split = self.m_file_selector.original_image_list(),
+              list_to_split = self.m_file_selector.original_data_list(),
               number_of_files_per_job = self.m_grid.number_of_preprocessings_per_job,
               dependencies = deps,
               **self.m_grid.preprocessing_queue)
@@ -188,7 +188,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       job_ids['feature_extraction'] = self.submit_grid_job(
               'extract' + default_opt,
               name = 'extr-%s'%pshort,
-              list_to_split = self.m_file_selector.preprocessed_image_list(),
+              list_to_split = self.m_file_selector.preprocessed_data_list(),
               number_of_files_per_job = self.m_grid.number_of_extracted_features_per_job,
               dependencies = deps,
               **self.m_grid.extraction_queue)
@@ -273,9 +273,9 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     """This function executes the grid job that is specified on the command line."""
     # preprocess
     if self.m_args.sub_task == 'preprocess':
-      self.m_tool_chain.preprocess_images(
+      self.m_tool_chain.preprocess_data(
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid.number_of_preprocessings_per_job),
+          indices = self.indices(self.m_file_selector.original_data_list(), self.m_grid.number_of_preprocessings_per_job),
           force = self.m_args.force)
 
     elif self.m_args.sub_task == 'train-extractor':
@@ -289,7 +289,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.extract_features(
           self.m_extractor,
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid.number_of_extracted_features_per_job),
+          indices = self.indices(self.m_file_selector.preprocessed_data_list(), self.m_grid.number_of_extracted_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
@@ -304,7 +304,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.project_features(
           self.m_tool,
           self.m_extractor,
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid.number_of_projected_features_per_job),
+          indices = self.indices(self.m_file_selector.preprocessed_data_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train model enroller
@@ -465,8 +465,9 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
-  -- feature extraction (including image preprocessing)
-  -- the score computation tool
+  -- the preprocessing
+  -- feature extraction
+  -- the recognition tool
   -- and the grid configuration (in case, the function should be executed in the grid).
   Additionally, you can skip parts of the tool chain by selecting proper --skip-... parameters.
   If your probe files are not too big, you can also specify the --preload-probes switch to speed up the score computation.

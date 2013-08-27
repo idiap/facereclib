@@ -33,7 +33,7 @@ class Configuration:
     self.projector_file = os.path.join(self.temp_directory, args.projector_file)
     self.enroller_file = os.path.join(self.temp_directory, args.enroller_file)
 
-    self.preprocessed_directory = os.path.join(self.temp_directory, args.preprocessed_image_directory)
+    self.preprocessed_directory = os.path.join(self.temp_directory, args.preprocessed_data_directory)
     self.features_directory = os.path.join(self.temp_directory, args.features_directory)
     self.projected_directory = os.path.join(self.temp_directory, args.projected_features_directory)
 
@@ -130,8 +130,8 @@ class ToolChainExecutor:
         help = 'The file where the configuration of all parts of the experiments are written. If not specified, "Experiment.info" in the --result-directory is used.')
 
     sub_dir_group = parser.add_argument_group('\nSubdirectories of certain parts of the tool chain. You can specify directories in case you want to reuse parts of the experiments (e.g. extracted features) in other experiments. Please note that these directories are relative to the --temp-directory, but you can also specify absolute paths')
-    sub_dir_group.add_argument('--preprocessed-image-directory', metavar = 'DIR', default = 'preprocessed',
-        help = 'Name of the directory of the preprocessed images.')
+    sub_dir_group.add_argument('--preprocessed-data-directory', metavar = 'DIR', default = 'preprocessed',
+        help = 'Name of the directory of the preprocessed data.')
     sub_dir_group.add_argument('--features-directory', metavar = 'DIR', default = 'features',
         help = 'Name of the directory of the features.')
     sub_dir_group.add_argument('--projected-features-directory', metavar = 'DIR', default = 'projected',
@@ -151,7 +151,7 @@ class ToolChainExecutor:
     ################# options for skipping parts of the toolchain #########################
     skip_group = parser.add_argument_group('\nFlags that allow to skip certain parts of the experiments. This does only make sense when the generated files are already there (e.g. when reusing parts of other experiments)')
     skip_group.add_argument('--skip-preprocessing', '--nopre', action='store_true',
-        help = 'Skip the image preprocessing step.')
+        help = 'Skip the preprocessing step.')
     skip_group.add_argument('--skip-extractor-training', '--noet', action='store_true',
         help = 'Skip the feature extractor training step.')
     skip_group.add_argument('--skip-extraction', '--noe', action='store_true',
