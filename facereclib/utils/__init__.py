@@ -33,7 +33,7 @@ def score_fusion_strategy(strategy_name = 'avarage'):
         'median' : numpy.median
     }[strategy_name]
   except KeyError:
-    warn("score fusion strategy '%s' is unknown" % strategy_name)
+#    warn("score fusion strategy '%s' is unknown" % strategy_name)
     return None
 
 

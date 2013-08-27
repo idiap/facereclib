@@ -182,9 +182,3 @@ class PreprocessingTest(unittest.TestCase):
     data2, annot2 = reference
     self.assertTrue((numpy.abs(data - data2) < 1e-5).all())
     self.assertTrue((annots == annot2).all())
-
-
-
-  def test07_lfcc(self):
-    # for now, I just raise a skip exception
-    raise SkipTest("This test is not yet implemented.")
