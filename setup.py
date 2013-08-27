@@ -125,12 +125,11 @@ setup(
       ]
     },
 
-    #long_description=open('doc/install.rst').read(),
 
     install_requires=[
       "setuptools", # for whatever
-      "bob >= 1.2.0a0",    # base signal proc./machine learning library
-      "xbob.db.atnt",      # for test purposes, the (freely available) AT&T database is required
+      "bob >= 1.2.0",    # base signal processing/machine learning library
+      "xbob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
     ],
 
     # Classifiers are important if you plan to distribute this package through

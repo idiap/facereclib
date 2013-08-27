@@ -27,28 +27,22 @@ If you have not installed Bob_ or your version is to old, please visit `Bob's Gi
 If you prefer not to install Bob_ in its default location, you have to adapt the ``prefixes`` of the buildout.cfg_ configuration file, which sits in the main directory of the |project|.
 
 .. note::
-  Currently, the version 1.2.0 of Bob is not yet released.
-  Hence, if you are not at Idiap_ (see `Using Bob at Idiap`_ below) you need to clone `Bob's GitHub page`_ and compile Bob yourself.
-
-.. note::
   Currently, there is no MS Windows version of Bob_.
 
 Using Bob at Idiap
 ~~~~~~~~~~~~~~~~~~
 
-At Idiap, you can use the latest version of Bob_ by changing the ``prefixes`` to **/idiap/group/torch5spro/nightlies/last/install/linux-x86_64-release** (the current default).
-But if you prefer to use the latest stable version, just comment out the ``prefixes``.
-
-.. note::
-  Currently, the latest stable version of Bob_ is not compatible with the |project|.
+At Idiap, you can use the latest version of Bob_ by changing the ``prefixes`` to **/idiap/group/torch5spro/nightlies/last/install/linux-x86_64-release**.
+By default, the version 1.2.0 from **/idiap/group/torch5spro/releases/bob-1.2.0/install/linux-x86_64-release** is used.
 
 Of course, you can also use your own private copy of Bob_, just set the right ``prefixes``.
 
 Usually, all possible database satellite packages (called ``xbob.db.[...]``) are automatically downloaded from PyPI_.
 If you don't want to download the databases, please edit the ``eggs`` section of the buildout.cfg_ configuration file by removing the databases that you don't want.
 
-Also, the ``gridtk`` tool kit for submitting jobs to the Idiap SGE_ grid is only useful at Idiap_.
-You can safely remove this line from the buildout.cfg_ if you are not at Idiap or if you don't want to launch your experiments in the SGE_ grid.
+The ``gridtk`` tool kit is mainly used for submitting submitting jobs to Idiap_'s SGE_ grid.
+The latest version also supports to run jobs in parallel on the local machine.
+You can safely remove this line from the buildout.cfg_ if you are not at Idiap or if you don't want to launch your experiments in parallel.
 
 Image databases
 ~~~~~~~~~~~~~~~
@@ -104,7 +98,7 @@ To avoid the download, please:
   In this case, there is no need to set the environment variable any more.
   Currently, the default is set to the directory that is valid for Idiap_.
 
-In case any of the tests fail for unexplainable reasons, please file a bug report through the `GitHub bug system`_.
+In case any of the tests fail for unexplainable reasons, please file a bug report through the `GitHub bug reporting system`_.
 
 
 Generate this documentation

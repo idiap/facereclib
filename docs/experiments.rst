@@ -25,9 +25,9 @@ To run a face recognition experiment using the |project|, you have to tell the `
 To use this script, you have to specify at least these command line arguments (see also the ``--help`` option):
 
 * ``--database``: The database to run the experiments on, and which protocol to use.
-* ``--preprocessing``: The image preprocessing and its parameters.
+* ``--preprocessing``: The data preprocessing and its parameters.
 * ``--features``: The features to extract and their options.
-* ``--tool``: The face recognition algorithm and all its required parameters.
+* ``--tool``: The recognition algorithm and all its required parameters.
 
 There is another command line argument that is used to separate the resulting files from different experiments.
 Please specify a descriptive name for your experiment to be able to remember, how the experiment was run:
@@ -113,8 +113,8 @@ Required parameters
 * ``name``: The name of the database, in lowercase letters without special characters.
   This name will be used as a default sub-directory to separate resulting files of different experiments.
 * ``database = xbob.db.<DATABASE>()``: One of the image databases available at `Idiap at GitHub`_.
-* ``image_directory``: The base directory, where the image of the database are stored.
-* ``image_extension``: The file extension of the images in the database.
+* ``original_directory``: The base directory, where the original data of the database is stored.
+* ``original_extension``: The file extension of the original data in the database.
 
 Optional parameters
 *******************
@@ -124,7 +124,7 @@ Optional parameters
 * ``annotation_directory``: The directory containing the (hand-labeled) annotations of the database, if available.
 * ``annotation_extension``: The file extension of the images. Default value: *.pos*.
 * ``annotation_type``: The way the annotations are stored in the annotation files.
-  Possible values are: *eyecenter*, *named*, *multipie*, *scface*, *cosmin* (see **facereclib/utils/annotations.py** on which one works for you)
+  Possible values are: *eyecenter*, *named*, *multipie*, *scface*, *cosmin* (see `facereclib.utils.read_annotations <file:../facereclib/utils/annotations.py>`_ on which one works for you)
   This option must be specified when ``annotation_directory`` is given.
 * ``protocol``: The name of the protocol that should be used.
   If omitted, the protocol *Default* will be used (which might not be available in all databases, so please specify).
@@ -166,7 +166,7 @@ If you have an ``image_directory`` different to the one specified in the file, p
 
   - `Labeled Faces in the Wild (LFW) <file:../facereclib/configurations/databases/lfw.py>`_ : http://vis-www.cs.umass.edu/lfw/
 
-* ``facereclib.database.DatabaseXBobZT``:
+* `facereclib.database.DatabaseXBobZT <file:../facereclib/databases/DatabaseXBob.py>`_:
 
   - `BANCA <file:../facereclib/configurations/databases/banca.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/banca
   - `MOBIO <file:../facereclib/configurations/databases/mobio.py>`_ : http://www.idiap.ch/dataset/mobio
@@ -174,16 +174,17 @@ If you have an ``image_directory`` different to the one specified in the file, p
   - `Surveillance Camera (SC) face database <file:../facereclib/configurations/databases/scface.py>`_ : http://www.scface.org
   - `Extended M2VTS (XM2VTS) <file:../facereclib/configurations/databases/xm2vts.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/xm2vtsdb
 
-There is also one interface for the ``xbob.db.faceverif_fl`` database, which contains a file-based API to define simple evaluation protocols for other databases.
+There is also one interface for the ``xbob.db.verification.filelist`` database, which contains a file-based API to define simple evaluation protocols for other databases.
 An example, which is based on the `AT&T database`, on how to configure and use this database can be found in `facereclib/tests/databases/atnt_fl/atnt_fl_database.py <file:../facereclib/tests/databases/atnt_fl/atnt_fl_database.py>`_.
-For more information, please also read the :ref:`faceverif-fl` section.
+For more information, please also read the :ref:`filelist` section.
 
 
 .. _preprocessors:
 
 Preprocessors
 ~~~~~~~~~~~~~
-Currently, all image preprocessors that are defined in |project| perform an automatic image alignment to the hand-labeled eye positions as provided by the :ref:`databases`.
+Currently, all preprocessors that are defined in |project| perform work on facial images and are, hence, used for face recognition.
+They perform an automatic image alignment to the hand-labeled eye positions as provided by the :ref:`databases`.
 Hence, most preprocessors that are defined in `facereclib/preprocessing <file:../facereclib/preprocessing>`_ have a common set of parameters:
 
 Face cropping parameters
@@ -232,13 +233,13 @@ Preprocessor classes
 
 Feature extractors
 ~~~~~~~~~~~~~~~~~~
-Several different kinds of features can be extracted from the preprocessed images.
+Several different kinds of features can be extracted from the preprocessed data.
 Here is the list of classes to perform feature extraction and its parameters.
 
-* `facereclib.features.Linearize <file:../facereclib/features/Linearize.py>`_: Just extracts the pixels of the preprocessed image to one vector.
+* `facereclib.features.Linearize <file:../facereclib/features/Linearize.py>`_: Just puts the elements of the preprocessed data to one vector.
   There are no parameters to this class.
 
-* `facereclib.features.Eigenface <file:../facereclib/features/Eigenface.py>`_: Extract eigenface features from the images, after training the extractor using the preprocessed images from the training set.
+* `facereclib.features.Eigenface <file:../facereclib/features/Eigenface.py>`_: Extracts eigenface features from the preprocessed data, after training the extractor using the preprocessed data from the training set.
 
   - ``subspace_dimension``: The number of kept eigenfaces.
 
@@ -250,8 +251,8 @@ Here is the list of classes to perform feature extraction and its parameters.
   - ``block_overlap``: The overlap of the blocks in vertical and horizontal direction.
     This parameter might be either a single integral value, or a pair ``(blocK_overlap_y, block_overlap_x)`` of integral values.
   - ``number_of_dct_coefficients``: The number of DCT coefficients to use. The actual number will be one less since the first DCT coefficient (which should be 0, if normalization is used) will be removed.
-  - ``normalize_blocks``: Normalize the pixel gray values of the image blocks to zero mean and unit standard deviation before extracting DCT coefficients. Default is ``True``.
-  - ``normalize_dcts``: Normalize the values of the dct components to zero mean and unit standard deviation. Default is ``True``.
+  - ``normalize_blocks``: Normalize the values of the blocks to zero mean and unit standard deviation before extracting DCT coefficients. Default is ``True``.
+  - ``normalize_dcts``: Normalize the values of the DCT components to zero mean and unit standard deviation. Default is ``True``.
 
 * `facereclib.features.GridGraph <file:../facereclib/features/GridGraph.py>`_: Extracts Gabor jets in a grid structure [GHW12]_.
 
@@ -290,14 +291,14 @@ Here is the list of classes to perform feature extraction and its parameters.
 
 .. _algorithms:
 
-Face recognition algorithms
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-There are also a variety of face recognition algorithms implemented in the |project|.
+Recognition algorithms
+~~~~~~~~~~~~~~~~~~~~~~
+There are also a variety of recognition algorithms implemented in the |project|.
 All face recognition algorithms are based on the `facereclib.tools.Tool <file:../facereclib/tools/Tool.py>`_ base class.
 This base class has parameters that some of the algorithms listed below share.
 These parameters mainly deal with how to compute a single score when more than one feature is provided for the model or for the probe:
 
-- ``multiple_model_scoring``: Strategy to combine several features in a models.
+- ``multiple_model_scoring``: Strategy to combine several features in a model.
   Possible values are (see also `facereclib.utils.score_fusion_strategy <file:../facereclib/utils/__init__.py>`_):  ``'average'``, ``'min'``, ``'max'``, ``'median'``, default is ``'average'``.
 - ``multiple_probe_scoring``: Strategy to combine several probe scores.
   Possible values are (see also `facereclib.utils.score_fusion_strategy <file:../facereclib/utils/__init__.py>`_):  ``'average'``, ``'min'``, ``'max'``, ``'median'``, default is ``'average'``.
@@ -308,7 +309,7 @@ Here is a list of the most important algorithms and their parameters:
 * `facereclib.tools.PCA <file:../facereclib/tools/PCA.py>`_: Computes a PCA projection on the given training features, projects the features to face space and computes the distance of two projected features in face space.
 
   - ``subspace_dimension``: If integral: the number of kept eigenvalues in the projection matrix; if float in range[0,1]: the percentage of variance to keep.
-  - ``distance_function``: The distance function to be used to compare two features in face space. Default: ``bob.math.euclidean_distance``.
+  - ``distance_function``: The distance function to be used to compare two features in face space. Default: ``scipy.spatial.distance.euclidean``.
   - ``is_distance_function``: Specifies, if the ``distance_function`` is a distance or a similarity function. Default: ``True``.
   - ``uses_variances``: Does the ``distance_function`` require the PCA variances? Default: ``False``.
 
@@ -319,7 +320,7 @@ Here is a list of the most important algorithms and their parameters:
     The ``lda_subspace_dimension`` can actually be higher then the useful limit, in which case eignevectors with vanishing eigenvalues are used.
   - ``pca_subspace_dimension``: **(optional)** If given, the computed projection matrix will be a PCA+LDA matrix, where ``pca_subspace_dimension`` defines the size of the PCA subspace.
     If ``pca_subspace_dimension`` is integral, it is the number of kept eigenvalues in the projection matrix; if is is float, it stands for the percentage of variance to keep.
-  - ``distance_function``: The distance function to be used to compare two features in Fisher space. Default: ``bob.math.euclidean_distance``.
+  - ``distance_function``: The distance function to be used to compare two features in Fisher space. Default: ``scipy.spatial.distance.euclidean``.
   - ``is_distance_function``: Specifies, if the ``distance_function`` is a distance or a similarity function. Default: ``True``.
   - ``uses_variances``: Does the ``distance_function`` require the LDA variances? Default: ``False``.
 
@@ -345,7 +346,7 @@ Here is a list of the most important algorithms and their parameters:
   - ``uses_dffs``: Use the *Distance From Feature Space* (DFFS) (cf. [MWP98]_) during scoring.
     This flag is only valid when subspace projection is performed, and you should use this flag with care!
 
-* `facereclib.tools.GaborJets <file:../facereclib/tools/GaborJets.py>`_: Computes a comparison of Gabor jets stored in grid graphs.
+* `facereclib.tools.GaborJets <file:../facereclib/tools/GaborJets.py>`_: Computes a comparison of Gabor jets.
 
   - ``gabor_jet_similarity_type``: The Gabor jet similarity to compute.
     Please refer to the documentation of ``bob.machine.gabor_jet_similarity_type`` in Bob_ for a list of possible values.
@@ -392,7 +393,7 @@ Here is a list of the most important algorithms and their parameters:
 Parameters of the SGE_ grid
 ---------------------------
 By default, all jobs of the face recognition tool chain run sequentially on the local machine.
-To speed up the processing, some jobs can be parallelized using the SGE_ grid.
+To speed up the processing, some jobs can be parallelized using the SGE_ grid or using multi-processing on the local machine.
 For this purpose, there is another option:
 
 * ``--grid``: The configuration file for the grid execution of the tool chain.
@@ -401,22 +402,43 @@ For this purpose, there is another option:
   The current SGE setup is specialized for the SGE_ grid at Idiap_.
   If you have an SGE grid outside Idiap_, please contact your administrator to check if the options are valid.
 
-The SGE_ setup is defined in a way that easily allows to parallelize image preprocessing, feature extraction, feature projection, model enrollment, and scoring jobs.
+The SGE_ setup is defined in a way that easily allows to parallelize data preprocessing, feature extraction, feature projection, model enrollment, and scoring jobs.
 Additionally, if the training of the extractor, projector, or enroller needs special requirements (like more memory), this can be specified as well.
+
+Several configuration files can be found in the `facereclib/configurations/grid <file:../facereclib/configurations/grid>`_ directory.
+All of them are based on the `facereclib.utils.grid <file:../facereclib/utils/grid.py>`_ class.
 Here are the parameters that you can set:
 
-* ``training_queue``: Parametrization of the queue that is used in any of the training (extractor, projector, enroller)
-* ``..._queue``: The queue for the ... step
-* ``number_of_images_per_job``: Number of images that one preprocessing job should handle.
-* ``number_of_features_per_job``: Number of images that one feature extraction job should handle.
-* ``number_of_projections_per_job``: Number of features that one feature projection job should handle.
-* ``number_of_models_per_enroll_job``: Number of models that one enroll job should enroll.
-* ``number_of_models_per_score_job``: Number of models for which on score job should compute the scores.
+* ``grid``: The type of the grid configuration; currently "sge" and "local" are supported.
+* ``number_of_preprocessings_per_job``: Number of files that one preprocessing job should handle.
+* ``number_of_extracted_features_per_job``: Number of files that one feature extraction job should handle.
+* ``number_of_projected_features_per_job``: Number of features that one feature projection job should handle.
+* ``number_of_enrolled_models_per_job``: Number of models that one enroll job should enroll.
+* ``number_of_models_per_scoring_job``: Number of models for which on scoring job should compute the scores.
 
-When calling the ``bin/faceverify.py`` script with the ``--grid ...`` argument, the script will submit all the jobs to the SGE_ by taking care of the dependencies between the jobs **and it will exit immediately**.
-It will write a database file that you can monitor using the ``bin/jman`` command.
+If the ``grid`` parameter is set to ``sge`` (the default), jobs will be submitted to the SGE_ grid.
+In this case, the SGE_ queue parameters might be specified, either using one of the pre-defined queues (see `facereclib/configurations/grid <file:../facereclib/configurations/grid>`_) or using a dictionary of key/value pairs that are sent to the grid:
+
+* ``training_queue``: The queue that is used in any of the training (extractor, projector, enroller) steps.
+* ``..._queue``: The queue for the ... step.
+
+If the ``grid`` parameter is set to ``local``, all jobs will be run locally.
+In this case, the following parameters for the local submission can be modified:
+
+* ``number_of_parallel_processes``: The number of parallel processes that will be run on the local machine.
+* ``scheduler_sleep_time``: The interval in which the local scheduler should check for finished jobs and execute new jobs; the sleep time is given in seconds.
+
+.. note::
+  The parallel execution of jobs on the local machine is currently in BETA status and might be unstable.
+  If any problems occur, please file a new bug at http://github.com/idiap/gridtk/issues.
+
+When calling the ``bin/faceverify.py`` script with the ``--grid ...`` argument, the script will submit all the jobs by taking care of the dependencies between the jobs.
+If the jobs are sent to the SGE_ grid (``grid = "sge"``), the script will exit immediately after the job submission.
+Otherwise, the jobs will be run locally in parallel and the script will exit after all jobs are finished.
+
+In any of the two cases, the script writes a database file that you can monitor using the ``bin/jman`` command.
 Please refer to ``bin/jman --help`` or the `GridTK documentation <http://github.com/idiap/gridtk>`_ to see the command line arguments of this tool.
-The name of the database file by default is **submitted.db**, but you can change the name (and its path) using the argument:
+The name of the database file by default is **submitted.sql3**, but you can change the name (and its path) using the argument:
 
 * ``--submit-db-file``
 
@@ -425,13 +447,13 @@ Command line arguments to change default behavior
 -------------------------------------------------
 Additionally to the required command line arguments discussed above, there are several options to modify the behavior of the |project| experiments.
 One set of command line arguments change the directory structure of the output.
-By default, the verification result will be written to directory **/idiap/user/<USER>/<DATABASE>/<EXPERIMENT>/<SCOREDIR>/<PROTOCOL>**, while the intermediate (temporary) files are by default written to **/idiap/temp/<USER>/<DATABASE>/<EXPERIMENT>** or **/scratch/<USER>/<DATABASE>/<EXPERIMENT>**, depending on whether the ``--grid`` argument is used or not, respectively:
+By default, the results of the recognition experiment will be written to directory **/idiap/user/<USER>/<DATABASE>/<EXPERIMENT>/<SCOREDIR>/<PROTOCOL>**, while the intermediate (temporary) files are by default written to **/idiap/temp/<USER>/<DATABASE>/<EXPERIMENT>** or **/scratch/<USER>/<DATABASE>/<EXPERIMENT>**, depending on whether the ``--grid`` argument is used or not, respectively:
 
 * <USER>: The Unix username of the person executing the experiments.
-* <DATABASE>: The name of the database. It is read from the database configuration file.
+* <DATABASE>: The name of the database. It is read from the database configuration.
 * <EXPERIMENT>: A user-specified experiment name (see the ``--sub-directory`` argument above).
 * <SCOREDIR>: Another user-specified name (``--score-sub-directory`` argument below), e.g., to specify different options of the experiment.
-* <PROTOCOL>: The protocol which is read from the database configuration file.
+* <PROTOCOL>: The protocol which is read from the database configuration.
 
 These default directories can be overwritten using the following command line arguments, which expects relative or absolute paths:
 
@@ -442,7 +464,7 @@ Re-using parts of experiments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you want to re-use parts previous experiments, you can specify the directories (which are relative to the ``--temp-directory``, but you can also specify absolute paths):
 
-* ``--preprocessed-image-directory``
+* ``--preprocessed-data-directory``
 * ``--features-directory``
 * ``--projected-directory``
 * ``--models-directories`` (one for each the models and the ZT-norm-models, see below)
@@ -467,7 +489,7 @@ To do that you can use:
 * ``--skip-concatenation``
 
 although by default files that already exist are not re-created.
-To enforce the re-creation of the files, you can use the
+To enforce the re-creation of the files, you can use the:
 
 * ``--force``
 
@@ -478,13 +500,13 @@ In this case, you could simply specify a:
 
 * ``--score-sub-directory``
 
-In this case, no feature or model is recomputed (unless you use the ``--force`` option), but only new scores are calculated.
+In this case, no feature or model is recomputed (unless you use the ``--force`` option), but only new scores are computed.
 
 Database-dependent arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Many databases define several protocols that can be executed.
 For example, the GBU database provides the three protocols ``'Good'``, ``'Bad'``, ``'Ugly'``.
-Usually, the configuration file, e.g., `facereclib.configurations.databases.gbu.py <File:../facereclib/configurations/databases/gbu.py>`_ contains only one protocol.
+Usually, the configuration file, e.g., `facereclib.configurations.databases.gbu <File:../facereclib/configurations/databases/gbu.py>`_ contains only one protocol.
 To change the protocol, you can either modify the configuration file, or simply use the option:
 
 * ``--protocol``
@@ -494,10 +516,10 @@ To change the protocol, you can either modify the configuration file, or simply 
 
   .. code-block:: sh
 
-     $ bin/faceverify.py --database gbu --protocol Bad
+     $ bin/faceverify.py --database gbu --protocol Bad ...
 
-Some databases define several sets of testing setups.
-For example, often two groups of images are defined, a so-called *development set* and an *evaluation set*.
+Some databases define several kinds of evaluation setups.
+For example, often two groups of data are defined, a so-called *development set* and an *evaluation set*.
 The scores of the two groups will be concatenated into two files called **scores-dev** and **scores-eval**, which are located in the score directory (see above).
 In this case, by default only the development set is employed.
 To use both groups, just specify:
@@ -509,7 +531,7 @@ To enable this, simply use the argument:
 
 * ``--zt-norm``
 
-If the normalization is enabled, two sets of scores will be computed, and they will be placed in two different sub-directories of the score directory, which are by default called **nonorm** and **ztnorm**, but which can be changed using the:
+If the ZT-norm is enabled, two sets of scores will be computed, and they will be placed in two different sub-directories of the score directory, which are by default called **nonorm** and **ztnorm**, but which can be changed using the:
 
 * ``--zt-score-directories``
 
@@ -544,9 +566,9 @@ To change this behavior, you can -- again -- use the
 
 argument several times to increase the verbosity level to show:
 
-1: Warning messages
-2: Informative messages
-3: Debug messages
+1) Warning messages
+2) Informative messages
+3) Debug messages
 
 When running experiments locally, my personal preference is verbose level 2, which can be enabled by ``--verbose --verbose``, or using the short version of the argument: ``-vv``.
 

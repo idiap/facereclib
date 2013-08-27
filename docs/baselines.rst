@@ -30,9 +30,9 @@ Structure of an experiment in the |project|
 Each face recognition experiment that is run with the |project| is divided into several steps.
 The steps are:
 
-1. Image preprocessing: Raw images are aligned and photometrically enhanced.
+1. Data preprocessing: Raw data is preprocessed, e.g., images are aligned and photometrically enhanced.
 2. Feature extractor training: Feature extraction parameters are learned.
-3. Feature extraction: Features are extracted from the preprocessed images.
+3. Feature extraction: Features are extracted from the preprocessed data.
 4. Feature projector training: Parameters of a subspace-projection of the features are learned.
 5. Feature projection: The extracted features are projected into a subspace.
 6. Model enroller training: The ways how to enroll models from extracted or projected features is learned.
@@ -42,7 +42,7 @@ The steps are:
 
 The communication between two steps is file-based.
 The output of one step usually serves as the input of the subsequent step(s).
-Depending on the algorithm, some of the steps is not applicable/available.
+Depending on the algorithm, some of the steps are not applicable/available.
 E.g. most of the feature extractors do not need a special training step, or some algorithms do not require a subspace projection.
 In these cases, the according steps are skipped.
 The |project| takes care that always the correct files are forwarded to the subsequent steps.
@@ -61,9 +61,9 @@ This script is a simple wrapper for the ``bin/faceverify.py`` script that will b
 The ``bin/baselines.py --help`` option shows you, which other options you have.
 Here is an almost complete extract:
 
-* ``--database``: The image database and protocol you want to use.
-  By default this is set to *atnt*.
-* ``--algorithms``: The face recognition algorithms that you want to execute.
+* ``--database``: The database and protocol you want to use.
+  By default this is set to the image database *atnt*.
+* ``--algorithms``: The recognition algorithms that you want to execute.
   By default, only the *eigenface* algorithm is executed.
 * ``--all``: Execute all algorithms that are implemented.
 * ``--directory``: The directory where the files of the experiments are put to.
@@ -125,7 +125,7 @@ For the `AT&T database`_ the results should be as follows:
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
   |  eigenface  |     lda     |  gaborgraph |    lgbphs   |     gmm     |     isv     |    plda     |     bic     |
   +=============+=============+=============+=============+=============+=============+=============+=============+
-  |   9.026%    |   12.000%   |   7.000%    |    10.000%  |    1.000%   |    0.053%   |   45.000%   |   45.000%   |
+  |   9.026%    |   11.000%   |   7.000%    |    10.000%  |    1.000%   |    0.053%   |    0.000%   |   45.000%   |
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
 
 .. note::
@@ -135,5 +135,9 @@ For the `AT&T database`_ the results should be as follows:
   ``bin/baselines.py --evaluate`` prints results of the development and the test set.
   For the AT&T database, there is actually no test set.
   Hence, the result of the development set is printed twice.
+
+.. note::
+  The results of the plda algorithm are currently 0 since the algorithm seems to have a problem somewhere.
+  We are investigating this issue.
 
 .. include:: links.rst

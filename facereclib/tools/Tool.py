@@ -95,6 +95,7 @@ class Tool:
     if isinstance(probes, list):
       return self.m_probe_fusion_function([self.score(model, probe) for probe in probes])
     else:
+      # only one probe feature -> use the default scoring function
       return self.score(model, probes)
 
 

@@ -74,7 +74,7 @@ def command_line_options(command_line_parameters):
       help = 'Just write the commands to console and mimic dependencies, but do not execute the commands')
 
   parser.add_argument('parameters', nargs = argparse.REMAINDER,
-      help = "Parameters directly passed to the face verify script. It should at least include the -d (and the -g) option. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify.py --help' for a complete list of options.")
+      help = "Parameters directly passed to the face verify script. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify.py --help' for a complete list of options.")
 
   utils.add_logger_command_line_option(parser)
 

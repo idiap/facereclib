@@ -7,15 +7,15 @@ Implementing your own database, preprocessor, feature, or algorithm
 ===================================================================
 
 The |project| module is specifically designed to be as flexible as possible while trying to keep things simple.
-|project| uses python to implement algorithms.
-It is file based so any algorithm can implement their own way of reading and writing features or models.
+Therefore, it uses python to implement algorithms.
+It is file based so any algorithm can implement its own way of reading and writing data, features or models.
 Algorithm configurations are stored in configuration files, so it should be easy to test different parameters of your algorithms without modifying the code.
 
 To implement your own database, preprocessor, feature, or algorithm, simply follow the examples that are already in the |project|.
 In the following sections there will be an overview of the functions that need to be implemented.
 
 The |project| is designed in a way that useful default functionalities are executed.
-If you want/need to have a different behavior, you can simply add functions to your classes that will be detected and executed automatically.
+If you want/need to have a different behavior, you can simply add functions to your classes and register these functions, for details please see below.
 
 
 Implementing your own functions
@@ -27,12 +27,25 @@ Please read the :ref:`satellite-packages` section for more details on this.
 
 Here, we describe the second way, which is to add functionality to |project| directly.
 
-.. _faceverif-fl:
+Base classes
+~~~~~~~~~~~~
+In general, any database, preprocessor, feature extractor or recognition algorithm should be derived from a base class that is detailed below.
+This base class provides default implementations of functionality that can be used directly or overwritten in your class.
+One of these functions, which is identical to all base classes, is the ``__str__(self)`` function, a special Python construct to convert an object of a class into a string that contains information about the object.
+In the |project|, this function is used to write the experimental configuration into a specific text file (by default: *Experiment.info* in the ``--result-directory``).
+This information is useful to see the exact configuration of the experiment with which the results was generated.
+
+There are two ways of providing these information for your class:
+
+1. Call the base class constructor and specify all parameters that should be added to the information file.
+2. Overwrite the ``__str__(self)`` function in your class, following the example of the base class.
+
+.. _filelist:
 
 Image databases
 ~~~~~~~~~~~~~~~
-If you have your own database of images that you want to execute the recognition experiments on, you should first check if you could use the ``xbob.db.verification.filelist`` database interface by defining appropriate file lists for the training set, the model set, and the probes.
-If you can do this, just write your own configuration file that uses the ``facereclib.databases.DatabaseXBob`` and ``facereclib.databases.DatabaseXBobZT`` interface (see :ref:`databases` for details).
+If you have your own database that you want to execute the recognition experiments on, you should first check if you could use the ``xbob.db.verification.filelist`` database interface by defining appropriate file lists for the training set, the model set, and the probes.
+If you can do this, just write your own configuration file that uses the ``facereclib.databases.DatabaseXBob`` or ``facereclib.databases.DatabaseXBobZT`` interface (see :ref:`databases` for details).
 In most of the cases, the ``xbob.db.verification.filelist`` should be sufficient to run experiments.
 Please refer to the documentation: https://github.com/bioidiap/xbob.db.verification.filelist/blob/master/docs/index.rst (which is currently wrong) of this database for more instructions on how to configure this database.
 
@@ -64,7 +77,7 @@ In this case, derive you class from ``facereclib.databases.DatabaseZT`` instead,
 .. note:
   For a proper face recognition protocol, the identities from the models and the T-Norm models, as well as the Z-probes should be different.
 
-For some protocols, a single probe consists of features from several images, see :ref:`algorithms` about strategies how to incorporate several probe files into one score.
+For some protocols, a single probe consists of several features, see :ref:`algorithms` about strategies how to incorporate several probe files into one score.
 If your database should provide this functionality, please overwrite:
 
 * ``uses_probe_file_sets(self)``: Return ``True`` if the current protocol of the database provides multiple files for one probe.
@@ -72,34 +85,32 @@ If your database should provide this functionality, please overwrite:
 * ``z_probe_file_sets(self, model_id=None, group='dev')``: Returns a list of lists of Z-probe ``facereclib.databases.FileSet`` objects (only needed if the base class is ``facereclib.databases.DatabaseZT``).
 
 
-Image preprocessors
-~~~~~~~~~~~~~~~~~~~
-All image preprocessing classes should be derived from the `facereclib.preprocessing.Preprocessor <file:../facereclib/preprocessing/Preprocessor.py>`_ class.
+Data preprocessors
+~~~~~~~~~~~~~~~~~~
+All preprocessing classes should be derived from the `facereclib.preprocessing.Preprocessor <file:../facereclib/preprocessing/Preprocessor.py>`_ class.
 In your class, please overload the functions:
 
 * ``__init__(self, <parameters>)``: Initializes the image preprocessing algorithm with the parameters it needs.
   Please call the base class constructor in this constructor, e.g. as ``facereclib.preprocessing.Preprocessor.__init__(self)``.
-* ``__call__(self, input_image, annotations) -> image``: geometrically normalizes the image given the dictionary of annotations (e.g. ``{'reye' : [re_y, re_x], 'leye': [le_y, le_x]}``) and preprocesses it.
-  The given ``input_image`` might be either a color or a gray level image.
-  The returned ``image`` should be a numpy.ndarray with 2D shape ``[height, width]`` containing floating point values, if possible (e.g. to be usable by all the algorithms).
+* ``__call__(self, original_data, annotations) -> data``: preprocesses the data given the dictionary of annotations (e.g. ``{'reye' : [re_y, re_x], 'leye': [le_y, le_x]}`` for faces).
+  For face recognition experiments, the given ``original_data`` might be either a color or a gray level image, and the returned ``data`` should be a numpy.ndarray with 2D shape ``[height, width]`` containing floating point values, if possible (e.g. to be usable by all the algorithms).
 
   .. note::
-    When the database does not provide eye positions, the ``annotations`` parameter might be ``None``.
-    In this case either the images are already aligned to the eye positions, or your class is expected to perform face detection (this is depending on the database, please assure that your preprocessor class and your database fit together).
+    When the database does not provide annotations, the ``annotations`` parameter might be ``None``.
 
-If your class returns images that are **not** of type numpy.ndarray, you might need to overwrite further functions from `facereclib.preprocessing.Preprocessor <file:../facereclib/preprocessing/Preprocessor.py>`_ that define the IO of your class:
+If your class returns data that is **not** of type numpy.ndarray, you might need to overwrite further functions from `facereclib.preprocessing.Preprocessor <file:../facereclib/preprocessing/Preprocessor.py>`_ that define the IO of your class:
 
-* ``save_image(image, filename)``: Writes the given image (that has been preprocessed using the ``__call__`` function of this class) to file.
-* ``read_image(filename)``: Reads the preprocessed image from file.
+* ``save_data(data, filename)``: Writes the given data (that has been preprocessed using the ``__call__`` function of this class) to file.
+* ``read_data(filename)``: Reads the preprocessed data from file.
 
-By default, the original images are read by ``bob.io.load``.
-Hence, images are given as ``numpy.ndarray``'s.
-If you want to use a different IO for the original images (rarely useful...), you might want to overload:
+By default, the original data is read by ``bob.io.load``.
+Hence, data is given as ``numpy.ndarray``'s.
+If you want to use a different IO for the original data (rarely useful...), you might want to overload:
 
-* ``read_original_image(filename)``: Reads the original image data from file.
+* ``read_original_data(filename)``: Reads the original data from file.
 
 
-If you plan to use a simple face cropping, you might want to derive your class from the `facereclib.preprocessing.FaceCrop <file:../facereclib/preprocessing/FaceCrop.py>`_ class (you don't need to derive from `facereclib.preprocessing.Preprocessor <file:../facereclib/preprocessing/Preprocessor.py>`_ in this case).
+If you plan to use a simple face cropping for facial image processing, you might want to derive your class from the `facereclib.preprocessing.FaceCrop <file:../facereclib/preprocessing/FaceCrop.py>`_ class (you don't need to derive from `facereclib.preprocessing.Preprocessor <file:../facereclib/preprocessing/Preprocessor.py>`_).
 In this case, just add a ``**kwargs`` parameter to your constructor, call the face crop constructor with these parameters: ``facereclib.preprocessing.FaceCrop.__init__(self, **kwargs)``, and call the ``self.face_crop(image, annotations)`` in your ``__call__`` function.
 For an example of this behavior, you should have a look into the `facereclib.preprocessing.HistogramEqualization  <file:../facereclib/preprocessing/HistogramEqualization.py>`_ class.
 
@@ -110,11 +121,11 @@ Feature extractors should be derived from the `facereclib.features.Extractor <fi
 Your extractor class has to provide at least the functions:
 
 * ``__init__(self, <parameters>)``: Initializes the feature extraction algorithm with the parameters it needs.
-  Please call the base class constructor in this constructor, e.g. as ``facereclib.features.Extractor.__init__(self)`` (there are more parameters to this constructor, see below).
-* ``__call__(self, image) -> feature``: Extracts the feature from the given preprocessed image.
-  By default, the returned feature should be a numpy.ndarray.
+  Please call the base class constructor in this constructor, e.g. as ``facereclib.features.Extractor.__init__(self, ...)`` (there are more parameters to this constructor, see below).
+* ``__call__(self, data) -> feature``: Extracts the feature from the given preprocessed data.
+  By default, the returned feature should be a ``numpy.ndarray``.
 
-If your features are not of type numpy.ndarray, please overwrite the ``save_feature`` function to write features of other types.
+If your features are not of type ``numpy.ndarray``, please overwrite the ``save_feature`` function to write features of other types.
 Please also overwrite the function to read your kind of features:
 
 * ``save_feature(self, feature, feature_file)``: Saves the feature (as returned by the ``__call__`` function) to the given file name.
@@ -135,19 +146,19 @@ First, you have to overwrite the ``train`` function:
 
 * ``train(self, image_list, extractor_file)``: Trains the feature extractor with the given list of images and writes the ``extractor_file``.
 
-Second, you have to register this behavior in your ``__init__`` function by calling the base class constructor with more parameters: ``facereclib.features.Extractor.__init__(self, requires_training=True)``.
-Given that your training algorithm needs to have the training data split by identity, please use ``facereclib.features.Extractor.__init__(self, requires_training=True, split_training_images_by_client = True)`` instead.
+Second, you have to register this behavior in your ``__init__`` function by calling the base class constructor with more parameters: ``facereclib.features.Extractor.__init__(self, requires_training=True, ...)``.
+Given that your training algorithm needs to have the training data split by identity, please use ``facereclib.features.Extractor.__init__(self, requires_training=True, split_training_images_by_client = True, ...)`` instead.
 
 
-Face recognition algorithms
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Implementing your face recognition tool should be as straightforward.
+Recognition algorithms
+~~~~~~~~~~~~~~~~~~~~~~
+Implementing your recognition algorithm should be as straightforward.
 Simply derive your class from the `facereclib.tools.Tool <file:../facereclib/tools/Tool.py>`_ class.
 
 The `facereclib.tools.Tool <file:../facereclib/tools/Tool.py>`_ constructor has the following options:
 
 * ``performs_projection``: If set to ``True``, features will be projected using the ``project`` function.
-  With the default ``False`` the ``project`` function will not be called at all.
+  With the default ``False``, the ``project`` function will not be called at all.
 * ``requires_projector_training``: If ``performs_projection`` is enabled, this flag specifies if the projector needs training.
   If ``True`` (the default), the ``train_projector`` function will be called.
 * ``split_training_features_by_client``: If the projector training needs training images split up by client identity, please enable this flag.
@@ -158,12 +169,17 @@ The `facereclib.tools.Tool <file:../facereclib/tools/Tool.py>`_ constructor has 
 * ``requires_enroller_training``: Enables the enroller training.
   By default (``False``), no enroller training is performed, i.e., the ``train_enroller`` function is not called **even if you wrote it**.
 
-A face recognition tool has to have at least three functions:
+* ``multiple_model_scoring``: The way to handle scoring when models store several features.
+  Set this parameter to ``None`` when you implement your own functionality to handle models from several features (see below).
+* ``multiple_probe_scoring``: The way to handle scoring when models store several features.
+  Set this parameter to ``None`` when you handle scoring with multiple probes with your own ``score_for_multiple_probes`` function (see below).
+
+A recognition tool has to have at least three functions:
 
 * ``__init__(self, <parameters>)``: Initializes the face recognition algorithm with the parameters it needs.
-  Please call the base class constructor in this constructor, e.g. as ``facereclib.tools.Tool.__init__(self)`` (there are more parameters to this constructor, see above).
+  Please call the base class constructor in this constructor, e.g. as ``facereclib.tools.Tool.__init__(self, ...)`` (there are more parameters to this constructor, see above).
 * ``enroll(self, enroll_features) -> model``: Enrolls a model from the given vector of features (which usually stem from one identity) and returns it.
-  The returned model should either be a numpy.ndarray or an instance of a class that defines a ``save(bob.io.HDF5File)`` method.
+  The returned model should either be a ``numpy.ndarray`` or an instance of a class that defines a ``save(bob.io.HDF5File)`` method.
   If neither of the two options are appropriate, you have to define a ``write_model`` function (see below).
 * ``score(self, model, probe) -> value``: Computes a similarity or probability score that the given probe feature and the given model stem from the same identity.
 
@@ -177,13 +193,11 @@ Additionally, your tool may need to project the features before they can be used
   .. note::
     If you write this function, please assure that you use both ``performs_projection=True`` and ``requires_projector_training=True`` (for the latter, this is the default, but not for the former) during the base class constructor call in your ``__init__`` function.
     Please also assure that you overload the ``project`` function.
-
-  .. note::
     If you need the training data to be sorted by clients, please use ``split_training_features_by_client=True`` as well.
 
-* ``load_projector(self, projector_file)``: Loads the projector from the given.
+* ``load_projector(self, projector_file)``: Loads the projector from the given file.
   This function is always called before the ``project``, ``enroll``, and ``score`` functions are executed.
-* ``project(self, feature) -> feature``: Projects the given feature and returns the projected feature, which should either be a numpy.ndarray or an instance of a class that defines a ``save(bob.io.HDF5File)`` method.
+* ``project(self, feature) -> feature``: Projects the given feature and returns the projected feature, which should either be a ``numpy.ndarray`` or an instance of a class that defines a ``save(bob.io.HDF5File)`` method.
 
   .. note::
     If you write this function, please assure that you use ``performs_projection=True`` during the base class constructor call in your ``__init__`` function.
@@ -205,7 +219,7 @@ Again, simply overwrite the functions:
   This function is always called before the ``enroll`` and ``score`` functions are executed.
 
 
-By default, it is assumed that both the models and the probe features are numpy.ndarrays.
+By default, it is assumed that both the models and the probe features are of type ``numpy.ndarray``.
 If your ``score`` function expects models and probe features to be of a different type, you should overwrite the functions:
 
 * ``write_model(self, model, model_file)``: writes the model (as returned by the ``enroll`` function)
@@ -214,6 +228,12 @@ If your ``score`` function expects models and probe features to be of a differen
 
   .. note::
     In many cases, the ``read_feature`` and ``read_probe`` functions are identical (if both are present).
+
+Finally, the `facereclib.tools.Tool <file:../facereclib/tools/Tool.py>`_ class provides default implementations for the case that models store several features, or that several probe features should be combined into one score.
+These two functions are:
+
+* ``score_for_multiple_models(self, models, probe)``: In case your model store several features, **call** this function to compute the average (or min, max, ...) of the scores.
+* ``score_for_multiple_probes(self, model, probes)``: By default, the average (or min, max, ...) of the scores for all probes are computed. **Overwrite** this function in case you want different behavior.
 
 
 
@@ -227,13 +247,13 @@ For this, it might also be a good idea to use a small image database, like ``--d
 Adding tests
 ------------
 To make sure that your peace of code it working properly, you should add a test case for your class.
-The |project|, as well as Bob_ rely on `nose tests <http://pypi.python.org/pypi/nose>`_ to run the unit tests.
+The |project|, as well as Bob_, rely on `nose tests <http://pypi.python.org/pypi/nose>`_ to run the unit tests.
 To implement a unit test for your contribution, you simply can create a python file with a name containing 'test' in your package.
 In the |project|, these files are located in `facereclib/tests/ <file:../facereclib/tests>`_.
 
 In the test file, please write a test class that derives from ``unittest.TestCase``.
 Any function name containing the string ``test`` will be automatically found and executed when running ``bin/nosetests``.
-In your test function, please assure that all aspects of your contribution are thoroughly tested and that all test cases pass the tests.
+In your test function, please assure that all aspects of your contribution are thoroughly tested and that all test cases pass.
 Also remember that your tests need to run on different machines with various operating systems, so don't test floating point values for equality.
 
 

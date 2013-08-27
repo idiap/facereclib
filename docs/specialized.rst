@@ -16,7 +16,7 @@ Sometimes, configurations of algorithms are highly dependent on the database or 
 Additionally, configuration parameters depend on each other.
 The |project| provides a relatively simple set up that allows to test different configurations in the same task.
 For this, the ``bin/parameter_test.py`` script can be employed.
-This script executes a configurable series of face recognition experiments, which reuse data as far as possible.
+This script executes a configurable series of experiments, which reuse data as far as possible.
 
 The configuration file
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -35,13 +35,13 @@ The configuration file is a common python file, which can contain certain variab
 The variables from 1. to 3. usually contain constructor calls for classes of :ref:`preprocessors`, :ref:`extractors` and :ref:`algorithms`, but also registered :ref:`Resources <managing-resources>` can be used.
 For any of the parameters of the classes, a `placeholder` can be put.
 By default, these place holders start with a # character, followed by a digit or character.
-The variables 1. to 3. can also be overridden by the command line options ``--preprocessor``, ``
+The variables 1. to 3. can also be overridden by the command line options ``--preprocessing``, ``--features`` and ``--tool`` of the ``bin/parameter_test.py`` script.
 
 The ``replace`` variable has to be set as a dictionary.
 In it, you can define with which values your place holder key should be filled, and in which step of the tool chain execution this should happen.
 The steps are ``'preprocessing'``, ``'extraction'``, ``'projection'``, ``'enrollment'`` and ``'scoring'``.
 For each of the steps, it can be defined, which placeholder should be replaced by which values.
-To be able to differentiate the results later on, each of the replacement values are bound to a directory name.
+To be able to differentiate the results later on, each of the replacement values is bound to a directory name.
 The final structure looks somewhat like that:
 
 .. code-block:: python
@@ -108,8 +108,8 @@ The ``bin/parameter_test.py`` script has a further set of command line options.
 - The ``--sub-directory`` is similar to the one in the ``bin/faceverify.py``, see :ref:`required`.
 - The ``--preprocessing``, ``--features`` and ``--tool`` can be used to override the ``preprocessor``, ``feature_extractor`` and ``tool`` fields in the configuration file (in which case the configuration file does not need to contain these variables).
 - The ``--grid`` option can select the SGE_ configuration (if not selected, **all** experiments will be run sequentially on the local machine).
-- The ``--preprocessed-image-directory`` can be used to select a directory of previously preprocessed images. This should not be used in combination with testing different preprocessing parameters.
-- The ``--grid-database-directory`` can be used to select another directory, where the `submitted.db` files will be stored.
+- The ``--preprocessed-data-directory`` can be used to select a directory of previously preprocessed data. This should not be used in combination with testing different preprocessing parameters.
+- The ``--grid-database-directory`` can be used to select another directory, where the `submitted.sql3` files will be stored.
 - The ``--write-commands`` directory can be selected to write the executed commands into (this is useful in case some experiments fail and need to be rerun).
 - The ``--dry-run`` option should always be used before the final execution to see if the experiment definition works as expected.
 - Finally, additional options might be sent to the ``bin/faceverify.py`` script directly. These options might be put after a ``--`` separation.
@@ -160,6 +160,16 @@ Hence, training is performed on the special Training set, and experiments are ex
 
 The GBU protocol does not specify T-Norm-models or Z-Norm-probes, nor it splits off development and test set.
 Hence, only a single score file is generated, which might later on be converted into an ROC curve using Bob functions.
+
+
+Jobs with enhanced parallelism
+------------------------------
+By default, all recognition algorithms are **trained** using only one parallel job.
+For some recognition algorithms there is a way to parallelize the training part.
+These algorithms can be run using the ``bin/isv_training.py`` or the ``bin/ivector_training.py`` scripts.
+
+.. todo::
+  Add more information about ``bin/isv_training.py`` and ``bin/ivector_training.py``.
 
 
 .. include:: links.rst

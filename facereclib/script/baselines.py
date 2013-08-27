@@ -175,12 +175,6 @@ def main(command_line_parameters = sys.argv):
         # check if the score files are already there (i.e., the experiments have finished)
         if not args.dry_run and (not os.path.exists(dev_file) or not os.path.exists(eval_file)):
           utils.error("The result file '%s' and/or '%s' does not exist" % (dev_file, eval_file))
-          if os.path.exists('failure.db'):
-            utils.warn("... and there were errors.")
-          elif os.path.exists('submitted.db'):
-            utils.warn("... maybe the jobs still run.")
-          else:
-            utils.warn("... although they should. Did you use some non-standard faceverify arguments?")
           continue
 
         # generate a call to a bob function to do the actual evaluation
