@@ -9,5 +9,5 @@ execfile(os.path.join(os.path.dirname(__file__), 'plda.py'))
 tool = facereclib.tools.PLDA(
     subspace_dimension_of_f = 16,  # Size of subspace F
     subspace_dimension_of_g = 16,  # Size of subspace G
-    subspace_dimension_pca = 200   # Size of the PCA subspace
+    subspace_dimension_pca = 150   # Size of the PCA subspace
 )
