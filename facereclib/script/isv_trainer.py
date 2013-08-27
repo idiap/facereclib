@@ -363,7 +363,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     """Performs GMM projection"""
     # read UBM into the ISV class
     self.m_tool._load_projector_gmm_resolved(self.m_tool.m_gmm_filename)
-      
+
     feature_files = self.m_file_selector.feature_list()
     projected_files = self.m_file_selector.projected_list()
 
@@ -375,7 +375,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       index_range = range(len(feature_files))
 
     #utils.ensure_dir(self.m_file_selector.projected_directory)
-    utils.info("- Projection: projecting %d images from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.features_directory, self.m_tool._resolve_projected_gmm(self.m_file_selector.projected_directory)))
+    utils.info("- Projection: projecting %d data from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.features_directory, self.m_tool._resolve_projected_gmm(self.m_file_selector.projected_directory)))
     # extract the features
     for i in index_range:
       feature_file = feature_files[i]
@@ -419,7 +419,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     self.m_tool._load_projector_gmm_resolved(self.m_tool.m_gmm_filename)
     #isv_file = self.m_configuration.projector_file
     self.m_tool._load_projector_isv_resolved(self.m_tool.m_isv_filename)
-      
+
     projected_files = self.m_file_selector.projected_list()
 
     # select a subset of indices to iterate
@@ -457,14 +457,14 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     # if there are any external dependencies, we need to respect them
     deps = external_dependencies[:]
 
-    # image preprocessing; never has any dependencies.
+    # preprocessing; never has any dependencies.
     if not self.m_args.skip_preprocessing:
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess',
-              list_to_split = self.m_file_selector.original_image_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_images_per_job,
+              list_to_split = self.m_file_selector.original_data_list(),
+              number_of_files_per_job = self.m_grid.number_of_preprocessings_per_job,
               dependencies = [],
-              **self.m_grid_config.preprocessing_queue)
+              **self.m_grid.preprocessing_queue)
       deps.append(job_ids['preprocessing'])
 
     # feature extraction training
@@ -473,17 +473,17 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
               'train-extractor',
               name = 'train-f',
               dependencies = deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid.training_queue)
       deps.append(job_ids['extractor-training'])
 
     # feature extraction
     if not self.m_args.skip_extraction:
       job_ids['extraction'] = self.submit_grid_job(
               'extract',
-              list_to_split = self.m_file_selector.preprocessed_image_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
+              list_to_split = self.m_file_selector.preprocessed_data_list(),
+              number_of_files_per_job = self.m_grid.number_of_extracted_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.extraction_queue)
+              **self.m_grid.extraction_queue)
       deps.append(job_ids['extraction'])
 
     # feature normalization
@@ -492,9 +492,9 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
               'normalize-features',
               name="norm-f",
               list_to_split = self.training_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.projection_queue)
+              **self.m_grid.projection_queue)
       deps.append(job_ids['feature_normalization'])
 
     # KMeans
@@ -505,7 +505,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                 'kmeans-init',
                 name = 'k-init',
                 dependencies = deps,
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
         deps.append(job_ids['kmeans-init'])
 
       # several iterations of E and M steps
@@ -515,16 +515,16 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                 'kmeans-e-step --iteration %d' % iteration,
                 name='k-e-%d' % iteration,
                 list_to_split = self.training_list(),
-                number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+                number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
                 dependencies = [job_ids['kmeans-m-step']] if iteration != self.m_args.kmeans_start_iteration else deps,
-                **self.m_grid_config.projection_queue)
+                **self.m_grid.projection_queue)
 
         # M-step
         job_ids['kmeans-m-step'] = self.submit_grid_job(
                 'kmeans-m-step --iteration %d' % iteration,
                 name='k-m-%d' % iteration,
                 dependencies = [job_ids['kmeans-e-step']],
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
 
       # add dependence to the last m step
       deps.append(job_ids['kmeans-m-step'])
@@ -538,7 +538,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                 'gmm-init',
                 name = 'g-init',
                 dependencies = deps,
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
         deps.append(job_ids['gmm-init'])
 
       # several iterations of E and M steps
@@ -548,16 +548,16 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                 'gmm-e-step --iteration %d' % iteration,
                 name='g-e-%d' % iteration,
                 list_to_split = self.training_list(),
-                number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+                number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
                 dependencies = [job_ids['gmm-m-step']] if iteration != self.m_args.gmm_start_iteration else deps,
-                **self.m_grid_config.projection_queue)
+                **self.m_grid.projection_queue)
 
         # M-step
         job_ids['gmm-m-step'] = self.submit_grid_job(
                 'gmm-m-step --iteration %d' % iteration,
                 name='g-m-%d' % iteration,
                 dependencies = [job_ids['gmm-e-step']],
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
 
       # add dependence to the last m step
       deps.append(job_ids['gmm-m-step'])
@@ -568,15 +568,15 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
               'gmm-project',
               name = 'g-project',
               list_to_split = self.m_file_selector.feature_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.projection_queue)
+              **self.m_grid.projection_queue)
       deps.append(job_ids['gmm-project'])
 
     # feature projection training
     if not self.m_args.skip_isv:
       # check if we have a special queue for the ISV training (which usually needs a lot of memory)
-      queue = self.m_grid_config.isv_training_queue if hasattr(self.m_grid_config, 'isv_training_queue') else self.m_grid_config.training_queue
+      queue = self.m_grid.isv_training_queue if hasattr(self.m_grid, 'isv_training_queue') else self.m_grid.training_queue
       job_ids['isv_training'] = self.submit_grid_job(
               'train-isv',
               name="isv",
@@ -590,9 +590,9 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
               'isv-project',
               name = 'isv-project',
               list_to_split = self.m_file_selector.projected_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.projection_queue)
+              **self.m_grid.projection_queue)
       deps.append(job_ids['isv-project'])
 
     # enroll models
@@ -608,9 +608,9 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                 'enroll --group %s --model-type N'%group,
                 name = "enr-N-%s"%group,
                 list_to_split = self.m_file_selector.model_ids(group),
-                number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
+                number_of_files_per_job = self.m_grid.number_of_enrolled_models_per_job,
                 dependencies = deps,
-                **self.m_grid_config.enroll_queue)
+                **self.m_grid.enrollment_queue)
         enroll_deps_n[group].append(job_ids['enroll_%s_N'%group])
 
         if self.m_args.zt_norm:
@@ -618,9 +618,9 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                   'enroll --group %s --model-type T'%group,
                   name = "enr-T-%s"%group,
                   list_to_split = self.m_file_selector.t_model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_enroll_job,
+                  number_of_files_per_job = self.m_grid.number_of_models_per_enroll_job,
                   dependencies = deps,
-                  **self.m_grid_config.enroll_queue)
+                  **self.m_grid.enrollment_queue)
           enroll_deps_t[group].append(job_ids['enroll_%s_T'%group])
 
       # compute A,B,C, and D scores
@@ -629,9 +629,9 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                 'compute-scores --group %s --score-type A'%group,
                 name = "score-A-%s"%group,
                 list_to_split = self.m_file_selector.model_ids(group),
-                number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
                 dependencies = enroll_deps_n[group],
-                **self.m_grid_config.score_queue)
+                **self.m_grid.scoring_queue)
         concat_deps[group] = [job_ids['score_%s_A'%group]]
 
         if self.m_args.zt_norm:
@@ -639,25 +639,25 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
                   'compute-scores --group %s --score-type B'%group,
                   name = "score-B-%s"%group,
                   list_to_split = self.m_file_selector.model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
                   dependencies = enroll_deps_n[group],
-                  **self.m_grid_config.score_queue)
+                  **self.m_grid.scoring_queue)
 
           job_ids['score_%s_C'%group] = self.submit_grid_job(
                   'compute-scores --group %s --score-type C'%group,
                   name = "score-C-%s"%group,
                   list_to_split = self.m_file_selector.t_model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
                   dependencies = enroll_deps_t[group],
-                  **self.m_grid_config.score_queue)
+                  **self.m_grid.scoring_queue)
 
           job_ids['score_%s_D'%group] = self.submit_grid_job(
                   'compute-scores --group %s --score-type D'%group,
                   name = "score-D-%s"%group,
                   list_to_split = self.m_file_selector.t_model_ids(group),
-                  number_of_files_per_job = self.m_grid_config.number_of_models_per_score_job,
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
                   dependencies = enroll_deps_t[group],
-                  **self.m_grid_config.score_queue)
+                  **self.m_grid.scoring_queue)
 
           # compute zt-norm
           score_deps[group] = [job_ids['score_%s_A'%group], job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group]]
@@ -682,11 +682,11 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
 
   def execute_grid_job(self):
     """Run the desired job of the ZT tool chain that is specified on command line."""
-    # preprocess the images
+    # preprocess the data
     if self.m_args.sub_task == 'preprocess':
-      self.m_tool_chain.preprocess_images(
+      self.m_tool_chain.preprocess_data(
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid_config.number_of_images_per_job),
+          indices = self.indices(self.m_file_selector.original_data_list(), self.m_grid.number_of_preprocessings_per_job),
           force = self.m_args.force)
 
     # train the feature extractor
@@ -701,13 +701,13 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.extract_features(
           self.m_extractor,
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_features_per_job),
+          indices = self.indices(self.m_file_selector.preprocessed_data_list(), self.m_grid.number_of_extracted_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
     elif self.m_args.sub_task == 'normalize-features':
       self.feature_normalization(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.training_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
@@ -718,13 +718,13 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     # train the feature projector
     elif self.m_args.sub_task == 'kmeans-e-step':
       self.kmeans_estep(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.training_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
     elif self.m_args.sub_task == 'kmeans-m-step':
       self.kmeans_mstep(
-          counts = self.m_grid_config.number_of_projections_per_job,
+          counts = self.m_grid.number_of_projected_features_per_job,
           force = self.m_args.force)
 
     elif self.m_args.sub_task == 'gmm-init':
@@ -734,19 +734,19 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     # train the feature projector
     elif self.m_args.sub_task == 'gmm-e-step':
       self.gmm_estep(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.training_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
     elif self.m_args.sub_task == 'gmm-m-step':
       self.gmm_mstep(
-          counts = self.m_grid_config.number_of_projections_per_job,
+          counts = self.m_grid.number_of_projected_features_per_job,
           force = self.m_args.force)
 
     # project using the gmm ubm
     elif self.m_args.sub_task == 'gmm-project':
       self.gmm_project(
-          indices = self.indices(self.m_file_selector.feature_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.m_file_selector.feature_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
@@ -757,7 +757,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
     # project using isv
     elif self.m_args.sub_task == 'isv-project':
       self.isv_project(
-          indices = self.indices(self.m_file_selector.projected_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.m_file_selector.projected_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # enroll the models
@@ -767,7 +767,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
             self.m_tool,
             self.m_extractor,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid.number_of_enrolled_models_per_job),
             groups = [self.m_args.group],
             types = ['N'],
             force = self.m_args.force)
@@ -777,7 +777,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
             self.m_tool,
             self.m_extractor,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_enroll_job),
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid.number_of_enrolled_models_per_job),
             groups = [self.m_args.group],
             types = ['T'],
             force = self.m_args.force)
@@ -788,7 +788,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.compute_scores(
             self.m_tool,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid.number_of_models_per_scoring_job),
             groups = [self.m_args.group],
             types = [self.m_args.score_type],
             preload_probes = self.m_args.preload_probes,
@@ -798,7 +798,7 @@ class ToolChainExecutorISV (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.compute_scores(
             self.m_tool,
             self.m_args.zt_norm,
-            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid_config.number_of_models_per_score_job),
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid.number_of_models_per_scoring_job),
             groups = [self.m_args.group],
             types = [self.m_args.score_type],
             preload_probes = self.m_args.preload_probes,
@@ -832,7 +832,7 @@ def parse_args(command_line_parameters):
       help = 'Overwrite the protocol that is stored in the database by the given one (might not by applicable for all databases).')
   config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', default = ['isv'],
       help = 'ISV-based face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
-  config_group.add_argument('-g', '--grid', metavar = 'x', required=True,
+  config_group.add_argument('-g', '--grid', metavar = 'x', nargs = '+', required = True,
       help = 'Configuration file for the grid setup; needs to be specified.')
 
   sub_dir_group.add_argument('--models-directories', metavar = 'DIR', nargs = 2,
@@ -907,7 +907,8 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
-  -- feature extraction (including image preprocessing)
+  -- the preprocessing
+  -- the feature extraction
   -- the score computation tool
   -- and the grid configuration (in case, the function should be executed in the grid).
   Additionally, you can skip parts of the toolchain by selecting proper --skip-... parameters.

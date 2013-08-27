@@ -343,7 +343,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
     """Performs GMM projection"""
     # read UBM into the IVector class
     self.m_tool._load_projector_gmm_resolved(self.m_tool.m_gmm_filename)
-      
+
     feature_files = self.m_file_selector.feature_list()
     projected_files = self.m_file_selector.projected_list()
 
@@ -355,7 +355,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
       index_range = range(len(feature_files))
 
     #utils.ensure_dir(self.m_file_selector.projected_directory)
-    utils.info("- Projection: projecting %d images from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.features_directory, self.m_tool._resolve_projected_gmm(self.m_file_selector.projected_directory)))
+    utils.info("- Projection: projecting %d features from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.features_directory, self.m_tool._resolve_projected_gmm(self.m_file_selector.projected_directory)))
     # extract the features
     for i in index_range:
       feature_file = feature_files[i]
@@ -411,7 +411,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
       machine_file = self.m_configuration.ivector_intermediate_file % self.m_args.iteration
       ivector_machine = bob.machine.IVectorMachine(bob.io.HDF5File(machine_file))
       ivector_machine.ubm = ubm
-  
+
       # Load data
       training_list = self.m_file_selector.training_list('projected', 'train_projector')
       data = [self.m_tool.read_feature(str(training_list[index])) for index in range(indices[0], indices[1])]
@@ -517,7 +517,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
     # read UBM into the IVector class
     self.m_tool._load_projector_gmm_resolved(self.m_tool.m_gmm_filename)
     self.m_tool._load_projector_ivector_resolved(self.m_tool.m_ivec_filename)
-      
+
     projected_files = self.m_file_selector.projected_list()
 
     # select a subset of indices to iterate
@@ -555,14 +555,14 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
     # if there are any external dependencies, we need to respect them
     deps = external_dependencies[:]
 
-    # image preprocessing; never has any dependencies.
+    # preprocessing; never has any dependencies.
     if not self.m_args.skip_preprocessing:
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess',
-              list_to_split = self.m_file_selector.original_image_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_images_per_job,
+              list_to_split = self.m_file_selector.original_data_list(),
+              number_of_files_per_job = self.m_grid.number_of_preprocessings_per_job,
               dependencies = [],
-              **self.m_grid_config.preprocessing_queue)
+              **self.m_grid.preprocessing_queue)
       deps.append(job_ids['preprocessing'])
 
     # feature extraction training
@@ -571,17 +571,17 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
               'train-extractor',
               name = 'train-f',
               dependencies = deps,
-              **self.m_grid_config.training_queue)
+              **self.m_grid.training_queue)
       deps.append(job_ids['extractor-training'])
 
     # feature extraction
     if not self.m_args.skip_extraction:
       job_ids['extraction'] = self.submit_grid_job(
               'extract',
-              list_to_split = self.m_file_selector.preprocessed_image_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_features_per_job,
+              list_to_split = self.m_file_selector.preprocessed_data_list(),
+              number_of_files_per_job = self.m_grid.number_of_extracted_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.extraction_queue)
+              **self.m_grid.extraction_queue)
       deps.append(job_ids['extraction'])
 
     # feature normalization
@@ -590,9 +590,9 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
               'normalize-features',
               name="norm-f",
               list_to_split = self.training_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.projection_queue)
+              **self.m_grid.projection_queue)
       deps.append(job_ids['feature_normalization'])
 
     # KMeans
@@ -603,7 +603,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
                 'kmeans-init',
                 name = 'k-init',
                 dependencies = deps,
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
         deps.append(job_ids['kmeans-init'])
 
       # several iterations of E and M steps
@@ -613,16 +613,16 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
                 'kmeans-e-step --iteration %d' % iteration,
                 name='k-e-%d' % iteration,
                 list_to_split = self.training_list(),
-                number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+                number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
                 dependencies = [job_ids['kmeans-m-step']] if iteration != self.m_args.kmeans_start_iteration else deps,
-                **self.m_grid_config.projection_queue)
+                **self.m_grid.projection_queue)
 
         # M-step
         job_ids['kmeans-m-step'] = self.submit_grid_job(
                 'kmeans-m-step --iteration %d' % iteration,
                 name='k-m-%d' % iteration,
                 dependencies = [job_ids['kmeans-e-step']],
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
 
       # add dependence to the last m step
       deps.append(job_ids['kmeans-m-step'])
@@ -636,7 +636,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
                 'gmm-init',
                 name = 'g-init',
                 dependencies = deps,
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
         deps.append(job_ids['gmm-init'])
 
       # several iterations of E and M steps
@@ -646,16 +646,16 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
                 'gmm-e-step --iteration %d' % iteration,
                 name='g-e-%d' % iteration,
                 list_to_split = self.training_list(),
-                number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+                number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
                 dependencies = [job_ids['gmm-m-step']] if iteration != self.m_args.gmm_start_iteration else deps,
-                **self.m_grid_config.projection_queue)
+                **self.m_grid.projection_queue)
 
         # M-step
         job_ids['gmm-m-step'] = self.submit_grid_job(
                 'gmm-m-step --iteration %d' % iteration,
                 name='g-m-%d' % iteration,
                 dependencies = [job_ids['gmm-e-step']],
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
 
       # add dependence to the last m step
       deps.append(job_ids['gmm-m-step'])
@@ -666,9 +666,9 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
               'gmm-project',
               name = 'g-project',
               list_to_split = self.m_file_selector.feature_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.projection_queue)
+              **self.m_grid.projection_queue)
       deps.append(job_ids['gmm-project'])
 
 
@@ -680,7 +680,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
                 'ivec-init',
                 name = 'ivec-init',
                 dependencies = deps,
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
         deps.append(job_ids['ivec-init'])
 
       # several iterations of E and M steps
@@ -690,30 +690,30 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
                 'ivec-e-step --iteration %d' % iteration,
                 name='ivec-e-%d' % iteration,
                 list_to_split = self.training_list(),
-                number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+                number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
                 dependencies = [job_ids['ivec-m-step']] if iteration != self.m_args.ivector_start_iteration else deps,
-                **self.m_grid_config.projection_queue)
+                **self.m_grid.projection_queue)
 
         # M-step
         job_ids['ivec-m-step'] = self.submit_grid_job(
                 'ivec-m-step --iteration %d' % iteration,
                 name='ivec-m-%d' % iteration,
                 dependencies = [job_ids['ivec-e-step']],
-                **self.m_grid_config.training_queue)
+                **self.m_grid.training_queue)
 
       # add dependence to the last m step
       deps.append(job_ids['ivec-m-step'])
-   
- 
+
+
     # ivec projection
     if not self.m_args.skip_ivec_projection:
       job_ids['ivec-project'] = self.submit_grid_job(
               'ivec-project',
               name = 'ivec-project',
               list_to_split = self.m_file_selector.projected_list(),
-              number_of_files_per_job = self.m_grid_config.number_of_projections_per_job,
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
               dependencies = deps,
-              **self.m_grid_config.projection_queue)
+              **self.m_grid.projection_queue)
       deps.append(job_ids['ivec-project'])
 
     # return the job ids, in case anyone wants to know them
@@ -722,11 +722,11 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
 
   def execute_grid_job(self):
     """Run the desired job of the ZT tool chain that is specified on command line."""
-    # preprocess the images
+    # preprocess the data
     if self.m_args.sub_task == 'preprocess':
-      self.m_tool_chain.preprocess_images(
+      self.m_tool_chain.preprocess_data(
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.original_image_list(), self.m_grid_config.number_of_images_per_job),
+          indices = self.indices(self.m_file_selector.original_data_list(), self.m_grid.number_of_preprocessings_per_job),
           force = self.m_args.force)
 
     # train the feature extractor
@@ -741,13 +741,13 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.extract_features(
           self.m_extractor,
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.preprocessed_image_list(), self.m_grid_config.number_of_features_per_job),
+          indices = self.indices(self.m_file_selector.preprocessed_data_list(), self.m_grid.number_of_extracted_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
     elif self.m_args.sub_task == 'normalize-features':
       self.feature_normalization(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.training_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
@@ -758,13 +758,13 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
     # train the feature projector
     elif self.m_args.sub_task == 'kmeans-e-step':
       self.kmeans_estep(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.training_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
     elif self.m_args.sub_task == 'kmeans-m-step':
       self.kmeans_mstep(
-          counts = self.m_grid_config.number_of_projections_per_job,
+          counts = self.m_grid.number_of_projected_features_per_job,
           force = self.m_args.force)
 
     elif self.m_args.sub_task == 'gmm-init':
@@ -774,19 +774,19 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
     # train the feature projector
     elif self.m_args.sub_task == 'gmm-e-step':
       self.gmm_estep(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.training_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # train the feature projector
     elif self.m_args.sub_task == 'gmm-m-step':
       self.gmm_mstep(
-          counts = self.m_grid_config.number_of_projections_per_job,
+          counts = self.m_grid.number_of_projected_features_per_job,
           force = self.m_args.force)
 
     # project using the gmm ubm
     elif self.m_args.sub_task == 'gmm-project':
       self.gmm_project(
-          indices = self.indices(self.m_file_selector.feature_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.m_file_selector.feature_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # I-vector initialization
@@ -797,19 +797,19 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor):
     # I-vector e-step
     elif self.m_args.sub_task == 'ivec-e-step':
       self.ivector_estep(
-          indices = self.indices(self.training_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.training_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # I-vector m-step
     elif self.m_args.sub_task == 'ivec-m-step':
       self.ivector_mstep(
-          counts = self.m_grid_config.number_of_projections_per_job,
+          counts = self.m_grid.number_of_projected_features_per_job,
           force = self.m_args.force)
 
     # project using ivec
     elif self.m_args.sub_task == 'ivec-project':
       self.ivector_project(
-          indices = self.indices(self.m_file_selector.projected_list(), self.m_grid_config.number_of_projections_per_job),
+          indices = self.indices(self.m_file_selector.projected_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
     # Test if the keyword was processed
@@ -831,7 +831,7 @@ def parse_args(command_line_parameters):
       help = 'Overwrite the protocol that is stored in the database by the given one (might not by applicable for all databases).')
   config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', default = ['ivector'],
       help = 'IVector-based face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
-  config_group.add_argument('-g', '--grid', metavar = 'x', required=True,
+  config_group.add_argument('-g', '--grid', metavar = 'x', nargs = '+', required = True,
       help = 'Configuration file for the grid setup; needs to be specified.')
 
   #######################################################################################
@@ -889,7 +889,8 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
   """This is the main entry point for computing face verification experiments.
   You just have to specify configuration scripts for any of the steps of the toolchain, which are:
   -- the database
-  -- feature extraction (including image preprocessing)
+  -- the preprocessing
+  -- the feature extraction
   -- the score computation tool
   -- and the grid configuration (in case, the function should be executed in the grid).
   Additionally, you can skip parts of the toolchain by selecting proper --skip-... parameters.
