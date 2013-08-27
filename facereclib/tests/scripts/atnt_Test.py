@@ -10,8 +10,8 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
         self,
         database = xbob.db.atnt.Database(),
         name = 'test',
-        image_directory = facereclib.utils.tests.atnt_database_directory(),
-        image_extension = ".pgm"
+        original_directory = facereclib.utils.tests.atnt_database_directory(),
+        original_extension = ".pgm"
     )
 
   def t_model_ids(self, group = 'dev'):

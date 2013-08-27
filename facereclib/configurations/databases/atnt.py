@@ -6,6 +6,6 @@ import facereclib
 database = facereclib.databases.DatabaseXBob(
     database = xbob.db.atnt.Database(),
     name = 'atnt',
-    image_directory = "/idiap/group/biometric/databases/orl/",
-    image_extension = ".pgm"
+    original_directory = "/idiap/group/biometric/databases/orl/",
+    original_extension = ".pgm"
 )

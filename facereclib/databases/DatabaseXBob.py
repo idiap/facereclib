@@ -26,8 +26,6 @@ class DatabaseXBob (Database):
   def __init__(
       self,
       database,  # The xbob database that is used
-      image_directory,        # directory of the original images
-      image_extension,        # file extension of the original images
       has_internal_annotations = False, # annotations are stored internally and do not need to be read from file
       all_files_options = {}, # additional options for the database query that can be used to extract all files
       extractor_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
@@ -65,8 +63,6 @@ class DatabaseXBob (Database):
 
     Database.__init__(
         self,
-        original_directory = image_directory,
-        original_extension = image_extension,
         **kwargs
     )
 
@@ -87,7 +83,7 @@ class DatabaseXBob (Database):
   def __str__(self):
     """This function returns a string containing all parameters of this class (and its derived class)."""
     params = ", ".join(["%s=%s" % (key, value) for key, value in self._kwargs.iteritems()])
-    params += ", image_directory=%s, image_extension=%s" % (self.original_directory, self.original_extension)
+    params += ", original_directory=%s, original_extension=%s" % (self.original_directory, self.original_extension)
     if self.has_internal_annotations:
       params += ", has_internal_annotations=True"
     if self.all_files_options: params += ", all_files_options=%s"%self.all_files_options

@@ -21,8 +21,8 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
             keep_read_lists_in_memory = True
         ),
         name = 'test_fl',
-        image_directory = facereclib.utils.tests.atnt_database_directory(),
-        image_extension = ".pgm",
+        original_directory = facereclib.utils.tests.atnt_database_directory(),
+        original_extension = ".pgm",
         protocol = None
     )
 

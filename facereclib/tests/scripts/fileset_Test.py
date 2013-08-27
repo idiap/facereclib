@@ -10,8 +10,8 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
         self,
         database = xbob.db.atnt.Database(),
         name = 'test2',
-        image_directory = facereclib.utils.tests.atnt_database_directory(),
-        image_extension = ".pgm"
+        original_directory = facereclib.utils.tests.atnt_database_directory(),
+        original_extension = ".pgm"
     )
 
   def uses_probe_file_sets(self):

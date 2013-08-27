@@ -7,8 +7,8 @@ import facereclib
 database = facereclib.databases.DatabaseXBobZT(
     database = xbob.db.scface.Database(),
     name = 'scface',
-    image_directory = "/idiap/group/biometric/databases/scface/images/",
-    image_extension = ".jpg",
+    original_directory = "/idiap/group/biometric/databases/scface/images/",
+    original_extension = ".jpg",
     has_internal_annotations = True,
     protocol = 'combined'
 )

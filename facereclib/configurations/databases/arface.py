@@ -6,8 +6,8 @@ import facereclib
 database = facereclib.databases.DatabaseXBob(
     database = xbob.db.arface.Database(),
     name = 'arface',
-    image_directory = "/idiap/resource/database/AR_Face/images",
-    image_extension = ".ppm",
+    original_directory = "/idiap/resource/database/AR_Face/images",
+    original_extension = ".ppm",
     has_internal_annotations = True,
     protocol = 'all'
 )
