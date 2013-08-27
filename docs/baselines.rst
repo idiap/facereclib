@@ -125,7 +125,7 @@ For the `AT&T database`_ the results should be as follows:
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
   |  eigenface  |     lda     |  gaborgraph |    lgbphs   |     gmm     |     isv     |    plda     |     bic     |
   +=============+=============+=============+=============+=============+=============+=============+=============+
-  |   9.026%    |   11.000%   |   7.000%    |    10.000%  |    1.000%   |    0.053%   |    0.000%   |   45.000%   |
+  |   9.026%    |   11.000%   |   7.000%    |    10.000%  |    1.000%   |    0.053%   |   25.974%   |   45.000%   |
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
 
 .. note::
@@ -135,9 +135,5 @@ For the `AT&T database`_ the results should be as follows:
   ``bin/baselines.py --evaluate`` prints results of the development and the test set.
   For the AT&T database, there is actually no test set.
   Hence, the result of the development set is printed twice.
-
-.. note::
-  The results of the plda algorithm are currently 0 since the algorithm seems to have a problem somewhere.
-  We are investigating this issue.
 
 .. include:: links.rst
