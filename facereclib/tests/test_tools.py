@@ -600,3 +600,82 @@ class ToolTest(unittest.TestCase):
     # score with a concatenation of the probe
     self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature, feature]), 0.)
 
+
+  def test10_ivector(self):
+    # NOTE: This test will fail when it is run solely. Please always run all Tool tests in order to assure that they work.
+    # read input
+    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
+    # assure that the config file is readable
+    tool = self.config('ivector')
+    self.assertTrue(isinstance(tool, facereclib.tools.IVector))
+
+    # here, we use a reduced complexity for test purposes
+    tool = facereclib.tools.IVector(
+        number_of_gaussians = 2,
+        subspace_dimension_of_t=2,       # T subspace dimension
+        update_sigma = False, # TODO Do another test with True
+        tv_training_iterations = 1,  # Number of EM iterations for the JFA training
+        variance_threshold = 1e-5,
+        INIT_SEED = seed_value
+    )
+    self.assertTrue(tool.performs_projection)
+    self.assertTrue(tool.requires_projector_training)
+    self.assertTrue(tool.use_projected_features_for_enrollment)
+    self.assertFalse(tool.split_training_features_by_client)
+    self.assertFalse(tool.requires_enroller_training)
+
+    # train the projector
+    t = tempfile.mkstemp('ubm.hdf5', prefix='frltest_')[1]
+    tool.train_projector(facereclib.utils.tests.random_training_set(feature.shape, count=5, minimum=-5., maximum=5.), t)
+    if regenerate_refs:
+      import shutil
+      shutil.copy2(t, self.reference_dir('ivector_projector.hdf5'))
+
+    # load the projector file
+    tool.load_projector(self.reference_dir('ivector_projector.hdf5'))
+
+    # compare ISV projector with reference
+    hdf5file = bob.io.HDF5File(t)
+    hdf5file.cd('Projector')
+    projector_reference = bob.machine.GMMMachine(hdf5file)
+    self.assertTrue(tool.m_ubm.is_similar_to(projector_reference))
+
+    # compare ISV enroller with reference
+    hdf5file.cd('/')
+    hdf5file.cd('Enroller')
+    enroller_reference = bob.machine.IVectorMachine(hdf5file)
+    enroller_reference.ubm = projector_reference
+    self.assertTrue(tool.m_tv.is_similar_to(enroller_reference))
+    os.remove(t)
+
+    # project the feature
+    projected = tool.project(feature)
+    if regenerate_refs:
+      tool.save_feature(projected, self.reference_dir('ivector_feature.hdf5'))
+
+    # compare the projected feature with the reference
+    projected_reference = tool.read_feature(self.reference_dir('ivector_feature.hdf5'))
+    self.assertTrue(projected[0].is_similar_to(projected_reference))
+
+    # enroll model with the projected feature
+    # This is not yet supported
+    # model = tool.enroll([projected[0]])
+    # if regenerate_refs:
+    #  model.save(bob.io.HDF5File(self.reference_dir('ivector_model.hdf5'), 'w'))
+    #reference_model = tool.read_model(self.reference_dir('ivector_model.hdf5'))
+    # compare the IVector model with the reference
+    #self.assertTrue(model.is_similar_to(reference_model))
+
+    # check that the read_probe function reads the correct values
+    probe = tool.read_probe(self.reference_dir('ivector_feature.hdf5'))
+    self.assertTrue(probe[0].is_similar_to(projected[0]))
+    self.assertEqual(probe[1].any(), projected[1].any())
+
+    # score with projected feature and compare to the weird reference score ...
+    # This in not implemented yet
+
+    # score with a concatenation of the probe
+    # This is not implemented yet
+
+
+
