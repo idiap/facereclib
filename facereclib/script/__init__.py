@@ -11,3 +11,5 @@ import faceverify
 import faceverify_gbu
 import faceverify_lfw
 import parameter_test
+import para_ubm_faceverify_isv
+import para_ubm_faceverify_ivector
