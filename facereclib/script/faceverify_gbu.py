@@ -398,16 +398,8 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
   if args.sub_task:
     # execute the desired sub-task
-    try:
-      executor = ToolChainExecutorGBU(args, args.protocol, args.perform_training)
-      executor.execute_grid_job()
-    except:
-      # remember stack trace of the exception
-      exc_info = sys.exc_info()
-      # delete dependent grid jobs, if desired
-      executor.delete_dependent_grid_jobs()
-      # re-raise exception with the original stack trace
-      raise exc_info[1], None, exc_info[2]
+    executor = ToolChainExecutorGBU(args, args.protocol, args.perform_training)
+    executor.execute_grid_job()
     return {}
 
   elif args.grid:
@@ -437,6 +429,12 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
       perform_training = False
 
       dry_run_init += 30
+
+    if executor.m_grid.is_local():
+      # start the jman local deamon
+      executor.execute_local_deamon()
+      return {}
+
     # at the end of all protocols, return the list of dependencies
     return job_ids
   else:

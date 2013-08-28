@@ -476,15 +476,7 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
   if args.sub_task:
     # execute the desired sub-task
     executor = ToolChainExecutorLFW(args, args.protocol)
-    try:
-      executor.execute_grid_job()
-    except:
-      # remember stack trace of the exception
-      exc_info = sys.exc_info()
-      # delete dependent grid jobs, if desired
-      executor.delete_dependent_grid_jobs()
-      # re-raise exception with the original stack trace
-      raise exc_info[1], None, exc_info[2]
+    executor.execute_grid_job()
     return {}
 
   elif args.grid:
@@ -529,6 +521,11 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
       # at the end, compute the average result
       last_dependency = executor.add_average_job_to_grid(average_dependencies)
       resulting_dependencies.update(last_dependency)
+
+    if executor.m_grid.is_local():
+      # start the jman local deamon
+      executor.execute_local_deamon()
+      return {}
 
     # at the end of all protocols, return the list of dependencies
     return resulting_dependencies
