@@ -271,6 +271,7 @@ class ToolChainExecutor:
           array = array,
           dependencies = dependencies,
           log_dir = logdir,
+          stop_on_failure = self.m_args.delete_dependent_jobs_on_failure,
           **kwargs
       )
       utils.info("submitted: job '%s' with id '%d' and dependencies '%s'" % (name, job_id, dependencies))
