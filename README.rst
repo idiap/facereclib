@@ -5,27 +5,60 @@ Welcome to the Face Recognition Library.
 This library is designed to perform a fair comparison of face recognition algorithms.
 It contains scripts to execute various kinds of face recognition experiments on a variety of facial image databases.
 
+About
+-----
+
+This library is developed at the `Biometrics group <http://www.idiap.ch/~marcel/professional/Research_Team.html>`_ at the `Idiap Research Institute <http://www.idiap.ch>`_.
+The FaceRecLib is designed to run face recognition experiments in a comparable and reproducible manner.
+To achieve this goal, interfaces to many publicly available facial image databases are contained, and default evaluation protocols are defined, e.g.:
+
+- Face Recognition Grand Challenge version 2
+- The Good, The Bad and the Ugly
+- Labeled Faces in the Wild
+- Multi-PIE
+- SCface
+- MOBIO
+- BANCA
+- CAS-PEAL
+- AR face database
+- XM2VTS
+- The AT&T database of faces (formerly known as ORL)
+
+Additionally, a broad variety of state-of-the-art face recognition algorithms such as:
+
+- Linear Discriminant Analysis
+- Probabilistic Linear Discriminant Analysis
+- Local Gabor Binary Pattern Histogram Sequences
+- Graph Matching
+- Inter-Session Variability Modeling
+- Bayesian Intrapersonal/Extrapersonal Classifier
+
+is provided, and running baseline algorithms is as easy as going to the command line and typing::
+
+  $ bin/baselines.py --database frgc --algorithm lda
+
+Furthermore, tools to evaluate the results can easily be used to create scientific plots.
+
+Interested? You are highly welcome to try it out!
+
+
 Installation
 ------------
 
-Currently the library is only available as a private project of `bioidiap at GitHub`_.
-To check out the current version of the FaceRecLib, go to the console, move to any place you like and call::
+We proudly present the first version of the FaceRecLib on pypi.
+To download the FaceRecLib, please go to http://pypi.python.org/pypi/facereclib, click on the download button and extract the .zip file to a folder of your choice.
 
-  $ git clone git@github.com:bioidiap/facereclib.git
+Bob
+...
 
-.. note::
-  If you already have an older version of the FaceRecLib, just re-base the repository by calling (from within your local copy)::
-
-    $ git config remote.origin.url git@github.com:bioidiap/facereclib.git
-    $ git pull
-
-
-The FaceRecLib is a satellite package of Bob_.
-You will need a copy of it to run the algoritms.
+The FaceRecLib is a satellite package of the free signal processing and machine learning library Bob_.
+You will need a copy of Bob in version 1.2.0 it to run the algorithms.
 Please download Bob_ from its webpage.
 
 .. note::
-  At Idiap_, Bob_ is globally installed and you can use its current version.
+  At Idiap_, Bob_ is globally installed.
+  This version of the FaceRecLib is bound to Bob version 1.2.0, which does not correspond to the one installed.
+  However, the correct version of Bob is marked in the buildout.cfg.
 
 After downloading, you should go to the console and write::
 
