@@ -33,6 +33,8 @@ setup(
 
     long_description=open('README.rst').read(),
 
+    keywords = "Face recognition, face verification, reproducible research, algorithm evaluation",
+
     packages=find_packages(),
 
     entry_points={

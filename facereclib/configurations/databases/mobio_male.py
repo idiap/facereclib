@@ -6,9 +6,9 @@ import facereclib
 database = facereclib.databases.DatabaseXBobZT(
     database = xbob.db.mobio.Database(),
     name = "mobio",
-    original_directory = "/idiap/group/biometric/databases/mobio/still/images/selected-images/",
-    original_extension = ".jpg",
-    annotation_directory = "/idiap/group/biometric/annotations/mobio/",
+    original_directory = "/idiap/resource/database/mobio/IMAGES_PNG",
+    original_extension = ".png",
+    annotation_directory = "/idiap/resource/database/mobio/IMAGE_ANNOTATIONS",
     annotation_type = 'eyecenter',
     protocol = 'male',
 
