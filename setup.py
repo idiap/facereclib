@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='facereclib',
-    version='1.0.1a0',
+    version='1.1.0',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
     url='https://github.com/bioidiap/facereclib',
@@ -127,8 +127,8 @@ setup(
 
 
     install_requires=[
-      "setuptools", # for whatever
-      "bob >= 1.2.0",    # base signal processing/machine learning library
+      "setuptools",      # for whatever
+      "bob == 1.2.0",    # base signal processing/machine learning library
       "xbob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
     ],
 
@@ -140,6 +140,7 @@ setup(
       'Intended Audience :: Science/Research',
       'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
       'Natural Language :: English',
+      'Programming Language :: Python',
       'Programming Language :: Python :: 2.7',
       'Environment :: Console',
       'Framework :: Buildout',
