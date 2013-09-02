@@ -25,6 +25,8 @@ For each type, several meta-parameters can be tested.
 This results in a nearly infinite amount of possible face recognition experiments that can be run using the current setup.
 But it is also possible to use your own database, preprocessing, feature type, or face recognition algorithm and test this against the baseline algorithms implemented in the |project|.
 
+For example, we created wrapper classes for the `CSU Face Recognition Resources`_, which can be found in the xfacereclib.extension.CSU_ satellite package, including installation instructions for the CSU toolkit.
+
 If you are interested, please continue reading:
 
 
@@ -69,4 +71,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. include: links.rst
+.. include:: links.rst

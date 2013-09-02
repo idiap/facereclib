@@ -104,8 +104,15 @@ The algorithms present an (incomplete) set of state-of-the-art face recognition 
 
 * ``bic``: In the *Bayesian Intrapersonal/Extrapersonal Classifier* (BIC) [MWP98]_, a pixel-based difference image is classified to be intrapersonal (i.e., both images are from the same person) or extrapersonal.
 
+* ``lrpca``: In Local Region PCA [PBD+11]_, the face is sub-divided into local regions and a PCA is performed for each local region.
+
+* ``lda_ir``: The LDA-IR (a.k.a. CohortLDA [LBP+12]_) extracts color information from images after, and computes a PCA+LDA projection on two color layers.
+
 .. note::
   The ``plda`` and ``bic`` algorithms are currently under construction and the setup is not yet useful.
+
+.. note::
+  The ``lrpca`` and ``lda_ir`` algorithms are taken from the `CSU Face Recognition Resources`_ and are only available when ``xfacereclib.extension.CSU`` and ``PythonFaceEvaluation`` is enabled (e.g. by using the `buildout-with-csu.cfg <file:../buildout-with-csu.cfg>`_ during the buildout step), see :ref:installation for details.
 
 Baseline results
 ----------------
@@ -130,6 +137,10 @@ For the `AT&T database`_ the results should be as follows:
 
 .. note::
   Here, only the results of the HTER using the EER as minimum criterion is given.
+
+.. note::
+  The ``lrpca`` and ``lda_ir`` algorithms require hand-labeled eye positions to run.
+  Since the AT&T database does not provide eye positions, it is not possible to provide baseline results on AT&T for these two algorithms.
 
 .. note::
   ``bin/baselines.py --evaluate`` prints results of the development and the test set.

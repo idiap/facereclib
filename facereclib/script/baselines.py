@@ -18,7 +18,16 @@ for database in all_databases:
   except:
     pass
 
-all_algorithms = ('dummy', 'eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda', 'bic')
+# collect all algorithms that we provide baselines for
+all_algorithms = ['dummy', 'eigenface', 'lda', 'gaborgraph', 'lgbphs', 'gmm', 'isv', 'plda', 'bic']
+try:
+  # try if the CSU extension is enabled
+  utils.tests.load_resource('lrpca', 'tool')
+  utils.tests.load_resource('lda-ir', 'tool')
+  all_algorithms += ['lrpca', 'lda_ir']
+except:
+  pass
+
 
 def command_line_arguments(command_line_parameters):
   """Defines the command line parameters that are accepted."""
@@ -137,6 +146,22 @@ def bic():
   tool          = 'bic'
   grid          = 'demanding'
   return (features, tool, grid)
+
+def lrpca():
+  """Local Region PCA"""
+  features      = 'lrpca'
+  tool          = 'lrpca'
+  grid          = 'grid'
+  preprocessing = 'lrpca'
+  return (features, tool, grid, preprocessing)
+
+def lda_ir():
+  """LDA-IR (a.k.a. CohortLDA)"""
+  features      = 'lda-ir'
+  tool          = 'lda-ir'
+  grid          = 'largs'
+  preprocessing = 'lda-ir'
+  return (features, tool, grid, preprocessing)
 
 
 

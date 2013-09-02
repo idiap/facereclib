@@ -22,11 +22,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='facereclib',
-    version='1.1.0',
+    version='1.1.1',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
     url='https://github.com/bioidiap/facereclib',
-    #license='LICENSE.txt',
+    license='LICENSE.txt',
 
     author='Manuel Guenther',
     author_email='manuel.guenther@idiap.ch',
@@ -36,6 +36,7 @@ setup(
     keywords = "Face recognition, face verification, reproducible research, algorithm evaluation",
 
     packages=find_packages(),
+    zip_safe=False,
 
     entry_points={
       # console scripts that will be created in bin/

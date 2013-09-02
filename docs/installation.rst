@@ -2,6 +2,8 @@
 .. author: Manuel Günther <manuel.guenther@idiap.ch>
 .. date: Thu Sep 20 11:58:57 CEST 2012
 
+.. _installation:
+
 =========================
 Installation instructions
 =========================
@@ -30,7 +32,7 @@ If you prefer not to install Bob_ in its default location, you have to adapt the
   Currently, there is no MS Windows version of Bob_.
 
 Using Bob at Idiap
-~~~~~~~~~~~~~~~~~~
+''''''''''''''''''
 
 At Idiap, you can use the latest version of Bob_ by changing the ``prefixes`` to **/idiap/group/torch5spro/nightlies/last/install/linux-x86_64-release**.
 By default, the version 1.2.0 from **/idiap/group/torch5spro/releases/bob-1.2.0/install/linux-x86_64-release** is used.
@@ -43,6 +45,18 @@ If you don't want to download the databases, please edit the ``eggs`` section of
 The ``gridtk`` tool kit is mainly used for submitting submitting jobs to Idiap_'s SGE_ grid.
 The latest version also supports to run jobs in parallel on the local machine.
 You can safely remove this line from the buildout.cfg_ if you are not at Idiap or if you don't want to launch your experiments in parallel.
+
+The CSU Face Recognition Resources
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Two open source algorithms are provided by the `CSU Face Recognition Resources`_, namely the LRPCA and the LDA-IR algorithm.
+For these algorithms, optional wrapper classes are provided in the xfacereclib.extension.CSU_ satellite package.
+By default, this package is disabled.
+To enable them, please call::
+
+  $ bin/buildout -c buildout-with-csu.cfg
+
+after downloading and patching the CSU resources, and updating the ``sources-dir`` in the **buildout-with-csu.cfg** file -- as explained in xfacereclib.extension.CSU_.
+
 
 Image databases
 ~~~~~~~~~~~~~~~

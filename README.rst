@@ -34,31 +34,48 @@ Algorithms
 ..........
 Together with that, a broad variety of traditional and state-of-the-art face recognition algorithms such as:
 
-- Eigenfaces [M. Turk and A. Pentland. "Eigenfaces for recognition". Journal of Cognitive Neuroscience, 3(1):71-86, 1991.]
-- Linear Discriminant Analysis [W. Zhao, A. Krishnaswamy, R. Chellappa, D. Swets and J. Weng. "Discriminant analysis of principal components for face recognition", pages 73-85. Springer Verlag Berlin, 1998.]
-- Probabilistic Linear Discriminant Analysis [L. El Shafey, C. McCool, R. Wallace and S. Marcel. "A scalable formulation of probabilistic linear discriminant analysis: applied to face recognition". IEEE Transactions on Pattern Analysis and Machine Intelligence, 35(7):1788-1794, 7/2013.]
-- Local Gabor Binary Pattern Histogram Sequences [W. Zhang, S. Shan, W. Gao, X. Chen and H. Zhang. "Local Gabor binary pattern histogram sequence (LGBPHS): a novel non-statistical model for face representation and recognition". Computer Vision, IEEE International Conference on, 1:786-791, 2005.]
-- Graph Matching [M. Günther, D. Haufe and R.P. Würtz. "Face recognition with disparity corrected Gabor phase differences". In Artificial neural networks and machine learning, volume 7552 of Lecture Notes in Computer Science, pages 411-418. 2012.]
-- Gaussian Mixture Modeling [C. McCool, S. Marcel. "Parts-based face verification using local frequency bands". In Advances in biometrics, volume 5558 of Lecture Notes in Computer Science. 2009.]
-- Inter-Session Variability Modeling [R. Wallace, M. McLaren, C. McCool and S. Marcel. "Inter-session variability modelling and joint factor analysis for face authentication". International Joint Conference on Biometrics. 2011.]
-- Bayesian Intrapersonal/Extrapersonal Classifier [B. Moghaddam, W. Wahid and A. Pentland. "Beyond eigenfaces: probabilistic matching for face recognition". IEEE International Conference on Automatic Face and Gesture Recognition, pages 30-35. 1998.]
+- Eigenfaces [TP91]_
+- Linear Discriminant Analysis [ZKC+98]_
+- Probabilistic Linear Discriminant Analysis [ESM+13]_
+- Local Gabor Binary Pattern Histogram Sequences [ZSG+05]_
+- Graph Matching [GHW12]_
+- Gaussian Mixture Modeling [MM09]_
+- Inter-Session Variability Modeling [WMM+11]_
+- Bayesian Intrapersonal/Extrapersonal Classifier [MWP98]_
 
 is provided.
 Furthermore, tools to evaluate the results can easily be used to create scientific plots, and interfaces to run experiments using parallel processes or an SGE grid are provided.
+
+
 
 Extensions
 ..........
 On top of these already pre-coded algorithms, the FaceRecLib provides an easy Python interface for implementing new image preprocessors, feature types, face recognition algorithms or database interfaces, which directly integrate into the face recognition experiment.
 Hence, after a short period of coding, researchers can compare their new invention directly with already existing algorithms in a fair manner.
 
-As a small example, we provide wrapper classes for the CSU face recognition resources [http://www.cs.colostate.edu/facerec] in the `xfacereclib.CSU.PythonFaceEvaluation <http://pypi.python.org/pypi/xfacereclib.CSU.PathonFaceEvaluation>`_ package.
+As a small example, we provide wrapper classes for the CSU face recognition resources [http://www.cs.colostate.edu/facerec] in the `xfacereclib.extension.CSU <http://pypi.python.org/pypi/xfacereclib.extension.CSU>`_ package:
+
+- Local Region PCA [PBD+11]_
+- LDA-IR (a.k.a. CohortLDA) [LBP+12]_
+
+
 To see how easy it is to use these tools to generate a publication, please have a look at the source code `xfacereclib.paper.BeFIT2012 <http://pypi.python.org/pypi/xfacereclib.paper.BeFIT2012>`_, which was finally published in [M. Günther, R. Wallace and S. Marcel. "An Open Source Framework for Standardized Comparisons of Face Recognition Algorithms". Computer Vision - ECCV 2012. Workshops and Demonstrations, LNCS, 7585, 547-556, 2012.].
 
 Finally, all parts of the FaceRecLib are well documented and thoroughly tested to assure usability, stability and comparability.
 
-Interested?
-...........
-If you are interested in trying out the FaceRecLib, please follow the installation instruction below.
+References
+..........
+
+.. [TP91]    *M. Turk and A. Pentland*. **Eigenfaces for recognition**. Journal of Cognitive Neuroscience, 3(1):71-86, 1991.
+.. [ZKC+98]  *W. Zhao, A. Krishnaswamy, R. Chellappa, D. Swets and J. Weng*. **Discriminant analysis of principal components for face recognition**, pages 73-85. Springer Verlag Berlin, 1998.
+.. [ESM+13]  *L. El Shafey, Chris McCool, Roy Wallace and Sébastien Marcel*. **A scalable formulation of probabilistic linear discriminant analysis: applied to face recognition**. IEEE Transactions on Pattern Analysis and Machine Intelligence, 35(7):1788-1794, 7/2013.
+.. [ZSG+05]  *W. Zhang, S. Shan, W. Gao, X. Chen and H. Zhang*. **Local Gabor binary pattern histogram sequence (LGBPHS): a novel non-statistical model for face representation and recognition**. Computer Vision, IEEE International Conference on, 1:786-791, 2005.
+.. [GHW12]   *M. Günther, D. Haufe and R.P. Würtz*. **Face recognition with disparity corrected Gabor phase differences**. In Artificial neural networks and machine learning, volume 7552 of Lecture Notes in Computer Science, pages 411-418. 9/2012.
+.. [MM09]    *C. McCool, S. Marcel*. **Parts-based face verification using local frequency bands**. In Advances in biometrics, volume 5558 of Lecture Notes in Computer Science. 2009.
+.. [WMM+11]  *R. Wallace, M. McLaren, C. McCool and S. Marcel*. **Inter-session variability modelling and joint factor analysis for face authentication**. International Joint Conference on Biometrics. 2011.
+.. [MWP98]   *B. Moghaddam, W. Wahid and A. Pentland*. **Beyond eigenfaces: probabilistic matching for face recognition**. IEEE International Conference on Automatic Face and Gesture Recognition, pages 30-35. 1998.
+.. [PBD+11]  *P.J. Phillips, J.R. Beveridge, B.A. Draper, G. Givens, A.J. O'Toole, D.S. Bolme, J. Dunlop, Y.M. Lui, H. Sahibzada and S. Weimer*. **An introduction to the Good, the Bad, & the Ugly face recognition challenge problem**. Automatic Face Gesture Recognition and Workshops (FG 2011), pages 346-353. 2011.
+.. [LBP+12]  *Y.M. Lui, D.S. Bolme, P.J. Phillips, J.R. Beveridge and B.A. Draper*. **Preliminary studies on the Good, the Bad, and the Ugly face recognition challenge problem**. Computer Vision and Pattern Recognition Workshops (CVPRW), pages 9-16. 2012.
 
 
 Installation
@@ -67,11 +84,13 @@ Installation
 We proudly present the first version of the FaceRecLib on pypi.
 To download the FaceRecLib, please go to http://pypi.python.org/pypi/facereclib, click on the download button and extract the .zip file to a folder of your choice.
 
+The FaceRecLib is a satellite package of the free signal processing and machine learning library Bob_, and some of its algorithms rely on the `CSU Face Recognition Resources`_.
+These two dependencies have to be downloaded manually, as explained in the following.
+
 Bob
 ...
 
-The FaceRecLib is a satellite package of the free signal processing and machine learning library Bob_.
-You will need a copy of Bob in version 1.2.0 it to run the algorithms.
+You will need a copy of Bob in version 1.2.0 to run the algorithms.
 Please download Bob_ from its webpage.
 
 .. note::
@@ -93,6 +112,18 @@ Now, you can open the documentation by typing::
   $ firefox sphinx/index.html
 
 and read further instructions on how to use this library.
+
+The CSU Face Recognition Resources
+..................................
+Two open source algorithms are provided by the `CSU Face Recognition Resources`_, namely the LRPCA and the LDA-IR (a.k.a. CohortLDA) algorithm.
+For these algorithms, optional wrapper classes are provided in the xfacereclib.extension.CSU_ satellite package.
+By default, this package is disabled.
+To enable them, please call::
+
+  $ bin/buildout -c buildout-with-csu.cfg
+
+after downloading and patching the CSU resources, and updating the ``sources-dir`` in the **buildout-with-csu.cfg** file -- as explained in xfacereclib.extension.CSU_.
+
 
 Cite our paper
 --------------
@@ -119,3 +150,7 @@ If you use the FaceRecLib in any of your experiments, please cite the following 
 .. _bob: http://www.idiap.ch/software/bob
 .. _idiap: http://www.idiap.ch
 .. _bioidiap at github: http://www.github.com/bioidiap
+.. _csu face recognition resources: http://www.cs.colostate.edu/facerec
+.. _xfacereclib.extension.csu: http://pypi.python.org/pypi/xfacereclib.extension.CSU
+
+
