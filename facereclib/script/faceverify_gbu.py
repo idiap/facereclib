@@ -19,8 +19,11 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # select the protocol
     self.m_database.protocol = protocol
     self.m_perform_training = perform_training
-    if not perform_training:
-      self.m_database.all_files_options.update({'groups' : 'dev'})
+    # select, which groups are used for preprocessing and feature extraction
+    if perform_training:
+      self.m_database.all_files_options.update({'groups' : ('world', 'dev')})
+    else:
+      self.m_database.all_files_options.update({'groups' : ('dev',)})
 
     if args.training_set:
       self.m_database.all_files_options.update({'subworld' : args.training_set})
@@ -367,8 +370,8 @@ def parse_args(command_line_parameters):
       help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
   other_group.add_argument('--protocols', type=str, nargs = '+', choices = ['Good', 'Bad', 'Ugly'], default = ['Good', 'Bad', 'Ugly'],
       help = 'The protocols to use, by default all three (Good, Bad, and Ugly) are executed.')
-  other_group.add_argument('-x', '--training-set', choices=['x1', 'x2', 'x4', 'x8'], default = 'x2',
-      help = 'Select the training set to be used')
+  other_group.add_argument('-x', '--training-set', choices=['x1', 'x2', 'x4', 'x8'],
+      help = 'Select the training set to be used. Please do not use this option in a series of calls since this might influence other calls.')
 
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
