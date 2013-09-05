@@ -67,7 +67,7 @@ def load_resource(resource, keyword, imports = ['facereclib'], preferred_distrib
   if os.path.isfile(resource):
     return read_config_file(resource, keyword)
 
-  # now, we ckeck if the resource is registered as an entry point in the resource files
+  # now, we check if the resource is registered as an entry point in the resource files
   entry_points = [entry_point for entry_point in _get_entry_points(keyword) if entry_point.name == resource]
 
   if len(entry_points):

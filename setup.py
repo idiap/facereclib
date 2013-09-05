@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='facereclib',
-    version='1.1.2',
+    version='1.1.3',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
     url='https://github.com/bioidiap/facereclib',
@@ -50,7 +50,8 @@ setup(
         'parameter_test.py = facereclib.script.parameter_test:main',
         'baselines.py = facereclib.script.baselines:main',
         'resources.py = facereclib.utils.resources:print_all_resources',
-        'collect_results.py = facereclib.script.collect_results:main'
+        'collect_results.py = facereclib.script.collect_results:main',
+        'evaluate.py = facereclib.script.evaluate:main'
       ],
 
       # registered database short cuts
@@ -115,7 +116,8 @@ setup(
         'small             = facereclib.configurations.grid.small:grid',
         'isv               = facereclib.configurations.grid.isv_training:grid',
         'ivector           = facereclib.configurations.grid.ivector_training:grid',
-        'local-p4          = facereclib.configurations.grid.local:grid'
+        'local-p4          = facereclib.configurations.grid.local:grid',
+        'local-p16         = facereclib.configurations.grid.local:grid_p16'
       ],
 
       # registered tests (will, e.g., be run in the xbob.db.aggregator)

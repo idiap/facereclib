@@ -113,6 +113,10 @@ Now, you can open the documentation by typing::
 
 and read further instructions on how to use this library.
 
+.. note::
+  Some links in the documentation require that the documentation is generated with ``bin/sphinx-build docs sphinx`` (see above).
+  If you generated the documentation using another command line, please be aware that links might not be found.
+
 The CSU Face Recognition Resources
 ..................................
 Two open source algorithms are provided by the `CSU Face Recognition Resources`_, namely the LRPCA and the LDA-IR (a.k.a. CohortLDA) algorithm.

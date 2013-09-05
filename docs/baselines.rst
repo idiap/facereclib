@@ -2,6 +2,8 @@
 .. author: Manuel Günther <manuel.guenther@idiap.ch>
 .. date: Thu Sep 20 11:58:57 CEST 2012
 
+.. _baselines:
+
 =============================
 Executing baseline algorithms
 =============================
@@ -114,37 +116,44 @@ The algorithms present an (incomplete) set of state-of-the-art face recognition 
 .. note::
   The ``lrpca`` and ``lda_ir`` algorithms are taken from the `CSU Face Recognition Resources`_ and are only available when ``xfacereclib.extension.CSU`` and ``PythonFaceEvaluation`` is enabled (e.g. by using the `buildout-with-csu.cfg <file:../buildout-with-csu.cfg>`_ during the buildout step), see :ref:installation for details.
 
+
 Baseline results
 ----------------
 
-The results of the baseline experiments are generated using:
+To evaluate the results, a wrapper call to ``bin/evaluate.py`` is produced by the ``bin/baselines.py --evaluate`` command.
+Several types of evaluation can be achieved, see :ref:`evaluate` for details.
+Particularly, here we can enable ROC curves, DET plots, CMC curves and the computation of EER/HTER.
+Hence, the complete set of results of the baseline experiments are generated using:
 
 .. code-block:: sh
 
-  $ bin/baselines.py --evaluate
+  $ bin/baselines.py --all -vv --evaluate ROC DET CMC HTER
 
 If you specified other parameters for the execution of the algorithms, e.g., the ``--directory`` flag, you have to add these options here as well.
+If you ran only a sub-set of the available, the missing algorithms will just be skipped.
+The resulting files will be **ROC.pdf**, **DET.pdf** and **CMC.pdf**, and the HTER results are simply written to console.
 
 For the `AT&T database`_ the results should be as follows:
+
+.. image:: ROC.png
+  :width: 35%
+.. image:: DET.png
+  :width: 27%
+.. image:: CMC.png
+  :width: 35%
+
 
 .. table:: The HTER results of the baseline algorithms on the AT&T database
 
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
   |  eigenface  |     lda     |  gaborgraph |    lgbphs   |     gmm     |     isv     |    plda     |     bic     |
   +=============+=============+=============+=============+=============+=============+=============+=============+
-  |   9.026%    |   11.000%   |   7.000%    |    10.000%  |    1.000%   |    0.053%   |   25.974%   |   45.000%   |
+  |   8.237%    |   10.000%   |   6.211%    |     8.947%  |    0.658%   |    0.053%   |   25.342%   |   41.711%   |
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
 
-.. note::
-  Here, only the results of the HTER using the EER as minimum criterion is given.
 
 .. note::
   The ``lrpca`` and ``lda_ir`` algorithms require hand-labeled eye positions to run.
   Since the AT&T database does not provide eye positions, it is not possible to provide baseline results on AT&T for these two algorithms.
-
-.. note::
-  ``bin/baselines.py --evaluate`` prints results of the development and the test set.
-  For the AT&T database, there is actually no test set.
-  Hence, the result of the development set is printed twice.
 
 .. include:: links.rst

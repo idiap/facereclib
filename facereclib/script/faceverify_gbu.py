@@ -421,7 +421,9 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     for protocol in args.protocols:
       # create an executor object
       executor = ToolChainExecutorGBU(args, protocol, perform_training)
-      executor.write_info(command_line_parameters)
+      # write the info file, but only for the first protocol
+      if protocol == args.protocols[0]:
+        executor.write_info(command_line_parameters)
       executor.set_common_parameters(calling_file = this_file, parameters = command_line_parameters, fake_job_id = dry_run_init)
 
       # add the jobs

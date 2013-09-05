@@ -53,7 +53,7 @@ def command_line_arguments(command_line_parameters):
   parser.add_argument('-q', '--dry-run', action = 'store_true', help = 'Just print the commands, but do not execute them.')
 
   # - evaluate the algorithm (after it has finished)
-  parser.add_argument('-e', '--evaluate', action = 'store_true', help = 'Evaluate the results of the algorithms (instead of running them).')
+  parser.add_argument('-e', '--evaluate', nargs='+', choices = ('EER', 'HTER', 'ROC', 'DET', 'CMC'), help = 'Evaluate the results of the algorithms (instead of running them) using the given evaluation techniques.')
 
   # - other parameters that are passed to the underlying script
   parser.add_argument('parameters', nargs = argparse.REMAINDER, help = 'Parameters directly passed to the face verification script.')
@@ -159,7 +159,7 @@ def lda_ir():
   """LDA-IR (a.k.a. CohortLDA)"""
   features      = 'lda-ir'
   tool          = 'lda-ir'
-  grid          = 'largs'
+  grid          = 'grid'
   preprocessing = 'lda-ir'
   return (features, tool, grid, preprocessing)
 
@@ -175,48 +175,97 @@ def main(command_line_parameters = sys.argv):
   has_eval = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface', 'xm2vts', 'lfw')
 
   if args.evaluate:
+    # call the evaluate script with the desired parameters
+
+    # get the base directory of the results
+    base_dir = args.directory if args.directory else os.path.join('/idiap/user', os.environ['USER'])
+    if not os.path.exists(base_dir):
+      if not args.dry_run:
+        raise IOError("The result directory cannot be found. Please specify the --directory as it was specified during execution of the algorithms.")
+
+    # get the result directory of the database
+    result_dir = os.path.join(base_dir, args.database, 'baselines')
+    if not os.path.exists(result_dir):
+      if not args.dry_run:
+        raise IOError("The result directory for the given database cannot. Did you already run the experiments for this database?")
+
+    # iterate over the algorithms and collect the result files
+    result_dev = []
+    result_eval = []
+    result_zt_dev = []
+    result_zt_eval = []
+    legends = []
+
     # evaluate the results
     for algorithm in args.algorithms:
+      nonorm_sub_dir = os.path.join(algorithm, 'scores')
+      if not os.path.exists(os.path.join(result_dir, nonorm_sub_dir)):
+        utils.warn("Skipping algorithm '%s' since the results cannot be found." % algorithm)
+        continue
+      protocols = os.listdir(os.path.join(result_dir, nonorm_sub_dir))
+      if not len(protocols):
+        utils.warn("Skipping algorithm '%s' since the results cannot be found."%algorithm)
+        continue
+      if len(protocols) > 1:
+        utils.warn("There are several protocols found in directory '%s'. Here, we use protocol '%s'." %(os.path.join(result_dir, nonorm_sub_dir), protocols[0]))
 
-      utils.info("Evaluating algorithm '" + algorithm + "'")
+      nonorm_sub_dir = os.path.join(nonorm_sub_dir, protocols[0], 'nonorm')
+      ztnorm_sub_dir = os.path.join(nonorm_sub_dir, protocols[0], 'ztnorm')
 
-      database = utils.resources.load_resource(args.database, 'database')
+      # collect the resulting files
+      if os.path.exists(os.path.join(result_dir, nonorm_sub_dir, 'scores-dev')):
+        result_dev.append(os.path.join(nonorm_sub_dir, 'scores-dev'))
+        legends.append(algorithm)
+      if os.path.exists(os.path.join(result_dir, nonorm_sub_dir, 'scores-eval')):
+        result_eval.append(os.path.join(nonorm_sub_dir, 'scores-eval'))
 
-      if args.directory:
-        # append the directories
-        result_dir = os.path.join(args.directory, args.database, 'baselines', algorithm, 'scores', database.protocol)
-      else:
-        # this is the default result directory
-        result_dir = os.path.join('/idiap/user', os.environ['USER'], args.database, 'baselines', algorithm, 'scores', database.protocol)
+      if os.path.exists(os.path.join(result_dir, ztnorm_sub_dir, 'scores-dev')):
+        result_zt_dev.append(os.path.join(ztnorm_sub_dir, 'scores-dev'))
+      if os.path.exists(os.path.join(result_dir, ztnorm_sub_dir, 'scores-eval')):
+        result_zt_eval.append(os.path.join(ztnorm_sub_dir, 'scores-eval'))
 
-      # sub-directories of the result directories that contain the score files
-      folders = ('nonorm', 'ztnorm') if has_zt_norm else ('nonorm',)
+    # check if we have found some results
+    if not result_dev:
+      utils.warn("No result files were detected -- skipping evaluation.")
+      return
 
-      for dir in folders:
-        # score files
-        dev_file = os.path.join(result_dir, dir, 'scores-dev')
-        eval_file = os.path.join(result_dir, dir, 'scores-eval') if has_eval else dev_file
+    # call the evaluate script
+    base_call = ['bin/evaluate.py', '--directory', result_dir, '--legends'] + legends
+    if 'EER' in args.evaluate:
+      base_call += ['--criterion', 'EER']
+    elif 'HTER' in args.evaluate:
+      base_call += ['--criterion', 'HTER']
+    if 'ROC' in args.evaluate:
+      base_call += ['--roc', 'ROC.pdf']
+    if 'DET' in args.evaluate:
+      base_call += ['--det', 'DET.pdf']
+    if 'CMC' in args.evaluate:
+      base_call += ['--cmc', 'CMC.pdf']
+    if args.verbose:
+      base_call += ['-' + 'v'*args.verbose]
 
-        # check if the score files are already there (i.e., the experiments have finished)
-        if not args.dry_run and (not os.path.exists(dev_file) or not os.path.exists(eval_file)):
-          utils.error("The result file '%s' and/or '%s' does not exist" % (dev_file, eval_file))
-          continue
+    # first, run the nonorm evaluation
+    call = base_call[:]
+    call += ['--dev-files'] + result_dev
+    if result_eval:
+      call += ['--eval-files'] + result_eval
 
-        # generate a call to a bob function to do the actual evaluation
-        call = [
-                 os.path.join(bin_dir, 'bob_compute_perf.py'),
-                 '-d', dev_file,
-                 '-t', eval_file,
-                 '-x'
-               ]
+    utils.info("Executing command:")
+    print(" ".join(call))
+    if not args.dry_run:
+      subprocess.call(call)
 
-        # print the command so that it can be re-issued on need
-        utils.info("Executing command:")
-        print ' '.join(call)
+    # now, also run the ZT norm evaluation
+    if result_zt_dev:
+      call = base_call[:]
+      call += ['--dev-files'] + result_zt_dev
+      if result_eval:
+        call += ['--eval-files'] + result_zt_eval
 
-        # execute the command
-        if not args.dry_run:
-          subprocess.call(call)
+      utils.info("Executing command:")
+      print(" ".join(call))
+      if not args.dry_run:
+        subprocess.call(call)
 
   else:
 
@@ -286,6 +335,7 @@ def main(command_line_parameters = sys.argv):
       # run the command
       if not args.dry_run:
         subprocess.call(command)
+
 
 if __name__ == "__main__":
   main()

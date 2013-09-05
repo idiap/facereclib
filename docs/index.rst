@@ -37,6 +37,7 @@ If you are interested, please continue reading:
    installation
    baselines
    experiments
+   evaluate
    specialized
    contribute
    satellite
