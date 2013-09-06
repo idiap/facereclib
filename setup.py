@@ -22,11 +22,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='facereclib',
-    version='1.1.0',
+    version='1.1.4a0',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
     url='https://github.com/bioidiap/facereclib',
-    #license='LICENSE.txt',
+    license='LICENSE.txt',
 
     author='Manuel Guenther',
     author_email='manuel.guenther@idiap.ch',
@@ -36,6 +36,8 @@ setup(
     keywords = "Face recognition, face verification, reproducible research, algorithm evaluation",
 
     packages=find_packages(),
+    include_package_data=True,
+    zip_safe=False,
 
     entry_points={
       # console scripts that will be created in bin/
@@ -45,11 +47,11 @@ setup(
         'faceverify_lfw.py = facereclib.script.faceverify_lfw:main',
         'para_ubm_faceverify_isv.py = facereclib.script.para_ubm_faceverify_isv:main',
         'para_ubm_faceverify_ivector.py = facereclib.script.para_ubm_faceverify_ivector:main',
-#        'faceverify_pose.py = facereclib.script.faceverify_pose:main',
         'parameter_test.py = facereclib.script.parameter_test:main',
         'baselines.py = facereclib.script.baselines:main',
         'resources.py = facereclib.utils.resources:print_all_resources',
-        'collect_results.py = facereclib.script.collect_results:main'
+        'collect_results.py = facereclib.script.collect_results:main',
+        'evaluate.py = facereclib.script.evaluate:main'
       ],
 
       # registered database short cuts
@@ -114,7 +116,8 @@ setup(
         'small             = facereclib.configurations.grid.small:grid',
         'isv               = facereclib.configurations.grid.isv_training:grid',
         'ivector           = facereclib.configurations.grid.ivector_training:grid',
-        'local-p4          = facereclib.configurations.grid.local:grid'
+        'local-p4          = facereclib.configurations.grid.local:grid',
+        'local-p16         = facereclib.configurations.grid.local:grid_p16'
       ],
 
       # registered tests (will, e.g., be run in the xbob.db.aggregator)

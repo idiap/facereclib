@@ -2,6 +2,8 @@
 .. author: Manuel Günther <manuel.guenther@idiap.ch>
 .. date: Thu Sep 20 11:58:57 CEST 2012
 
+.. _baselines:
+
 =============================
 Executing baseline algorithms
 =============================
@@ -95,45 +97,63 @@ The algorithms present an (incomplete) set of state-of-the-art face recognition 
 
 * ``lgbphs``: *Local Gabor Binary Pattern Histogram Sequences* (LGBPHS) [ZSG+05]_ are extracted from the images and compares using the histogram intersection measure.
 
-* ``gmm``: *Gaussian Mixture Models* (GMM) [WMM+12]_ are extracted from *Discrete Cosine Transform* (DCT) block features.
+* ``gmm``: *Gaussian Mixture Models* (GMM) [MM09]_ are extracted from *Discrete Cosine Transform* (DCT) block features.
 
 * ``isv``: As an extension of the GMM algorithm, *Inter-Session Variability* (ISV) modeling [WMM+11]_ is used to learn what variations in images are introduced by identity changes and which not.
 
-* ``plda``: *Probabilistic LDA* (PLDA) [Pri07]_ is a probabilistic generative version of the LDA.
+* ``plda``: *Probabilistic LDA* (PLDA) [Pri07]_ is a probabilistic generative version of the LDA, in its scalable formulation of [ESM+13]_.
   Here, we also apply it on pixel-based representations of the image, though also other features should be possible.
 
 * ``bic``: In the *Bayesian Intrapersonal/Extrapersonal Classifier* (BIC) [MWP98]_, a pixel-based difference image is classified to be intrapersonal (i.e., both images are from the same person) or extrapersonal.
 
+* ``lrpca``: In Local Region PCA [PBD+11]_, the face is sub-divided into local regions and a PCA is performed for each local region.
+
+* ``lda_ir``: The LDA-IR (a.k.a. CohortLDA [LBP+12]_) extracts color information from images after, and computes a PCA+LDA projection on two color layers.
+
 .. note::
   The ``plda`` and ``bic`` algorithms are currently under construction and the setup is not yet useful.
+
+.. note::
+  The ``lrpca`` and ``lda_ir`` algorithms are taken from the `CSU Face Recognition Resources`_ and are only available when ``xfacereclib.extension.CSU`` and ``PythonFaceEvaluation`` is enabled (e.g. by using the `buildout-with-csu.cfg <file:../buildout-with-csu.cfg>`_ during the buildout step), see :ref:installation for details.
+
 
 Baseline results
 ----------------
 
-The results of the baseline experiments are generated using:
+To evaluate the results, a wrapper call to ``bin/evaluate.py`` is produced by the ``bin/baselines.py --evaluate`` command.
+Several types of evaluation can be achieved, see :ref:`evaluate` for details.
+Particularly, here we can enable ROC curves, DET plots, CMC curves and the computation of EER/HTER.
+Hence, the complete set of results of the baseline experiments are generated using:
 
 .. code-block:: sh
 
-  $ bin/baselines.py --evaluate
+  $ bin/baselines.py --all -vv --evaluate ROC DET CMC HTER
 
 If you specified other parameters for the execution of the algorithms, e.g., the ``--directory`` flag, you have to add these options here as well.
+If you ran only a sub-set of the available, the missing algorithms will just be skipped.
+The resulting files will be **ROC.pdf**, **DET.pdf** and **CMC.pdf**, and the HTER results are simply written to console.
 
 For the `AT&T database`_ the results should be as follows:
+
+.. image:: ROC.png
+  :width: 35%
+.. image:: DET.png
+  :width: 27%
+.. image:: CMC.png
+  :width: 35%
+
 
 .. table:: The HTER results of the baseline algorithms on the AT&T database
 
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
   |  eigenface  |     lda     |  gaborgraph |    lgbphs   |     gmm     |     isv     |    plda     |     bic     |
   +=============+=============+=============+=============+=============+=============+=============+=============+
-  |   9.026%    |   11.000%   |   7.000%    |    10.000%  |    1.000%   |    0.053%   |   25.974%   |   45.000%   |
+  |   8.237%    |   10.000%   |   6.211%    |     8.947%  |    0.658%   |    0.053%   |   25.342%   |   41.711%   |
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
 
-.. note::
-  Here, only the results of the HTER using the EER as minimum criterion is given.
 
 .. note::
-  ``bin/baselines.py --evaluate`` prints results of the development and the test set.
-  For the AT&T database, there is actually no test set.
-  Hence, the result of the development set is printed twice.
+  The ``lrpca`` and ``lda_ir`` algorithms require hand-labeled eye positions to run.
+  Since the AT&T database does not provide eye positions, it is not possible to provide baseline results on AT&T for these two algorithms.
 
 .. include:: links.rst

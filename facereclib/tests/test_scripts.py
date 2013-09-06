@@ -344,7 +344,7 @@ class ScriptTest (unittest.TestCase):
       main(parameters)
       parameters.append('-g')
       main(parameters)
-      parameters.append('-e')
+      parameters.extend(['-e', 'HTER'])
       main(parameters)
 
     for algorithm in all_algorithms:
@@ -352,8 +352,35 @@ class ScriptTest (unittest.TestCase):
       main(parameters)
       parameters.append('-g')
       main(parameters)
-      parameters.append('-e')
+      parameters.extend(['-e', 'HTER'])
       main(parameters)
+
+
+  def test15_evaluate(self):
+    # tests our 'evaluate' script using the reference files
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
+    reference_files = ('scores-nonorm-dev', 'scores-ztnorm-dev')
+    plots = [os.path.join(test_dir, '%s.pdf')%f for f in ['roc', 'cmc', 'det']]
+    parameters = [
+      '--dev-files', reference_files[0], reference_files[1],
+      '--eval-files', reference_files[0], reference_files[1],
+      '--directory', os.path.join(base_dir, 'scripts'),
+      '--legends', 'no norm', 'ZT norm',
+      '--criterion', 'HTER',
+      '--roc', plots[0],
+      '--det', plots[1],
+      '--cmc', plots[2],
+    ]
+
+    # execute the script
+    from facereclib.script.evaluate import main
+    main(parameters)
+    for i in range(3):
+      self.assertTrue(os.path.exists(plots[i]))
+      os.remove(plots[i])
+    os.rmdir(test_dir)
+
+
 
 
   def test16_collect_results(self):

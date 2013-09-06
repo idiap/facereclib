@@ -417,7 +417,7 @@ Here are the parameters that you can set:
 * ``number_of_models_per_scoring_job``: Number of models for which on scoring job should compute the scores.
 
 If the ``grid`` parameter is set to ``sge`` (the default), jobs will be submitted to the SGE_ grid.
-In this case, the SGE_ queue parameters might be specified, either using one of the pre-defined queues (see `facereclib/configurations/grid <file:../facereclib/configurations/grid>`_) or using a dictionary of key/value pairs that are sent to the grid:
+In this case, the SGE_ queue parameters might be specified, either using one of the pre-defined queues (see `facereclib/configurations/grid <file:../facereclib/configurations/grid>`_) or using a dictionary of key/value pairs that are sent to the grid during submission of the jobs:
 
 * ``training_queue``: The queue that is used in any of the training (extractor, projector, enroller) steps.
 * ``..._queue``: The queue for the ... step.

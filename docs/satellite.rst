@@ -15,10 +15,7 @@ Please refer to the `satellite package explanation of Bob <http://www.idiap.ch/s
 Depending on of what nature is your contribution, you have to register it in the `setup.py` file of your satellite package.
 In case, your contribution is a face recognition algorithm, you might want to :ref:`register it <register-resources>`.
 After doing that, you can simply use the ``bin/faceverify.py`` (or any other script of the |project|) with your registered tool, as if it would be part of the |project|.
-As one example of providing a source code package, you might want to have a look into the `wrapper classes <http://pypi.python.org/pypi/xfacereclib.PythonFaceEvaluation>`_ for the `CSU face recognition resources <http://www.cs.colostate.edu/evalfacerec/news2010.php>`_.
-
-.. TODO::
-  Publish the source code for the CSU python face evaluation.
+As one example of providing a source code package, you might want to have a look into the wrapper classes xfacereclib.extension.CSU_ for the `CSU Face Recognition Resources`_.
 
 Another contribution of code is to provide the source code to rerun the experiments as published in a paper.
 In this case, the contribution is more about scripts that can be used to run experiments.
