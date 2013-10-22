@@ -53,6 +53,7 @@ def command_line_arguments(command_line_parameters):
   parser.add_argument('-s', '--directory', default = '.', help = "A directory, where to find the --dev-files and the --eval-files")
 
   parser.add_argument('-c', '--criterion', choices = ('EER', 'HTER'), help = "If given, the threshold of the development set will be computed with this criterion.")
+  parser.add_argument('-x', '--cllr', action = 'store_true', help = "If given, Cllr and minCllr will be computed.")
   parser.add_argument('-l', '--legends', nargs='+', help = "A list of legend strings used for ROC, CMC and DET plots; if given, must be the same number than --dev-files.")
   parser.add_argument('-R', '--roc', help = "If given, ROC curves will be plotted into the given pdf file.")
   parser.add_argument('-D', '--det', help = "If given, DET curves will be plotted into the given pdf file.")
@@ -153,7 +154,7 @@ def main(command_line_parameters=None):
   cmap = mpl.cm.get_cmap(name='hsv')
   colors = [cmap(i) for i in numpy.linspace(0, 1.0, len(args.dev_files)+1)]
 
-  if args.criterion or args.roc or args.det:
+  if args.criterion or args.roc or args.det or args.cllr:
     score_parser = {'4column' : bob.measure.load.split_four_column, '5column' : bob.measure.load.split_five_column}[args.parser]
 
     # First, read the score files
@@ -163,6 +164,7 @@ def main(command_line_parameters=None):
     if args.eval_files:
       utils.info("Loading %d score files of the evaluation set" % len(args.eval_files))
       scores_eval = [score_parser(os.path.join(args.directory, f)) for f in args.eval_files]
+
 
     if args.criterion:
       utils.info("Computing %s on the development " % args.criterion + ("and HTER on the evaluation set" if args.eval_files else "set"))
@@ -176,6 +178,19 @@ def main(command_line_parameters=None):
           # apply threshold to evaluation set
           far, frr = bob.measure.farfrr(scores_eval[i][0], scores_eval[i][1], threshold)
           print("The HTER of the evaluation set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], (far + frr) * 50.)) # / 2 * 100%
+
+
+    if args.cllr:
+      utils.info("Computing Cllr and minCllr on the development " + ("and on the evaluation set" if args.eval_files else "set"))
+      for i in range(len(scores_dev)):
+        cllr = bob.measure.calibration.cllr(scores_dev[i][0], scores_dev[i][1])
+        min_cllr = bob.measure.calibration.min_cllr(scores_dev[i][0], scores_dev[i][1])
+        print("Calibration performance on development set of '%s' is Cllr %1.5f and minCllr %1.5f " % (args.legends[i], cllr, min_cllr))
+        if args.eval_files:
+          cllr = bob.measure.calibration.cllr(scores_eval[i][0], scores_eval[i][1])
+          min_cllr = bob.measure.calibration.min_cllr(scores_eval[i][0], scores_eval[i][1])
+          print("Calibration performance on development set:", cllr, "Cllr and:", min_cllr, "minCllr")
+
 
     if args.roc:
       utils.info("Computing CAR curves on the development " + ("and on the evaluation set" if args.eval_files else "set"))
@@ -229,6 +244,5 @@ def main(command_line_parameters=None):
     if args.eval_files:
       pdf.savefig(_plot_cmc(cmcs_eval, colors, args.legends if args.legends else args.eval_files, "CMC curve for evaluation set"))
     pdf.close()
-
 
 
