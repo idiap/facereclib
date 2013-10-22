@@ -34,9 +34,7 @@ If you prefer not to install Bob_ in its default location, you have to adapt the
 Using Bob at Idiap
 ''''''''''''''''''
 
-At Idiap, you can use the latest version of Bob_ by changing the ``prefixes`` to **/idiap/group/torch5spro/nightlies/last/install/linux-x86_64-release**.
-By default, the version 1.2.0 from **/idiap/group/torch5spro/releases/bob-1.2.0/install/linux-x86_64-release** is used.
-
+At Idiap, you can use the latest version 1.2.1 of Bob_, which is installed globally.
 Of course, you can also use your own private copy of Bob_, just set the right ``prefixes``.
 
 Usually, all possible database satellite packages (called ``xbob.db.[...]``) are automatically downloaded from PyPI_.
@@ -113,6 +111,10 @@ To avoid the download, please:
   Currently, the default is set to the directory that is valid for Idiap_.
 
 In case any of the tests fail for unexplainable reasons, please file a bug report through the `GitHub bug reporting system`_.
+
+.. note::
+  Currently, all tests should pass using Bob_ in version 1.2.1.
+  In other versions, some of the tests may fail (currently I know of ISV and JFA tests that use different random initializations in Bob 1.2.0.)
 
 
 Generate this documentation

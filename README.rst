@@ -81,8 +81,7 @@ References
 Installation
 ------------
 
-We proudly present the first version of the FaceRecLib on pypi.
-To download the FaceRecLib, please go to http://pypi.python.org/pypi/facereclib, click on the download button and extract the .zip file to a folder of your choice.
+To download the FaceRecLib, please go to http://pypi.python.org/pypi/facereclib, click on the **download** button and extract the .zip file to a folder of your choice.
 
 The FaceRecLib is a satellite package of the free signal processing and machine learning library Bob_, and some of its algorithms rely on the `CSU Face Recognition Resources`_.
 These two dependencies have to be downloaded manually, as explained in the following.
@@ -90,32 +89,20 @@ These two dependencies have to be downloaded manually, as explained in the follo
 Bob
 ...
 
-You will need a copy of Bob in version 1.2.0 to run the algorithms.
+You will need a copy of Bob in version 1.2.0 or newer to run the algorithms.
 Please download Bob_ from its webpage.
 
 .. note::
   At Idiap_, Bob_ is globally installed.
-  This version of the FaceRecLib is bound to Bob version 1.2.0, which does not correspond to the one installed.
-  However, the correct version of Bob is marked in the buildout.cfg.
+  All experiments should run with Bob_ version 1.2.1, which is the latest stable version installed at Idiap_.
 
 After downloading, you should go to the console and write::
 
   $ python bootstrap.py
   $ bin/buildout
-  $ bin/sphinx-build docs sphinx
 
 This will download all required packages and install them locally.
 If you don't want all the database packages to be downloaded, please remove the xbob.db.[database] lines from the ``eggs`` section of the file **buildout.cfg** in the main directory before calling the three commands above.
-
-Now, you can open the documentation by typing::
-
-  $ firefox sphinx/index.html
-
-and read further instructions on how to use this library.
-
-.. note::
-  Some links in the documentation require that the documentation is generated with ``bin/sphinx-build docs sphinx`` (see above).
-  If you generated the documentation using another command line, please be aware that links might not be found.
 
 The CSU Face Recognition Resources
 ..................................
@@ -127,6 +114,32 @@ To enable them, please call::
   $ bin/buildout -c buildout-with-csu.cfg
 
 after downloading and patching the CSU resources, and updating the ``sources-dir`` in the **buildout-with-csu.cfg** file -- as explained in xfacereclib.extension.CSU_.
+
+Test your installation
+......................
+
+To verify that your installation worked as expected, you might want to run our test utilities::
+
+  $ bin/nosetests
+
+Usually, all tests should pass, if you use Bob_ in version 1.2.1.
+With other versions of Bob_, you might find some failing tests.
+For Bob_ version 1.2.0 we know that the ISV and JFA tests fail due to a different random initialization of the algorithms.
+
+
+Read further
+------------
+
+Now, you can open the documentation by typing::
+
+  $ bin/sphinx-build docs sphinx
+  $ firefox sphinx/index.html
+
+and read further instructions on how to use this library.
+
+.. note::
+  Some links in the documentation require that the documentation is generated with ``bin/sphinx-build docs sphinx`` (see above).
+  If you generated the documentation using another command line, please be aware that links might not be found.
 
 
 Cite our paper
