@@ -164,8 +164,8 @@ class Database:
     raise NotImplementedError("Please implement this function in derived classes")
 
 
-  def training_files(self, step, arrange_by_client = False):
-    """Returns all training File objects for the given step (might be 'train_extractor', 'train_projector', 'train_enroller'), and arranges them by client, if desired"""
+  def training_files(self, step = None, arrange_by_client = False):
+    """Returns all training File objects for the given step (might be 'train_extractor', 'train_projector', 'train_enroller' or None), and arranges them by client, if desired"""
     raise NotImplementedError("Please implement this function in derived classes")
 
 

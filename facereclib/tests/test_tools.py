@@ -456,7 +456,7 @@ class ToolTest(unittest.TestCase):
 
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
-    self.assertAlmostEqual(sim, 0.002738819739893934)
+    self.assertAlmostEqual(sim, 0.002739150199911455)
 
     # score with a concatenation of the probe
     self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim, places=5)
@@ -542,7 +542,7 @@ class ToolTest(unittest.TestCase):
 
     # score with projected feature and compare to the weird reference score ...
     sim = tool.score(model, probe)
-    self.assertAlmostEqual(sim, 0.25481840615836454)
+    self.assertAlmostEqual(sim, 0.25456327196005185)
     # score with a concatenation of the probe
     # self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim)
 
