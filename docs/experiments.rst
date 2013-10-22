@@ -158,7 +158,7 @@ If you have an ``image_directory`` different to the one specified in the file, p
   - `Face Recognition Grand Challenge ver2.0 (FRGC) <file:../facereclib/configurations/databases/frgc.py>`_ : http://www.nist.gov/itl/iad/ig/frgc.cfm
 
   .. note::
-    The FRGC database interface requires to set the ``frgc_directory`` to your copy of the FRGC database.
+    The FRGC database interface requires to set the ``frgc_directory`` in the configuration file to your copy of the FRGC database.
     If this directory is not set, the FRGC database will not be available, e.g., it will not show up in the available databases of ``bin/baselines.py --help``.
 
   - `The Good, The Bad & The Ugly (GBU) <file:../facereclib/configurations/databases/gbu.py>`_ : http://www.nist.gov/itl/iad/ig/focs.cfm

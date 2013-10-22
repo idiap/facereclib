@@ -156,7 +156,7 @@ class FaceCrop (Preprocessor):
         image,  # input image
         mask,   # full input mask
         self.m_cropped_image, # cropped image
-        self.m_cropped_mask,  # cropped mase
+        self.m_cropped_mask,  # cropped mask
         annotations[keys[0]][0], # Y-position of first annotation, usually left eye
         annotations[keys[0]][1], # X-position of first annotation, usually left eye
         annotations[keys[1]][0], # Y-position of first annotation, usually right eye

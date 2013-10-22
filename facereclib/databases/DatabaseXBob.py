@@ -105,9 +105,11 @@ class DatabaseXBob (Database):
     return self.sort(files)
 
 
-  def training_files(self, step, arrange_by_client = False):
+  def training_files(self, step = None, arrange_by_client = False):
     """Returns all training File objects of the database for the current protocol."""
-    if step == 'train_extractor':
+    if step is None:
+      training_options = {}
+    elif step == 'train_extractor':
       training_options = self.extractor_training_options
     elif step == 'train_projector':
       training_options = self.projector_training_options
