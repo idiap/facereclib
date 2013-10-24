@@ -43,6 +43,7 @@ This script is called ``bin/evaluate.py`` and has the following command line opt
 * ``--cmc`` (optional): If given, the score files will be evaluated to compute a CMC curve (one for dev and one for eval) and the result is plotted to the given pdf file. Please note that CMC plots are not valid for all databases.
 * ``--legends`` (optional): If given, these legends will be placed into ROC, DET and CMC plots. Otherwise the file names will be used. Please assure that there exist exactly one legend for each development score file and that they are given in the correct order.
 * ``--criterion`` (optional): If given, a threshold will be computed based on the EER or minimum HTER of each development set file, and applied to the development and evaluation files. Both results will be written to console.
+* ``--cllr`` (optional): If given, a the Cllr and the minCllr will be computed on both the development and the evaluation set. All results will be written to console.
 
 As usual, the ``--verbose`` (i.e., ``-v``) option exists, and it is wise to use ``-vv``.
 

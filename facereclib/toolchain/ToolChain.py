@@ -679,7 +679,7 @@ class ToolChain:
 
       # create a LLR trainer
       utils.info(" - Calibration: Training calibration for type %s from group %s" % (norm, groups[0]))
-      llr_trainer = bob.trainer.LLRTrainer(prior = prior)
+      llr_trainer = bob.trainer.CGLogRegTrainer(prior = prior)
 
       training_scores = list(bob.measure.load.split_four_column(training_score_file))
       for i in (0,1):

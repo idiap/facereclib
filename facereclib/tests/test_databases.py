@@ -58,9 +58,10 @@ class DatabaseTest(unittest.TestCase):
       self.assertTrue(len(database.z_probe_files(group)) > 0)
 
   def check_annotations(self, database):
-    for file in database.all_files():
-      annotations = database.annotations(file)
-      self.assertTrue('reye' in annotations and 'leye' in annotations)
+    if database.has_internal_annotations or os.path.exists(database.annotation_directory):
+      for file in database.all_files():
+        annotations = database.annotations(file)
+        self.assertTrue('reye' in annotations and 'leye' in annotations)
 
 
   def test01_atnt(self):

@@ -19,15 +19,12 @@ class Configuration:
     if args.user_directory:
       self.user_directory = os.path.join(args.user_directory, args.sub_directory)
     else:
-      self.user_directory = os.path.join("/idiap/user", user_name, database_name, args.sub_directory)
+      self.user_directory = os.path.join("results", args.sub_directory)
 
     if args.temp_directory:
       self.temp_directory = os.path.join(args.temp_directory, args.sub_directory)
     else:
-      if use_local_files:
-        self.temp_directory = os.path.join("/scratch", user_name, database_name, args.sub_directory)
-      else:
-        self.temp_directory = os.path.join("/idiap/temp", user_name, database_name, args.sub_directory)
+      self.temp_directory = os.path.join("temp", args.sub_directory)
 
     self.extractor_file = os.path.join(self.temp_directory, args.extractor_file)
     self.projector_file = os.path.join(self.temp_directory, args.projector_file)
@@ -111,9 +108,9 @@ class ToolChainExecutor:
     ############## options to modify default directories or file names ####################
     dir_group = parser.add_argument_group('\nDirectories that can be changed according to your requirements')
     dir_group.add_argument('-T', '--temp-directory', metavar = 'DIR',
-        help = 'The directory for temporary files; if not specified, /idiap/temp/$USER/database-name/sub-directory (or /scratch/$USER/database-name/sub-directory, when executed locally) is used.')
+        help = 'The directory for temporary files; if not specified, "temp" in the current directory is used.')
     dir_group.add_argument('-U', '--result-directory', '--user-directory', metavar = 'DIR', dest='user_directory',
-        help = 'The directory for resulting score files; if not specified, /idiap/user/$USER/database-name/sub-directory is used.')
+        help = 'The directory for resulting score files; if not specified, "results" in the current directory is used.')
     dir_group.add_argument('-s', '--score-sub-directory', metavar = 'DIR', default = 'scores',
         help = 'The sub-directory where to write the scores to.')
 

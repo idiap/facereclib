@@ -19,11 +19,7 @@ For example, you can easily download the images of the `AT&T database`_, for lin
 By default, the |project| does not know, where the images are located.
 Hence, before running experiments you have to specify the image database directories by modifying the accordant configuration files.
 For further information on these topic, you might want to read the :ref:`managing-resources` and the :ref:`databases` sections.
-To make the baseline algorithms work, e.g., on the `AT&T database`_, you have to correct the  ``image_directory`` entry in the `facereclib/configurations/databases/atnt.py <../facereclib/configurations/databases/atnt.py>`_ file.
-
-.. note::
-  The directories in the configuration files are preset to the right directories at Idiap_.
-  Hence, at Idiap_ you don't need to care about that at all.
+To make the baseline algorithms work, e.g., on the `AT&T database`_, you have to correct the  ``atnt_directory`` entry in the `facereclib/configurations/databases/atnt.py <../facereclib/configurations/databases/atnt.py>`_ file.
 
 
 Structure of an experiment in the |project|
@@ -79,10 +75,6 @@ Here is an almost complete extract:
 
 Usually it is a good idea to have at least verbose level 2 (i.e., calling ``bin/baselines.py --verbose --verbose``, or the short version ``bin/baselines.py -vv``).
 
-.. note::
-  The directories are set up such that you should usually be able to use them at Idiap_ without further modifications.
-  If you are new at Idiap_, you might want to ask the system administration for quota on **/idiap/temp/${USER}/** and **/idiap/user/${USER}/**, or simply choose another ``--directory``, e.g., a sub-directory of the local disk **/srcatch/${USER}/**
-
 
 The algorithms
 --------------
@@ -114,7 +106,7 @@ The algorithms present an (incomplete) set of state-of-the-art face recognition 
   The ``plda`` and ``bic`` algorithms are currently under construction and the setup is not yet useful.
 
 .. note::
-  The ``lrpca`` and ``lda_ir`` algorithms are taken from the `CSU Face Recognition Resources`_ and are only available when ``xfacereclib.extension.CSU`` and ``PythonFaceEvaluation`` is enabled (e.g. by using the `buildout-with-csu.cfg <file:../buildout-with-csu.cfg>`_ during the buildout step), see :ref:installation for details.
+  The ``lrpca`` and ``lda_ir`` algorithms are taken from the `CSU Face Recognition Resources`_ and are only available when ``xfacereclib.extension.CSU`` and ``PythonFaceEvaluation`` is enabled (e.g. by using the `buildout-with-csu.cfg <file:../buildout-with-csu.cfg>`_ during the buildout step), see :ref:`installation` for details.
 
 
 Baseline results

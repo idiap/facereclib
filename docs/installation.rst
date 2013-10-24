@@ -13,36 +13,35 @@ Download
 
 |project|
 ~~~~~~~~~
-Currently the library is only available as a private project of `Idiap at GitHub`_.
+To have a stable version of the |project|, the safest option is to go to the FaceRecLib_'s web page on Pypi_ and download the latest version.
+
+Nevertheless, the library is also available as a project of `Idiap at GitHub`_.
 To check out the current version of the |project|, go to the console, move to any place you like and call:
 
 .. code-block:: sh
 
   $ git clone git@github.com:bioidiap/facereclib.git
 
+Be aware that you will get the latest changes and that it might not work as expected.
+
 Bob
 ~~~
 
 The |project| is a satellite package of Bob_, where most of the image processing, feature extraction, and face recognition algorithms, as well as the evaluation techniques are implemented.
 To run properly, |project| requires Bob_ at least in version 1.2.0.
-If you have not installed Bob_ or your version is to old, please visit `Bob's GitHub page`_ and download the latest version.
+If you have not installed Bob_ or your version is to old, please visit Bob_'s web page and download the latest version.
 If you prefer not to install Bob_ in its default location, you have to adapt the ``prefixes`` of the buildout.cfg_ configuration file, which sits in the main directory of the |project|.
 
 .. note::
   Currently, there is no MS Windows version of Bob_.
-
-Using Bob at Idiap
-''''''''''''''''''
-
-At Idiap, you can use the latest version 1.2.1 of Bob_, which is installed globally.
-Of course, you can also use your own private copy of Bob_, just set the right ``prefixes``.
 
 Usually, all possible database satellite packages (called ``xbob.db.[...]``) are automatically downloaded from PyPI_.
 If you don't want to download the databases, please edit the ``eggs`` section of the buildout.cfg_ configuration file by removing the databases that you don't want.
 
 The ``gridtk`` tool kit is mainly used for submitting submitting jobs to Idiap_'s SGE_ grid.
 The latest version also supports to run jobs in parallel on the local machine.
-You can safely remove this line from the buildout.cfg_ if you are not at Idiap or if you don't want to launch your experiments in parallel.
+You can safely remove this line from the buildout.cfg_ if you are not at Idiap and if you don't want to launch your experiments in parallel.
+
 
 The CSU Face Recognition Resources
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,7 +107,6 @@ To avoid the download, please:
 .. note::
   To set the directory permanently, you can also change the ``atnt_default_directory`` in the file `facereclib/utils/tests.py <file:../facereclib/utils/tests.py>`_.
   In this case, there is no need to set the environment variable any more.
-  Currently, the default is set to the directory that is valid for Idiap_.
 
 In case any of the tests fail for unexplainable reasons, please file a bug report through the `GitHub bug reporting system`_.
 

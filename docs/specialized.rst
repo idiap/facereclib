@@ -147,15 +147,11 @@ Additionally, instead of the ``--protocol`` option, the ``--views`` option is av
 The GBU database
 ~~~~~~~~~~~~~~~~
 
-.. TODO::
-
-  remove this section since this script is outdated.
-
 There is another script *bin/faceverify_gbu.py* that executes experiments on the Good, Bad, and Ugly (GBU) database.
 In principle, most of the parameters from above can be used.
 One violation is that instead of the ``--models-directories`` option is replaced by only ``--model-directory``.
 
-When running experiments on the GBU database, the default GBU protocol (as provided by `NIST`_) is used.
+When running experiments on the GBU database, the default GBU protocol (as provided by NIST_) is used.
 Hence, training is performed on the special Training set, and experiments are executed using the Target set as models (using a single image for model enrollment) and the Query set as probe.
 
 The GBU protocol does not specify T-Norm-models or Z-Norm-probes, nor it splits off development and test set.

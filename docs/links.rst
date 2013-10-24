@@ -7,7 +7,7 @@
 .. _idiap: http://www.idiap.ch
 .. _github: http://www.github.com/idiap
 .. _bob: http://www.idiap.ch/software/bob
-.. _facereclib: http://www.github.com/bioidiap/facereclib
+.. _facereclib: http://pypi.python.org/pypi/facereclib
 .. _github bug reporting system: http://github.com/bioidiap/facereclib/issues
 .. _idiap at github: http://www.github.com/bioidiap
 .. _at&t database: http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
