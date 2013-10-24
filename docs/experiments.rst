@@ -124,7 +124,7 @@ Optional parameters
 * ``annotation_directory``: The directory containing the (hand-labeled) annotations of the database, if available.
 * ``annotation_extension``: The file extension of the images. Default value: *.pos*.
 * ``annotation_type``: The way the annotations are stored in the annotation files.
-  Possible values are: *eyecenter*, *named*, *multipie*, *scface*, *cosmin* (see `facereclib.utils.read_annotations <file:../facereclib/utils/annotations.py>`_ on which one works for you)
+  Possible values are: *eyecenter*, *named*, *multipie*, *scface*, *cosmin* (see `facereclib.utils.read_annotations <file:../facereclib/utils/annotations.py>`_ on which one works for you).
   This option must be specified when ``annotation_directory`` is given.
 * ``protocol``: The name of the protocol that should be used.
   If omitted, the protocol *Default* will be used (which might not be available in all databases, so please specify).

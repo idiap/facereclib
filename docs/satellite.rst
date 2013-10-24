@@ -23,7 +23,7 @@ To cause the buildout_ system to create a python script in the `bin <file:../bin
 One working example of providing source code to rerun experiments for [GWM12]_ can be found in http://pypi.python.org/pypi/xfacereclib.paper.BeFIT2012.
 
 .. TODO::
-  Publish the source code for the BeFIT2012 code (write documentation!).
+  Write a more precise documentation on how to create satellite packages to the |project|.
 
 
 
