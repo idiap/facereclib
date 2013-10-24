@@ -74,9 +74,11 @@ def command_line_arguments(command_line_parameters):
     utils.error("The number of --dev-files (%d) and --eval-files (%d) are not identical" % (len(args.dev_files), len(args.eval_files)))
 
   if args.legends and len(args.dev_files) != len(args.legends):
-    utils.error("The number of --dev-files (%d) and --legends (%d) are not identical" % (len(args.dev_diles), len(args.legends)))
+    utils.error("The number of --dev-files (%d) and --legends (%d) are not identical" % (len(args.dev_files), len(args.legends)))
 
-  # assign the score file parser
+  # update legends when they are not specified on command line
+  if args.legends is None:
+    args.legends = args.dev_files
 
 
   return args
