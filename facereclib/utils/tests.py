@@ -20,7 +20,7 @@
 import os
 
 # The default directory where the ATNT database is located (used for test purposes only)
-atnt_default_directory = os.environ['ATNT_DATABASE_DIRECTORY'] if 'ATNT_DATABASE_DIRECTORY' in os.environ else "/idiap/group/biometric/databases/orl/"
+atnt_default_directory = os.environ['ATNT_DATABASE_DIRECTORY'] if 'ATNT_DATABASE_DIRECTORY' in os.environ else ""
 
 
 from .resources import resource_keys, load_resource

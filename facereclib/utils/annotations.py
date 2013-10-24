@@ -44,8 +44,6 @@ def read_annotations(file_name, annotation_type):
 
   elif str(annotation_type) == 'multipie':
     # multiple lines, one header line, each line contains one position
-    # use position names from:  /idiap/group/biometric/databases/multipie/README.txt
-    # see also annotation examples in /idiap/group/biometric/databases/multipie/annotations_examples
 
     # Left and right is always being seen from the subjects perspective.
     # the abbreviations are:

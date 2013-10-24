@@ -80,7 +80,6 @@ bin_dir = os.path.join(faceverify_dir, 'bin')
 config_dir = os.path.join(faceverify_dir, 'facereclib/configurations')
 script = os.path.join(bin_dir, 'faceverify.py')
 
-
 def dummy():
   """Dummy script just for testing the tool chain"""
   features      = 'eigenfaces'
@@ -178,7 +177,7 @@ def main(command_line_parameters = sys.argv):
     # call the evaluate script with the desired parameters
 
     # get the base directory of the results
-    base_dir = args.directory if args.directory else os.path.join('/idiap/user', os.environ['USER'])
+    base_dir = args.directory if args.directory else "results"
     if not os.path.exists(base_dir):
       if not args.dry_run:
         raise IOError("The result directory cannot be found. Please specify the --directory as it was specified during execution of the algorithms.")
@@ -236,16 +235,19 @@ def main(command_line_parameters = sys.argv):
     elif 'HTER' in args.evaluate:
       base_call += ['--criterion', 'HTER']
     if 'ROC' in args.evaluate:
-      base_call += ['--roc', 'ROC.pdf']
+      base_call += ['--roc', 'ROCxxx.pdf']
     if 'DET' in args.evaluate:
-      base_call += ['--det', 'DET.pdf']
+      base_call += ['--det', 'DETxxx.pdf']
     if 'CMC' in args.evaluate:
-      base_call += ['--cmc', 'CMC.pdf']
+      base_call += ['--cmc', 'CMCxxx.pdf']
     if args.verbose:
       base_call += ['-' + 'v'*args.verbose]
 
     # first, run the nonorm evaluation
-    call = base_call[:]
+    if result_zt_dev:
+      call = [command.replace('xxx','_dev') for command in base_call]
+    else:
+      call = [command.replace('xxx','') for command in base_call]
     call += ['--dev-files'] + result_dev
     if result_eval:
       call += ['--eval-files'] + result_eval
@@ -257,7 +259,7 @@ def main(command_line_parameters = sys.argv):
 
     # now, also run the ZT norm evaluation
     if result_zt_dev:
-      call = base_call[:]
+      call = [command.replace('xxx','_eval') for command in base_call]
       call += ['--dev-files'] + result_zt_dev
       if result_eval:
         call += ['--eval-files'] + result_zt_eval

@@ -14,6 +14,10 @@ About
 This library is developed at the `Biometrics group <http://www.idiap.ch/~marcel/professional/Research_Team.html>`_ at the `Idiap Research Institute <http://www.idiap.ch>`_.
 The FaceRecLib is designed to run face recognition experiments in a comparable and reproducible manner.
 
+.. note::
+  When you are working at Idiap_, you might get a version of the FaceRecLib, where all paths are set up such that you can directly start running experiments.
+  Outside Idiap_, you need to set up the paths to point to your databases, please check `Read Further`_ on how to do that.
+
 Databases
 .........
 To achieve this goal, interfaces to many publicly available facial image databases are contained, and default evaluation protocols are defined, e.g.:
@@ -46,8 +50,6 @@ Together with that, a broad variety of traditional and state-of-the-art face rec
 is provided.
 Furthermore, tools to evaluate the results can easily be used to create scientific plots, and interfaces to run experiments using parallel processes or an SGE grid are provided.
 
-
-
 Extensions
 ..........
 On top of these already pre-coded algorithms, the FaceRecLib provides an easy Python interface for implementing new image preprocessors, feature types, face recognition algorithms or database interfaces, which directly integrate into the face recognition experiment.
@@ -58,8 +60,7 @@ As a small example, we provide wrapper classes for the CSU face recognition reso
 - Local Region PCA [PBD+11]_
 - LDA-IR (a.k.a. CohortLDA) [LBP+12]_
 
-
-To see how easy it is to use these tools to generate a publication, please have a look at the source code `xfacereclib.paper.BeFIT2012 <http://pypi.python.org/pypi/xfacereclib.paper.BeFIT2012>`_, which was finally published in [M. Günther, R. Wallace and S. Marcel. "An Open Source Framework for Standardized Comparisons of Face Recognition Algorithms". Computer Vision - ECCV 2012. Workshops and Demonstrations, LNCS, 7585, 547-556, 2012.].
+To see how easy it is to use these tools to generate a publication, please have a look at the source code `xfacereclib.paper.BeFIT2012 <http://pypi.python.org/pypi/xfacereclib.paper.BeFIT2012>`_, with the according `Paper <http://publications.idiap.ch/index.php/publications/show/2431>`_ being published in [GWC12]_.
 
 Finally, all parts of the FaceRecLib are well documented and thoroughly tested to assure usability, stability and comparability.
 
@@ -76,7 +77,7 @@ References
 .. [MWP98]   *B. Moghaddam, W. Wahid and A. Pentland*. **Beyond eigenfaces: probabilistic matching for face recognition**. IEEE International Conference on Automatic Face and Gesture Recognition, pages 30-35. 1998.
 .. [PBD+11]  *P.J. Phillips, J.R. Beveridge, B.A. Draper, G. Givens, A.J. O'Toole, D.S. Bolme, J. Dunlop, Y.M. Lui, H. Sahibzada and S. Weimer*. **An introduction to the Good, the Bad, & the Ugly face recognition challenge problem**. Automatic Face Gesture Recognition and Workshops (FG 2011), pages 346-353. 2011.
 .. [LBP+12]  *Y.M. Lui, D.S. Bolme, P.J. Phillips, J.R. Beveridge and B.A. Draper*. **Preliminary studies on the Good, the Bad, and the Ugly face recognition challenge problem**. Computer Vision and Pattern Recognition Workshops (CVPRW), pages 9-16. 2012.
-
+.. [GWC12]   *M. Günther, R. Wallace and S. Marcel*. **An Open Source Framework for Standardized Comparisons of Face Recognition Algorithms**. Computer Vision - ECCV 2012. Workshops and Demonstrations, LNCS, 7585, 547-556, 2012.
 
 Installation
 ------------
@@ -91,11 +92,6 @@ Bob
 
 You will need a copy of Bob in version 1.2.0 or newer to run the algorithms.
 Please download Bob_ from its webpage.
-
-.. note::
-  At Idiap_, Bob_ is globally installed.
-  All experiments should run with Bob_ version 1.2.1, which is the latest stable version installed at Idiap_.
-
 After downloading, you should go to the console and write::
 
   $ python bootstrap.py

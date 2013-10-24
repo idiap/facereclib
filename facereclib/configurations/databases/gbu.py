@@ -3,10 +3,12 @@
 import xbob.db.gbu
 import facereclib
 
+mbgc_v1_directory = "[YOUR_MBGC-V1_DIRECTORY]"
+
 database = facereclib.databases.DatabaseXBob(
     database = xbob.db.gbu.Database(),
     name = "gbu",
-    original_directory = "/idiap/resource/database/MBGC-V1",
+    original_directory = mbgc_v1_directory,
     original_extension = ".jpg",
     has_internal_annotations = True,
     protocol = 'Good',

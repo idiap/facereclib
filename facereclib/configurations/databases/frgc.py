@@ -3,7 +3,7 @@
 import xbob.db.frgc
 import facereclib
 
-frgc_directory = "/idiap/resource/database/frgc/FRGC-2.0-dist"
+frgc_directory = "[YOUR_FRGC_DIRECTORY]"
 
 database = facereclib.databases.DatabaseXBob(
     database = xbob.db.frgc.Database(frgc_directory),
