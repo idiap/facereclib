@@ -82,7 +82,7 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertEqual(len(feature.shape), 2)
 
 
-  def test02a_dct_video(self):
+  def notest02a_dct_video(self):
     # test that at least the config file can be read
     extractor = self.config('dct_blocks_video')
     self.assertTrue(isinstance(extractor, facereclib.features.DCTBlocksVideo))

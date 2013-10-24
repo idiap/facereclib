@@ -101,25 +101,10 @@ class PreprocessingTest(unittest.TestCase):
     self.execute(preprocessor, data, None, 'tan_triggs.hdf5')
 
 
-  def test02a_tan_triggs_video(self):
+  def notest02a_tan_triggs_video(self):
     preprocessor = self.config('tan_triggs_video')
     self.assertTrue(isinstance(preprocessor, facereclib.preprocessing.TanTriggsVideo))
     raise SkipTest("Video tests are currently skipped.")
-    # read input
-    f = '/idiap/home/rwallace/work/databases/banca-video/output/frames/1024_f_g2_s11_1024_en_4.hdf5'
-    if not os.path.exists(f):
-      raise SkipTest("The original video '%s' for the test is not available."%f)
-
-    # read the original video using the preprocessor
-    original = preprocessor.read_original_data(f)
-
-    # preprocess
-    preprocessed = preprocessor(original)
-    if regenerate_refs:
-      preprocessed.save(bob.io.HDF5File(self.reference_dir('video.hdf5'), 'w'))
-
-    reference = preprocessor.read_data(self.reference_dir('video.hdf5'))
-    self.assertEqual(preprocessed, reference)
 
 
   def test03_self_quotient(self):

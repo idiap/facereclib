@@ -35,11 +35,11 @@ config_dir = pkg_resources.resource_filename('facereclib', 'configurations')
 
 class ScriptTest (unittest.TestCase):
 
-  def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier=""):
+  def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier="", score_modifier='scores'):
     facereclib.script.faceverify.main([sys.argv[0]] + parameters)
 
     # assert that the score file exists
-    score_files = (os.path.join(test_dir, sub_dir, 'scores', 'Default', 'nonorm', 'scores-dev'), os.path.join(test_dir, sub_dir, 'scores', 'Default', 'ztnorm', 'scores-dev'))
+    score_files = (os.path.join(test_dir, sub_dir, 'scores', 'Default', 'nonorm', '%s-dev'%score_modifier), os.path.join(test_dir, sub_dir, 'scores', 'Default', 'ztnorm', '%s-dev'%score_modifier))
     self.assertTrue(os.path.exists(score_files[0]))
     self.assertTrue(os.path.exists(score_files[1]))
 
@@ -148,6 +148,25 @@ class ScriptTest (unittest.TestCase):
     self.__face_verify__(parameters, test_dir, 'test_c')
 
 
+  def test01m_faceverify_calibrate(self):
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
+    # define dummy parameters
+    parameters = [
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
+        '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
+        '-f', os.path.join(config_dir, 'features', 'eigenfaces.py'),
+        '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
+        '--zt-norm',
+        '-b', 'test',
+        '--temp-directory', test_dir,
+        '--user-directory', test_dir,
+        '--calibrate-scores'
+    ]
+
+    print ' '.join(parameters)
+
+    # check that the calibrated scores are as expected
+    self.__face_verify__(parameters, test_dir, 'test', '-calibrated', 'calibrated')
 
 
   def test01x_faceverify_filelist(self):
