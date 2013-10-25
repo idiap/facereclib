@@ -71,7 +71,6 @@ class DatabaseTest(unittest.TestCase):
   def test02_banca(self):
     self.check_database_zt(self.config('banca'))
     self.check_database_zt(self.config('banca_twothirds'))
-    self.check_database_zt(self.config('banca_video'))
     self.check_annotations(self.config('banca'))
 
 
