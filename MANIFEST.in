@@ -1,0 +1,3 @@
+include README.rst bootstrap.py buildout.cfg buildout-with-csu.cfg LICENSE.txt
+recursive-include docs *.py *.rst *.png
+recursive-include facereclib/tests testimage.* *.hdf5 *.py *.lst scores-*
