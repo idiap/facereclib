@@ -51,7 +51,7 @@ setup(
         'baselines.py = facereclib.script.baselines:main',
         'resources.py = facereclib.utils.resources:print_all_resources',
         'collect_results.py = facereclib.script.collect_results:main',
-        'evaluate.py = facereclib.script.evaluate:main'
+        'evaluate.py = facereclib.script.evaluate:main',
       ],
 
       # registered database short cuts
@@ -133,6 +133,7 @@ setup(
 
     install_requires=[
       "setuptools",      # for whatever
+      "sphinx-pypi-upload", # to upload documentation to pypi using the command series: './bin/python setup.py build_sphinx; ./bin/python setup.py upload_sphinx'
       "bob >= 1.2.0",    # base signal processing/machine learning library
       "xbob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
     ],
