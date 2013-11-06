@@ -126,7 +126,10 @@ For Bob_ version 1.2.0 we know that the ISV and JFA tests fail due to a differen
 Read further
 ------------
 
-Now, you can open the documentation by typing::
+Further documentation is given in our `FaceRecLib documentation <http://pythonhosted.org/facereclib>`_.
+
+There are several file links in the documentation, which won't work in the online documentation.
+To generate the documentation locally, type::
 
   $ bin/sphinx-build docs sphinx
   $ firefox sphinx/index.html
@@ -135,7 +138,7 @@ and read further instructions on how to use this library.
 
 .. note::
   Some links in the documentation require that the documentation is generated with ``bin/sphinx-build docs sphinx`` (see above).
-  If you generated the documentation using another command line, please be aware that links might not be found.
+  If you generated the documentation using another command line, please be aware that file links might not be found either.
 
 
 Cite our paper
