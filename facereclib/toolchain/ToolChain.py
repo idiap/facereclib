@@ -675,25 +675,25 @@ class ToolChain:
     """Calibrates the score files by learning a linear calibration from the dev files (first element of the groups) and executing the on all groups, separately for all given norms."""
     # read score files of the first group
     for norm in norms:
-      training_score_file = {'nonorm': self.m_file_selector.no_norm_result_file(groups[0]), 'ztnorm': self.m_file_selector.zt_norm_result_file(groups[0])}[norm]
+      training_score_file = self.m_file_selector.no_norm_result_file(groups[0]) if norm == 'nonorm' else self.m_file_selector.zt_norm_result_file(groups[0]) if norm is 'ztnorm' else None
 
       # create a LLR trainer
       utils.info(" - Calibration: Training calibration for type %s from group %s" % (norm, groups[0]))
-      llr_trainer = bob.trainer.CGLogRegTrainer(prior = prior)
+      llr_trainer = bob.trainer.CGLogRegTrainer(prior, 1e-16, 100000)
 
       training_scores = list(bob.measure.load.split_four_column(training_score_file))
       for i in (0,1):
         h = numpy.array(training_scores[i])
         h.shape = (len(training_scores[i]), 1)
         training_scores[i] = h
-      # train the LLR (don't know which order the scores should be)
-      llr_machine = llr_trainer.train(training_scores[1], training_scores[0])
+      # train the LLR
+      llr_machine = llr_trainer.train(training_scores[0], training_scores[1])
       del training_scores
       utils.debug("   ... Resulting calibration parameters: shift = %f, scale = %f" % (llr_machine.biases[0], llr_machine.weights[0,0]) )
 
       # now, apply it to all groups
       for group in groups:
-        score_file = {'nonorm': self.m_file_selector.no_norm_result_file(group), 'ztnorm': self.m_file_selector.zt_norm_result_file(group)}[norm]
+        score_file = self.m_file_selector.no_norm_result_file(group) if norm == 'nonorm' else self.m_file_selector.zt_norm_result_file(group) if norm is 'ztnorm' else None
         calibrated_file = self.m_file_selector.calibrated_score_file(group, norm == 'ztnorm')
 
         utils.info(" - Calibration: calibrating scores from '%s' to '%s'" % (score_file, calibrated_file))

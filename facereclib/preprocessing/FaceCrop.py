@@ -133,6 +133,7 @@ class FaceCrop (Preprocessor):
     if not self.m_perform_image_cropping:
       return image
 
+    keys = None
     # check, which type of annotations we have
     if self.m_fixed_postions:
       # get the cropper for the fixed positions
@@ -144,9 +145,12 @@ class FaceCrop (Preprocessor):
       for pair in self.m_supported_annotations:
         if pair[0] in annotations and pair[1] in annotations:
           keys = pair
+      if keys is None:
+        raise ValueError("The given annoations '%s' did not contain the supported annotations '%s'" % (annotations, self.m_supported_annotations))
     else:
       # No annotations and no fixed positions: don't do any processing
       return image.astype(numpy.float64)
+
 
     cropper = self.__cropper__(keys)
     mask = self.__mask__(image.shape)
