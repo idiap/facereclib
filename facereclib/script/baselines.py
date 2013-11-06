@@ -48,6 +48,8 @@ def command_line_arguments(command_line_parameters):
 
   # - use the Idiap grid -- option is only useful if you are at Idiap
   parser.add_argument('-g', '--grid', action = 'store_true', help = 'Execute the algorithm in the SGE grid.')
+  # - use the Idiap grid -- option is only useful if you are at Idiap
+  parser.add_argument('-z', '--zt-norm', action = 'store_true', help = 'Compute the ZT norm for the files.')
 
   # - just print?
   parser.add_argument('-q', '--dry-run', action = 'store_true', help = 'Just print the commands, but do not execute them.')
@@ -307,7 +309,7 @@ def main(command_line_parameters = sys.argv):
         command.extend(['--grid', grid])
 
       # compute ZT-norm if the database provides this setup
-      if has_zt_norm:
+      if has_zt_norm and args.zt_norm:
         command.extend(['--zt-norm'])
 
       # compute results for both 'dev' and 'eval' group if the database provides these

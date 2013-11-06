@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 """This script evaluates the given score files and computes EER, HTER.
 It also is able to plot CMC and ROC curves."""
 
@@ -191,7 +193,7 @@ def main(command_line_parameters=None):
         if args.eval_files:
           cllr = bob.measure.calibration.cllr(scores_eval[i][0], scores_eval[i][1])
           min_cllr = bob.measure.calibration.min_cllr(scores_eval[i][0], scores_eval[i][1])
-          print("Calibration performance on development set:", cllr, "Cllr and:", min_cllr, "minCllr")
+          print("Calibration performance on evaluation set of '%s' is Cllr %1.5f and minCllr %1.5f" % (args.legends[i], cllr, min_cllr))
 
 
     if args.roc:
