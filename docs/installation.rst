@@ -8,6 +8,11 @@
 Installation instructions
 =========================
 
+.. note::
+  This documentation includes several ``file://`` links that usually point to files or directories in your source directory.
+  When you are reading this documentation online, these links won't work.
+  Please read `Generate this documentation`_ on how to create this documentation including working ``file://`` links.
+
 Download
 --------
 
@@ -122,7 +127,7 @@ To generate this documentation, you call:
 
 .. code-block:: sh
 
-  $ bin/sphinx-build docs/ sphinx
+  $ bin/sphinx-build docs sphinx
 
 Afterwards, the documentation is available and you can read it, e.g., by using:
 
@@ -130,7 +135,6 @@ Afterwards, the documentation is available and you can read it, e.g., by using:
 
   $ firefox sphinx/index.html
 
-(Since you are reading the documentation, you already have done this step, right?)
 
 .. _buildout.cfg: file:../buildout.cfg
 
