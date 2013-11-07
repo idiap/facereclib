@@ -48,7 +48,9 @@ def command_line_arguments(command_line_parameters):
 
   # - use the Idiap grid -- option is only useful if you are at Idiap
   parser.add_argument('-g', '--grid', action = 'store_true', help = 'Execute the algorithm in the SGE grid.')
-  # - use the Idiap grid -- option is only useful if you are at Idiap
+  # - run in parallel on the local machine
+  parser.add_argument('-p', '--parallel', type=int, help = 'Run the algorithms in parallel on the local machine, using the given number of parallel threads')
+  # - perform ZT-normalization
   parser.add_argument('-z', '--zt-norm', action = 'store_true', help = 'Compute the ZT norm for the files.')
 
   # - just print?
@@ -173,7 +175,7 @@ def main(command_line_parameters = sys.argv):
 
   # Check the database configuration file
   has_zt_norm = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface')
-  has_eval = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface', 'xm2vts', 'lfw')
+  has_eval = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface', 'xm2vts')
 
   if args.evaluate:
     # call the evaluate script with the desired parameters
@@ -217,13 +219,14 @@ def main(command_line_parameters = sys.argv):
       if os.path.exists(os.path.join(result_dir, nonorm_sub_dir, 'scores-dev')):
         result_dev.append(os.path.join(nonorm_sub_dir, 'scores-dev'))
         legends.append(algorithm)
-      if os.path.exists(os.path.join(result_dir, nonorm_sub_dir, 'scores-eval')):
+      if has_eval and os.path.exists(os.path.join(result_dir, nonorm_sub_dir, 'scores-eval')):
         result_eval.append(os.path.join(nonorm_sub_dir, 'scores-eval'))
 
-      if os.path.exists(os.path.join(result_dir, ztnorm_sub_dir, 'scores-dev')):
-        result_zt_dev.append(os.path.join(ztnorm_sub_dir, 'scores-dev'))
-      if os.path.exists(os.path.join(result_dir, ztnorm_sub_dir, 'scores-eval')):
-        result_zt_eval.append(os.path.join(ztnorm_sub_dir, 'scores-eval'))
+      if has_zt_norm:
+        if os.path.exists(os.path.join(result_dir, ztnorm_sub_dir, 'scores-dev')):
+          result_zt_dev.append(os.path.join(ztnorm_sub_dir, 'scores-dev'))
+        if has_eval and os.path.exists(os.path.join(result_dir, ztnorm_sub_dir, 'scores-eval')):
+          result_zt_eval.append(os.path.join(ztnorm_sub_dir, 'scores-eval'))
 
     # check if we have found some results
     if not result_dev:
@@ -307,6 +310,9 @@ def main(command_line_parameters = sys.argv):
       # add grid argument, if available
       if args.grid:
         command.extend(['--grid', grid])
+
+      if args.parallel:
+        command.extend(['--grid', 'facereclib.utils.GridParameters("local",number_of_parallel_processes=%d)'%args.parallel])
 
       # compute ZT-norm if the database provides this setup
       if has_zt_norm and args.zt_norm:
