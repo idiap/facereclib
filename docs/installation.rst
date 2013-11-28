@@ -25,7 +25,7 @@ To check out the current version of the |project|, go to the console, move to an
 
 .. code-block:: sh
 
-  $ git clone git@github.com:bioidiap/facereclib.git
+  $ git clone git@github.com:idiap/facereclib.git
 
 Be aware that you will get the latest changes and that it might not work as expected.
 
