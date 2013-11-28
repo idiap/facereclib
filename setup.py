@@ -133,7 +133,6 @@ setup(
 
     install_requires=[
       "setuptools",      # for whatever
-      "sphinx-pypi-upload", # to upload documentation to pypi using the command series: './bin/python setup.py build_sphinx; ./bin/python setup.py upload_sphinx'
       "bob >= 1.2.0, <= 1.3.0",    # base signal processing/machine learning library
       "xbob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
     ],
