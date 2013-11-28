@@ -174,8 +174,8 @@ def main(command_line_parameters = sys.argv):
   args = command_line_arguments(command_line_parameters[1:])
 
   # Check the database configuration file
-  has_zt_norm = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface')
-  has_eval = args.database in ('banca', 'mobio-male', 'mobio-female', 'multipie-U', 'multipie-P', 'scface', 'xm2vts')
+  has_zt_norm = args.database in ('banca', 'mobio', 'multipie', 'scface')
+  has_eval = args.database in ('banca', 'mobio', 'multipie', 'scface', 'xm2vts')
 
   if args.evaluate:
     # call the evaluate script with the desired parameters
@@ -190,7 +190,7 @@ def main(command_line_parameters = sys.argv):
     result_dir = os.path.join(base_dir, args.database, 'baselines')
     if not os.path.exists(result_dir):
       if not args.dry_run:
-        raise IOError("The result directory for the given database cannot. Did you already run the experiments for this database?")
+        raise IOError("The result directory for the desired database cannot be found. Did you already run the experiments for this database?")
 
     # iterate over the algorithms and collect the result files
     result_dev = []
