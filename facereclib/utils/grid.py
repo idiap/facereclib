@@ -26,7 +26,7 @@ PREDEFINED_QUEUES = {
   '8G'          : {'queue' : 'q1d',  'memfree' : '8G'},
   '8G-io-big'   : {'queue' : 'q1d',  'memfree' : '8G', 'io_big' : True},
   '16G'         : {'queue' : 'q1dm', 'memfree' : '16G', 'pe_opt' : 'pe_mth 2', 'hvmem' : '8G'},
-  '32G'         : {'queue' : 'q1dm', 'memfree' : '16G', 'pe_opt' : 'pe_mth 4', 'hvmem' : '8G', 'io_big' : True},
+  '32G'         : {'queue' : 'q1dm', 'memfree' : '32G', 'pe_opt' : 'pe_mth 4', 'hvmem' : '8G', 'io_big' : True},
   '64G'         : {'queue' : 'q1dm', 'memfree' : '64G', 'pe_opt' : 'pe_mth 8', 'hvmem' : '8G', 'io_big' : True},
   'Week'        : {'queue' : 'q1wm', 'memfree' : '32G', 'pe_opt' : 'pe_mth 4', 'hvmem' : '8G'}
 }
