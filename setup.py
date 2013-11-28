@@ -25,7 +25,7 @@ setup(
     version='1.2.2a0',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
-    url='https://github.com/bioidiap/facereclib',
+    url='http://github.com/idiap/facereclib',
     license='LICENSE.txt',
 
     author='Manuel Guenther',
