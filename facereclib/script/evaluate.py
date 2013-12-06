@@ -110,7 +110,7 @@ def _plot_det(dets, colors, labels, title):
 
   # plot the DET curves
   for i in range(len(dets)):
-    mpl.plot(dets[i][0], dets[i][1], color=colors[i], lw=2, ms=10, mew=1.5, label=labels[i])
+    mpl.plot(dets[i][1], dets[i][0], color=colors[i], lw=2, ms=10, mew=1.5, label=labels[i])
 
   # change axes accordingly
   det_list = [0.0002, 0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.7, 0.9, 0.95]
