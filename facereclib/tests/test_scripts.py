@@ -141,7 +141,7 @@ class ScriptTest (unittest.TestCase):
         '-b', 'test_c',
         '--temp-directory', test_dir,
         '--user-directory', test_dir,
-        '-g', 'local-p4', '-G', test_database
+        '-g', 'facereclib.utils.GridParameters(grid = "local", number_of_parallel_processes = 2, scheduler_sleep_time = 0.1)', '-G', test_database, '--run-local-scheduler'
     ]
 
     print (' '.join(parameters))

@@ -4,13 +4,13 @@ import facereclib
 grid = facereclib.utils.GridParameters(
   training_queue = '8G',
   # preprocessing
-  number_of_preprocessings_per_job = 20,
+  number_of_preprocessing_jobs = 10,
   # feature extraction
-  number_of_extracted_features_per_job = 20,
+  number_of_extraction_jobs = 10,
   # feature projection
-  number_of_projected_features_per_job = 20,
+  number_of_projection_jobs = 10,
   # model enrollment
-  number_of_enrolled_models_per_job = 5,
+  number_of_enrollment_jobs = 5,
   # scoring
-  number_of_models_per_scoring_job = 5,
+  number_of_scoring_jobs = 10,
 )

@@ -230,13 +230,7 @@ class ToolChainExecutor:
     self.m_logs_directory = os.path.join(temp_dir if temp_dir else self.m_configuration.temp_directory, "grid_tk_logs")
 
 
-  def _generate_job_array(self, list_to_split, number_of_files_per_job):
-    """Generates an array for the list to be split and the number of files that one job should generate."""
-    n_jobs = int(math.ceil(len(list_to_split) / float(number_of_files_per_job)))
-    return (1,n_jobs,1)
-
-
-  def indices(self, list_to_split, number_of_files_per_job):
+  def indices(self, list_to_split, number_of_parallel_jobs):
     """This function returns the first and last index for the files for the current job ID.
        If no job id is set (e.g., because a sub-job is executed locally), it simply returns all indices."""
     # test if the 'SEG_TASK_ID' environment is set
@@ -248,12 +242,13 @@ class ToolChainExecutor:
     else:
       job_id = int(sge_task_id) - 1
       # compute number of files to be executed
-      start = job_id * number_of_files_per_job
-      end = min((job_id + 1) * number_of_files_per_job, len(list_to_split))
+      number_of_objects_per_job = int(math.ceil(float(len(list_to_split) / float(number_of_parallel_jobs))))
+      start = job_id * number_of_objects_per_job
+      end = min((job_id + 1) * number_of_objects_per_job, len(list_to_split))
       return (start, end)
 
 
-  def submit_grid_job(self, command, list_to_split = None, number_of_files_per_job = 1, dependencies=[], name = None, **kwargs):
+  def submit_grid_job(self, command, number_of_parallel_jobs = 1, dependencies=[], name = None, **kwargs):
     """Submits a job to the grid."""
 
     # create the command to be executed
@@ -274,8 +269,8 @@ class ToolChainExecutor:
     logdir = os.path.join(self.m_logs_directory, log_sub_dir)
 
     # generate job array
-    if list_to_split is not None:
-      array = self._generate_job_array(list_to_split, number_of_files_per_job)
+    if number_of_parallel_jobs > 1:
+      array = (1,number_of_parallel_jobs,1)
     else:
       array = None
 

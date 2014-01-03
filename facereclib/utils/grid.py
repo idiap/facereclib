@@ -39,12 +39,12 @@ class GridParameters:
     self,
     # grid type, currently supported 'local' and 'sge'
     grid = 'sge',
-    # parameters for the splitting of jobs into array jobs
-    number_of_preprocessings_per_job = 1000,
-    number_of_extracted_features_per_job = 1000,
-    number_of_projected_features_per_job = 1000,
-    number_of_enrolled_models_per_job = 50,
-    number_of_models_per_scoring_job = 50,
+    # parameters for the splitting of jobs into array jobs; ignored by the local scheduler
+    number_of_preprocessing_jobs = 32,
+    number_of_extraction_jobs = 32,
+    number_of_projection_jobs = 32,
+    number_of_enrollment_jobs = 32,
+    number_of_scoring_jobs = 32,
 
     # queue setup for the SGE grid (only used if grid = 'sge', the default)
     training_queue = '8G',
@@ -60,12 +60,21 @@ class GridParameters:
   ):
 
     self.grid_type = grid
+
     # the numbers
-    self.number_of_preprocessings_per_job = number_of_preprocessings_per_job
-    self.number_of_extracted_features_per_job = number_of_extracted_features_per_job
-    self.number_of_projected_features_per_job = number_of_projected_features_per_job
-    self.number_of_enrolled_models_per_job = number_of_enrolled_models_per_job
-    self.number_of_models_per_scoring_job = number_of_models_per_scoring_job
+    if self.is_local():
+      self.number_of_preprocessing_jobs = number_of_parallel_processes
+      self.number_of_extraction_jobs = number_of_parallel_processes
+      self.number_of_projection_jobs = number_of_parallel_processes
+      self.number_of_enrollment_jobs = number_of_parallel_processes
+      self.number_of_scoring_jobs = number_of_parallel_processes
+    else:
+      self.number_of_preprocessing_jobs = number_of_preprocessing_jobs
+      self.number_of_extraction_jobs = number_of_extraction_jobs
+      self.number_of_projection_jobs = number_of_projection_jobs
+      self.number_of_enrollment_jobs = number_of_enrollment_jobs
+      self.number_of_scoring_jobs = number_of_scoring_jobs
+
     # the queues
     self.training_queue = self.queue(training_queue)
     self.preprocessing_queue = self.queue(preprocessing_queue)
