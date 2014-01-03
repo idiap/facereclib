@@ -8,7 +8,7 @@ from .Tool import Tool
 from .Dummy import Dummy
 from .GaborJets import GaborJets
 from .LGBPHS import LGBPHS
-from .UBMGMM import UBMGMM, UBMGMMRegular, UBMGMMVideo
+from .UBMGMM import UBMGMM, UBMGMMRegular
 from .JFA import JFA
 from .ISV import ISV, ISVVideo
 from .IVector import IVector
@@ -16,5 +16,4 @@ from .PCA import PCA
 from .LDA import LDA
 from .PLDA import PLDA
 from .BIC import BIC
-from .ParallelUBMGMM import ParallelUBMGMM
 
