@@ -89,6 +89,12 @@ class ToolChainExecutor:
     n_jobs = int(math.ceil(len(list_to_split) / float(number_of_files_per_job)))
     return (1,n_jobs,1)
 
+  def groups(self):
+    """Checks the groups, for which the files must be preprocessed, and features must be extracted and projected."""
+    groups = self.m_args.groups[:]
+    if self.m_extractor.requires_training or self.m_tool.requires_training:
+      groups.append('world')
+    return groups
 
 
   @staticmethod

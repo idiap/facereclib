@@ -160,7 +160,7 @@ class Database:
   ### Interface functions that you need to implement in your class.
   ###########################################################################
 
-  def all_files(self):
+  def all_files(self, groups = None):
     """Returns all files of the database"""
     raise NotImplementedError("Please implement this function in derived classes")
 

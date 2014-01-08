@@ -31,11 +31,11 @@ class ToolChain:
 
 
 
-  def preprocess_data(self, preprocessor, indices=None, force=False):
+  def preprocess_data(self, preprocessor, groups=None, indices=None, force=False):
     """Preprocesses the original data with the given preprocessor."""
     # get the file lists
-    data_files = self.m_file_selector.original_data_list()
-    preprocessed_data_files = self.m_file_selector.preprocessed_data_list()
+    data_files = self.m_file_selector.original_data_list(groups=groups)
+    preprocessed_data_files = self.m_file_selector.preprocessed_data_list(groups=groups)
 
     # select a subset of keys to iterate
     if indices != None:
@@ -48,7 +48,7 @@ class ToolChain:
     utils.info("- Preprocessing: processing %d data files from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.m_database.original_directory, self.m_file_selector.preprocessed_directory))
 
     # read annotation files
-    annotation_list = self.m_file_selector.annotation_list()
+    annotation_list = self.m_file_selector.annotation_list(groups=groups)
 
     for i in index_range:
       preprocessed_data_file = preprocessed_data_files[i]
@@ -102,11 +102,11 @@ class ToolChain:
 
 
 
-  def extract_features(self, extractor, preprocessor, indices = None, force=False):
+  def extract_features(self, extractor, preprocessor, groups=None, indices = None, force=False):
     """Extracts the features from the preprocessed data using the given extractor."""
     extractor.load(str(self.m_file_selector.extractor_file))
-    data_files = self.m_file_selector.preprocessed_data_list()
-    feature_files = self.m_file_selector.feature_list()
+    data_files = self.m_file_selector.preprocessed_data_list(groups=groups)
+    feature_files = self.m_file_selector.feature_list(groups=groups)
 
     # select a subset of indices to iterate
     if indices != None:
@@ -169,14 +169,14 @@ class ToolChain:
 
 
 
-  def project_features(self, tool, extractor, indices = None, force=False):
+  def project_features(self, tool, extractor, groups = None, indices = None, force=False):
     """Projects the features for all files of the database."""
     # load the projector file
     if tool.performs_projection:
       tool.load_projector(str(self.m_file_selector.projector_file))
 
-      feature_files = self.m_file_selector.feature_list()
-      projected_files = self.m_file_selector.projected_list()
+      feature_files = self.m_file_selector.feature_list(groups=groups)
+      projected_files = self.m_file_selector.projected_list(groups=groups)
 
       # select a subset of indices to iterate
       if indices != None:

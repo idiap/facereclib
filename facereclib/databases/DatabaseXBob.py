@@ -99,9 +99,9 @@ class DatabaseXBob (Database):
     return self.protocol != 'None' and self.m_database.provides_file_set_for_protocol(self.protocol)
 
 
-  def all_files(self):
+  def all_files(self, groups = None):
     """Returns all File objects of the database for the current protocol. If the current protocol is 'None' (a string), None (NoneType) will be used instead"""
-    files = self.m_database.objects(protocol = self.protocol if self.protocol != 'None' else None, **self.all_files_options)
+    files = self.m_database.objects(protocol = self.protocol if self.protocol != 'None' else None, groups = groups, **self.all_files_options)
     return self.sort(files)
 
 

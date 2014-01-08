@@ -64,6 +64,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       else:
         self.m_tool_chain.preprocess_data(
               self.m_preprocessor,
+              groups = self.groups(),
               force = self.m_args.force)
 
     # feature extraction
@@ -83,6 +84,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.extract_features(
               self.m_extractor,
               self.m_preprocessor,
+              groups = self.groups(),
               force = self.m_args.force)
 
     # feature projection
@@ -102,6 +104,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
         self.m_tool_chain.project_features(
               self.m_tool,
               self.m_extractor,
+              groups = self.groups(),
               force = self.m_args.force)
 
     # model enrollment
@@ -265,7 +268,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_data(
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.original_data_list(), self.m_grid.number_of_preprocessing_jobs),
+          indices = self.indices(self.m_file_selector.original_data_list(groups=self.groups()), self.m_grid.number_of_preprocessing_jobs),
           force = self.m_args.force)
 
     # train the feature extractor
@@ -280,7 +283,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.extract_features(
           self.m_extractor,
           self.m_preprocessor,
-          indices = self.indices(self.m_file_selector.preprocessed_data_list(), self.m_grid.number_of_extraction_jobs),
+          indices = self.indices(self.m_file_selector.preprocessed_data_list(groups=self.groups()), self.m_grid.number_of_extraction_jobs),
           force = self.m_args.force)
 
     # train the feature projector
@@ -295,7 +298,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.project_features(
           self.m_tool,
           self.m_extractor,
-          indices = self.indices(self.m_file_selector.preprocessed_data_list(), self.m_grid.number_of_projection_jobs),
+          indices = self.indices(self.m_file_selector.preprocessed_data_list(groups=self.groups()), self.m_grid.number_of_projection_jobs),
           force = self.m_args.force)
 
     # train the model enroller

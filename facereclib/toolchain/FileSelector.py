@@ -68,31 +68,31 @@ class FileSelector:
       return [file.make_path(directory, extension) for file in files if file.path not in known and not known.add(file.path)]
 
   ### List of files that will be used for all files
-  def original_data_list(self):
+  def original_data_list(self, groups = None):
     """Returns the list of original data that can be used for preprocessing."""
-    return self.get_paths(self.m_database.all_files(), directory = self.m_database.original_directory, extension = self.m_database.original_extension)
+    return self.get_paths(self.m_database.all_files(groups=groups), directory = self.m_database.original_directory, extension = self.m_database.original_extension)
 
-  def annotation_list(self):
+  def annotation_list(self, groups = None):
     """Returns the list of annotations, if existing."""
     known = set()
-    return [file for file in self.m_database.all_files() if file.path not in known and not known.add(file.path)]
+    return [file for file in self.m_database.all_files(groups=groups) if file.path not in known and not known.add(file.path)]
 
   def get_annotations(self, annotation_file):
     """Reads the annotation of the given file."""
     return self.m_database.annotations(annotation_file)
 
-  def preprocessed_data_list(self):
+  def preprocessed_data_list(self, groups = None):
     """Returns the list of preprocessed data files."""
-    files = self.m_database.all_files()
+    files = self.m_database.all_files(groups=groups)
     return self.get_paths(files, "preprocessed")
 
-  def feature_list(self):
+  def feature_list(self, groups = None):
     """Returns the list of extracted feature files."""
-    return self.get_paths(self.m_database.all_files(), "features")
+    return self.get_paths(self.m_database.all_files(groups=groups), "features")
 
-  def projected_list(self):
+  def projected_list(self, groups = None):
     """Returns the list of projected feature files."""
-    return self.get_paths(self.m_database.all_files(), "projected")
+    return self.get_paths(self.m_database.all_files(groups=groups), "projected")
 
 
   ### Training lists
