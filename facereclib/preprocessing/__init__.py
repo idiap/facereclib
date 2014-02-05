@@ -7,7 +7,7 @@
 from .Preprocessor import Preprocessor
 from .NullPreprocessor import NullPreprocessor
 from .FaceCrop import FaceCrop
-from .TanTriggs import TanTriggs, TanTriggsVideo
+from .TanTriggs import TanTriggs
 from .HistogramEqualization import HistogramEqualization
 from .SelfQuotientImage import SelfQuotientImage
 from .INormLBP import INormLBP

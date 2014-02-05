@@ -60,25 +60,4 @@ class DCTBlocks (Extractor):
     return extractor(image)
 
 
-class DCTBlocksVideo(DCTBlocks):
-
-  def __init__(self, **kwargs):
-    # call base class constructor with its required parameters
-    DCTBlocks.__init__(self, **kwargs)
-
-
-  def read_feature(self, filename):
-    """Read video.FrameContainer containing features extracted from each frame"""
-    return utils.video.FrameContainer(str(filename))
-
-
-  def __call__(self, frame_container):
-    """Returns local DCT features computed from each frame in the input video.FrameContainer"""
-
-    output_frame_container = utils.video.FrameContainer()
-    for (frame_id, image, quality) in frame_container.frames():
-      frame_dcts = DCTBlocks._dct_features(self,image)
-      output_frame_container.add_frame(frame_id,frame_dcts,quality)
-
-    return output_frame_container
 

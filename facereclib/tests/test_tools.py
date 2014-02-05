@@ -379,13 +379,6 @@ class ToolTest(unittest.TestCase):
     self.assertAlmostEqual(sim, 0.143875716)
 
 
-  def notest06b_gmm_video(self):
-    # assure that the config file is readable
-    tool = self.config('ubm_gmm_video')
-    self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMVideo))
-    raise SkipTest("This test is not yet implemented")
-
-
   def test07_isv(self):
     # read input
     feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
@@ -460,13 +453,6 @@ class ToolTest(unittest.TestCase):
 
     # score with a concatenation of the probe
     self.assertAlmostEqual(tool.score_for_multiple_probes(model, [probe, probe]), sim, places=5)
-
-
-  def notest07a_isv_video(self):
-    # assure that the config file is readable
-    tool = self.config('isv_video')
-    self.assertTrue(isinstance(tool, facereclib.tools.ISVVideo))
-    raise SkipTest("This test is not yet implemented")
 
 
   def test08_jfa(self):

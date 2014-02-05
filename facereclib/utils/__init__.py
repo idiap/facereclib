@@ -15,6 +15,28 @@ import os
 import bob
 import numpy
 
+def load(file):
+  """Loads data from file. The given file might be an HDF5 file open for reading or a string."""
+  if isinstance(file, bob.io.HDF5File):
+    return file.read("array")
+  else:
+    return bob.io.load(file)
+
+def save(data, file):
+  """Saves the data to file. The given file might be an HDF5 file open for writing, or a string.
+  If the given data contains a ``save`` method, this method is called with the given HDF5 file."""
+  if isinstance(file, bob.io.HDF5File):
+    if hasattr(data, 'save'):
+      data.save(file)
+    else:
+      file.set("array", data)
+  else:
+    if hasattr(data, 'save'):
+      data.save(bob.io.HDF5File(file, 'w'))
+    else:
+      bob.io.save(data, file)
+
+
 def ensure_dir(dirname):
   """ Creates the directory dirname if it does not already exist,
       taking into account concurrent 'creation' on the grid.
@@ -30,7 +52,8 @@ def score_fusion_strategy(strategy_name = 'avarage'):
         'average' : numpy.average,
         'min' : min,
         'max' : max,
-        'median' : numpy.median
+        'median' : numpy.median,
+        None : None
     }[strategy_name]
   except KeyError:
 #    warn("score fusion strategy '%s' is unknown" % strategy_name)
@@ -66,4 +89,13 @@ def quasi_random_indices(number_of_total_items, number_of_desired_items = None):
   return [int((i +.5)*increase) for i in range(number_of_desired_items)]
 
 
+def command_line(cmdline):
+  """Converts the given options to a string that can be executed on command line."""
+  c = ""
+  for cmd in cmdline:
+    if cmd[0] in '/-':
+      c += "%s " % cmd
+    else:
+      c += "'%s' " % cmd
+  return c
 

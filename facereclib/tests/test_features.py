@@ -82,23 +82,6 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertEqual(len(feature.shape), 2)
 
 
-  def notest02a_dct_video(self):
-    # test that at least the config file can be read
-    extractor = self.config('dct_blocks_video')
-    self.assertTrue(isinstance(extractor, facereclib.features.DCTBlocksVideo))
-    raise SkipTest("Video tests are currently skipped.")
-    # we need the preprocessor tool to actually read the data
-    preprocessor = facereclib.utils.configuration_file('tan_triggs_video', 'preprocessor', 'preprocessing')
-    video = preprocessor.read_data(self.input_dir('video.hdf5'))
-
-    # now, we extract features from it
-    feature = extractor(video)
-    if regenerate_refs:
-      feature.save(bob.io.HDF5File(self.reference_dir('dct_video.hdf5'), 'w'))
-    reference = extractor.read_feature(self.reference_dir('dct_video.hdf5'))
-    self.assertEqual(feature, reference)
-
-
   def test03_graphs(self):
     data = bob.io.load(self.input_dir('cropped.hdf5'))
     extractor = self.config('grid-graph')

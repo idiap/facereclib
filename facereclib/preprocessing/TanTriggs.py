@@ -99,43 +99,4 @@ class TanTriggs (FaceCrop):
 
 
 
-class TanTriggsVideo (Preprocessor):
-  """Applies the Tan-Triggs algorithm to each frame in a video"""
 
-  def __init__(
-     self,
-     gamma = 0.2,
-     sigma0 = 1,
-     sigma1 = 2,
-     size = 5,
-     threshold = 10.,
-     alpha = 0.1,
-     color_channel = 'gray',
-  ):
-
-    Preprocessor.__init__(self)
-    self.m_color_channel = color_channel
-    # prepare image normalization
-    self.m_tan = bob.ip.TanTriggs(gamma, sigma0, sigma1, size, threshold, alpha)
-
-  def read_original_data(self, video_file):
-    """Reads the original image (in this case a utils.FrameContainer) from the given file"""
-    return utils.video.FrameContainer(str(video_file))
-
-  def __call__(self, frame_container, annotations = None):
-    """For each frame in the VideoFrameContainer (read from input_file) applies the Tan-Triggs algorithm, then writes the resulting VideoFrameContainer to output_file. NOTE: annotations is ignored even if specified."""
-    # Process each frame
-    output_frame_container = utils.video.FrameContainer()
-    for (frame_id, image, quality) in frame_container.frames():
-
-      # Convert to grayscale if it seems necessary
-      image = utils.gray_channel(image, self.m_color_channel)
-
-      # Perform Tan-Triggs and store result
-      tan_image = numpy.ndarray(image.shape, numpy.float64)
-      self.m_tan(image, self.m_tan_image)
-      output_frame_container.add_frame(frame_id, tan_image, quality)
-
-    return output_frame_container
-
-  read_data = read_original_data

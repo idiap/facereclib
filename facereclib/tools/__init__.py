@@ -8,9 +8,9 @@ from .Tool import Tool
 from .Dummy import Dummy
 from .GaborJets import GaborJets
 from .LGBPHS import LGBPHS
-from .UBMGMM import UBMGMM, UBMGMMRegular
+from .UBMGMM import UBMGMM
 from .JFA import JFA
-from .ISV import ISV, ISVVideo
+from .ISV import ISV
 from .IVector import IVector
 from .PCA import PCA
 from .LDA import LDA

@@ -6,7 +6,7 @@
 
 from .Extractor import Extractor
 from .Linearize import Linearize
-from .DCT import DCTBlocks, DCTBlocksVideo
+from .DCT import DCTBlocks
 from .LGBPHS import LGBPHS
 from .GridGraph import GridGraph
 from .Eigenface import Eigenface

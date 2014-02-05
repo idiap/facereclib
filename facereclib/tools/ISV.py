@@ -7,7 +7,7 @@ import numpy
 import types
 
 from .Tool import Tool
-from .UBMGMM import UBMGMM, UBMGMMVideo
+from .UBMGMM import UBMGMM
 from .. import utils
 
 

@@ -101,12 +101,6 @@ class PreprocessingTest(unittest.TestCase):
     self.execute(preprocessor, data, None, 'tan_triggs.hdf5')
 
 
-  def notest02a_tan_triggs_video(self):
-    preprocessor = self.config('tan_triggs_video')
-    self.assertTrue(isinstance(preprocessor, facereclib.preprocessing.TanTriggsVideo))
-    raise SkipTest("Video tests are currently skipped.")
-
-
   def test03_self_quotient(self):
     # read input
     data, annotation = self.input()
