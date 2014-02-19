@@ -56,6 +56,8 @@ def command_line_arguments(command_line_parameters):
 
   parser.add_argument('-c', '--criterion', choices = ('EER', 'HTER'), help = "If given, the threshold of the development set will be computed with this criterion.")
   parser.add_argument('-x', '--cllr', action = 'store_true', help = "If given, Cllr and minCllr will be computed.")
+  parser.add_argument('-m', '--mindcf', action = 'store_true', help = "If given, minDCF will be computed.")
+  parser.add_argument('--cost', default=0.99,  help='Cost for FAR in minDCF')
   parser.add_argument('-l', '--legends', nargs='+', help = "A list of legend strings used for ROC, CMC and DET plots; if given, must be the same number than --dev-files.")
   parser.add_argument('-R', '--roc', help = "If given, ROC curves will be plotted into the given pdf file.")
   parser.add_argument('-D', '--det', help = "If given, DET curves will be plotted into the given pdf file.")
@@ -158,7 +160,7 @@ def main(command_line_parameters=None):
   cmap = mpl.cm.get_cmap(name='hsv')
   colors = [cmap(i) for i in numpy.linspace(0, 1.0, len(args.dev_files)+1)]
 
-  if args.criterion or args.roc or args.det or args.cllr:
+  if args.criterion or args.roc or args.det or args.cllr or args.mindcf:
     score_parser = {'4column' : bob.measure.load.split_four_column, '5column' : bob.measure.load.split_five_column}[args.parser]
 
     # First, read the score files
@@ -184,6 +186,22 @@ def main(command_line_parameters=None):
           print("The HTER of the evaluation set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], (far + frr) * 50.)) # / 2 * 100%
 
 
+    if args.mindcf:
+      utils.info("Computing minDCF on the development " + ("and on the evaluation set" if args.eval_files else "set"))
+      for i in range(len(scores_dev)):
+        # compute threshold on development set
+        threshold = bob.measure.min_weighted_error_rate_threshold(scores_dev[i][0], scores_dev[i][1], args.cost)
+        # apply threshold to development set
+        far, frr = bob.measure.farfrr(scores_dev[i][0], scores_dev[i][1], threshold)
+        print("The minDCF of the development set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], (args.cost * far + (1-args.cost) * frr) ))
+        if args.eval_files:
+          # compute threshold on evaluation set
+          threshold = bob.measure.min_weighted_error_rate_threshold(scores_eval[i][0], scores_eval[i][1], args.cost)
+          # apply threshold to evaluation set
+          far, frr = bob.measure.farfrr(scores_eval[i][0], scores_eval[i][1], threshold)
+          print("The minDCF of the evaluation set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.eval_files[i], (args.cost * far + (1-args.cost) * frr) * 100. ))
+          
+      
     if args.cllr:
       utils.info("Computing Cllr and minCllr on the development " + ("and on the evaluation set" if args.eval_files else "set"))
       for i in range(len(scores_dev)):
