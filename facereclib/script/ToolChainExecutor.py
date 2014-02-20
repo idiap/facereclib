@@ -31,10 +31,13 @@ class Configuration:
     self.extractor_file = os.path.join(self.temp_directory, args.extractor_file)
     self.projector_file = os.path.join(self.temp_directory, args.projector_file)
     self.enroller_file = os.path.join(self.temp_directory, args.enroller_file)
+    self.projected_ivec_directory = os.path.join(self.temp_directory, args.projected_ivec_directory)
+    self.whitening_projector_file = os.path.join(self.temp_directory, args.whitening_projector_file)
 
     self.preprocessed_directory = os.path.join(self.temp_directory, args.preprocessed_data_directory)
     self.features_directory = os.path.join(self.temp_directory, args.features_directory)
     self.projected_directory = os.path.join(self.temp_directory, args.projected_features_directory)
+    self.whitening_projected_directory = os.path.join(self.temp_directory, args.whitening_projected_features_directory)
 
     self.info_file = os.path.join(self.user_directory, "Experiment.info") if not args.experiment_info_file else args.experiment_info_file
 
@@ -81,6 +84,10 @@ class ToolChainExecutor:
     except IOError:
       utils.error("Could not write the experimental setup into file '%s'" % self.m_configuration.info_file)
 
+  def __generate_job_array__(self, list_to_split, number_of_files_per_job):
+    """Generates an array for the list to be split and the number of files that one job should generate"""
+    n_jobs = int(math.ceil(len(list_to_split) / float(number_of_files_per_job)))
+    return (1,n_jobs,1)
 
 
 
@@ -121,6 +128,8 @@ class ToolChainExecutor:
         help = 'Name of the file to write the feature extractor into.')
     file_group.add_argument('--projector-file', metavar = 'FILE', default = 'Projector.hdf5',
         help = 'Name of the file to write the feature projector into.')
+    file_group.add_argument('--whitening-projector-file', metavar = 'FILE', default = 'WhiteningProjector.hdf5',
+        help = 'Name of the file to write the feature projector into.')
     file_group.add_argument('--enroller-file' , metavar = 'FILE', default = 'Enroller.hdf5',
         help = 'Name of the file to write the model enroller into.')
     file_group.add_argument('-G', '--submit-db-file', metavar = 'FILE', default = 'submitted.sql3', dest = 'gridtk_database_file',
@@ -135,6 +144,10 @@ class ToolChainExecutor:
         help = 'Name of the directory of the features.')
     sub_dir_group.add_argument('--projected-features-directory', metavar = 'DIR', default = 'projected',
         help = 'Name of the directory where the projected data should be stored.')
+    sub_dir_group.add_argument('--projected-ivec-directory', metavar = 'DIR', default = 'projected_ivec',
+        help = 'Name of the directory where the ivector data should be stored.')
+    sub_dir_group.add_argument('--whitening-projected-features-directory', metavar = 'DIR', default = 'whitening_projected',
+        help = 'Name of the directory where the whiten projected data should be stored.')
 
     other_group = parser.add_argument_group('\nFlags that change the behavior of the experiment')
     other_group.add_argument('-q', '--dry-run', action='store_true',
@@ -157,8 +170,12 @@ class ToolChainExecutor:
         help = 'Skip the feature extraction step.')
     skip_group.add_argument('--skip-projector-training', '--noprot', action='store_true',
         help = 'Skip the feature projector training step.')
+    skip_group.add_argument('--skip-whitening-projector-training', '--noprot', action='store_true',
+        help = 'Skip the whitening projector training step.')
     skip_group.add_argument('--skip-projection', '--nopro', action='store_true',
         help = 'Skip the feature projection step.')
+    skip_group.add_argument('--skip-whitening-projection', '--nopro', action='store_true',
+        help = 'Skip the whiteining projection step.')
     skip_group.add_argument('--skip-enroller-training', '--noenrt', action='store_true',
         help = 'Skip the model enroller training step.')
     skip_group.add_argument('--skip-enrollment', '--noenr', action='store_true',

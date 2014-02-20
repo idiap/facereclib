@@ -415,11 +415,11 @@ All of them are based on the `facereclib.utils.grid <file:../facereclib/utils/gr
 Here are the parameters that you can set:
 
 * ``grid``: The type of the grid configuration; currently "sge" and "local" are supported.
-* ``number_of_preprocessings_per_job``: Number of files that one preprocessing job should handle.
-* ``number_of_extracted_features_per_job``: Number of files that one feature extraction job should handle.
-* ``number_of_projected_features_per_job``: Number of features that one feature projection job should handle.
-* ``number_of_enrolled_models_per_job``: Number of models that one enroll job should enroll.
-* ``number_of_models_per_scoring_job``: Number of models for which on scoring job should compute the scores.
+* ``number_of_preprocessing_jobs``: Number of parallel preprocessing jobs.
+* ``number_of_extraction_jobs``: Number of parallel feature extraction jobs.
+* ``number_of_projection_jobs``: Number of parallel feature projection jobs.
+* ``number_of_enrollment_jobs``: Number of parallel enrollment jobs (when development and evaluation sets are enabled, both sets will be split separately).
+* ``number_of_scoring_jobs``: Number of parallel scoring jobs (when development and evaluation sets are enabled, or ZT-norm is computed, more scoring jobs will be generated).
 
 If the ``grid`` parameter is set to ``sge`` (the default), jobs will be submitted to the SGE_ grid.
 In this case, the SGE_ queue parameters might be specified, either using one of the pre-defined queues (see `facereclib/configurations/grid <file:../facereclib/configurations/grid>`_) or using a dictionary of key/value pairs that are sent to the grid during submission of the jobs:
@@ -432,6 +432,8 @@ In this case, the following parameters for the local submission can be modified:
 
 * ``number_of_parallel_processes``: The number of parallel processes that will be run on the local machine.
 * ``scheduler_sleep_time``: The interval in which the local scheduler should check for finished jobs and execute new jobs; the sleep time is given in seconds.
+
+and the ``number_of_..._jobs`` are ignored, and ``number_of_parallel_processes`` is used for all of them.
 
 .. note::
   The parallel execution of jobs on the local machine is currently in BETA status and might be unstable.
@@ -499,6 +501,11 @@ To enforce the re-creation of the files, you can use the:
 * ``--force``
 
 argument, which of course can be combined with the ``--skip...`` arguments (in which case the skip is preferred).
+To run just a sub-selection of the tool chain, you can also use the:
+
+* ``--execute-only``
+
+argument, which takes a list of options out of: ``preprocessing``, ``extractor-training``, ``extraction``, ``projector-training``, ``projection``, ``enroller-training``, ``enrollment``, ``score-computation``, or ``concatenation``.
 
 Sometimes you just want to try different scoring functions.
 In this case, you could simply specify a:

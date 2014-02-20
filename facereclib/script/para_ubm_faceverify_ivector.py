@@ -57,10 +57,35 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor, tools.Paral
     self.m_tool.m_projected_toreplace = 'projected'
     self.m_tool.m_projected_gmm = 'projected_gmm'
     self.m_tool.m_projected_ivec = 'projected_ivec'
-    self.m_tool.m_projector_toreplace = self.m_configuration.projector_file
+    self.m_tool.m_projector_toreplace = self.m_configuration.projector_file 
+
+
+    protocol_subdir = self.m_database.protocol if self.m_database.protocol else "."
+
+    self.m_configuration.models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[0], protocol_subdir)
+    self.m_configuration.scores_no_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_score_directories[0])
+    # add specific configuration for ZT-normalization
+    if args.zt_norm:
+      self.m_configuration.t_norm_models_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.models_directories[1], protocol_subdir)
+      models_directories = (self.m_configuration.models_directory, self.m_configuration.t_norm_models_directory)
+
+      self.m_configuration.scores_zt_norm_directory = os.path.join(self.m_configuration.user_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_score_directories[1])
+      score_directories = (self.m_configuration.scores_no_norm_directory, self.m_configuration.scores_zt_norm_directory)
+
+      self.m_configuration.zt_norm_A_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[0])
+      self.m_configuration.zt_norm_B_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[1])
+      self.m_configuration.zt_norm_C_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[2])
+      self.m_configuration.zt_norm_D_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[3])
+      self.m_configuration.zt_norm_D_sameValue_directory = os.path.join(self.m_configuration.temp_directory, self.m_args.score_sub_directory, protocol_subdir, self.m_args.zt_temp_directories[4])
+      zt_score_directories = (self.m_configuration.zt_norm_A_directory, self.m_configuration.zt_norm_B_directory, self.m_configuration.zt_norm_C_directory, self.m_configuration.zt_norm_D_directory, self.m_configuration.zt_norm_D_sameValue_directory)
+    else:
+      models_directories = (self.m_configuration.models_directory,)
+      score_directories = (self.m_configuration.scores_no_norm_directory,)
+      zt_score_directories = None
+
 
     # specify the file selector to be used
-    self.m_file_selector = toolchain.FileSelector(
+    self.m_file_selector = toolchain.FileSelectorIVector(
         self.m_database,
         preprocessed_directory = self.m_configuration.preprocessed_directory,
         extractor_file = self.m_configuration.extractor_file,
@@ -68,13 +93,16 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor, tools.Paral
         projector_file = self.m_configuration.projector_file,
         projected_directory = self.m_configuration.projected_directory,
         enroller_file = False,
-        model_directories = False,
-        score_directories = False,
-        zt_score_directories = False
+        projected_ivec_directory = self.m_configuration.projected_ivec_directory,
+        whitening_projector_file = self.m_configuration.whitening_projector_file,
+        whitening_projected_directory = self.m_configuration.whitening_projected_directory,
+        model_directories = models_directories,
+        score_directories = score_directories,
+        zt_score_directories = zt_score_directories
     )
 
     # create the tool chain to be used to actually perform the parts of the experiments
-    self.m_tool_chain = toolchain.ToolChain(self.m_file_selector)
+    self.m_tool_chain = toolchain.ToolChainIVector(self.m_file_selector)
 
 
 #######################################################################################
@@ -115,6 +143,11 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor, tools.Paral
 
       # Temporary machine used for initialization
       ubm = bob.machine.GMMMachine(bob.io.HDF5File(self.m_tool.m_gmm_filename))
+      
+      
+      #h5 = bob.io.HDF5File(self.m_tool.m_gmm_filename)
+      #h5.cd('/Projector')
+
       m = bob.machine.IVectorMachine(ubm, self.m_tool.m_subspace_dimension_of_t)
       m.variance_threshold = self.m_tool.m_variance_threshold
       # Load machine
@@ -222,7 +255,7 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor, tools.Paral
       shutil.rmtree(os.path.dirname(old_file))
 
 
-  def ivector_project(self, indices, force=False):
+  def ivector_project(self, indices=None, force=False):
     """Performs IVector projection"""
     # read UBM into the IVector class
     self.m_tool._load_projector_gmm_resolved(self.m_tool.m_gmm_filename)
@@ -252,6 +285,140 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor, tools.Paral
         # write it
         utils.ensure_dir(os.path.dirname(projected_file_ivec_resolved))
         self.m_tool._save_feature_ivector(projected, str(projected_file))
+
+
+
+  def train_whitening_projector(self, force=False):
+    """Train the feature projector with the extracted features of the world group."""
+    #if tool.requires_projector_training:
+    projector_file = self.m_file_selector.whitening_projector_file
+
+    if self.m_tool_chain.__check_file__(projector_file, force, 1000):
+      utils.info("- Whitening projector '%s' already exists." % projector_file)
+    else:
+      utils.ensure_dir(os.path.dirname(projector_file))
+      train_files = self.m_file_selector.training_whitening_list()
+      # perform training
+      self.m_tool.train_whitening_projector(train_files, str(projector_file))
+
+  def whitening_ivector(self, indices=None, force=False):
+    """Performs IVector projection"""
+    # read UBM into the IVector class
+    projector = self.m_tool.load_whitening_projector(self.m_file_selector.whitening_projector_file)
+
+    projected_ivec_files = self.m_file_selector.projected_ivec_list()
+    whitening_projected_files = self.m_file_selector.whitening_projected_list()
+    
+    
+
+    # select a subset of indices to iterate
+    if indices != None:
+      index_range = range(indices[0], indices[1])
+      utils.info("- Projection: splitting of index range %s" % str(indices))
+    else:
+      index_range = range(len(projected_ivec_files))
+
+    utils.info("- Projection: projecting %d gmm stats from directory '%s' to directory '%s'" % (len(index_range), self.m_file_selector.projected_ivec_directory, self.m_file_selector.whitening_projected_directory))
+    # extract the features
+    for i in index_range:
+      projected_ivec_file = projected_ivec_files[i]
+      whitening_projected_file = whitening_projected_files[i]
+      
+      if not self.m_tool_chain.__check_file__(whitening_projected_file, force):
+        # load feature
+        feature = bob.io.load(str(projected_ivec_file))
+        # project feature
+        whitened = self.m_tool.whitening_ivector(feature)
+        # write it
+        utils.ensure_dir(os.path.dirname(whitening_projected_file))
+        bob.io.save(whitened, str(whitening_projected_file))
+
+  def execute_tool_chain(self):
+    """Executes the ZT tool chain on the local machine."""
+    # preprocessing
+    if not self.m_args.skip_preprocessing:
+      self.m_tool_chain.preprocess_data(
+              self.m_preprocessor,
+              force = self.m_args.force)
+
+    # feature extraction
+    if not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
+      self.m_tool_chain.train_extractor(
+              self.m_extractor,
+              self.m_preprocessor,
+              force = self.m_args.force)
+
+    if not self.m_args.skip_extraction:
+      self.m_tool_chain.extract_features(
+              self.m_extractor,
+              self.m_preprocessor,
+              force = self.m_args.force)
+
+    # feature projection
+    if not self.m_args.skip_projector_training and self.m_tool.requires_projector_training:
+      self.m_tool_chain.train_projector(
+              self.m_tool,
+              self.m_extractor,
+              force = self.m_args.force)
+
+    if not self.m_args.skip_projection and self.m_tool.performs_projection:
+      self.gmm_project(force = self.m_args.force)
+
+    # model enrollment
+    if not self.m_args.skip_enroller_training and self.m_tool.requires_enroller_training:
+      self.m_tool_chain.train_enroller(
+              self.m_tool,
+              self.m_extractor,
+              force = self.m_args.force)
+
+
+    # ivector extraction
+    if not self.m_args.skip_ivec_projection:
+      self.ivector_project(force = self.m_args.force)
+    
+    # whitening training 
+    if not self.m_args.skip_whitening_projector_training:
+      self.train_whitening_projector(
+              force = self.m_args.force)
+    
+    # whitening projection
+    if not self.m_args.skip_whitening_projection:
+      self.whitening_ivector(
+              force = self.m_args.force)
+
+    if not self.m_args.skip_enrollment:
+      self.m_tool_chain.enroll_models(
+              self.m_tool,
+              self.m_args.zt_norm,
+              groups = self.m_args.groups,
+              force = self.m_args.force)
+
+    # score computation
+    if not self.m_args.skip_score_computation:
+      self.m_tool_chain.compute_scores(
+              self.m_tool,
+              self.m_args.zt_norm,
+              groups = self.m_args.groups,
+              preload_probes = self.m_args.preload_probes,
+              force = self.m_args.force)
+
+      if self.m_args.zt_norm:
+        self.m_tool_chain.zt_norm(groups = self.m_args.groups)
+
+    # concatenation of scores
+    if not self.m_args.skip_concatenation:
+      self.m_tool_chain.concatenate(
+              self.m_args.zt_norm,
+              groups = self.m_args.groups)
+
+    # calibration of scores
+    if self.m_args.calibrate_scores:
+      self.m_tool_chain.calibrate_scores(
+            norms = ['nonorm', 'ztnorm'] if self.m_args.zt_norm else ['nonorm'],
+            groups = self.m_args.groups)
+
+
+
 
 #######################################################################################
 ##############  Functions dealing with submission and execution of jobs  ##############
@@ -426,6 +593,119 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor, tools.Paral
               **self.m_grid.projection_queue)
       deps.append(job_ids['ivec-project'])
 
+
+    
+    # train whitening
+    if not self.m_args.skip_whitening_projector_training:
+      job_ids['whitening_projector_training'] = self.submit_grid_job(
+              'whitening-projector-training', 
+              name = "w-e-training",
+              dependencies = deps, 
+              **self.m_grid.training_queue)
+      deps.append(job_ids['whitening_projector_training'])
+    
+    # whitening i-vectors
+    if not self.m_args.skip_whitening_projection:
+      job_ids['whitening_ivector'] = self.submit_grid_job(
+              'whitening-ivector', 
+              name= 'whitening-ivector',
+              list_to_split = self.m_file_selector.feature_list(),
+              number_of_files_per_job = self.m_grid.number_of_projected_features_per_job,
+              dependencies = deps, 
+              **self.m_grid.projection_queue)
+      deps.append(job_ids['whitening_ivector'])
+
+      
+    # enroll models
+    enroll_deps_n = {}
+    enroll_deps_t = {}
+    score_deps = {}
+    concat_deps = {}
+    for group in self.m_args.groups:
+      enroll_deps_n[group] = deps[:]
+      enroll_deps_t[group] = deps[:]
+      
+      if not self.m_args.skip_enrollment:
+        job_ids['enroll_%s_N'%group] = self.submit_grid_job(
+                'enroll --group %s --model-type N'%group,
+                name = "enr-N-%s"%group,
+                list_to_split = self.m_file_selector.model_ids(group),
+                number_of_files_per_job = self.m_grid.number_of_enrolled_models_per_job,
+                dependencies = deps,
+                **self.m_grid.enrollment_queue)
+        enroll_deps_n[group].append(job_ids['enroll_%s_N'%group])
+
+        if self.m_args.zt_norm:
+          job_ids['enroll_%s_T'%group] = self.submit_grid_job(
+                  'enroll --group %s --model-type T'%group,
+                  name = "enr-T-%s"%group,
+                  list_to_split = self.m_file_selector.t_model_ids(group),
+                  number_of_files_per_job = self.m_grid.number_of_enrolled_models_per_job,
+                  dependencies = deps,
+                  **self.m_grid.enrollment_queue)
+          enroll_deps_t[group].append(job_ids['enroll_%s_T'%group])
+      
+      
+      # compute A,B,C, and D scores
+      if not self.m_args.skip_score_computation:
+        job_ids['score_%s_A'%group] = self.submit_grid_job(
+                'compute-scores --group %s --score-type A'%group,
+                name = "score-A-%s"%group,
+                list_to_split = self.m_file_selector.model_ids(group),
+                number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
+                dependencies = enroll_deps_n[group],
+                **self.m_grid.scoring_queue)
+        concat_deps[group] = [job_ids['score_%s_A'%group]]
+
+        if self.m_args.zt_norm:
+          job_ids['score_%s_B'%group] = self.submit_grid_job(
+                  'compute-scores --group %s --score-type B'%group,
+                  name = "score-B-%s"%group,
+                  list_to_split = self.m_file_selector.model_ids(group),
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
+                  dependencies = enroll_deps_n[group],
+                  **self.m_grid.scoring_queue)
+
+          job_ids['score_%s_C'%group] = self.submit_grid_job(
+                  'compute-scores --group %s --score-type C'%group,
+                  name = "score-C-%s"%group,
+                  list_to_split = self.m_file_selector.t_model_ids(group),
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
+                  dependencies = enroll_deps_t[group],
+                  **self.m_grid.scoring_queue)
+
+          job_ids['score_%s_D'%group] = self.submit_grid_job(
+                  'compute-scores --group %s --score-type D'%group,
+                  name = "score-D-%s"%group,
+                  list_to_split = self.m_file_selector.t_model_ids(group),
+                  number_of_files_per_job = self.m_grid.number_of_models_per_scoring_job,
+                  dependencies = enroll_deps_t[group],
+                  **self.m_grid.scoring_queue)
+
+          # compute zt-norm
+          score_deps[group] = [job_ids['score_%s_A'%group], job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group]]
+          job_ids['score_%s_Z'%group] = self.submit_grid_job(
+                  'compute-scores --group %s --score-type Z'%group,
+                  name = "score-Z-%s"%group,
+                  dependencies = score_deps[group])
+          concat_deps[group].extend([job_ids['score_%s_B'%group], job_ids['score_%s_C'%group], job_ids['score_%s_D'%group], job_ids['score_%s_Z'%group]])
+      else:
+        concat_deps[group] = []
+
+      # concatenate results
+      if not self.m_args.skip_concatenation:
+        job_ids['concat_%s'%group] = self.submit_grid_job(
+                'concatenate --group %s'%group,
+                name = "concat-%s"%group,
+                dependencies = concat_deps[group])
+
+    # calibrate the scores
+    if self.m_args.calibrate_scores:
+      calib_deps = [job_ids['concat_%s'%g] for g in self.m_args.groups if 'concat_%s'%g in job_ids]
+      job_ids['calibrate'] = self.submit_grid_job(
+              'calibrate',
+              dependencies = calib_deps)
+
     # return the job ids, in case anyone wants to know them
     return job_ids
 
@@ -522,9 +802,78 @@ class ToolChainExecutorIVector (ToolChainExecutor.ToolChainExecutor, tools.Paral
           indices = self.indices(self.m_file_selector.projected_list(), self.m_grid.number_of_projected_features_per_job),
           force = self.m_args.force)
 
+    # train model whitening enroler
+    if self.m_args.sub_task == 'whitening-projector-training':
+      self.train_whitening_projector(
+          force = self.m_args.force)
+    
+    # project the features ivector
+    if self.m_args.sub_task == 'whitening-ivector':
+      self.whitening_ivector(
+          indices = self.indices(self.m_file_selector.projected_list(), self.m_grid.number_of_projected_features_per_job),
+          force = self.m_args.force)
+    
+    # enroll the models
+    elif self.m_args.sub_task == 'enroll':
+      if self.m_args.model_type == 'N':
+        self.m_tool_chain.enroll_models(
+            self.m_tool,
+            self.m_args.zt_norm,
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid.number_of_enrolled_models_per_job),
+            groups = [self.m_args.group],
+            types = ['N'],
+            force = self.m_args.force)
+
+      else:
+        self.m_tool_chain.enroll_models(
+            self.m_tool,
+            self.m_args.zt_norm,
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid.number_of_enrolled_models_per_job),
+            groups = [self.m_args.group],
+            types = ['T'],
+            force = self.m_args.force)
+
+    # compute scores
+    elif self.m_args.sub_task == 'compute-scores':
+      if self.m_args.score_type in ['A', 'B']:
+        self.m_tool_chain.compute_scores(
+            self.m_tool,
+            self.m_args.zt_norm,
+            indices = self.indices(self.m_file_selector.model_ids(self.m_args.group), self.m_grid.number_of_models_per_scoring_job),
+            groups = [self.m_args.group],
+            types = [self.m_args.score_type],
+            preload_probes = self.m_args.preload_probes,
+            force = self.m_args.force)
+
+      elif self.m_args.score_type in ['C', 'D']:
+        self.m_tool_chain.compute_scores(
+            self.m_tool,
+            self.m_args.zt_norm,
+            indices = self.indices(self.m_file_selector.t_model_ids(self.m_args.group), self.m_grid.number_of_models_per_scoring_job),
+            groups = [self.m_args.group],
+            types = [self.m_args.score_type],
+            preload_probes = self.m_args.preload_probes,
+            force = self.m_args.force)
+
+      else:
+        self.m_tool_chain.zt_norm(groups = [self.m_args.group])
+
+    # concatenate
+    elif self.m_args.sub_task == 'concatenate':
+      self.m_tool_chain.concatenate(
+          self.m_args.zt_norm,
+          groups = [self.m_args.group])
+
+    # calibrate scores
+    elif self.m_args.sub_task == 'calibrate':
+      self.m_tool_chain.calibrate_scores(
+          norms = ['nonorm', 'ztnorm'] if self.m_args.zt_norm else ['nonorm'],
+          groups = self.m_args.groups)
+
     # Test if the keyword was processed
     else:
       raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors." % self.m_args.sub_task)
+
 
 
 def parse_args(command_line_parameters):
@@ -541,8 +890,8 @@ def parse_args(command_line_parameters):
       help = 'Overwrite the protocol that is stored in the database by the given one (might not by applicable for all databases).')
   config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', default = ['ivector'],
       help = 'IVector-based face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
-  config_group.add_argument('-g', '--grid', metavar = 'x', nargs = '+', required = True,
-      help = 'Configuration file for the grid setup; needs to be specified.')
+ # config_group.add_argument('-g', '--grid', metavar = 'x', nargs = '+', required = False,
+ #     help = 'Configuration file for the grid setup; needs to be specified.')
 
   #######################################################################################
   ############################ other options ############################################
@@ -584,13 +933,44 @@ def parse_args(command_line_parameters):
   skip_group.add_argument('--skip-ivec-projection', '--noip', action='store_true',
       help = "Skip the GMM ivec projection")
 
+
+  #######################################################################################
+  ############################ other options ############################################
+
+  sub_dir_group.add_argument('--models-directories', metavar = 'DIR', nargs = 2,
+      default = ['models', 'tmodels'],
+      help = 'Sub-directories (of --temp-directory) where the models should be stored')
+  sub_dir_group.add_argument('--zt-temp-directories', metavar = 'DIR', nargs = 5,
+      default = ['zt_norm_A', 'zt_norm_B', 'zt_norm_C', 'zt_norm_D', 'zt_norm_D_sameValue'],
+      help = 'Sub-directories (of --temp-directory) where to write the ZT-norm values')
+  sub_dir_group.add_argument('--zt-score-directories', metavar = 'DIR', nargs = 2,
+      default = ['nonorm', 'ztnorm'],
+      help = 'Sub-directories (of --user-directory) where to write the results to')
+
+  other_group.add_argument('-z', '--zt-norm', action='store_true',
+      help = 'Enable the computation of ZT norms')
+  other_group.add_argument('-c', '--calibrate-scores', action='store_true',
+      help = 'Performs score calibration after the scores are computed.')
+  other_group.add_argument('-F', '--force', action='store_true',
+      help = 'Force to erase former data if already exist')
+  other_group.add_argument('-w', '--preload-probes', action='store_true',
+      help = 'Preload probe files during score computation (needs more memory, but is faster and requires fewer file accesses). WARNING! Use this flag with care!')
+  other_group.add_argument('--groups', metavar = 'GROUP', nargs = '+', default = ['dev'],
+      help = "The group (i.e., 'dev' or  'eval') for which the models and scores should be generated")
+      
   #######################################################################################
   #################### sub-tasks being executed by this script ##########################
   parser.add_argument('--sub-task',
-      choices = ('preprocess', 'train-extractor', 'extract', 'normalize-features', 'kmeans-init', 'kmeans-e-step', 'kmeans-m-step', 'gmm-init', 'gmm-e-step', 'gmm-m-step', 'gmm-project',  'ivec-init', 'ivec-e-step', 'ivec-m-step', 'ivec-project'),
+      choices = ('preprocess', 'train-extractor', 'extract', 'normalize-features', 'kmeans-init', 'kmeans-e-step', 'kmeans-m-step', 'gmm-init', 'gmm-e-step', 'gmm-m-step', 'gmm-project',  'ivec-init', 'ivec-e-step', 'ivec-m-step', 'ivec-project', 'whitening-projector-training', 'whitening-ivector', 'enroll', 'compute-scores', 'concatenate', 'calibrate'),
       help = argparse.SUPPRESS) #'Executes a subtask (FOR INTERNAL USE ONLY!!!)'
   parser.add_argument('--iteration', type=int,
       help = argparse.SUPPRESS) #'The current iteration of KMeans or GMM training'
+  parser.add_argument('--model-type', choices = ['N', 'T'],
+      help = argparse.SUPPRESS) #'Which type of models to generate (Normal or TModels)'
+  parser.add_argument('--score-type', choices = ['A', 'B', 'C', 'D', 'Z'],
+      help = argparse.SUPPRESS) #'The type of scores that should be computed'
+  parser.add_argument('--group',
+      help = argparse.SUPPRESS) #'The group for which the current action should be performed'
 
   return parser.parse_args(command_line_parameters)
 
@@ -611,7 +991,29 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
   # generate tool chain executor
   executor = ToolChainExecutorIVector(args)
   # as the main entry point, check whether the grid option was given
-  if args.sub_task:
+  if not args.grid:
+    if args.timer is not None and not len(args.timer):
+      args.timer = ('real', 'system', 'user')
+    # not in a grid, use default tool chain sequentially
+    if args.timer:
+      utils.info("- Timer: Starting timer")
+      start_time = os.times()
+
+    executor.write_info(command_line_parameters)
+
+    executor.execute_tool_chain()
+
+    if args.timer:
+      end_time = os.times()
+      utils.info("- Timer: Stopped timer")
+
+      for t in args.timer:
+        index = {'real':4, 'system':1, 'user':0}[t]
+        print "Elapsed", t ,"time:", end_time[index] - start_time[index], "seconds"
+
+    return {}
+
+  elif args.sub_task:
     # execute the desired sub-task
     executor.execute_grid_job()
     return {}

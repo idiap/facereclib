@@ -311,7 +311,7 @@ class ParallelUBMGMM():
       shutil.rmtree(os.path.dirname(old_file))
 
 
-  def gmm_project(self, indices, force=False):
+  def gmm_project(self, indices=None, force=False):
     """Performs GMM projection"""
     # read UBM into the IVector class
     self.m_tool._load_projector_gmm_resolved(self.m_tool.m_gmm_filename)
