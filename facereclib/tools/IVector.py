@@ -9,7 +9,8 @@ import types
 from .Tool import Tool
 from .UBMGMM import UBMGMM
 from .. import utils
-
+from itertools import izip
+from math import sqrt
 
 class IVector (UBMGMM):
   """Tool for extracting I-Vectors"""
@@ -29,6 +30,7 @@ class IVector (UBMGMM):
       projector_toreplace = 'Projector.hdf5', # 'Magic' string in path that will be replaced by the GMM or IVector one
       gmm_filename = 'gmm.hdf5', # filename for the GMM model
       ivec_filename = 'ivec.hdf5', # filename for the IVector model
+      whitening_filename = 'whitening.hdf5', # filename for the IVector model
       # parameters of the GMM
       **kwargs
   ):
@@ -55,6 +57,7 @@ class IVector (UBMGMM):
         projector_toreplace = projector_toreplace,
         gmm_filename = gmm_filename,
         ivec_filename = ivec_filename,
+        whitening_filename = whitening_filename,
 
         multiple_model_scoring = None,
         multiple_probe_scoring = None,
@@ -73,6 +76,7 @@ class IVector (UBMGMM):
     self.m_projector_toreplace = projector_toreplace
     self.m_gmm_filename = gmm_filename
     self.m_ivec_filename = ivec_filename
+    self.m_whitening_filename = whitening_filename
 
   def _train_ivector(self, data):
     """Train the IVector model given a dataset"""
@@ -94,6 +98,21 @@ class IVector (UBMGMM):
       data.append(UBMGMM.project(self, feature))
 
     self._train_ivector(data)
+    return data
+
+  def _train_whitening(self, training_features):
+   # load GMM stats from training files
+    ivectors_matrix = numpy.vstack(training_features)
+    # create a Linear Machine     # Runs whitening (first method)
+    self.m_whitening_machine = bob.machine.LinearMachine(ivectors_matrix.shape[1],ivectors_matrix.shape[1])
+    # create the whitening trainer
+    t = bob.trainer.WhiteningTrainer()
+
+    t.train(self.m_whitening_machine, ivectors_matrix)
+    # Save the whitening linear machine
+#    print("Saving the whitening machine..")
+#    self.m_whitening_machine.save(bob.io.HDF5File(whitening_enroller_file, "w"))
+
 
   def train_projector(self, train_features, projector_file):
     """Train Projector and Enroller at the same time"""
@@ -105,7 +124,11 @@ class IVector (UBMGMM):
     del data
 
     # train IVector
-    self._load_train_ivector(train_features)
+    training_gmms = self._load_train_ivector(train_features)
+
+    # project training i-vectors
+    whitening_train_data = [self._project_ivector(f) for f in training_gmms]
+    self._train_whitening(whitening_train_data)
 
     # Save the IVector base AND the UBM into the same file
     self._save_projector(projector_file)
@@ -123,12 +146,20 @@ class IVector (UBMGMM):
     hdf5file.cd('Enroller')
     self.m_tv.save(hdf5file)
 
+    hdf5file.cd('/')
+    hdf5file.create_group('Whitening')
+    hdf5file.cd('Whitening')
+    self.m_whitening_machine.save(hdf5file)
+
 
   def _resolve_gmm_filename(self, projector_file):
     return projector_file.replace(self.m_projector_toreplace, self.m_gmm_filename)
 
   def _resolve_ivector_filename(self, projector_file):
-    return projector_file.replace(self.m_projector_toreplace, self.m_ivec_filename)
+   return projector_file.replace(self.m_projector_toreplace, self.m_ivec_filename)
+
+  def _resolve_whitening_filename(self, projector_file):
+    return projector_file.replace(self.m_projector_toreplace, self.m_whitening_filename)
 
   def _resolve_projected_gmm(self, projected_file):
     return projected_file.replace(self.m_projected_toreplace, self.m_projected_gmm)
@@ -151,6 +182,13 @@ class IVector (UBMGMM):
     ivec_filename = self._resolve_ivector_filename(projector_file)
     self._save_projector_ivector_resolved(ivec_filename)
 
+  def _save_projector_whitening_resolved(self, whitening_filename):
+    self.m_tv.save(bob.io.HDF5File(whitening_filename, "w"))
+
+  def _save_projector_whitening(self, projector_file):
+    whitening_filename = self._resolve_whitening_filename(projector_file)
+    self._save_projector_ivector_resolved(whitening_filename)
+
   def _save_projector(self, projector_file):
     """Save the GMM and the IVector model"""
     if not self.m_gmm_ivec_split:
@@ -158,6 +196,7 @@ class IVector (UBMGMM):
     else:
       self._save_projector_gmm(projector_file)
       self._save_projector_ivector(projector_file)
+      self._save_projector_whitening(projector_file)
 
 
   # Here, we just need to load the UBM from the projector file.
@@ -180,6 +219,13 @@ class IVector (UBMGMM):
     ivec_filename = self._resolve_ivector_filename(projector_file)
     self._load_projector_ivector_resolved(ivec_filename)
 
+  def _load_projector_whitening_resolved(self, whitening_filename):
+    self.m_whitening_machine = bob.machine.LinearMachine(bob.io.HDF5File(whitening_filename))
+
+  def _load_projector_whitening(self, projector_file):
+    whitening_filename = self._resolve_whitening_filename(projector_file)
+    self._load_projector_whitening_resolved(whitening_filename)
+
   def _load_projector_together(self, projector_file):
     """Load the GMM and the ISV model from the same HDF5 file"""
     hdf5file = bob.io.HDF5File(projector_file)
@@ -198,6 +244,10 @@ class IVector (UBMGMM):
     # add UBM model from base class
     self.m_tv.ubm = self.m_ubm
 
+    # Load Whitening
+    hdf5file.cd('/Whitening')
+    self.m_whitening_machine = bob.machine.LinearMachine(hdf5file)
+
   def load_projector(self, projector_file):
     """Reads the UBM model from file"""
 
@@ -206,6 +256,7 @@ class IVector (UBMGMM):
     else:
       self._load_projector_gmm(projector_file)
       self._load_projector_ivector(projector_file)
+      self._load_projector_whitening(projector_file)
 
 
   #######################################################
@@ -250,49 +301,82 @@ class IVector (UBMGMM):
       self._save_feature_gmm(gmmstats, feature_file)
       self._save_feature_ivector(ivector, feature_file)
 
+
+  def _read_feature_gmm(self, feature_file):
+    feature_file_gmm = self._resolve_projected_gmm(feature_file)
+    return bob.machine.GMMStats(bob.io.HDF5File(str(feature_file_gmm)))
+
   def read_feature(self, feature_file):
     """Read the type of features that we require, namely GMMStats"""
-    if not self.m_gmm_ivec_split:
-      hdf5file = bob.io.HDF5File(feature_file)
-      hdf5file.cd('gmmstats')
-      gmmstats = bob.machine.GMMStats(hdf5file)
-    else:
-      feature_file_gmm = self._resolve_projected_gmm(feature_file)
-      gmmstats = bob.machine.GMMStats(bob.io.HDF5File(str(feature_file_gmm)))
-    return gmmstats
+    return bob.io.load(feature_file)
 
 
+  ################ Whitening training #########################
+  def train_whitening_projector(self, train_files, whitening_enroller_file):
+    # load GMM stats from training files
+    ivectors_matrix  = []
+    for k in train_files:
+      ivec = bob.io.load(str(k))
+      ivectors_matrix.append(ivec)
+    ivectors_matrix = numpy.vstack(ivectors_matrix)
+    # create a Linear Machine     # Runs whitening (first method)
+    self.m_whitening_machine = bob.machine.LinearMachine(ivectors_matrix.shape[1],ivectors_matrix.shape[1])
+    # create the whitening trainer
+    t = bob.trainer.WhiteningTrainer()
+
+    t.train(self.m_whitening_machine, ivectors_matrix)
+    # Save the whitening linear machine
+#    print("Saving the whitening machine..")
+    self.m_whitening_machine.save(bob.io.HDF5File(whitening_enroller_file, "w"))
+
+  #######################################################
+  ############## Whitening load model ##################
+  def load_whitening_projector(self, whitening_projector_file):
+    """Reads the whitening Enroller model from file"""
+    # now, load the JFA base, if it is included in the file
+    raise NotImplementedError("This function is outdated. Use _load_whitening_projector instead.")
+    self.m_whitening_machine = bob.machine.LinearMachine(self.m_subspace_dimension_of_t,self.m_subspace_dimension_of_t)
+    self.m_whitening_machine.load(bob.io.HDF5File(whitening_projector_file))
+
+  #######################################################
+  ####### whitening and length-normalize i-vectors ######
+  def whitening_ivector(self, ivector):
+    whitened_ivector = self.m_whitening_machine.forward(ivector)
+    return whitened_ivector/numpy.linalg.norm(whitened_ivector)
+
+  #######################################################
+  ################## Model  Enrollment ###################
   def enroll(self, enroll_features):
     """Performs IVector enrollment"""
-    raise NotImplementedError('Enrollment is not yet supported')
+    model = numpy.mean(numpy.vstack(enroll_features), axis=0)
+    return model
 
 
   ######################################################
   ################ Feature comparison ##################
   def read_model(self, model_file):
-    """Reads the IVector Machine that holds the model"""
-    raise NotImplementedError('Enrollment model is not yet supported')
+    """Reads the whitened i-vector that holds the model"""
+    return bob.io.load(model_file)
 
   def read_probe(self, probe_file):
-    """Read the type of features that we require, namely GMMStats"""
-    if self.m_gmm_ivec_split:
-      probe_file_gmm = self._resolve_projected_gmm(probe_file)
-      gmmstats = bob.machine.GMMStats(bob.io.HDF5File(str(probe_file_gmm)))
-      probe_file_ivec = self._resolve_projected_ivec(probe_file)
-      ivector = bob.io.load(str(probe_file_ivec))
-    else:
-      hdf5file = bob.io.HDF5File(probe_file)
-      hdf5file.cd('gmmstats')
-      gmmstats = bob.machine.GMMStats(hdf5file)
-      hdf5file.cd('/')
-      ivector = hdf5file.read('ivector')
-    return [gmmstats, ivector]
+    """read probe file which is an i-vector"""
+    return bob.io.load(probe_file)
 
   def score(self, model, probe):
     """Computes the score for the given model and the given probe."""
-    raise NotImplementedError('Scoring is not yet supported')
+    a = model/numpy.linalg.norm(model)
+#    print a
+    b = probe/numpy.linalg.norm(probe)
+#    print b
+#    print a.shape, b.shape
+    if len(a) != len(b):
+        raise ValueError, "a and b must be same length"
+    numerator = sum(tup[0] * tup[1] for tup in izip(a,b))
+    return numerator
+
 
   def score_for_multiple_probes(self, model, probes):
     """This function computes the score between the given model and several given probe files."""
-    raise NotImplementedError('Multiple probes is not yet supported')
+    probes = numpy.vstack([numpy.mean(numpy.vstack(probes), axis=0)])
+    return self.score(model,probes)
 
