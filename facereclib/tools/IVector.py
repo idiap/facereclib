@@ -183,11 +183,11 @@ class IVector (UBMGMM):
     self._save_projector_ivector_resolved(ivec_filename)
 
   def _save_projector_whitening_resolved(self, whitening_filename):
-    self.m_tv.save(bob.io.HDF5File(whitening_filename, "w"))
+    self.m_whitening_machine.save(bob.io.HDF5File(whitening_filename, "w"))
 
   def _save_projector_whitening(self, projector_file):
     whitening_filename = self._resolve_whitening_filename(projector_file)
-    self._save_projector_ivector_resolved(whitening_filename)
+    self._save_projector_whitening_resolved(whitening_filename)
 
   def _save_projector(self, projector_file):
     """Save the GMM and the IVector model"""
@@ -271,7 +271,7 @@ class IVector (UBMGMM):
     """Computes GMM statistics against a UBM, then corresponding Ux vector"""
     projected_ubm = self._project_gmm(feature_array)
     projected_ivec = self._project_ivector(projected_ubm)
-    return [projected_ubm, projected_ivec]
+    return [bob.machine.GMMStats(projected_ubm), projected_ivec]
 
   #######################################################
   ################## ISV model enroll ####################
@@ -290,7 +290,7 @@ class IVector (UBMGMM):
 
   def _save_feature_ivector(self, data, feature_file):
     feature_file_ivec = self._resolve_projected_ivector(feature_file)
-    bob.io.save(data, str(feature_file_ivec))
+    utils.save(data, str(feature_file_ivec))
 
   def save_feature(self, data, feature_file):
     gmmstats = data[0]
@@ -307,8 +307,8 @@ class IVector (UBMGMM):
     return bob.machine.GMMStats(bob.io.HDF5File(str(feature_file_gmm)))
 
   def read_feature(self, feature_file):
-    """Read the type of features that we require, namely GMMStats"""
-    return bob.io.load(feature_file)
+    """Read the type of features that we require, namely i-vectors (stored as simple numpy arrays)"""
+    return utils.load(feature_file)
 
 
   ################ Whitening training #########################
@@ -316,7 +316,7 @@ class IVector (UBMGMM):
     # load GMM stats from training files
     ivectors_matrix  = []
     for k in train_files:
-      ivec = bob.io.load(str(k))
+      ivec = utils.load(str(k))
       ivectors_matrix.append(ivec)
     ivectors_matrix = numpy.vstack(ivectors_matrix)
     # create a Linear Machine     # Runs whitening (first method)
@@ -334,7 +334,7 @@ class IVector (UBMGMM):
   def load_whitening_projector(self, whitening_projector_file):
     """Reads the whitening Enroller model from file"""
     # now, load the JFA base, if it is included in the file
-    raise NotImplementedError("This function is outdated. Use _load_whitening_projector instead.")
+    raise NotImplementedError("This function is outdated. Use _load_projector_whitening instead.")
     self.m_whitening_machine = bob.machine.LinearMachine(self.m_subspace_dimension_of_t,self.m_subspace_dimension_of_t)
     self.m_whitening_machine.load(bob.io.HDF5File(whitening_projector_file))
 
@@ -356,11 +356,11 @@ class IVector (UBMGMM):
   ################ Feature comparison ##################
   def read_model(self, model_file):
     """Reads the whitened i-vector that holds the model"""
-    return bob.io.load(model_file)
+    return utils.load(model_file)
 
   def read_probe(self, probe_file):
     """read probe file which is an i-vector"""
-    return bob.io.load(probe_file)
+    return utils.load(probe_file)
 
   def score(self, model, probe):
     """Computes the score for the given model and the given probe."""

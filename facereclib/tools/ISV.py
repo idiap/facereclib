@@ -228,7 +228,7 @@ class ISV (UBMGMM):
     """Computes GMM statistics against a UBM, then corresponding Ux vector"""
     projected_ubm = self._project_gmm(feature_array)
     projected_isv = self._project_isv(projected_ubm)
-    return [projected_ubm, projected_isv]
+    return [bob.machine.GMMStats(projected_ubm), projected_isv]
 
   #######################################################
   ################## ISV model enroll ####################
