@@ -654,7 +654,7 @@ class ToolTest(unittest.TestCase):
 
     # compare the projected feature with the reference
     projected_reference = tool.read_feature(self.reference_dir('ivector_feature.hdf5'))
-    self.assertTrue(projected[0].is_similar_to(projected_reference))
+    self.assertTrue(numpy.allclose(projected,projected_reference))
 
     # enroll model with the projected feature
     # This is not yet supported
@@ -667,8 +667,7 @@ class ToolTest(unittest.TestCase):
 
     # check that the read_probe function reads the correct values
     probe = tool.read_probe(self.reference_dir('ivector_feature.hdf5'))
-    self.assertTrue(probe[0].is_similar_to(projected[0]))
-    self.assertEqual(probe[1].any(), projected[1].any())
+    self.assertTrue(numpy.allclose(probe,projected))
 
     # score with projected feature and compare to the weird reference score ...
     # This in not implemented yet

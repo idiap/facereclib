@@ -228,8 +228,14 @@ class UBMGMM (Tool):
 
   def project(self, feature_array):
     """Computes GMM statistics against a UBM, given an input 2D numpy.ndarray of feature vectors"""
-
     return self._project_using_array(feature_array)
+
+
+  def read_feature(self, feature_file):
+    """Read the type of features that we require, namely GMM_Stats"""
+    return bob.machine.GMMStats(bob.io.HDF5File(feature_file))
+
+
 
   def _enroll_using_array(self, array):
     utils.debug(" .... Enrolling with %d feature vectors" % array.shape[0])
@@ -241,7 +247,6 @@ class UBMGMM (Tool):
 
   def enroll(self, feature_arrays):
     """Enrolls a GMM using MAP adaptation, given a list of 2D numpy.ndarray's of feature vectors"""
-
     array = numpy.vstack([v for v in feature_arrays])
     # Use the array to train a GMM and return it
     return self._enroll_using_array(array)
@@ -251,10 +256,6 @@ class UBMGMM (Tool):
   ################ Feature comparison ##################
   def read_model(self, model_file):
     return bob.machine.GMMMachine(bob.io.HDF5File(model_file))
-
-  def read_probe(self, probe_file):
-    """Read the type of features that we require, namely GMM_Stats"""
-    return bob.machine.GMMStats(bob.io.HDF5File(probe_file))
 
   def score(self, model, probe):
     """Computes the score for the given model and the given probe using the scoring function from the config file"""
