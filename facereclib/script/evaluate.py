@@ -193,7 +193,7 @@ def main(command_line_parameters=None):
         threshold = bob.measure.min_weighted_error_rate_threshold(scores_dev[i][0], scores_dev[i][1], args.cost)
         # apply threshold to development set
         far, frr = bob.measure.farfrr(scores_dev[i][0], scores_dev[i][1], threshold)
-        print("The minDCF of the development set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], (args.cost * far + (1-args.cost) * frr) ))
+        print("The minDCF of the development set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], (args.cost * far + (1-args.cost) * frr) * 100. ))
         if args.eval_files:
           # compute threshold on evaluation set
           threshold = bob.measure.min_weighted_error_rate_threshold(scores_eval[i][0], scores_eval[i][1], args.cost)
@@ -266,5 +266,3 @@ def main(command_line_parameters=None):
     if args.eval_files:
       pdf.savefig(_plot_cmc(cmcs_eval, colors, args.legends if args.legends else args.eval_files, "CMC curve for evaluation set"))
     pdf.close()
-
-
