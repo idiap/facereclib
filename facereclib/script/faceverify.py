@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
-
+from __future__ import print_function
 
 import sys, os
 import argparse
@@ -68,7 +68,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     # preprocessing
     if not self.m_args.skip_preprocessing:
       if self.m_args.dry_run:
-        print "Would have preprocessed data ..."
+        print ("Would have preprocessed data ...")
       else:
         self.m_tool_chain.preprocess_data(
               self.m_preprocessor,
@@ -77,7 +77,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     # feature extraction
     if not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
       if self.m_args.dry_run:
-        print "Would have trained the extractor ..."
+        print ("Would have trained the extractor ...")
       else:
         self.m_tool_chain.train_extractor(
               self.m_extractor,
@@ -86,7 +86,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_extraction:
       if self.m_args.dry_run:
-        print "Would have extracted the features ..."
+        print ("Would have extracted the features ...")
       else:
         self.m_tool_chain.extract_features(
               self.m_extractor,
@@ -96,7 +96,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     # feature projection
     if not self.m_args.skip_projector_training and self.m_tool.requires_projector_training:
       if self.m_args.dry_run:
-        print "Would have trained the projector ..."
+        print ("Would have trained the projector ...")
       else:
         self.m_tool_chain.train_projector(
               self.m_tool,
@@ -105,7 +105,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_projection and self.m_tool.performs_projection:
       if self.m_args.dry_run:
-        print "Would have projected the features ..."
+        print ("Would have projected the features ...")
       else:
         self.m_tool_chain.project_features(
               self.m_tool,
@@ -115,7 +115,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     # model enrollment
     if not self.m_args.skip_enroller_training and self.m_tool.requires_enroller_training:
       if self.m_args.dry_run:
-        print "Would have trained the enroller ..."
+        print ("Would have trained the enroller ...")
       else:
         self.m_tool_chain.train_enroller(
               self.m_tool,
@@ -124,7 +124,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_enrollment:
       if self.m_args.dry_run:
-        print "Would have enrolled the models of groups %s ..." % self.m_args.groups
+        print ("Would have enrolled the models of groups %s ..." % self.m_args.groups)
       else:
         self.m_tool_chain.enroll_models(
               self.m_tool,
@@ -136,7 +136,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     # score computation
     if not self.m_args.skip_score_computation:
       if self.m_args.dry_run:
-        print "Would have computed the scores of groups %s ..." % self.m_args.groups
+        print ("Would have computed the scores of groups %s ..." % self.m_args.groups)
       else:
         self.m_tool_chain.compute_scores(
               self.m_tool,
@@ -147,14 +147,14 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
 
       if self.m_args.zt_norm:
         if self.m_args.dry_run:
-          print "Would have computed the ZT-norm scores of groups %s ..." % self.m_args.groups
+          print ("Would have computed the ZT-norm scores of groups %s ..." % self.m_args.groups)
         else:
           self.m_tool_chain.zt_norm(groups = self.m_args.groups)
 
     # concatenation of scores
     if not self.m_args.skip_concatenation:
       if self.m_args.dry_run:
-        print "Would have concatenated the scores of groups %s ..." % self.m_args.groups
+        print ("Would have concatenated the scores of groups %s ..." % self.m_args.groups)
       else:
         self.m_tool_chain.concatenate(
               self.m_args.zt_norm,
@@ -163,7 +163,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     # calibration of scores
     if self.m_args.calibrate_scores:
       if self.m_args.dry_run:
-        print "Would have calibrated the scores of groups %s ..." % self.m_args.groups
+        print ("Would have calibrated the scores of groups %s ..." % self.m_args.groups)
       else:
         self.m_tool_chain.calibrate_scores(
             norms = ['nonorm', 'ztnorm'] if self.m_args.zt_norm else ['nonorm'],
@@ -523,7 +523,7 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
       for t in args.timer:
         index = {'real':4, 'system':1, 'user':0}[t]
-        print "Elapsed", t ,"time:", end_time[index] - start_time[index], "seconds"
+        print ("Elapsed", t ,"time:", end_time[index] - start_time[index], "seconds")
 
     return {}
 

@@ -76,26 +76,27 @@ class GridGraph (Extractor):
     # create graph extractor
     if eyes is not None:
       self.m_graph_machine = bob.machine.GaborGraphMachine(
-          righteye = eyes['reye'],
-          lefteye = eyes['leye'],
-          between = nodes_between_eyes,
-          along = nodes_along_eyes,
-          above = nodes_above_eyes,
-          below = nodes_below_eyes
+          righteye = [int(e) for e in eyes['reye']],
+          lefteye = [int(e) for e in eyes['leye']],
+          between = int(nodes_between_eyes),
+          along = int(nodes_along_eyes),
+          above = int(nodes_above_eyes),
+          below = int(nodes_below_eyes)
       )
     else:
       if node_distance is None or image_resolution is None:
         raise ValueError("Please specify either 'eyes' or the grid parameters 'first_node', 'last_node', and 'node_distance'!")
-      if isinstance(node_distance, int):
-         node_distance = (node_distance, node_distance)
+      if isinstance(node_distance, (int, float)):
+         node_distance = (int(node_distance), int(node_distance))
       if first_node is None:
         first_node = [0,0]
         for i in (0,1):
-          offset = (image_resolution[i] - image_resolution[i]/node_distance[i]*node_distance[i]) / 2
-          if offset < node_distance[i]/2: # This is not tested, but should ALWAYS be the case.
-            offset += node_distance[i]/2
+          offset = int((image_resolution[i] - int(image_resolution[i]/node_distance[i])*node_distance[i]) / 2)
+          if offset < node_distance[i]//2: # This is not tested, but should ALWAYS be the case.
+            offset += node_distance[i]//2
           first_node[i] = offset
-      last_node = [image_resolution[i] - max(first_node[i],1) for i in (0,1)]
+      last_node = tuple([int(image_resolution[i] - max(first_node[i],1)) for i in (0,1)])
+
       # take the specified nodes
       self.m_graph_machine = bob.machine.GaborGraphMachine(
           first = first_node,

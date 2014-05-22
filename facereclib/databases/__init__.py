@@ -4,5 +4,5 @@
 
 """Wrapper classes for image databases"""
 
-from Database import File, FileSet, Database, DatabaseZT
-from DatabaseXBob import DatabaseXBob, DatabaseXBobZT
+from .Database import File, FileSet, Database, DatabaseZT
+from .DatabaseXBob import DatabaseXBob, DatabaseXBobZT

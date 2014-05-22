@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import print_function
 
 import unittest
 import os
@@ -36,7 +36,8 @@ config_dir = pkg_resources.resource_filename('facereclib', 'configurations')
 class ScriptTest (unittest.TestCase):
 
   def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier="", score_modifier='scores'):
-    facereclib.script.faceverify.main([sys.argv[0]] + parameters)
+    from facereclib.script.faceverify import main
+    main([sys.argv[0]] + parameters)
 
     # assert that the score file exists
     score_files = (os.path.join(test_dir, sub_dir, 'scores', 'Default', 'nonorm', '%s-dev'%score_modifier), os.path.join(test_dir, sub_dir, 'scores', 'Default', 'ztnorm', '%s-dev'%score_modifier))
@@ -83,7 +84,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test')
 
@@ -102,7 +103,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test_a')
 
@@ -121,7 +122,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test_b')
 
@@ -143,7 +144,7 @@ class ScriptTest (unittest.TestCase):
         '-g', 'local-p4', '-G', test_database
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test_c')
 
@@ -163,7 +164,7 @@ class ScriptTest (unittest.TestCase):
         '--calibrate-scores'
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     # check that the calibrated scores are as expected
     self.__face_verify__(parameters, test_dir, 'test', '-calibrated', 'calibrated')
@@ -189,7 +190,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     facereclib.script.faceverify.main(parameters)
 
@@ -233,10 +234,11 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     # run the test; should not execute anything...
-    facereclib.script.faceverify.main(parameters)
+    from facereclib.script.faceverify import main
+    main(parameters)
 
 
   def test03_faceverify_lfw_local(self):
@@ -256,10 +258,11 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     # run the test; should not execute anything...
-    facereclib.script.faceverify_lfw.main(parameters)
+    from facereclib.script.faceverify_lfw import main
+    main(parameters)
 
 
   def test04_faceverify_lfw_grid(self):
@@ -280,10 +283,11 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     # run the test; should not execute anything...
-    facereclib.script.faceverify_lfw.main(parameters)
+    from facereclib.script.faceverify_lfw import main
+    main(parameters)
 
 
   def test05_faceverify_gbu_local(self):
@@ -303,10 +307,11 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     # run the test; should not execute anything...
-    facereclib.script.faceverify_gbu.main(parameters)
+    from facereclib.script.faceverify_gbu import main
+    main(parameters)
 
 
   def test06_faceverify_gbu_grid(self):
@@ -328,10 +333,11 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     # run the test; should not execute anything...
-    facereclib.script.faceverify_gbu.main(parameters)
+    from facereclib.script.faceverify_gbu import main
+    main(parameters)
 
 
   def test10_faceverify_file_set(self):
@@ -348,7 +354,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print ' '.join(parameters)
+    print (' '.join(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test', ref_modifier="-fileset")
 
@@ -427,7 +433,8 @@ class ScriptTest (unittest.TestCase):
         '--temp-directory', test_dir,
         '--user-directory', test_dir
     ]
-    facereclib.script.parameter_test.main(parameters)
+    from facereclib.script.parameter_test import main
+    main(parameters)
 
     # number of jobs should be 12
     self.assertEqual(facereclib.script.parameter_test.task_count, 12)
@@ -447,7 +454,7 @@ class ScriptTest (unittest.TestCase):
         '--temp-directory', test_dir,
         '--user-directory', test_dir
     ]
-    facereclib.script.parameter_test.main(parameters)
+    main(parameters)
 
     # number of jobs should be 12
     self.assertEqual(facereclib.script.parameter_test.task_count, 12)

@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import print_function
 
 """
 This script parses through the given directory, collects all results of
@@ -38,7 +38,7 @@ The measure type of the development set can be changed to compute "HTER" or
 """
 
 
-import sys, os, bob
+import sys, os, bob, glob
 import argparse
 from .. import utils
 
@@ -51,7 +51,7 @@ def command_line_arguments(command_line_parameters):
 
   parser.add_argument('-d', '--devel-name', dest="dev", default="scores-dev", help = "Name of the file containing the development scores")
   parser.add_argument('-e', '--eval-name', dest="eval", default="scores-eval", help = "Name of the file containing the evaluation scores")
-  parser.add_argument('-D', '--directory', default=".", help = "The directory where the results should be collected from.")
+  parser.add_argument('-D', '--directory', default=".", help = "The directory where the results should be collected from; might include search patterns as '*'.")
   parser.add_argument('-n', '--nonorm-dir', dest="nonorm", default="nonorm", help = "Directory where the unnormalized scores are found")
   parser.add_argument('-z', '--ztnorm-dir', dest="ztnorm", default = "ztnorm", help = "Directory where the normalized scores are found")
   parser.add_argument('-s', '--sort', action='store_true', help = "Sort the results")
@@ -194,7 +194,9 @@ def main(command_line_parameters = None):
   args = command_line_arguments(command_line_parameters)
 
   # collect results
-  recurse(args, args.directory)
+  directories = glob.glob(args.directory)
+  for directory in directories:
+    recurse(args, directory)
 
   # sort results if desired
   if args.sort:
@@ -209,4 +211,4 @@ def main(command_line_parameters = None):
     f.writelines(table())
     f.close()
   else:
-    print table()
+    print (table())

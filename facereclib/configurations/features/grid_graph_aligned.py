@@ -6,7 +6,7 @@ import math
 # copy the settings of the face_crop preprocessing
 # here, we only need the eye positions
 import os
-execfile(os.path.join(os.path.dirname(__file__), '..', 'preprocessing', 'face_crop.py'))
+exec(open(os.path.join(os.path.dirname(__file__), '..', 'preprocessing', 'face_crop.py')).read())
 
 feature_extractor = facereclib.features.GridGraph(
     # Gabor parameters

@@ -4,7 +4,7 @@ import facereclib
 
 # copy the settings of the face cropping
 import os
-execfile(os.path.join(os.path.dirname(__file__), 'face_crop.py'))
+exec(open(os.path.join(os.path.dirname(__file__), 'face_crop.py')).read())
 
 preprocessor = facereclib.preprocessing.HistogramEqualization(
     cropped_image_size = (CROPPED_IMAGE_HEIGHT, CROPPED_IMAGE_WIDTH),

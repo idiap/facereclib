@@ -82,7 +82,7 @@ class DatabaseXBob (Database):
 
   def __str__(self):
     """This function returns a string containing all parameters of this class (and its derived class)."""
-    params = ", ".join(["%s=%s" % (key, value) for key, value in self._kwargs.iteritems()])
+    params = ", ".join(["%s=%s" % (key, value) for key, value in self._kwargs.items()])
     params += ", original_directory=%s, original_extension=%s" % (self.original_directory, self.original_extension)
     if self.has_internal_annotations:
       params += ", has_internal_annotations=True"
@@ -108,7 +108,7 @@ class DatabaseXBob (Database):
   def training_files(self, step = None, arrange_by_client = False):
     """Returns all training File objects of the database for the current protocol."""
     if step is None:
-      training_options = {}
+      training_options = self.all_files_options
     elif step == 'train_extractor':
       training_options = self.extractor_training_options
     elif step == 'train_projector':
@@ -124,6 +124,8 @@ class DatabaseXBob (Database):
     else:
       return files
 
+  def test_files(self):
+    return self.sort(self.m_database.test_files(self.protocol, **self.all_files_options))
 
   def model_ids(self, group = 'dev'):
     """Returns the model ids for the given group and the current protocol."""

@@ -4,13 +4,13 @@
 
 """Library for face recognition experiments"""
 
-import databases
-import preprocessing
-import features
-import tools
-import utils
-import toolchain
+from . import databases
+from . import preprocessing
+from . import features
+from . import tools
+from . import utils
+from . import toolchain
 
-import script
+from . import script
 
-import tests
+from . import tests

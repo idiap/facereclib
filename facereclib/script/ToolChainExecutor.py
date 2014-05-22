@@ -2,6 +2,8 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
+from __future__ import print_function
+
 import os, sys, math
 import argparse
 
@@ -275,10 +277,10 @@ class ToolChainExecutor:
       return job_id
     else:
       self.m_fake_job_id += 1
-      print 'would have submitted job', name, 'with id', self.m_fake_job_id, 'with parameters', kwargs,
+      print ('would have submitted job', name, 'with id', self.m_fake_job_id, 'with parameters', kwargs, end='')
       if array:
-        print 'using', array[1], 'parallel jobs',
-      print 'as:', ' '.join(cmd), '\nwith dependencies', dependencies
+        print ('using', array[1], 'parallel jobs', end='')
+      print ('as:', ' '.join(cmd), '\nwith dependencies', dependencies)
       return self.m_fake_job_id
 
 

@@ -4,5 +4,5 @@
 
 """Tool chain for computing verification scores"""
 
-from FileSelector import FileSelector
-from ToolChain import ToolChain
+from .FileSelector import FileSelector
+from .ToolChain import ToolChain

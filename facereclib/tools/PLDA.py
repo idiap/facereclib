@@ -116,7 +116,6 @@ class PLDA (Tool):
     t = bob.trainer.PLDATrainer(self.m_plda_training_iterations)
 
     #t.rng.seed = self.m_init[0]
-    print self.m_init[0]
     t.rng = bob.core.random.mt19937(self.m_init[0])
     t.init_f_method = self.m_init[1]
     t.init_f_ratio = self.m_init[2]

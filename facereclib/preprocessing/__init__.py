@@ -4,13 +4,13 @@
 
 """Image preprocessing tools"""
 
-from Preprocessor import Preprocessor
-from NullPreprocessor import NullPreprocessor
-from FaceCrop import FaceCrop
-from TanTriggs import TanTriggs, TanTriggsVideo
-from HistogramEqualization import HistogramEqualization
-from SelfQuotientImage import SelfQuotientImage
-from INormLBP import INormLBP
-from Keypoints import Keypoints
+from .Preprocessor import Preprocessor
+from .NullPreprocessor import NullPreprocessor
+from .FaceCrop import FaceCrop
+from .TanTriggs import TanTriggs, TanTriggsVideo
+from .HistogramEqualization import HistogramEqualization
+from .SelfQuotientImage import SelfQuotientImage
+from .INormLBP import INormLBP
+from .Keypoints import Keypoints
 
 

@@ -1,4 +1,5 @@
 #!../bin/python
+from __future__ import print_function
 
 import subprocess
 import os
@@ -11,6 +12,7 @@ from .. import utils
 all_databases = utils.resources.resource_keys('database')
 # check, which databases can actually be assessed
 available_databases = []
+
 for database in all_databases:
   try:
     utils.tests.load_resource(database, 'database')
@@ -340,7 +342,7 @@ def main(command_line_parameters = sys.argv):
 
       # print the command so that it can easily be re-issued
       utils.info("Executing command:")
-      print ' '.join(command)
+      print (' '.join(command))
 
       # run the command
       if not args.dry_run:

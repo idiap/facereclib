@@ -34,7 +34,7 @@ def configuration_file(name, resource, dir = None, module = 'facereclib.configur
     return load_resource(name, resource, preferred_distribution=module.split('.')[0])
   else: # resource not registered, but available...
     # import resource (actually this is a hack, but better than dealing with file names...)
-    exec "from " + module + "." + dir + " import " + name
+    exec ("from " + module + "." + dir + " import " + name)
     # get the database defined in the resource
     return eval(name + "." + resource)
 
@@ -64,7 +64,12 @@ def atnt_database_directory():
   if os.path.exists(atnt_default_directory):
     return atnt_default_directory
 
-  import urllib2, tempfile
+  import sys, tempfile
+  if sys.version_info[0] <= 2:
+    import urllib2 as urllib
+  else:
+    import urllib.request as urllib
+
   atnt_downloaded_directory = tempfile.mkdtemp(prefix='atnt_db_')
   db_url = "http://www.cl.cam.ac.uk/Research/DTG/attarchive/pub/data/att_faces.zip"
   from .logger import warn
@@ -72,9 +77,9 @@ def atnt_database_directory():
   warn("To avoid this, please download the database manually, extract the data and set the ATNT_DATABASE_DIRECTORY environment variable to this directory.")
 
   # download
-  url = urllib2.urlopen(db_url)
+  url = urllib.urlopen(db_url)
   local_zip_file = os.path.join(atnt_downloaded_directory, 'att_faces.zip')
-  dfile = open(local_zip_file, 'w')
+  dfile = open(local_zip_file, 'wb')
   dfile.write(url.read())
   dfile.close()
 

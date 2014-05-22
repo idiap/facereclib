@@ -4,7 +4,7 @@ import facereclib
 
 # copy the settings of the UBM/GMM tool
 import os
-execfile(os.path.join(os.path.dirname(__file__), 'plda.py'))
+exec(open(os.path.join(os.path.dirname(__file__), 'plda.py')).read())
 
 tool = facereclib.tools.PLDA(
     subspace_dimension_of_f = 16,  # Size of subspace F

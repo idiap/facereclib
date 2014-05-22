@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
+from __future__ import print_function
 
-import faceverify, faceverify_gbu, faceverify_lfw
+from . import faceverify, faceverify_gbu, faceverify_lfw
+
 import argparse, os, sys
 import copy # for deep copies of dictionaries
 from .. import utils
@@ -276,9 +278,7 @@ def execute_dependent_task(command_line, directories, dependency_level):
   try:
     verif_args = faceverify.parse_args(command_line[1:])
     if args.dry_run:
-      print "Would have executed job",
-      print " ".join(command_line)
-      print "with dependencies", dependencies
+      print ("Would have executed job", " ".join(command_line), "with dependencies", dependencies)
     else:
       # execute the face verification experiment
       global fake_job_id
@@ -375,7 +375,7 @@ def main(command_line_parameters = sys.argv):
     configuration.requirements = []
 
   replace_dict = {}
-  for step, replacements in configuration.replace.iteritems():
+  for step, replacements in configuration.replace.items():
     for key in replacements.keys():
       if key in replace_dict:
         raise ValueError("The replacement key '%s' was defined multiple times. Please use each key only once.")

@@ -4,7 +4,7 @@ import facereclib
 
 # copy the settings of the face cropping
 import os
-execfile(os.path.join(os.path.dirname(__file__), 'face_crop.py'))
+exec(open(os.path.join(os.path.dirname(__file__), 'face_crop.py')).read())
 
 # overwrite the preprocessor
 preprocessor = facereclib.preprocessing.FaceCrop(

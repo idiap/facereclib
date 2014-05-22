@@ -4,7 +4,7 @@ import facereclib
 
 # copy the settings of the face cropping
 import os
-execfile(os.path.join(os.path.dirname(__file__), 'face_crop.py'))
+exec(open(os.path.join(os.path.dirname(__file__), 'face_crop.py')).read())
 
 # we use the Self quotient image technology with variance 2.
 preprocessor = facereclib.preprocessing.SelfQuotientImage(

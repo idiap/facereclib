@@ -4,8 +4,8 @@
 
 """Configuration files for different steps of the face recognition tool chain"""
 
-import databases
-import preprocessing
-import features
-import tools
-import grid
+from . import databases
+from . import preprocessing
+from . import features
+from . import tools
+from . import grid

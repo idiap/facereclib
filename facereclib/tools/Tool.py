@@ -58,7 +58,7 @@ class Tool:
 
   def __str__(self):
     """This function returns all parameters of this class (and its derived class)."""
-    return "%s(%s)" % (str(self.__class__), ", ".join(["%s=%s" % (key, value) for key,value in self._kwargs.iteritems() if value is not None]))
+    return "%s(%s)" % (str(self.__class__), ", ".join(["%s=%s" % (key, value) for key,value in self._kwargs.items() if value is not None]))
 
 
   def enroll(self, enroll_features):

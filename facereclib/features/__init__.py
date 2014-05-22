@@ -4,11 +4,11 @@
 
 """Features for face recognition"""
 
-from Extractor import Extractor
-from Linearize import Linearize
-from DCT import DCTBlocks, DCTBlocksVideo
-from LGBPHS import LGBPHS
-from GridGraph import GridGraph
-from Eigenface import Eigenface
-from SIFTKeypoints import SIFTKeypoints
-from SIFTBobKeypoints import SIFTBobKeypoints
+from .Extractor import Extractor
+from .Linearize import Linearize
+from .DCT import DCTBlocks, DCTBlocksVideo
+from .LGBPHS import LGBPHS
+from .GridGraph import GridGraph
+from .Eigenface import Eigenface
+from .SIFTKeypoints import SIFTKeypoints
+from .SIFTBobKeypoints import SIFTBobKeypoints

@@ -16,11 +16,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import print_function
 
 import imp
 import os
 import pkg_resources
+
+import sys
+if sys.version_info[0] == 2:
+  from string import letters as ascii_letters
+else:
+  from string import ascii_letters
+
 from .logger import info
+
 
 
 def read_config_file(file, keyword = None):
@@ -33,7 +42,7 @@ def read_config_file(file, keyword = None):
 
   import string
   import random
-  tmp_config = "".join(random.sample(string.letters, 10))
+  tmp_config = "".join(random.sample(ascii_letters, 10))
   config = imp.load_source(tmp_config, file)
 
   if not keyword:
@@ -99,7 +108,7 @@ def load_resource(resource, keyword, imports = ['facereclib'], preferred_distrib
   try:
     # first, execute all import commands that are required
     for i in imports:
-      exec "import %s"%i
+      exec ("import %s"%i)
     # now, evaluate the resource (re-evaluate if the resource is still a string)
     while isinstance(resource, str):
       resource = eval(resource)
@@ -147,25 +156,25 @@ def print_resources(keyword):
   last_dist = None
   for entry_point in entry_points:
     if last_dist != str(entry_point.dist):
-      print "\n-", str(entry_point.dist) + ":"
+      print ("\n-", str(entry_point.dist) + ":")
       last_dist = str(entry_point.dist)
 
     if len(entry_point.attrs):
-      print "  +", entry_point.name, "  -->", entry_point.module_name, ":", entry_point.attrs[0]
+      print ("  +", entry_point.name, "  -->", entry_point.module_name, ":", entry_point.attrs[0])
     else:
-      print "  +", entry_point.name, "  -->", entry_point.module_name
+      print ("  +", entry_point.name, "  -->", entry_point.module_name)
 
 
 def print_all_resources():
   """Prints a detailed list of all resources that are registered."""
-  print "\nList of registered databases:"
+  print ("\nList of registered databases:")
   print_resources('database')
-  print "\n\nList of registered preprocessors:"
+  print ("\n\nList of registered preprocessors:")
   print_resources('preprocessor')
-  print "\n\nList of registered feature extractors:"
+  print ("\n\nList of registered feature extractors:")
   print_resources('feature_extractor')
-  print "\n\nList of registered recognition algorithms:"
+  print ("\n\nList of registered recognition algorithms:")
   print_resources('tool')
-  print "\n\nList of registered SGE grid configurations:"
+  print ("\n\nList of registered SGE grid configurations:")
   print_resources('grid')
-  print
+  print()

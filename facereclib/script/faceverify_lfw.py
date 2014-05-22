@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
-
+from __future__ import print_function
 
 import sys, os
 import argparse
@@ -68,7 +68,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # preprocessing
     if not self.m_args.skip_preprocessing:
       if self.m_args.dry_run:
-        print "Would have preprocessed data for protocol %s ..." % self.m_database.protocol
+        print ("Would have preprocessed data for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.preprocess_data(
               self.m_preprocessor,
@@ -77,7 +77,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # feature extraction
     if not self.m_args.skip_extractor_training and self.m_extractor.requires_training:
       if self.m_args.dry_run:
-        print "Would have trained the extractor for protocol %s ..." % self.m_database.protocol
+        print ("Would have trained the extractor for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.train_extractor(
               self.m_extractor,
@@ -86,7 +86,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_extraction:
       if self.m_args.dry_run:
-        print "Would have extracted the features for protocol %s ..." % self.m_database.protocol
+        print ("Would have extracted the features for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.extract_features(
               self.m_extractor,
@@ -96,7 +96,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # feature projection
     if not self.m_args.skip_projector_training and self.m_tool.requires_projector_training:
       if self.m_args.dry_run:
-        print "Would have trained the projector for protocol %s ..." % self.m_database.protocol
+        print ("Would have trained the projector for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.train_projector(
               self.m_tool,
@@ -105,7 +105,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_projection and self.m_tool.performs_projection:
       if self.m_args.dry_run:
-        print "Would have projected the features for protocol %s ..." % self.m_database.protocol
+        print ("Would have projected the features for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.project_features(
               self.m_tool,
@@ -115,7 +115,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # model enrollment
     if not self.m_args.skip_enroller_training and self.m_tool.requires_enroller_training:
       if self.m_args.dry_run:
-        print "Would have trained the enroller for protocol %s ..." % self.m_database.protocol
+        print ("Would have trained the enroller for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.train_enroller(
               self.m_tool,
@@ -124,7 +124,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_enrollment:
       if self.m_args.dry_run:
-        print "Would have enrolled the models for protocol %s ..." % self.m_database.protocol
+        print ("Would have enrolled the models for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.enroll_models(
               self.m_tool,
@@ -136,7 +136,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
     # score computation
     if not self.m_args.skip_score_computation:
       if self.m_args.dry_run:
-        print "Would have computed the scores for protocol %s ..." % self.m_database.protocol
+        print ("Would have computed the scores for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.compute_scores(
               self.m_tool,
@@ -147,7 +147,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if not self.m_args.skip_concatenation:
       if self.m_args.dry_run:
-        print "Would have concatenated the scores for protocol %s ..." % self.m_database.protocol
+        print ("Would have concatenated the scores for protocol %s ..." % self.m_database.protocol)
       else:
         self.m_tool_chain.concatenate(compute_zt_norm = False)
 
@@ -360,7 +360,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
       file = open(self.m_configuration.result_file, 'w')
     if 'view1' in self.m_args.views:
       if self.m_args.dry_run:
-        print "Would have averaged the results from view1 ..."
+        print ("Would have averaged the results from view1 ...")
       else:
         # process the single result of view 1
 
@@ -379,7 +379,7 @@ class ToolChainExecutorLFW (ToolChainExecutor.ToolChainExecutor):
 
     if 'view2' in self.m_args.views:
       if self.m_args.dry_run:
-        print "Would have averaged the results from view2 ..."
+        print ("Would have averaged the results from view2 ...")
       else:
         file.write("On view2 (eval set only):\n\n")
         # iterate over all folds of view 2

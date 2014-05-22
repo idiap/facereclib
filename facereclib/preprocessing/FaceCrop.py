@@ -102,8 +102,8 @@ class FaceCrop (Preprocessor):
     if key not in self.m_croppers:
       # generate cropper on the fly
       cropper = bob.ip.FaceEyesNorm(
-          self.m_cropped_image_size[0] + 2 * self.m_offset, # cropped image height
-          self.m_cropped_image_size[1] + 2 * self.m_offset, # cropped image width
+          int(self.m_cropped_image_size[0] + 2 * self.m_offset), # cropped image height
+          int(self.m_cropped_image_size[1] + 2 * self.m_offset), # cropped image width
           self.m_cropped_positions[pair[0]][0] + self.m_offset, # Y of first position (usually: right eye)
           self.m_cropped_positions[pair[0]][1] + self.m_offset, # X of first position (usually: right eye)
           self.m_cropped_positions[pair[1]][0] + self.m_offset,  # Y of second position (usually: left eye)
