@@ -117,6 +117,7 @@ setup(
         'isv               = facereclib.configurations.grid.isv_training:grid',
         'ivector           = facereclib.configurations.grid.ivector_training:grid',
         'local-p4          = facereclib.configurations.grid.local:grid',
+        'local-p8          = facereclib.configurations.grid.local:grid_p8',
         'local-p16         = facereclib.configurations.grid.local:grid_p16'
       ],
 
@@ -133,7 +134,7 @@ setup(
 
     install_requires=[
       "setuptools",      # for whatever
-      "bob >= 1.3.0",    # base signal processing/machine learning library
+      "bob >= 1.3.0a0",    # base signal processing/machine learning library
       "xbob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
     ],
 

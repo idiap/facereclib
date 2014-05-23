@@ -268,6 +268,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_data(
           self.m_preprocessor,
+          groups = self.groups(),
           indices = self.indices(self.m_file_selector.original_data_list(groups=self.groups()), self.m_grid.number_of_preprocessing_jobs),
           force = self.m_args.force)
 
@@ -283,6 +284,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.extract_features(
           self.m_extractor,
           self.m_preprocessor,
+          groups = self.groups(),
           indices = self.indices(self.m_file_selector.preprocessed_data_list(groups=self.groups()), self.m_grid.number_of_extraction_jobs),
           force = self.m_args.force)
 
@@ -298,6 +300,7 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.project_features(
           self.m_tool,
           self.m_extractor,
+          groups = self.groups(),
           indices = self.indices(self.m_file_selector.preprocessed_data_list(groups=self.groups()), self.m_grid.number_of_projection_jobs),
           force = self.m_args.force)
 
@@ -433,9 +436,12 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
       dry_run_init += 30
 
-    if executor.m_grid.is_local():
-      # start the jman local deamon
-      executor.execute_local_deamon()
+    if executor.m_grid.is_local() and args.run_local_scheduler:
+      if args.dry_run:
+        print ("Would have started the local scheduler to finally run the experiments with parallel jobs")
+      else:
+        # start the jman local deamon
+        executor.execute_local_deamon()
       return {}
 
     # at the end of all protocols, return the list of dependencies
@@ -457,10 +463,15 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
 def main(command_line_parameters = sys.argv):
   """Executes the main function"""
-  # do the command line parsing
-  args = parse_args(command_line_parameters[1:])
-  # perform face verification test
-  face_verify(args, command_line_parameters)
+  try:
+    # do the command line parsing
+    args = parse_args(command_line_parameters[1:])
+    # perform face verification test
+    face_verify(args, command_line_parameters)
+  except Exception as e:
+    # track any exceptions as error logs (i.e., to get a time stamp)
+    utils.error("During the execution, an exception was raised: %s" % e)
+    raise
 
 if __name__ == "__main__":
   main()

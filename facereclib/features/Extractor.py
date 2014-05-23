@@ -71,12 +71,7 @@ class Extractor:
 
     If you have a different format, please overwrite this function.
     """
-    utils.ensure_dir(os.path.dirname(feature_file))
-    if hasattr(feature, 'save'):
-      # this is some class that supports saving itself
-      feature.save(bob.io.HDF5File(feature_file, "w"))
-    else:
-      bob.io.save(feature, feature_file)
+    utils.save(feature, feature_file)
 
 
   def read_feature(self, feature_file):
@@ -84,7 +79,7 @@ class Extractor:
     In this base class implementation, it uses bob.io.load to do that.
     If you have different format, please overwrite this function.
     """
-    return bob.io.load(feature_file)
+    return utils.load(feature_file)
 
 
   def load(self, extractor_file):

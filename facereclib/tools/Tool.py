@@ -115,11 +115,7 @@ class Tool:
 
     Please register 'performs_projection = True' in the constructor to enable this function.
     """
-    if hasattr(feature, 'save'):
-      # this is some class that supports saving itself
-      feature.save(bob.io.HDF5File(feature_file, "w"))
-    else:
-      bob.io.save(feature, feature_file)
+    utils.save(feature, feature_file)
 
 
   def read_feature(self, feature_file):
@@ -129,7 +125,7 @@ class Tool:
 
     Please register 'performs_projection = True' in the constructor to enable this function.
     """
-    return bob.io.load(feature_file)
+    return utils.load(feature_file)
 
 
   def save_model(self, model, model_file):
@@ -142,11 +138,7 @@ class Tool:
 
     If you have a different format, please overwrite this function.
     """
-    if hasattr(model, 'save'):
-      # this is some class that supports saving itself
-      model.save(bob.io.HDF5File(model_file, "w"))
-    else:
-      bob.io.save(model, model_file)
+    utils.save(model, model_file)
 
 
   def read_model(self, model_file):
@@ -155,7 +147,7 @@ class Tool:
 
     If you have a different format, please overwrite this function.
     """
-    return bob.io.load(model_file)
+    return utils.load(model_file)
 
 
   def read_probe(self, probe_file):

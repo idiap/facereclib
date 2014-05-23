@@ -26,6 +26,7 @@ import tempfile
 import numpy
 
 import facereclib
+import bob
 from nose.plugins.skip import SkipTest
 
 import pkg_resources
@@ -35,12 +36,12 @@ config_dir = pkg_resources.resource_filename('facereclib', 'configurations')
 
 class ScriptTest (unittest.TestCase):
 
-  def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier="", score_modifier='scores'):
+  def __face_verify__(self, parameters, test_dir, sub_dir, ref_modifier="", score_modifier=('scores','')):
     from facereclib.script.faceverify import main
     main([sys.argv[0]] + parameters)
 
     # assert that the score file exists
-    score_files = (os.path.join(test_dir, sub_dir, 'scores', 'Default', 'nonorm', '%s-dev'%score_modifier), os.path.join(test_dir, sub_dir, 'scores', 'Default', 'ztnorm', '%s-dev'%score_modifier))
+    score_files = (os.path.join(test_dir, sub_dir, 'scores', 'Default', 'nonorm', '%s-dev%s'%score_modifier), os.path.join(test_dir, sub_dir, 'scores', 'Default', 'ztnorm', '%s-dev%s'%score_modifier))
     self.assertTrue(os.path.exists(score_files[0]))
     self.assertTrue(os.path.exists(score_files[1]))
 
@@ -48,17 +49,21 @@ class ScriptTest (unittest.TestCase):
     reference_files = (os.path.join(base_dir, 'scripts', 'scores-nonorm%s-dev'%ref_modifier), os.path.join(base_dir, 'scripts', 'scores-ztnorm%s-dev'%ref_modifier))
 
     for i in (0,1):
+      d = []
       # read reference and new data
-      with open(score_files[i], 'r') as f1:
-        d1 = numpy.array([line.rstrip().split() for line in f1])
-      with open(reference_files[i], 'r') as f2:
-        d2 = numpy.array([line.rstrip().split() for line in f2])
+      for score_file in (score_files[i], reference_files[i]):
+        f = bob.measure.load.open_file(score_files[i])
+        d_ = []
+        for line in f:
+          if isinstance(line, bytes): line = line.decode('utf-8')
+          d_.append(line.rstrip().split())
+        d.append(numpy.array(d_))
 
-      self.assertTrue(d1.shape, d2.shape)
+      self.assertTrue(d[0].shape, d[1].shape)
       # assert that the data order is still correct
-      self.assertTrue((d1[:,0:3] == d2[:, 0:3]).all())
+      self.assertTrue((d[0][:,0:3] == d[1][:, 0:3]).all())
       # assert that the values are OK
-      self.assertTrue((numpy.abs(d1[:,3].astype(float) - d2[:,3].astype(float)) < 1e-5).all())
+      self.assertTrue((numpy.abs(d[0][:,3].astype(float) - d[1][:,3].astype(float)) < 1e-5).all())
 
     shutil.rmtree(test_dir)
 
@@ -149,6 +154,26 @@ class ScriptTest (unittest.TestCase):
     self.__face_verify__(parameters, test_dir, 'test_c')
 
 
+  def test01d_faceverify_compressed(self):
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
+    # define dummy parameters
+    parameters = [
+        '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
+        '-p', 'face-crop',
+        '-f', 'facereclib.features.Eigenface(subspace_dimension', '=', '100)',
+        '-t', 'facereclib.tools.Dummy()',
+        '--zt-norm',
+        '-b', 'test_d',
+        '--temp-directory', test_dir,
+        '--user-directory', test_dir,
+        '--write-compressed-score-files'
+    ]
+
+    print (' '.join(parameters))
+
+    self.__face_verify__(parameters, test_dir, 'test_d', score_modifier=('scores', '.tar.bz2'))
+
+
   def test01m_faceverify_calibrate(self):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
@@ -167,7 +192,7 @@ class ScriptTest (unittest.TestCase):
     print (' '.join(parameters))
 
     # check that the calibrated scores are as expected
-    self.__face_verify__(parameters, test_dir, 'test', '-calibrated', 'calibrated')
+    self.__face_verify__(parameters, test_dir, 'test', '-calibrated', score_modifier=('calibrated', ''))
 
 
   def test01x_faceverify_filelist(self):

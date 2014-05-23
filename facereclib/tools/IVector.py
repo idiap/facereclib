@@ -8,7 +8,6 @@ import numpy
 from .Tool import Tool
 from .UBMGMM import UBMGMM
 from .. import utils
-from math import sqrt
 
 class IVector (UBMGMM):
   """Tool for extracting I-Vectors"""
@@ -70,6 +69,15 @@ class IVector (UBMGMM):
 
     return data
 
+  def _train_whitening(self, training_features):
+   # load GMM stats from training files
+    ivectors_matrix = numpy.vstack(training_features)
+    # create a Linear Machine
+    self.m_whitening_machine = bob.machine.LinearMachine(ivectors_matrix.shape[1],ivectors_matrix.shape[1])
+    # create the whitening trainer
+    t = bob.trainer.WhiteningTrainer()
+
+    t.train(self.m_whitening_machine, ivectors_matrix)
 
   def train_projector(self, train_features, projector_file):
     """Train Projector and Enroller at the same time"""
@@ -175,42 +183,8 @@ class IVector (UBMGMM):
 
 
 
-  ################ Withening training #########################
-  def train_whitening_projector(self, train_files, whitening_enroler_file):
-    # load GMM stats from training files
-    ivectors_matrix  = []
-    for k in train_files:
-      ivec = bob.io.load(str(k))
-      ivectors_matrix.append(ivec)
-    ivectors_matrix = numpy.vstack(ivectors_matrix)
-    # create a Linear Machine     # Runs whitening (first method)
-    self.whitening_machine = bob.machine.LinearMachine(ivectors_matrix.shape[1],ivectors_matrix.shape[1])
-    # create the whitening trainer
-    t = bob.trainer.WhiteningTrainer()
-    
-    print ivectors_matrix.shape
-    t.train(self.whitening_machine, ivectors_matrix)
-    # Save the whitening linear machine
-    print("Saving the whitening machine..")
-    self.whitening_machine.save(bob.io.HDF5File(whitening_enroler_file, "w"))
-     
   #######################################################
-  ############## Whitening load model ##################
-  def load_whitening_projector(self, whitening_projector_file):
-    """Reads the whitening Enroler model from file"""
-    # now, load the JFA base, if it is included in the file
-    self.whitening_machine = bob.machine.LinearMachine(self.m_subspace_dimension_of_t,self.m_subspace_dimension_of_t)
-    self.whitening_machine.load(bob.io.HDF5File(whitening_projector_file)) 
-  
-  #######################################################
-  ####### whitening and length-normalize i-vectors ######
-  def whitening_ivector(self, ivector):
-    m = self.whitening_machine
-    whitened_ivector = m.forward(ivector)
-    return whitened_ivector/numpy.linalg.norm(whitened_ivector)
-  
-  #######################################################
-  ################## Model  Enrolment ###################
+  ################## Model  Enrollment ###################
   def enroll(self, enroll_features):
     """Performs IVector enrollment"""
     model = numpy.mean(numpy.vstack(enroll_features), axis=0)
@@ -232,8 +206,8 @@ class IVector (UBMGMM):
     a = model/numpy.linalg.norm(model)
     b = probe/numpy.linalg.norm(probe)
     if len(a) != len(b):
-        raise ValueError, "a and b must be same length"
-    numerator = sum(tup[0] * tup[1] for tup in izip(a,b))
+        raise ValueError("a and b must be same length")
+    numerator = sum(tup[0] * tup[1] for tup in zip(a,b))
     return numerator
 
 

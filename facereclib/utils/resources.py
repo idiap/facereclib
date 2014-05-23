@@ -31,6 +31,8 @@ else:
 from .logger import info
 
 
+valid_keywords = ('database', 'preprocessor', 'feature_extractor', 'tool', 'grid')
+
 
 def read_config_file(file, keyword = None):
   """Use this function to read the given configuration file.
@@ -75,6 +77,9 @@ def load_resource(resource, keyword, imports = ['facereclib'], preferred_distrib
   # first, look if the resource is a file name
   if os.path.isfile(resource):
     return read_config_file(resource, keyword)
+
+  if keyword not in valid_keywords:
+    raise ValueError("The given keyword '%s' is not valid. Please use one of %s!" % (str(keyword), str(valid_keywords)))
 
   # now, we check if the resource is registered as an entry point in the resource files
   entry_points = [entry_point for entry_point in _get_entry_points(keyword) if entry_point.name == resource]
@@ -125,10 +130,13 @@ def read_file_resource(resource, keyword):
     # load it without the keyword -> all entries of the resource file are read
     return read_config_file(resource)
 
+  if keyword not in valid_keywords:
+    raise ValueError("The given keyword '%s' is not valid. Please use one of %s!" % (str(keyword), str(valid_keywords)))
+
   entry_points = [entry_point for entry_point in _get_entry_points(keyword) if entry_point.name == resource]
 
   if not len(entry_points):
-    raise ImportError("The given grid option '%s' is neither a resource, nor an existing configuration file for resource type '%s'"%(resource, keyword))
+    raise ImportError("The given option '%s' is neither a resource, nor an existing configuration file for resource type '%s'"%(resource, keyword))
 
   if len(entry_points) == 1:
     return entry_points[0].load()
@@ -152,6 +160,9 @@ def read_file_resource(resource, keyword):
 
 def print_resources(keyword):
   """Prints a detailed list of resources that are registered with the given keyword."""
+  if keyword not in valid_keywords:
+    raise ValueError("The given keyword '%s' is not valid. Please use one of %s!" % (str(keyword), str(valid_keywords)))
+
   entry_points = _get_entry_points(keyword)
   last_dist = None
   for entry_point in entry_points:
@@ -167,14 +178,33 @@ def print_resources(keyword):
 
 def print_all_resources():
   """Prints a detailed list of all resources that are registered."""
-  print ("\nList of registered databases:")
-  print_resources('database')
-  print ("\n\nList of registered preprocessors:")
-  print_resources('preprocessor')
-  print ("\n\nList of registered feature extractors:")
-  print_resources('feature_extractor')
-  print ("\n\nList of registered recognition algorithms:")
-  print_resources('tool')
-  print ("\n\nList of registered SGE grid configurations:")
-  print_resources('grid')
+
+  import argparse
+  parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument("--details", '-d', nargs = '+',
+                      choices = ('d', 'database', 'p', 'preprocessor', 'f', 'feature_extractor', 't', 'tool', 'g', 'grid'),
+                      default = ('d', 'p', 'f', 't', 'g'),
+                      help = "Select the resource types that should be listed.")
+  args = parser.parse_args()
+
+  if 'd' in args.details or 'database' in args.details:
+    print ("\nList of registered databases:")
+    print_resources('database')
+
+  if 'p' in args.details or 'preprocessor' in args.details:
+    print ("\n\nList of registered preprocessors:")
+    print_resources('preprocessor')
+
+  if 'f' in args.details or 'feature_extractor' in args.details:
+    print ("\n\nList of registered feature extractors:")
+    print_resources('feature_extractor')
+
+  if 't' in args.details or 'tool' in args.details:
+    print ("\n\nList of registered recognition algorithms:")
+    print_resources('tool')
+
+  if 'g' in args.details or 'grid' in args.details:
+    print ("\n\nList of registered SGE grid configurations:")
+    print_resources('grid')
+
   print()

@@ -3,7 +3,6 @@
 # Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
 # Roy Wallace <roy.wallace@idiap.ch>
 
-from . import video
 from . import histogram
 from . import tests
 from . import resources

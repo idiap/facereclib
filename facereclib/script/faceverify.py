@@ -60,7 +60,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     )
 
     # create the tool chain to be used to actually perform the parts of the experiments
-    self.m_tool_chain = toolchain.ToolChain(self.m_file_selector)
+    self.m_tool_chain = toolchain.ToolChain(self.m_file_selector, self.m_args.write_compressed_score_files)
 
 
   def execute_tool_chain(self):
@@ -182,12 +182,12 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     # if there are any external dependencies, we need to respect them
     deps = external_dependencies[:]
 
-    # preprocessing; never has any dependencies.
+    # preprocessing
     if not self.m_args.skip_preprocessing:
       job_ids['preprocessing'] = self.submit_grid_job(
               'preprocess',
               number_of_parallel_jobs = self.m_grid.number_of_preprocessing_jobs,
-              dependencies = [],
+              dependencies = deps,
               **self.m_grid.preprocessing_queue)
       deps.append(job_ids['preprocessing'])
 
@@ -329,6 +329,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
     if self.m_args.sub_task == 'preprocess':
       self.m_tool_chain.preprocess_data(
           self.m_preprocessor,
+          groups = self.groups(),
           indices = self.indices(self.m_file_selector.original_data_list(groups=self.groups()), self.m_grid.number_of_preprocessing_jobs),
           force = self.m_args.force)
 
@@ -344,6 +345,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.extract_features(
           self.m_extractor,
           self.m_preprocessor,
+          groups = self.groups(),
           indices = self.indices(self.m_file_selector.preprocessed_data_list(groups=self.groups()), self.m_grid.number_of_extraction_jobs),
           force = self.m_args.force)
 
@@ -359,6 +361,7 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       self.m_tool_chain.project_features(
           self.m_tool,
           self.m_extractor,
+          groups = self.groups(),
           indices = self.indices(self.m_file_selector.preprocessed_data_list(groups=self.groups()), self.m_grid.number_of_projection_jobs),
           force = self.m_args.force)
 
@@ -480,7 +483,19 @@ def parse_args(command_line_parameters):
   parser.add_argument('--group',
       help = argparse.SUPPRESS) #'The group for which the current action should be performed'
 
-  return parser.parse_args(command_line_parameters)
+  #######################################################################################
+  ####### shortcuts for the --skip-... commands #########################################
+  skip_choices = ('preprocessing', 'extractor-training', 'extraction', 'projector-training', 'projection', 'enroller-training', 'enrollment', 'score-computation', 'concatenation')
+  skip_group.add_argument('--execute-only', nargs = '+', choices = skip_choices,
+      help = 'Executes only the given parts of the tool chain.')
+
+  args = parser.parse_args(command_line_parameters)
+
+  if args.execute_only is not None:
+    for skip in skip_choices:
+      if skip not in args.execute_only:
+        exec("args.skip_%s = True" % (skip.replace("-", "_")))
+  return args
 
 
 def face_verify(args, command_line_parameters, external_dependencies = [], external_fake_job_id = 0):
@@ -498,8 +513,12 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
   # generate tool chain executor
   executor = ToolChainExecutorZT(args)
-  # as the main entry point, check whether the grid option was given
-  if not args.grid:
+  # as the main entry point, check whether the sub-task is specified
+  if args.sub_task is not None:
+    # execute the desired sub-task
+    executor.execute_grid_job()
+    return {}
+  elif not args.grid:
     if args.timer is not None and not len(args.timer):
       args.timer = ('real', 'system', 'user')
     # not in a grid, use default tool chain sequentially
@@ -521,10 +540,6 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
     return {}
 
-  elif args.sub_task:
-    # execute the desired sub-task
-    executor.execute_grid_job()
-    return {}
   else:
     # no other parameter given, so deploy new jobs
 
@@ -541,9 +556,12 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
     # add the jobs
     job_ids = executor.add_jobs_to_grid(external_dependencies)
 
-    if executor.m_grid.is_local():
-      # start the jman local deamon
-      executor.execute_local_deamon()
+    if executor.m_grid.is_local() and args.run_local_scheduler:
+      if args.dry_run:
+        print ("Would have started the local scheduler to finally run the experiments with parallel jobs")
+      else:
+        # start the jman local deamon
+        executor.execute_local_deamon()
       return {}
 
     else:
@@ -553,11 +571,16 @@ def face_verify(args, command_line_parameters, external_dependencies = [], exter
 
 def main(command_line_parameters = sys.argv):
   """Executes the main function"""
-  # do the command line parsing
-  args = parse_args(command_line_parameters[1:])
+  try:
+    # do the command line parsing
+    args = parse_args(command_line_parameters[1:])
 
-  # perform face verification test
-  face_verify(args, command_line_parameters)
+    # perform face verification test
+    face_verify(args, command_line_parameters)
+  except Exception as e:
+    # track any exceptions as error logs (i.e., to get a time stamp)
+    utils.error("During the execution, an exception was raised: %s" % e)
+    raise
 
 if __name__ == "__main__":
   main()

@@ -214,12 +214,8 @@ def directory_parameters(directories):
   parameters.extend(['--sub-directory', args.sub_directory])
 
   # grid database
-  dbfile = os.path.join(args.grid_database_directory, 'submitted.db')
-  for i in range(len(steps)):
-    if len(directories[steps[i]]):
-      dbfile = os.path.join(args.grid_database_directory, join_dirs(i, 'submitted.db'))
-  utils.ensure_dir(os.path.dirname(dbfile))
-  parameters.extend(['--submit-db-file', dbfile])
+  if args.grid:
+    parameters.extend(['--submit-db-file', os.path.join(args.grid_database_directory, 'submitted.sql3')])
 
   return parameters
 

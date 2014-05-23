@@ -38,7 +38,7 @@ class PCA (Tool):
     self.m_subspace_dim = subspace_dimension
     self.m_machine = None
     self.m_distance_function = distance_function
-    self.m_factor = -1 if is_distance_function else 1.
+    self.m_factor = -1. if is_distance_function else 1.
     self.m_uses_variances = uses_variances
 
 

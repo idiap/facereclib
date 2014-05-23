@@ -30,6 +30,10 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
     return file_sets
 
 
+  def all_files(self, groups = ['dev']):
+    return facereclib.databases.DatabaseXBob.all_files(self, groups)
+
+
   def t_model_ids(self, group = 'dev'):
     return self.model_ids(group)
 

@@ -31,13 +31,10 @@ class Configuration:
     self.extractor_file = os.path.join(self.temp_directory, args.extractor_file)
     self.projector_file = os.path.join(self.temp_directory, args.projector_file)
     self.enroller_file = os.path.join(self.temp_directory, args.enroller_file)
-    self.projected_ivec_directory = os.path.join(self.temp_directory, args.projected_ivec_directory)
-    self.whitening_projector_file = os.path.join(self.temp_directory, args.whitening_projector_file)
 
     self.preprocessed_directory = os.path.join(self.temp_directory, args.preprocessed_data_directory)
     self.features_directory = os.path.join(self.temp_directory, args.features_directory)
     self.projected_directory = os.path.join(self.temp_directory, args.projected_features_directory)
-    self.whitening_projected_directory = os.path.join(self.temp_directory, args.whitening_projected_features_directory)
 
     self.info_file = os.path.join(self.user_directory, "Experiment.info") if not args.experiment_info_file else args.experiment_info_file
 
@@ -84,15 +81,10 @@ class ToolChainExecutor:
     except IOError:
       utils.error("Could not write the experimental setup into file '%s'" % self.m_configuration.info_file)
 
-  def __generate_job_array__(self, list_to_split, number_of_files_per_job):
-    """Generates an array for the list to be split and the number of files that one job should generate"""
-    n_jobs = int(math.ceil(len(list_to_split) / float(number_of_files_per_job)))
-    return (1,n_jobs,1)
-
   def groups(self):
     """Checks the groups, for which the files must be preprocessed, and features must be extracted and projected."""
     groups = self.m_args.groups[:]
-    if self.m_extractor.requires_training or self.m_tool.requires_training:
+    if self.m_extractor.requires_training or self.m_tool.requires_projector_training or self.m_tool.requires_enroller_training:
       groups.append('world')
     return groups
 
@@ -134,8 +126,6 @@ class ToolChainExecutor:
         help = 'Name of the file to write the feature extractor into.')
     file_group.add_argument('--projector-file', metavar = 'FILE', default = 'Projector.hdf5',
         help = 'Name of the file to write the feature projector into.')
-    file_group.add_argument('--whitening-projector-file', metavar = 'FILE', default = 'WhiteningProjector.hdf5',
-        help = 'Name of the file to write the feature projector into.')
     file_group.add_argument('--enroller-file' , metavar = 'FILE', default = 'Enroller.hdf5',
         help = 'Name of the file to write the model enroller into.')
     file_group.add_argument('-G', '--submit-db-file', metavar = 'FILE', default = 'submitted.sql3', dest = 'gridtk_database_file',
@@ -150,18 +140,20 @@ class ToolChainExecutor:
         help = 'Name of the directory of the features.')
     sub_dir_group.add_argument('--projected-features-directory', metavar = 'DIR', default = 'projected',
         help = 'Name of the directory where the projected data should be stored.')
-    sub_dir_group.add_argument('--projected-ivec-directory', metavar = 'DIR', default = 'projected_ivec',
-        help = 'Name of the directory where the ivector data should be stored.')
-    sub_dir_group.add_argument('--whitening-projected-features-directory', metavar = 'DIR', default = 'whitening_projected',
-        help = 'Name of the directory where the whiten projected data should be stored.')
 
     other_group = parser.add_argument_group('\nFlags that change the behavior of the experiment')
     other_group.add_argument('-q', '--dry-run', action='store_true',
         help = 'Only report the commands that will be executed, but do not execute them.')
+    other_group.add_argument('-Z', '--write-compressed-score-files', action='store_true',
+        help = 'Writes score files which are compressed with tar.bz2.')
     other_group.add_argument('-R', '--delete-dependent-jobs-on-failure', action='store_true',
         help = 'Try to recursively delete the dependent jobs from the SGE grid queue, when a job failed')
+    other_group.add_argument('-X', '--external-dependencies', type=int, default = [], nargs='+',
+        help = 'The jobs submitted to the grid have dependencies on the given job ids.')
     other_group.add_argument('-D', '--timer', choices=('real', 'system', 'user'), nargs = '*',
         help = 'Measure and report the time required by the execution of the tool chain (only on local machine)')
+    other_group.add_argument('-L', '--run-local-scheduler', action='store_true',
+        help = 'Starts the local scheduler after submitting the jobs to the local queue (by default, local jobs must be started by hand, e.g., using ./bin/jman --local -vv run-scheduler -x)')
 
     utils.add_logger_command_line_option(other_group)
 
@@ -176,12 +168,8 @@ class ToolChainExecutor:
         help = 'Skip the feature extraction step.')
     skip_group.add_argument('--skip-projector-training', '--noprot', action='store_true',
         help = 'Skip the feature projector training step.')
-    skip_group.add_argument('--skip-whitening-projector-training', '--noprot', action='store_true',
-        help = 'Skip the whitening projector training step.')
     skip_group.add_argument('--skip-projection', '--nopro', action='store_true',
         help = 'Skip the feature projection step.')
-    skip_group.add_argument('--skip-whitening-projection', '--nopro', action='store_true',
-        help = 'Skip the whiteining projection step.')
     skip_group.add_argument('--skip-enroller-training', '--noenrt', action='store_true',
         help = 'Skip the model enroller training step.')
     skip_group.add_argument('--skip-enrollment', '--noenr', action='store_true',
@@ -234,13 +222,14 @@ class ToolChainExecutor:
     else:
       raise ValueError("The JobManager type '%s' is not supported.")
     self.m_logs_directory = os.path.join(temp_dir if temp_dir else self.m_configuration.temp_directory, "grid_tk_logs")
+    self.m_submitted_job_ids = []
 
 
-  def indices(self, list_to_split, number_of_parallel_jobs):
+  def indices(self, list_to_split, number_of_parallel_jobs, task_id=None):
     """This function returns the first and last index for the files for the current job ID.
        If no job id is set (e.g., because a sub-job is executed locally), it simply returns all indices."""
     # test if the 'SEG_TASK_ID' environment is set
-    sge_task_id = os.getenv('SGE_TASK_ID')
+    sge_task_id = os.getenv('SGE_TASK_ID') if task_id is None else task_id
     if sge_task_id is None:
       # task id is not set, so this function is not called from a grid job
       # hence, we process the whole list
@@ -257,6 +246,7 @@ class ToolChainExecutor:
   def submit_grid_job(self, command, number_of_parallel_jobs = 1, dependencies=[], name = None, **kwargs):
     """Submits a job to the grid."""
 
+    dependencies = dependencies[:] + self.m_args.external_dependencies
     # create the command to be executed
     cmd = [
             self.m_executable,
@@ -292,13 +282,14 @@ class ToolChainExecutor:
           **kwargs
       )
       utils.info("submitted: job '%s' with id '%d' and dependencies '%s'" % (name, job_id, dependencies))
+      self.m_submitted_job_ids.append(job_id)
       return job_id
     else:
       self.m_fake_job_id += 1
       print ('would have submitted job', name, 'with id', self.m_fake_job_id, 'with parameters', kwargs, end='')
       if array:
         print ('using', array[1], 'parallel jobs', end='')
-      print ('as:', ' '.join(cmd), '\nwith dependencies', dependencies)
+      print ('as:', utils.command_line(cmd), '\nwith dependencies', dependencies)
       return self.m_fake_job_id
 
 
@@ -311,4 +302,4 @@ class ToolChainExecutor:
   def execute_local_deamon(self):
     """Starts the local deamon and waits until it has finished."""
     utils.info("Starting jman deamon to finally run the jobs on the local machine.")
-    self.m_job_manager.run_scheduler(parallel_jobs=self.m_grid.number_of_parallel_processes, sleep_time=self.m_grid.scheduler_sleep_time, die_when_finished=True)
+    self.m_job_manager.run_scheduler(job_ids = self.m_submitted_job_ids, parallel_jobs=self.m_grid.number_of_parallel_processes, sleep_time=self.m_grid.scheduler_sleep_time, die_when_finished=True, nice=10)

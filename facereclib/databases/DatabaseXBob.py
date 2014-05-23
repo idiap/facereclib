@@ -190,6 +190,18 @@ class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
     self.m_z_probe_options = z_probe_options
 
 
+  def all_files(self, groups = ['dev']):
+    """Returns all File objects of the database for the current protocol. If the current protocol is 'None' (a string), None (NoneType) will be used instead"""
+    files = self.m_database.objects(protocol = self.protocol if self.protocol != 'None' else None, groups = groups, **self.all_files_options)
+
+    # add all files that belong to the ZT-norm
+    for group in groups:
+      if group == 'world': continue
+      files += self.m_database.tobjects(protocol = self.protocol if self.protocol != 'None' else None, groups = group, model_ids = None)
+      files += self.m_database.zobjects(protocol = self.protocol if self.protocol != 'None' else None, groups = group, **self.m_z_probe_options)
+    return self.sort(files)
+
+
   def t_model_ids(self, group = 'dev'):
     """Returns the T-Norm model ids for the given group and the current protocol."""
     if hasattr(self.m_database, 'tmodel_ids'):

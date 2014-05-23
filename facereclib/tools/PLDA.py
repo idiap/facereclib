@@ -192,7 +192,7 @@ class PLDA (Tool):
     else:
       # just forward
       if self.m_score_set == 'joint_likelihood':
-        probe_ = numpy.ndarray((n_probes, self.m_pca_machine.shape[1]), numpy.float64)
+        probe_ = numpy.ndarray((n_probes, probe[0].shape[0]), numpy.float64)
         for i in range(n_probes):
           probe_[i,:] = probes[i]
         return model.forward(probe_)

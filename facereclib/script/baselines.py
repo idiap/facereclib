@@ -43,6 +43,8 @@ def command_line_arguments(command_line_parameters):
   parser.add_argument('--all', action = 'store_true', help = 'Select all algorithms.')
   # - the database to choose
   parser.add_argument('-d', '--database', choices = available_databases, default = 'atnt', help = 'The database on which the baseline algorithm is executed.')
+  # - the database to choose
+  parser.add_argument('-b', '--baseline-directory', default = 'baselines', help = 'The sub-directory, where the baseline results are stored.')
   # - the directory to write
   parser.add_argument('-f', '--directory', help = 'The directory to write the data of the experiment into. If not specified, the default directories of the faceverify script are used (see bin/faceverify.py --help).')
   # - special option to share preprocessing. This can be used to save some time.
@@ -189,7 +191,7 @@ def main(command_line_parameters = sys.argv):
         raise IOError("The result directory cannot be found. Please specify the --directory as it was specified during execution of the algorithms.")
 
     # get the result directory of the database
-    result_dir = os.path.join(base_dir, args.database, 'baselines')
+    result_dir = os.path.join(base_dir, args.database, args.baseline_directory)
     if not os.path.exists(result_dir):
       if not args.dry_run:
         raise IOError("The result directory for the desired database cannot be found. Did you already run the experiments for this database?")
@@ -236,7 +238,7 @@ def main(command_line_parameters = sys.argv):
       return
 
     # call the evaluate script
-    base_call = ['bin/evaluate.py', '--directory', result_dir, '--legends'] + legends
+    base_call = [os.path.join(bin_dir, 'evaluate.py'), '--directory', result_dir, '--legends'] + legends
     if 'EER' in args.evaluate:
       base_call += ['--criterion', 'EER']
     elif 'HTER' in args.evaluate:
@@ -297,7 +299,7 @@ def main(command_line_parameters = sys.argv):
         preprocessing = 'tan-triggs'
 
       # this is the default sub-directory that is used
-      sub_directory = os.path.join('baselines', algorithm)
+      sub_directory = os.path.join(args.baseline_directory, algorithm)
 
       # create the command to the faceverify script
       command = [

@@ -75,12 +75,7 @@ class Preprocessor:
 
     If you have a different format (e.g. not images), please overwrite this function.
     """
-    utils.ensure_dir(os.path.dirname(data_file))
-    if hasattr(data, 'save'):
-      # this is some class that supports saving itself
-      image.save(bob.io.HDF5File(data_file, "w"))
-    else:
-      bob.io.save(data, data_file)
+    utils.save(data, data_file)
 
 
   def read_data(self, data_file):
@@ -88,5 +83,11 @@ class Preprocessor:
     In this base class implementation, it uses ``bob.io.load`` to do that.
     If you have different format, please overwrite this function.
     """
-    return bob.io.load(data_file)
+    return utils.load(data_file)
 
+
+  def quality(self):
+    """Returns the quality of the last preprocessed image.
+    This quality term is application dependent.
+    By default, None is returned."""
+    return None

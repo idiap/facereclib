@@ -43,7 +43,7 @@ class Dummy (Tool):
 
   def __test__(self, file_name):
     """Simply tests that the read data is consistent"""
-    test_value = bob.io.load(str(file_name))
+    test_value = utils.load(file_name)
     for y in range(3):
       for x in range(3):
         assert test_value[y,x] == self.m_test_value[y,x]
@@ -52,7 +52,7 @@ class Dummy (Tool):
     """Does not train the projector, but writes some file"""
     utils.debug("DummyTool: Training projector %s with %d training files" % (projector_file, len(train_files)))
     # save something
-    bob.io.save(self.m_test_value, projector_file)
+    utils.save(self.m_test_value, projector_file)
 
   def load_projector(self, projector_file):
     """Loads the test value from file and compares it with the desired one"""
@@ -67,7 +67,7 @@ class Dummy (Tool):
     """Does not train the projector, but writes some file"""
     utils.debug("DummyTool: Training enroller %s using %d features" % (enroller_file, len(train_files)))
     # save something
-    bob.io.save(self.m_test_value, enroller_file)
+    utils.save(self.m_test_value, enroller_file)
 
   def load_enroller(self, enroller_file):
     """Loads the test value from file and compares it with the desired one"""
@@ -84,27 +84,27 @@ class Dummy (Tool):
   def save_feature(self, feature, feature_file):
     """Saves the given feature to the given file"""
     utils.debug("DummyTool: Saving feature of length %d to file %s" % (feature.shape[0], feature_file))
-    bob.io.save(feature, feature_file)
+    utils.save(feature, feature_file)
 
   def read_feature(self, feature_file):
     """Reads the feature from the given file"""
     utils.debug("DummyTool: Reading feature from file %s" % feature_file)
-    return bob.io.load(feature_file)
+    return utils.load(feature_file)
 
   def save_model(self, model, model_file):
     """Writes the model to the given model file"""
     utils.debug("DummyTool: Saving model of length %d to file %s" % (model.shape[0], model_file))
-    bob.io.save(model, model_file)
+    utils.save(model, model_file)
 
   def read_model(self, model_file):
     """Reads the model from file"""
     utils.debug("DummyTool: Reading model from file %s" % model_file)
-    return bob.io.load(model_file)
+    return utils.load(model_file)
 
   def read_probe(self, probe_file):
     """Reads the probe from file"""
     utils.debug("DummyTool: Reading probe from file %s" % probe_file)
-    return bob.io.load(probe_file)
+    return utils.load(probe_file)
 
   def score(self, model, probe):
     """Returns the Euclidean distance between model and probe"""

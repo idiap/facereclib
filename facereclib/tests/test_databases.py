@@ -159,7 +159,8 @@ class DatabaseTest(unittest.TestCase):
     check_files(db1.z_probe_files(), db2.z_probe_files())
 
     f1 = db1.all_files()[0]
-    f2 = db2.all_files()[0]
+    f2 = [f for f in db2.all_files() if f.path == f1.path][0]
+
     self.assertEqual(f1.make_path(directory='xx', extension='.yy'), f2.make_path(directory='xx', extension='.yy'))
 
     m1 = sorted([str(id) for id in db1.model_ids()])[0]

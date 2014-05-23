@@ -90,11 +90,13 @@ class GridParameters:
 
   def queue(self, params):
     """Helper function to translate the given queue parameters to grid options."""
+    if self.is_local():
+      return {}
     if isinstance(params, str) and params in PREDEFINED_QUEUES:
       return PREDEFINED_QUEUES[params]
     elif isinstance(params, dict):
       return params
-    elif params in None:
+    elif params is None:
       return {}
     else:
       raise ValueError("The given queue parameters '%s' are not in the predefined queues and neither a dictionary with values.")

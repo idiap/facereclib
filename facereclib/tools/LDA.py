@@ -105,6 +105,7 @@ class LDA (Tool):
 
     if self.m_pca_subspace:
       pca_machine = self.__train_pca__(data)
+      utils.info("  -> Projecting training data to PCA subspace")
       data = self.__perform_pca__(pca_machine, data)
 
     utils.info("  -> Training LinearMachine using LDA")

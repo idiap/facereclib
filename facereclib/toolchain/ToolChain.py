@@ -3,17 +3,20 @@
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
 import os
+import sys
 import numpy
 import bob
+import tarfile
+
 from .. import utils
 
 class ToolChain:
   """This class includes functionalities for a default tool chain to produce verification scores"""
 
-  def __init__(self, file_selector):
+  def __init__(self, file_selector, write_compressed_score_files = False):
     """Initializes the tool chain object with the current file selector."""
     self.m_file_selector = file_selector
-
+    self.m_write_compressed = write_compressed_score_files
 
 
   def __check_file__(self, filename, force, expected_file_size = 1):
@@ -53,7 +56,7 @@ class ToolChain:
     for i in index_range:
       preprocessed_data_file = preprocessed_data_files[i]
 
-      if not self.__check_file__(preprocessed_data_file, force):
+      if not self.__check_file__(preprocessed_data_file, force, 1000):
         data = preprocessor.read_original_data(str(data_files[i]))
 
         # get the annotations; might be None
@@ -61,10 +64,11 @@ class ToolChain:
 
         # call the preprocessor
         preprocessed_data = preprocessor(data, annotations)
+        if preprocessed_data is None:
+          utils.error("Preprocessing of file %s was not successful" % str(data_files[i]))
 
         utils.ensure_dir(os.path.dirname(preprocessed_data_file))
         preprocessor.save_data(preprocessed_data, str(preprocessed_data_file))
-
 
 
   def __read_data__(self, files, preprocessor):
@@ -121,7 +125,7 @@ class ToolChain:
       data_file = data_files[i]
       feature_file = feature_files[i]
 
-      if not self.__check_file__(feature_file, force):
+      if not self.__check_file__(feature_file, force, 1000):
         # load data
         data = preprocessor.read_data(str(data_file))
         # extract feature
@@ -157,12 +161,12 @@ class ToolChain:
         # train projector
         if tool.split_training_features_by_client:
           train_files = self.m_file_selector.training_list('features', 'train_projector', arrange_by_client = True)
-          train_features = self.__read_features_by_client__(train_files, extractor)
           utils.info("- Projection: training projector '%s' using %d identities: " %(projector_file, len(train_files)))
+          train_features = self.__read_features_by_client__(train_files, extractor)
         else:
           train_files = self.m_file_selector.training_list('features', 'train_projector')
-          train_features = self.__read_features__(train_files, extractor)
           utils.info("- Projection: training projector '%s' using %d training files: " %(projector_file, len(train_files)))
+          train_features = self.__read_features__(train_files, extractor)
 
         # perform training
         tool.train_projector(train_features, str(projector_file))
@@ -192,7 +196,7 @@ class ToolChain:
         feature_file = feature_files[i]
         projected_file = projected_files[i]
 
-        if not self.__check_file__(projected_file, force):
+        if not self.__check_file__(projected_file, force, 1000):
           # load feature
           feature = extractor.read_feature(str(feature_file))
           # project feature
@@ -253,7 +257,7 @@ class ToolChain:
           model_file = self.m_file_selector.model_file(model_id, group)
 
           # Removes old file if required
-          if not self.__check_file__(model_file, force):
+          if not self.__check_file__(model_file, force, 1000):
             enroll_files = self.m_file_selector.enroll_files(model_id, group, 'projected' if tool.use_projected_features_for_enrollment else 'features')
 
             # load all files into memory
@@ -279,7 +283,7 @@ class ToolChain:
           t_model_file = self.m_file_selector.t_model_file(t_model_id, group)
 
           # Removes old file if required
-          if not self.__check_file__(t_model_file, force):
+          if not self.__check_file__(t_model_file, force, 1000):
             t_enroll_files = self.m_file_selector.t_enroll_files(t_model_id, group, 'projected' if tool.use_projected_features_for_enrollment else 'features')
 
             # load all files into memory
@@ -345,10 +349,35 @@ class ToolChain:
   def __save_scores__(self, score_file, scores, probe_objects, client_id):
     """Saves the scores into a text file."""
     assert len(probe_objects) == scores.shape[1]
-    with open(score_file, 'w') as f:
-      for i in range(len(probe_objects)):
-        probe_object = probe_objects[i]
+
+    # open file for writing
+    if not self.m_write_compressed or sys.version_info[0] <= 2:
+      if self.m_write_compressed:
+        import StringIO
+        f = StringIO.StringIO()
+      else:
+        f = open(score_file, 'w')
+      # write scores in four-column format as string
+      for i, probe_object in enumerate(probe_objects):
         f.write(str(client_id) + " " + str(probe_object.client_id) + " " + str(probe_object.path) + " " + str(scores[0,i]) + "\n")
+
+    else:
+      import io
+      f = io.BytesIO()
+      # write scores in four-column format as bytes
+      for i, probe_object in enumerate(probe_objects):
+        f.write(bytes(str(client_id) + " " + str(probe_object.client_id) + " " + str(probe_object.path) + " " + str(scores[0,i]) + "\n", 'utf8'))
+
+    # write to tar-file, if wanted
+    if self.m_write_compressed:
+      f.seek(0)
+      tarinfo = tarfile.TarInfo(os.path.basename(score_file))
+      tarinfo.size = len(f.buf if sys.version_info[0] <= 2 else f.getbuffer())
+      tar = tarfile.open(score_file + ".tar.bz2", 'w')
+      tar.addfile(tarinfo, f)
+      tar.close()
+    # close the file
+    f.close()
 
   def __scores_a__(self, model_ids, group, compute_zt_norm, force, preload_probes):
     """Computes A scores. For non-ZT-norm, these are the only scores that are actually computed."""
@@ -480,27 +509,28 @@ class ToolChain:
     # Loads the T-Norm models
     for t_model_id in t_model_ids:
       # test if the file is already there
-      score_file = self.m_file_selector.d_same_value_file(t_model_id, group)
-      if self.__check_file__(score_file, force):
-        utils.warn("score file '%s' already exists." % (score_file))
+      score_file = self.m_file_selector.d_file(t_model_id, group)
+      same_score_file = self.m_file_selector.d_same_value_file(t_model_id, group)
+      if self.__check_file__(score_file, force) and self.__check_file__(same_score_file, force):
+        utils.warn("score files '%s' and '%s' already exist." % (score_file, same_score_file))
       else:
         t_model = self.m_tool.read_model(self.m_file_selector.t_model_file(t_model_id, group))
         if preload_probes:
           d = self.__scores_preloaded__(t_model, preloaded_z_probes)
         else:
           d = self.__scores__(t_model, z_probe_files)
-        bob.io.save(d, self.m_file_selector.d_file(t_model_id, group))
+        bob.io.save(d, score_file)
 
         t_client_id = [self.m_file_selector.client_id(t_model_id)]
         d_same_value_tm = bob.machine.ztnorm_same_value(t_client_id, z_probe_ids)
-        bob.io.save(d_same_value_tm, score_file)
+        bob.io.save(d_same_value_tm, same_score_file)
 
 
   def compute_scores(self, tool, compute_zt_norm, force = False, indices = None, groups = ['dev', 'eval'], types = ['A', 'B', 'C', 'D'], preload_probes = False):
     """Computes the scores for the given groups (by default 'dev' and 'eval')."""
     # save tool for internal use
     self.m_tool = tool
-    self.m_use_projected_dir = hasattr(tool, 'project')
+    self.m_use_projected_dir = tool.performs_projection
 
     # load the projector and the enroller, if needed
     tool.load_projector(self.m_file_selector.projector_file)
@@ -645,30 +675,76 @@ class ToolChain:
       # (sorted) list of models
       model_ids = self.m_file_selector.model_ids(group)
 
-      with open(self.m_file_selector.no_norm_result_file(group), 'w') as f:
-        # Concatenates the scores
-        for model_id in model_ids:
-          model_file = self.m_file_selector.no_norm_file(model_id, group)
-          if not os.path.exists(model_file):
-            f.close()
-            os.remove(self.m_file_selector.no_norm_result_file(group))
-            raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
+      result_file = self.m_file_selector.no_norm_result_file(group)
+      if self.m_write_compressed:
+        if sys.version_info[0] <= 2:
+          import StringIO
+          f = StringIO.StringIO()
+        else:
+          import io
+          f = io.BytesIO()
 
-          with open(model_file, 'r') as res_file:
-            f.write(res_file.read())
+        result_file += '.tar.bz2'
+      else:
+        f = open(result_file, 'w')
+      # Concatenates the scores
+      for model_id in model_ids:
+        model_file = self.m_file_selector.no_norm_file(model_id, group)
+        if self.m_write_compressed:
+          model_file += '.tar.bz2'
+        if not os.path.exists(model_file):
+          f.close()
+          os.remove(result_file)
+          raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
+
+        res_file = bob.measure.load.open_file(model_file)
+        f.write(res_file.read())
+      if self.m_write_compressed:
+        f.seek(0)
+        tarinfo = tarfile.TarInfo(os.path.basename(result_file[:-8]))
+        tarinfo.size = len(f.buf if sys.version_info[0] <= 2 else f.getbuffer())
+        tar = tarfile.open(result_file, 'w')
+        tar.addfile(tarinfo, f)
+        tar.close()
+      # close the file
+      f.close()
+
+      utils.info("- Scoring: wrote score file '%s'" % result_file)
 
       if compute_zt_norm:
-        with open(self.m_file_selector.zt_norm_result_file(group), 'w') as f:
-          # Concatenates the scores
-          for model_id in model_ids:
-            model_file = self.m_file_selector.zt_norm_file(model_id, group)
-            if not os.path.exists(model_file):
-              f.close()
-              os.remove(self.m_file_selector.zt_norm_result_file(group))
-              raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
+        result_file = self.m_file_selector.zt_norm_result_file(group)
+        if self.m_write_compressed:
+          if sys.version_info[0] <= 2:
+            import StringIO
+            f = StringIO.StringIO()
+          else:
+            import io
+            f = io.BytesIO()
+          result_file += '.tar.bz2'
+        else:
+          f = open(result_file, 'w')
+        # Concatenates the scores
+        for model_id in model_ids:
+          model_file = self.m_file_selector.zt_norm_file(model_id, group)
+          if self.m_write_compressed:
+            model_file += '.tar.bz2'
+          if not os.path.exists(model_file):
+            f.close()
+            os.remove(result_file)
+            raise IOError("The score file '%s' cannot be found. Aborting!" % model_file)
 
-            with open(model_file, 'r') as res_file:
-              f.write(res_file.read())
+          res_file = bob.measure.load.open_file(model_file)
+          f.write(res_file.read())
+        if self.m_write_compressed:
+          f.seek(0)
+          tarinfo = tarfile.TarInfo(os.path.basename(result_file[:-8]))
+          tarinfo.size = len(f.buf if sys.version_info[0] <= 2 else f.getbuffer())
+          tar = tarfile.open(result_file, 'w')
+          tar.addfile(tarinfo, f)
+          tar.close()
+        # close the file
+        f.close()
+        utils.info("- Scoring: wrote score file '%s'" % result_file)
 
 
   def calibrate_scores(self, norms = ['nonorm', 'ztnorm'], groups = ['dev', 'eval'], prior = 0.5):

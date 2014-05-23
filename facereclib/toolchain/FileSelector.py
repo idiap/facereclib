@@ -53,9 +53,9 @@ class FileSelector:
     elif directory_type is not None:
       raise ValueError("The given directory type '%s' is not supported." % directory_type)
 
-    if not directory:
+    if directory is None:
       directory = ""
-    if not extension:
+    if extension is None:
       extension = self.default_extension
 
     # return the paths of the files
