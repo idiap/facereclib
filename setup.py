@@ -45,8 +45,6 @@ setup(
         'faceverify.py = facereclib.script.faceverify:main',
         'faceverify_gbu.py = facereclib.script.faceverify_gbu:main',
         'faceverify_lfw.py = facereclib.script.faceverify_lfw:main',
-        'para_ubm_faceverify_isv.py = facereclib.script.para_ubm_faceverify_isv:main',
-        'para_ubm_faceverify_ivector.py = facereclib.script.para_ubm_faceverify_ivector:main',
         'parameter_test.py = facereclib.script.parameter_test:main',
         'baselines.py = facereclib.script.baselines:main',
         'resources.py = facereclib.utils.resources:print_all_resources',
