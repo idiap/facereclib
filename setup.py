@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='facereclib',
-    version='1.3.0a0',
+    version='1.3.0a1',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
     url='http://github.com/idiap/facereclib',

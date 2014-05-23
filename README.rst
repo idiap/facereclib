@@ -90,8 +90,8 @@ These two dependencies have to be downloaded manually, as explained in the follo
 Bob
 ...
 
-You will need a copy of Bob in version 1.2.0 or newer to run the algorithms.
-Please download Bob_ from its webpage.
+You will need a copy of Bob_ to run the algorithms.
+The master branch of the FaceRecLib only works against the master branch of Bob_, which you can clone from its webpage.
 After downloading, you should go to the console and write::
 
   $ python bootstrap.py
@@ -118,8 +118,8 @@ To verify that your installation worked as expected, you might want to run our t
 
   $ bin/nosetests
 
-Usually, all tests should pass, if you use Bob_ in version 1.2.1.
-With other versions of Bob_, you might find some failing tests.
+Usually, all tests should pass, if you use Bob_ from the master branch.
+With other versions of Bob_, you might find some failing tests, or some errors might occur.
 For Bob_ version 1.2.0 we know that the ISV and JFA tests fail due to a different random initialization of the algorithms.
 
 
@@ -127,6 +127,9 @@ Read further
 ------------
 
 Further documentation is given in our `FaceRecLib documentation <http://pythonhosted.org/facereclib>`_.
+
+.. note::
+  The online documentation is valid for the latest stable version of the FaceRecLib only.
 
 There are several file links in the documentation, which won't work in the online documentation.
 To generate the documentation locally, type::
