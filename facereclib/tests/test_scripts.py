@@ -246,6 +246,7 @@ class ScriptTest (unittest.TestCase):
 
   def test02_faceverify_grid(self):
     self.grid_available()
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters including the dry-run
     parameters = [
         sys.argv[0],
@@ -256,6 +257,7 @@ class ScriptTest (unittest.TestCase):
         '-g', 'grid',
         '--zt-norm',
         '--dry-run',
+        '--user-directory', test_dir,
         '-b', 'dummy'
     ]
 
@@ -264,6 +266,7 @@ class ScriptTest (unittest.TestCase):
     # run the test; should not execute anything...
     from facereclib.script.faceverify import main
     main(parameters)
+    shutil.rmtree(test_dir)
 
 
   def test03_faceverify_lfw_local(self):
@@ -273,6 +276,7 @@ class ScriptTest (unittest.TestCase):
     except Exception as e:
       raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'xbob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
 
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
         sys.argv[0],
@@ -280,6 +284,7 @@ class ScriptTest (unittest.TestCase):
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
         '--dry-run',
+        '--user-directory', test_dir,
         '-b', 'dummy'
     ]
 
@@ -288,6 +293,7 @@ class ScriptTest (unittest.TestCase):
     # run the test; should not execute anything...
     from facereclib.script.faceverify_lfw import main
     main(parameters)
+    shutil.rmtree(test_dir)
 
 
   def test04_faceverify_lfw_grid(self):
@@ -297,6 +303,8 @@ class ScriptTest (unittest.TestCase):
       facereclib.utils.resources.load_resource('lfw','database')
     except Exception as e:
       raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'xbob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
+
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
         sys.argv[0],
@@ -305,6 +313,7 @@ class ScriptTest (unittest.TestCase):
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
         '-g', 'grid',
         '--dry-run',
+        '--user-directory', test_dir,
         '-b', 'dummy'
     ]
 
@@ -313,6 +322,7 @@ class ScriptTest (unittest.TestCase):
     # run the test; should not execute anything...
     from facereclib.script.faceverify_lfw import main
     main(parameters)
+    shutil.rmtree(test_dir)
 
 
   def test05_faceverify_gbu_local(self):
@@ -322,6 +332,7 @@ class ScriptTest (unittest.TestCase):
     except Exception as e:
       raise SkipTest("The resource for database 'gbu' could not be loaded; probably you didn't define the 'xbob.db.gbu' in your *buildout.cfg*. Here is the import error: '%s'" % e)
 
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
         sys.argv[0],
@@ -329,6 +340,7 @@ class ScriptTest (unittest.TestCase):
         '-f', 'eigenfaces',
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
         '--dry-run',
+        '--user-directory', test_dir,
         '-b', 'dummy'
     ]
 
@@ -337,6 +349,7 @@ class ScriptTest (unittest.TestCase):
     # run the test; should not execute anything...
     from facereclib.script.faceverify_gbu import main
     main(parameters)
+    shutil.rmtree(test_dir)
 
 
   def test06_faceverify_gbu_grid(self):
@@ -347,6 +360,7 @@ class ScriptTest (unittest.TestCase):
     except Exception as e:
       raise SkipTest("The resource for database 'gbu' could not be loaded; probably you didn't define the 'xbob.db.gbu' in your *buildout.cfg*. Here is the import error: '%s'" % e)
 
+    test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
         sys.argv[0],
@@ -355,6 +369,7 @@ class ScriptTest (unittest.TestCase):
         '-t', os.path.join(config_dir, 'tools', 'dummy.py'),
         '-g', 'grid',
         '--dry-run',
+        '--user-directory', test_dir,
         '-b', 'dummy'
     ]
 
@@ -363,6 +378,7 @@ class ScriptTest (unittest.TestCase):
     # run the test; should not execute anything...
     from facereclib.script.faceverify_gbu import main
     main(parameters)
+    shutil.rmtree(test_dir)
 
 
   def test10_faceverify_file_set(self):
