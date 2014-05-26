@@ -50,9 +50,9 @@ class FeatureExtractionTest(unittest.TestCase):
     # execute the preprocessor
     feature = extractor(data)
     if regenerate_refs:
-      bob.io.save(feature, self.reference_dir(reference))
+      facereclib.utils.save(feature, self.reference_dir(reference))
 
-    ref = bob.io.load(self.reference_dir(reference))
+    ref = facereclib.utils.load(self.reference_dir(reference))
     self.assertEqual(ref.shape, feature.shape)
     self.assertTrue((numpy.abs(ref - feature) < epsilon).all())
     return feature
@@ -60,7 +60,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
   def test01_linearize(self):
     # read input
-    data = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = facereclib.utils.load(self.input_dir('cropped.hdf5'))
     extractor = self.config('linearize')
     # extract feature
     feature = self.execute(extractor, data, 'linearize.hdf5')
@@ -69,7 +69,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
   def test02_dct(self):
     # read input
-    data = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = facereclib.utils.load(self.input_dir('cropped.hdf5'))
     extractor = self.config('dct')
     # extract feature
     feature = self.execute(extractor, data, 'dct_blocks.hdf5')

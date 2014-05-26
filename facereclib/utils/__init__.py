@@ -21,19 +21,15 @@ def load(file):
   else:
     return bob.io.load(file)
 
-def save(data, file):
-  """Saves the data to file. The given file might be an HDF5 file open for writing, or a string.
-  If the given data contains a ``save`` method, this method is called with the given HDF5 file."""
-  if isinstance(file, bob.io.HDF5File):
-    if hasattr(data, 'save'):
-      data.save(file)
-    else:
-      file.set("array", data)
+def save(data, file, compression=1):
+  """Saves the data to file using HDF5. The given file might be an HDF5 file open for writing, or a string.
+  If the given data contains a ``save`` method, this method is called with the given HDF5 file.
+  Otherwise the data is written to the HDF5 file using the given compression."""
+  f = file if isinstance(file, bob.io.HDF5File) else bob.io.HDF5File(file, 'w')
+  if hasattr(data, 'save'):
+    data.save(f)
   else:
-    if hasattr(data, 'save'):
-      data.save(bob.io.HDF5File(file, 'w'))
-    else:
-      bob.io.save(data, file)
+    f.set("array", data, compression=compression)
 
 
 def ensure_dir(dirname):

@@ -48,9 +48,9 @@ class ToolTest(unittest.TestCase):
   def compare(self, feature, reference):
     # execute the preprocessor
     if regenerate_refs:
-      bob.io.save(feature, self.reference_dir(reference))
+      facereclib.utils.save(feature, self.reference_dir(reference))
 
-    self.assertTrue((numpy.abs(bob.io.load(self.reference_dir(reference)) - feature) < 1e-5).all())
+    self.assertTrue((numpy.abs(facereclib.utils.load(self.reference_dir(reference)) - feature) < 1e-5).all())
 
 
   def train_gmm_stats(self, feature_file, count = 50, minimum = 0, maximum = 1):
@@ -72,7 +72,7 @@ class ToolTest(unittest.TestCase):
 
   def test01_gabor_jet(self):
     # read input
-    feature = bob.io.load(self.input_dir('graph_with_phase.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('graph_with_phase.hdf5'))
     tool = self.config('gabor-jet')
     self.assertFalse(tool.performs_projection)
     self.assertFalse(tool.requires_enroller_training)
@@ -89,8 +89,8 @@ class ToolTest(unittest.TestCase):
 
   def test02_lgbphs(self):
     # read input
-    feature1 = bob.io.load(self.input_dir('lgbphs_sparse.hdf5'))
-    feature2 = bob.io.load(self.input_dir('lgbphs_no_phase.hdf5'))
+    feature1 = facereclib.utils.load(self.input_dir('lgbphs_sparse.hdf5'))
+    feature2 = facereclib.utils.load(self.input_dir('lgbphs_no_phase.hdf5'))
     tool = self.config('lgbphs')
     self.assertFalse(tool.performs_projection)
     self.assertFalse(tool.requires_enroller_training)
@@ -107,7 +107,7 @@ class ToolTest(unittest.TestCase):
 
   def test03_pca(self):
     # read input
-    feature = bob.io.load(self.input_dir('linearize.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is read
     tool = self.config('pca')
     self.assertTrue(isinstance(tool, facereclib.tools.PCA))
@@ -168,7 +168,7 @@ class ToolTest(unittest.TestCase):
 
   def test04_lda(self):
     # read input
-    feature = bob.io.load(self.input_dir('linearize.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is loadable
     tool = self.config('lda')
     self.assertTrue(isinstance(tool, facereclib.tools.LDA))
@@ -236,7 +236,7 @@ class ToolTest(unittest.TestCase):
 
   def test05_bic(self):
     # read input
-    feature = bob.io.load(self.input_dir('linearize.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('linearize.hdf5'))
     # check that the config file is readable
     tool = self.config('bic')
     self.assertTrue(isinstance(tool, facereclib.tools.BIC))
@@ -293,7 +293,7 @@ class ToolTest(unittest.TestCase):
 
   def test06_gmm(self):
     # read input
-    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('gmm')
     self.assertTrue(isinstance(tool, facereclib.tools.UBMGMM))
@@ -346,7 +346,7 @@ class ToolTest(unittest.TestCase):
 
   def test06a_gmm_regular(self):
     # read input
-    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('ubm_gmm_regular_scoring')
     self.assertTrue(isinstance(tool, facereclib.tools.UBMGMMRegular))
@@ -381,7 +381,7 @@ class ToolTest(unittest.TestCase):
 
   def test07_isv(self):
     # read input
-    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('isv')
     self.assertTrue(isinstance(tool, facereclib.tools.ISV))
@@ -457,7 +457,7 @@ class ToolTest(unittest.TestCase):
 
   def test08_jfa(self):
     # read input
-    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('jfa')
     self.assertTrue(isinstance(tool, facereclib.tools.JFA))
@@ -534,7 +534,7 @@ class ToolTest(unittest.TestCase):
 
   def test09_plda(self):
     # read input
-    feature = bob.io.load(self.input_dir('linearize.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('linearize.hdf5'))
     # assure that the config file is readable
     tool = self.config('pca+plda')
     self.assertTrue(isinstance(tool, facereclib.tools.PLDA))
@@ -589,7 +589,7 @@ class ToolTest(unittest.TestCase):
   def test10_ivector(self):
     # NOTE: This test will fail when it is run solely. Please always run all Tool tests in order to assure that they work.
     # read input
-    feature = bob.io.load(self.input_dir('dct_blocks.hdf5'))
+    feature = facereclib.utils.load(self.input_dir('dct_blocks.hdf5'))
     # assure that the config file is readable
     tool = self.config('ivector')
     self.assertTrue(isinstance(tool, facereclib.tools.IVector))

@@ -40,7 +40,7 @@ class PreprocessingTest(unittest.TestCase):
     return ref
 
   def input(self):
-    return (bob.io.load(self.input_dir("testimage.jpg")), facereclib.utils.read_annotations(self.input_dir("testimage.pos"), 'named'))
+    return (facereclib.utils.load(self.input_dir("testimage.jpg")), facereclib.utils.read_annotations(self.input_dir("testimage.pos"), 'named'))
 
   def config(self, resource):
     return facereclib.utils.tests.configuration_file(resource, 'preprocessor', 'preprocessing')
@@ -49,9 +49,9 @@ class PreprocessingTest(unittest.TestCase):
     # execute the preprocessor
     preprocessed = preprocessor(data, annotations)
     if regenerate_refs:
-      bob.io.save(preprocessed, self.reference_dir(reference))
+      facereclib.utils.save(preprocessed, self.reference_dir(reference))
 
-    self.assertTrue((numpy.abs(bob.io.load(self.reference_dir(reference)) - preprocessed) < 1e-5).all())
+    self.assertTrue((numpy.abs(facereclib.utils.load(self.reference_dir(reference)) - preprocessed) < 1e-5).all())
 
 
 
@@ -82,7 +82,7 @@ class PreprocessingTest(unittest.TestCase):
     preprocessor = self.config('face_crop_with_offset')
     preprocessed = preprocessor(data, annotation)
     # results of the inner parts must be similar
-    self.assertTrue((numpy.abs(bob.io.load(self.reference_dir('cropped.hdf5')) - preprocessed[2:-2, 2:-2]) < 1e-10).all())
+    self.assertTrue((numpy.abs(facereclib.utils.load(self.reference_dir('cropped.hdf5')) - preprocessed[2:-2, 2:-2]) < 1e-10).all())
 
 
   def test02_tan_triggs(self):
