@@ -21,7 +21,7 @@ def load(file):
   else:
     return bob.io.load(file)
 
-def save(data, file, compression=1):
+def save(data, file, compression=0):
   """Saves the data to file using HDF5. The given file might be an HDF5 file open for writing, or a string.
   If the given data contains a ``save`` method, this method is called with the given HDF5 file.
   Otherwise the data is written to the HDF5 file using the given compression."""
