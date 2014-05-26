@@ -161,3 +161,12 @@ class PreprocessingTest(unittest.TestCase):
     data2, annot2 = reference
     self.assertTrue((numpy.abs(data - data2) < 1e-5).all())
     self.assertTrue((annots == annot2).all())
+
+
+  def test20_compressed_io(self):
+    data = facereclib.utils.load(self.reference_dir('cropped.hdf5'))
+    compressed_file = self.reference_dir('compressed.hdf5')
+    if regenerate_refs:
+      facereclib.utils.save_compressed(data, compressed_file, create_link = True)
+    data2 = facereclib.utils.load_compressed(compressed_file)
+    self.assertTrue(numpy.alltrue(data == data2))

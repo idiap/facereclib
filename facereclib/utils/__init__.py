@@ -13,6 +13,7 @@ from .grid import GridParameters
 import os
 import bob
 import numpy
+import tempfile, tarfile
 
 def load(file):
   """Loads data from file. The given file might be an HDF5 file open for reading or a string."""
@@ -30,6 +31,61 @@ def save(data, file, compression=0):
     data.save(f)
   else:
     f.set("array", data, compression=compression)
+
+
+def load_compressed(filename, compression_type='bz2'):
+  """Extracts the data to a temporary HDF5 file using HDF5 and reads its contents.
+  Note that, though the file name is .hdf5, it contains compressed data!
+  Accepted compression types are 'gz', 'bz2', ''"""
+  # create temporary HDF5 file name
+  hdf5_file_name = tempfile.mkstemp('.hdf5', 'frl_')[1]
+
+  # create tar file
+  tar = tarfile.open(filename, mode="r:"+compression_type)
+  memory_file = tar.extractfile(tar.next())
+  real_file = open(hdf5_file_name, 'wb')
+  real_file.write(memory_file.read())
+  del memory_file
+  real_file.close()
+  tar.close()
+
+  # now, read from HDF5
+  hdf5 = bob.io.HDF5File(hdf5_file_name, 'r')
+  data = hdf5.read("array")
+  del hdf5
+
+  # clean up the mess
+  os.remove(hdf5_file_name)
+
+  return data
+
+
+def save_compressed(data, filename, compression_type='bz2', create_link=False):
+  """Saves the data to a temporary file using HDF5.
+  Afterwards, the file is compressed using the given compression method and saved using the given file name.
+  Note that, though the file name will be .hdf5, it will contain compressed data!
+  To be able to read the data using the real tools, a link with the correct extension might is created, when create_link is set to True.
+  Accepted compression types are 'gz', 'bz2', ''"""
+  # create file in temporary storage
+  hdf5_file_name = tempfile.mkstemp('.hdf5', 'frl_')[1]
+  hdf5 = bob.io.HDF5File(hdf5_file_name, 'w')
+  hdf5.set("array", data)
+  # assure that the content is written
+  del hdf5
+  # create tar file
+  tar = tarfile.open(filename, mode="w:"+compression_type)
+  tar.add(hdf5_file_name, os.path.basename(filename))
+  tar.close()
+
+  # clean up the mess
+  os.remove(hdf5_file_name)
+
+  if create_link:
+    extension = {'':'.tar', 'bz2':'.tar.bz2', 'gz':'tar.gz'}[compression_type]
+    link_file = filename+extension
+    if not os.path.exists(link_file):
+       os.symlink(os.path.basename(filename), link_file)
+
 
 
 def ensure_dir(dirname):
