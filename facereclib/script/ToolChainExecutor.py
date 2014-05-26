@@ -17,7 +17,6 @@ class Configuration:
   def __init__(self, args, database_name, use_local_files):
     """Creates the default configuration based on the command line options."""
     # add command line based arguments
-    user_name = os.environ['USER']
     if args.user_directory:
       self.user_directory = os.path.join(args.user_directory, args.sub_directory)
     else:
