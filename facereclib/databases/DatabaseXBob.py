@@ -135,10 +135,10 @@ class DatabaseXBob (Database):
       return sorted([model.id for model in self.m_database.models(protocol = self.protocol, groups = group)])
 
 
-  def client_id_from_model_id(self, model_id):
+  def client_id_from_model_id(self, model_id, group = 'dev'):
     """Returns the client id for the given model id."""
     if hasattr(self.m_database, 'get_client_id_from_model_id'):
-      return self.m_database.get_client_id_from_model_id(model_id)
+      return self.m_database.get_client_id_from_model_id(model_id, groups = group, protocol = self.protocol)
     else:
       return model_id
 

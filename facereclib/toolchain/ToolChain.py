@@ -421,7 +421,7 @@ class ToolChain:
           bob.io.save(a, self.m_file_selector.a_file(model_id, group))
 
         # Save scores to text file
-        self.__save_scores__(self.m_file_selector.no_norm_file(model_id, group), a, current_probe_objects, self.m_file_selector.client_id(model_id))
+        self.__save_scores__(self.m_file_selector.no_norm_file(model_id, group), a, current_probe_objects, self.m_file_selector.client_id(model_id, group))
 
   def __scores_b__(self, model_ids, group, force, preload_probes):
     """Computes B scores."""
@@ -521,7 +521,7 @@ class ToolChain:
           d = self.__scores__(t_model, z_probe_files)
         bob.io.save(d, score_file)
 
-        t_client_id = [self.m_file_selector.client_id(t_model_id)]
+        t_client_id = [self.m_file_selector.client_id(t_model_id, group)]
         d_same_value_tm = bob.machine.ztnorm_same_value(t_client_id, z_probe_ids)
         bob.io.save(d_same_value_tm, same_score_file)
 
@@ -665,7 +665,7 @@ class ToolChain:
         zt_scores = bob.machine.ztnorm(a, b, c, d, d_same_value)
 
         # Saves to text file
-        self.__save_scores__(self.m_file_selector.zt_norm_file(model_id, group), zt_scores, probe_objects, self.m_file_selector.client_id(model_id))
+        self.__save_scores__(self.m_file_selector.zt_norm_file(model_id, group), zt_scores, probe_objects, self.m_file_selector.client_id(model_id, group))
 
 
   def concatenate(self, compute_zt_norm, groups = ['dev', 'eval']):
