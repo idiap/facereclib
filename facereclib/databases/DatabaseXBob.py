@@ -136,7 +136,10 @@ class DatabaseXBob (Database):
   def client_id_from_model_id(self, model_id, group = 'dev'):
     """Returns the client id for the given model id."""
     if hasattr(self.m_database, 'get_client_id_from_model_id'):
-      return self.m_database.get_client_id_from_model_id(model_id, groups = group, protocol = self.protocol)
+      try:
+        return self.m_database.get_client_id_from_model_id(model_id, groups = group, protocol = self.protocol)
+      except TypeError:
+        return self.m_database.get_client_id_from_model_id(model_id)
     else:
       return model_id
 
