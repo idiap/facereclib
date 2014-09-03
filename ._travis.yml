@@ -1,47 +1,36 @@
-# After changing this file, run it through http://lint.travis-ci.org/
-# Generates 4 builds, the ones for python3 will install external wheels
 language: python
 matrix:
   include:
-#    - python: 2.6
-#      env:
-#        - SCIPYSPEC===0.12.0
-    - python: 2.7
-      env:
-        - SCIPYSPEC===0.12.0
-#    - python: 3.2
-#      env:
-#        - NUMPYSPEC===1.8.0
-#        - SCIPYSPEC===0.13.1
-#    - python: 3.3
-#      env:
-#        - NUMPYSPEC===1.8.0
-#        - SCIPYSPEC===0.13.1
+#  - python: 2.6
+#    env:
+#    - SCIPYSPEC===0.12.0
+  - python: 2.7
+    env:
+    - SCIPYSPEC===0.12.0
+#    - secure: Exztxl4RdDn/zsSykHPMWvEyZBElVQjN6L8ZRgCgQp/J8AxtBWyBHuGJSAlZVqVFSCmsQwhPmr+bbpH8poLbjrmiYkzpOMabs+DNynkMxhdNCuTnDhYKSngWNd5BeNVE2HvqEJhvMMpzBKRiOCORqG11WoLKBgXIrGPNHsmM6Lo=
+#    - secure: VghR2ttbIRzUtJoC8RhQdvf+RnJmsapJ5YIrSGsUp7XxR0zkwNe+NaFgRngyEjsmKBloAKc/yxW5SxK/BYH68qrs2N2YX12eCHW72fNRqTQjekcfbyjd3eqbPQChDvGXU5VSKYxRJ2R9waqsalpc23fMxy4Ya31xj4W4ji4pVMk=
+#  - python: 3.2
+#    env:
+#    - NUMPYSPEC===1.8.0
+#    - SCIPYSPEC===0.13.1
 before_install:
-  - sudo apt-add-repository -y ppa:biometrics/bob
-  - sudo add-apt-repository -y ppa:biometrics/bob.preview
-  - sudo apt-get update
-  - sudo apt-get install git-core cmake python-dev python-support python-numpy python-argparse python-scipy python-matplotlib python-sqlalchemy liblapack-dev libatlas-base-dev libblitz1-dev ffmpeg libavcodec-dev libswscale-dev libboost-all-dev libavformat-dev graphviz libmatio-dev libjpeg8-dev libnetpbm10-dev libpng12-dev libtiff4-dev libgif-dev libhdf5-serial-dev libqt4-dev libfftw3-dev texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended libsvm-dev libvl-dev doxygen python-sphinx dvipng python-nose python-setuptools python-imaging
-  - pip install --upgrade pip setuptools
-  - pip install --upgrade pip setuptools
-  - if [ -n "${NUMPYSPEC}" ]; then pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel numpy$NUMPYSPEC; fi
-  - pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel matplotlib scipy$SCIPYSPEC sphinx nose
-  - pip install cpp-coveralls
-  - git clone https://github.com/idiap/bob.git
-  - cd bob
-  - mkdir __build__
-  - cd __build__
-  - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PYTHON=/usr/bin/python ..
-  - make
-  - sudo make install
-  - cd ../..
+- sudo add-apt-repository -y ppa:biometrics/bob
+- sudo apt-get update -qq
+- sudo apt-get install -qq --force-yes libjpeg8-dev libnetpbm10-dev libpng12-dev libtiff4-dev libgif-dev libboost-all-dev libblitz1-dev libhdf5-serial-dev libvl-dev
+- sudo apt-get install -qq --force-yes dvipng texlive-latex-base texlive-latex-extra texlive-math-extra
+- sudo apt-get install -qq --force-yes libatlas-dev libatlas-base-dev liblapack-dev
+- if [ -n "${NUMPYSPEC}" ]; then sudo apt-get install -qq gfortran; fi
+- if [ -n "${NUMPYSPEC}" ]; then pip install --upgrade pip setuptools; fi
+- if [ -n "${NUMPYSPEC}" ]; then pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel numpy$NUMPYSPEC; fi
+- pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel scipy$SCIPYSPEC matplotlib==1.3.0 sphinx nose==1.3.0
+- pip install cpp-coveralls
 install:
-  - "python bootstrap.py"
-  - "./bin/buildout"
-  - "CFLAGS=-coverage ./bin/buildout"
+- python bootstrap.py
+- CFLAGS=-coverage ./bin/buildout
 script:
-  - "./bin/coverage run --source=facereclib ./bin/nosetests -sv"
-  - "./bin/sphinx-build -b doctest docs sphinx"
-  - "./bin/sphinx-build -b html docs sphinx"
+- ./bin/coverage run --source=facereclib ./bin/nosetests -sv
+- ./bin/sphinx-build -b doctest docs sphinx
+- ./bin/sphinx-build -b html docs sphinx
 after_success:
-  - "coveralls --build-root=`pwd` --exclude=src"
+- coveralls --build-root=`pwd` --exclude=src
+#- ./src/bob.extension/scripts/upload-sphinx.sh
