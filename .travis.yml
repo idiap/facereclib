@@ -26,7 +26,7 @@ before_install:
 - pip install cpp-coveralls
 install:
 - python bootstrap.py
-- CFLAGS=-coverage ./bin/buildout -c develop.cfg
+- CFLAGS=-coverage ./bin/buildout buildout:debug=false -c develop.cfg
 script:
 - ./bin/coverage run --source=facereclib ./bin/nosetests -sv
 - ./bin/sphinx-build -b doctest docs sphinx
