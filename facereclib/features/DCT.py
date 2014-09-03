@@ -6,7 +6,7 @@
 
 import numpy
 import math
-import bob
+import bob.ip.base
 from .. import utils
 
 from .Extractor import Extractor
@@ -54,7 +54,7 @@ class DCTBlocks (Extractor):
     """Computes and returns DCT blocks for the given input image"""
 
     # Initializes cropper and destination array
-    extractor = bob.ip.DCTFeatures(self.m_block_size[0], self.m_block_size[1], self.m_block_overlap[0], self.m_block_overlap[1], self.m_number_of_dct_coefficients, self.norm_block, self.norm_dct)
+    extractor = bob.ip.base.DCTFeatures(self.m_number_of_dct_coefficients, self.m_block_size, self.m_block_overlap, self.norm_block, self.norm_dct)
 
     # Computes DCT features
     return extractor(image)

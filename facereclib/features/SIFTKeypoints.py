@@ -2,7 +2,8 @@
 # vim: set fileencoding=utf-8 :
 # Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
 
-import bob
+import bob.ip.base
+
 import numpy
 
 from .Extractor import Extractor
@@ -49,7 +50,7 @@ class SIFTKeypoints (Extractor):
     self.m_edge_thres = edge_thres
     self.m_magnif = magnif
     # SIFT extractor
-    self.m_sift_extract = bob.ip.VLSIFT(self.m_height, self.m_width, self.m_n_intervals, self.m_n_octaves, self.m_octave_min, self.m_peak_thres, self.m_edge_thres, self.m_magnif)
+    self.m_sift_extract = bob.ip.base.VLSIFT((self.m_height, self.m_width), self.m_n_intervals, self.m_n_octaves, self.m_octave_min, self.m_peak_thres, self.m_edge_thres, self.m_magnif)
 
   def __linearize_cut__(self, descr):
     l_vec = 128 # Length of the SIFT descriptors

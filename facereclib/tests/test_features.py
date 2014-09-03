@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import bob.io.base
+import bob.learn.linear
 
 import unittest
 import os
@@ -24,7 +26,6 @@ import numpy
 import math
 import tempfile
 import facereclib
-import bob
 from nose.plugins.skip import SkipTest
 
 import pkg_resources
@@ -83,27 +84,27 @@ class FeatureExtractionTest(unittest.TestCase):
 
 
   def test03_graphs(self):
-    data = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = bob.io.base.load(self.input_dir('cropped.hdf5'))
     extractor = self.config('grid-graph')
     # execute extractor
-    feature = self.execute(extractor, data, 'graph_with_phase.hdf5')
-    self.assertEqual(len(feature.shape), 3)
-
-    # generate new graph extractor without phases
-    extractor = facereclib.features.GridGraph(
-      gabor_sigma = math.sqrt(2.) * math.pi,
-      extract_gabor_phases = False,
-      first_node = (6, 6),
-      image_resolution = data.shape,
-      node_distance = (4, 4)
-    )
-    feature = self.execute(extractor, data, 'graph_no_phase.hdf5')
-    self.assertEqual(len(feature.shape), 2)
+    feature = extractor(data)
+    if regenerate_refs:
+      extractor.save_feature(feature, self.reference_dir('graph_regular.hdf5'))
+    ref = extractor.read_feature(self.reference_dir('graph_regular.hdf5'))
+    self.assertEqual(len(ref), len(feature))
+    for i in range(len(ref)):
+      self.assertTrue((numpy.abs(ref[i].jet - feature[i].jet) < 1e-5).all())
 
     # generate aligned graph extractor
     extractor = self.config('grid_graph_aligned')
-    feature = self.execute(extractor, data, 'graph_aligned.hdf5')
-    self.assertEqual(len(feature.shape), 3)
+    # execute extractor
+    feature = extractor(data)
+    if regenerate_refs:
+      extractor.save_feature(feature, self.reference_dir('graph_aligned.hdf5'))
+    ref = extractor.read_feature(self.reference_dir('graph_aligned.hdf5'))
+    self.assertEqual(len(ref), len(feature))
+    for i in range(len(ref)):
+      self.assertTrue((numpy.abs(ref[i].jet - feature[i].jet) < 1e-5).all())
 
     # test the automatic computation of start node
     extractor = facereclib.features.GridGraph(
@@ -111,13 +112,13 @@ class FeatureExtractionTest(unittest.TestCase):
       node_distance = (10, 10),
       image_resolution = (80, 64)
     )
-    self.assertEqual(len(extractor.m_graph_machine.nodes), 48)
-    self.assertTrue((extractor.m_graph_machine.nodes[0] == (5, 7)).all())
-    self.assertTrue((extractor.m_graph_machine.nodes[-1] == (75, 57)).all())
+    self.assertEqual(len(extractor.m_graph.nodes), 48)
+    self.assertTrue(extractor.m_graph.nodes[0] == (5, 7))
+    self.assertTrue(extractor.m_graph.nodes[-1] == (75, 57))
 
 
   def test04_lgbphs(self):
-    data = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = bob.io.base.load(self.input_dir('cropped.hdf5'))
     # just test if the config file loads correctly...
     extractor = self.config('lgbphs')
     self.assertTrue(isinstance(extractor, facereclib.features.LGBPHS))
@@ -180,7 +181,7 @@ class FeatureExtractionTest(unittest.TestCase):
     self.assertTrue(extractor.requires_training)
 
     # we read the test data (so that we have a length)
-    data = bob.io.load(self.input_dir('cropped.hdf5'))
+    data = bob.io.base.load(self.input_dir('cropped.hdf5'))
     # we have to train the eigenface extractor, so we generate some data
     train_data = facereclib.utils.tests.random_training_set(data.shape, 400, 0., 255.)
     t = tempfile.mkstemp('pca.hdf5', prefix='frltest_')[1]
@@ -191,7 +192,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
     extractor.load(self.reference_dir('eigenface_extractor.hdf5'))
     # compare the resulting machines
-    new_machine = bob.machine.LinearMachine(bob.io.HDF5File(t))
+    new_machine = bob.learn.linear.Machine(bob.io.base.HDF5File(t))
     self.assertEqual(extractor.m_machine.shape, new_machine.shape)
     # ... rotation direction might change, hence either the sum or the difference should be 0
     for i in range(5):

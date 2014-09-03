@@ -2,7 +2,9 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import bob
+import bob.ip.gabor
+import bob.io.base
+
 import numpy
 import math
 from .Extractor import Extractor
@@ -23,7 +25,6 @@ class GridGraph (Extractor):
 
       # what kind of information to extract
       normalize_gabor_jets = True,
-      extract_gabor_phases = True,
 
       # setup of the aligned grid
       eyes = None, # if set, the grid setup will be aligned to the eye positions {'leye' : LEFT_EYE_POS, 'reye' : RIGHT_EYE_POS},
@@ -50,7 +51,6 @@ class GridGraph (Extractor):
         gabor_power_of_k = gabor_power_of_k,
         gabor_dc_free = gabor_dc_free,
         normalize_gabor_jets = normalize_gabor_jets,
-        extract_gabor_phases = extract_gabor_phases,
         eyes = eyes,
         nodes_between_eyes = nodes_between_eyes,
         nodes_along_eyes = nodes_along_eyes,
@@ -60,22 +60,21 @@ class GridGraph (Extractor):
         image_resolution = image_resolution,
         first_node = first_node
     )
-    # TODO: write my own __str__ function instead of reporting all parameters, even if they are not used
 
     # create Gabor wavelet transform class
-    self.m_gwt = bob.ip.GaborWaveletTransform(
+    self.m_gwt = bob.ip.gabor.Transform(
         number_of_scales = gabor_scales,
-        number_of_angles = gabor_directions,
+        number_of_directions = gabor_directions,
         sigma = gabor_sigma,
         k_max = gabor_maximum_frequency,
         k_fac = gabor_frequency_step,
-        pow_of_k = gabor_power_of_k,
+        power_of_k = gabor_power_of_k,
         dc_free = gabor_dc_free
     )
 
     # create graph extractor
     if eyes is not None:
-      self.m_graph_machine = bob.machine.GaborGraphMachine(
+      self.m_graph = bob.ip.gabor.Graph(
           righteye = [int(e) for e in eyes['reye']],
           lefteye = [int(e) for e in eyes['leye']],
           between = int(nodes_between_eyes),
@@ -98,55 +97,36 @@ class GridGraph (Extractor):
       last_node = tuple([int(image_resolution[i] - max(first_node[i],1)) for i in (0,1)])
 
       # take the specified nodes
-      self.m_graph_machine = bob.machine.GaborGraphMachine(
+      self.m_graph = bob.ip.gabor.Graph(
           first = first_node,
           last = last_node,
           step = node_distance
       )
 
-    self.m_jet_image = None
     self.m_normalize_jets = normalize_gabor_jets
-    if isinstance(extract_gabor_phases, bool):
-      self.m_extract_phases = extract_gabor_phases
-      self.m_inline_phases = False
-    else:
-      self.m_extract_phases = extract_gabor_phases == 'inline'
-      self.m_inline_phases = self.m_extract_phases
-
-    # preallocate memory for the face graph
-    if self.m_extract_phases:
-      self.m_face_graph = numpy.ndarray((self.m_graph_machine.number_of_nodes, 2, self.m_gwt.number_of_kernels), 'float64')
-      if self.m_inline_phases:
-        self.m_reshaped_graph = numpy.ndarray((self.m_graph_machine.number_of_nodes, 2 * self.m_gwt.number_of_kernels), 'float64')
-    else:
-      self.m_face_graph = numpy.ndarray((self.m_graph_machine.number_of_nodes, self.m_gwt.number_of_kernels), 'float64')
-
+    self.m_trafo_image = None
 
   def __call__(self, image):
-    if self.m_jet_image == None or self.m_jet_image.shape[0:1] != image.shape:
-      # create jet image
-      self.m_jet_image = self.m_gwt.empty_jet_image(image, self.m_extract_phases)
+    if self.m_trafo_image is None or self.m_trafo_image.shape[1:3] != image.shape:
+      # create trafo image
+      self.m_trafo_image = numpy.ndarray((self.m_gwt.number_of_wavelets, image.shape[0], image.shape[1]), numpy.complex128)
 
-    # compute jets (Do not normalize the Gabor jets of the whole image)
-    self.m_gwt.compute_jets(image, self.m_jet_image, False)
+    # perform Gabor wavelet transform
+    self.m_gwt.transform(image, self.m_trafo_image)
+
     # extract face graph
-    self.m_graph_machine(self.m_jet_image, self.m_face_graph)
+    jets = self.m_graph.extract(self.m_trafo_image)
 
     # normalize the Gabor jets of the graph only
     if self.m_normalize_jets:
-      for n in range(self.m_face_graph.shape[0]):
-        if self.m_extract_phases:
-          bob.ip.normalize_gabor_jet(self.m_face_graph[n,:,:])
-        else:
-          bob.ip.normalize_gabor_jet(self.m_face_graph[n,:])
+      [j.normalize() for j in jets]
 
-    if self.m_inline_phases:
-      # reshape Gabor jets of the graph, if desired
-      for i in range(self.m_graph_machine.number_of_nodes):
-        self.m_reshaped_graph[i,:] = self.m_face_graph[i].flatten()
-      return self.m_reshaped_graph
+    # return the extracted face graph
+    return jets
 
-    else:
-      # return the extracted face graph
-      return self.m_face_graph
+  def save_feature(self, feature, feature_file):
+    bob.ip.gabor.save_jets(feature, bob.io.base.HDF5File(feature_file, 'w'))
+
+  def read_feature(self, feature_file):
+    return bob.ip.gabor.load_jets(bob.io.base.HDF5File(feature_file))
 

@@ -22,7 +22,7 @@ import unittest
 import os
 import numpy
 import facereclib
-import bob
+
 from nose.plugins.skip import SkipTest
 
 import pkg_resources

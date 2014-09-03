@@ -14,7 +14,6 @@ feature_extractor = facereclib.features.GridGraph(
 
     # what kind of information to extract
     normalize_gabor_jets = True,
-    extract_gabor_phases = True,
 
     # setup of the fixed grid
     node_distance = (4, 4),

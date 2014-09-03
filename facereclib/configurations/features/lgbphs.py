@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import facereclib
-import bob
 import math
 
 # feature extraction

@@ -2,10 +2,14 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
+import bob.io.base
+import bob.learn.linear
+import bob.learn.misc
+import bob.measure
+
 import os
 import sys
 import numpy
-import bob
 import tarfile
 
 from .. import utils
@@ -418,7 +422,7 @@ class ToolChain:
 
         if compute_zt_norm:
           # write A matrix only when you want to compute zt norm afterwards
-          bob.io.save(a, self.m_file_selector.a_file(model_id, group))
+          bob.io.base.save(a, self.m_file_selector.a_file(model_id, group))
 
         # Save scores to text file
         self.__save_scores__(self.m_file_selector.no_norm_file(model_id, group), a, current_probe_objects, self.m_file_selector.client_id(model_id, group))
@@ -451,7 +455,7 @@ class ToolChain:
           b = self.__scores_preloaded__(model, preloaded_z_probes)
         else:
           b = self.__scores__(model, z_probe_files)
-        bob.io.save(b, score_file)
+        bob.io.base.save(b, score_file)
 
   def __scores_c__(self, t_model_ids, group, force, preload_probes):
     """Computes C scores."""
@@ -482,7 +486,7 @@ class ToolChain:
           c = self.__scores_preloaded__(t_model, preloaded_probes)
         else:
           c = self.__scores__(t_model, probe_files)
-        bob.io.save(c, score_file)
+        bob.io.base.save(c, score_file)
 
   def __scores_d__(self, t_model_ids, group, force, preload_probes):
     """Computes D scores."""
@@ -519,11 +523,11 @@ class ToolChain:
           d = self.__scores_preloaded__(t_model, preloaded_z_probes)
         else:
           d = self.__scores__(t_model, z_probe_files)
-        bob.io.save(d, score_file)
+        bob.io.base.save(d, score_file)
 
         t_client_id = [self.m_file_selector.client_id(t_model_id, group)]
-        d_same_value_tm = bob.machine.ztnorm_same_value(t_client_id, z_probe_ids)
-        bob.io.save(d_same_value_tm, same_score_file)
+        d_same_value_tm = bob.learn.misc.ztnorm_same_value(t_client_id, z_probe_ids)
+        bob.io.base.save(d_same_value_tm, same_score_file)
 
 
   def compute_scores(self, tool, compute_zt_norm, force = False, indices = None, groups = ['dev', 'eval'], types = ['A', 'B', 'C', 'D'], preload_probes = False):
@@ -599,7 +603,7 @@ class ToolChain:
     # read all tmodel scores
     c_for_all = None
     for t_model_id in t_model_ids:
-      tmp = bob.io.load(self.m_file_selector.c_file(t_model_id, group))
+      tmp = bob.io.base.load(self.m_file_selector.c_file(t_model_id, group))
       if c_for_all == None:
         c_for_all = tmp
       else:
@@ -611,7 +615,7 @@ class ToolChain:
       probe_objects_for_model = self.m_file_selector.probe_objects_for_model(model_id, group)
       c_matrix_for_model = self.__c_matrix_split_for_model__(probe_objects_for_model, all_probe_objects, c_for_all)
       # Save C matrix to file
-      bob.io.save(c_matrix_for_model, self.m_file_selector.c_file_for_model(model_id, group))
+      bob.io.base.save(c_matrix_for_model, self.m_file_selector.c_file_for_model(model_id, group))
 
   def __scores_d_normalize__(self, t_model_ids, group):
     """Compute normalized D scores for the given T-model ids"""
@@ -619,8 +623,8 @@ class ToolChain:
     d_for_all = None
     d_same_value = None
     for t_model_id in t_model_ids:
-      tmp = bob.io.load(self.m_file_selector.d_file(t_model_id, group))
-      tmp2 = bob.io.load(self.m_file_selector.d_same_value_file(t_model_id, group))
+      tmp = bob.io.base.load(self.m_file_selector.d_file(t_model_id, group))
+      tmp2 = bob.io.base.load(self.m_file_selector.d_same_value_file(t_model_id, group))
       if d_for_all == None and d_same_value == None:
         d_for_all = tmp
         d_same_value = tmp2
@@ -629,8 +633,8 @@ class ToolChain:
         d_same_value = numpy.vstack((d_same_value, tmp2))
 
     # Saves to files
-    bob.io.save(d_for_all, self.m_file_selector.d_matrix_file(group))
-    bob.io.save(d_same_value, self.m_file_selector.d_same_value_matrix_file(group))
+    bob.io.base.save(d_for_all, self.m_file_selector.d_matrix_file(group))
+    bob.io.base.save(d_same_value, self.m_file_selector.d_same_value_matrix_file(group))
 
 
 
@@ -649,20 +653,20 @@ class ToolChain:
 
 
       # load D matrices only once
-      d = bob.io.load(self.m_file_selector.d_matrix_file(group))
-      d_same_value = bob.io.load(self.m_file_selector.d_same_value_matrix_file(group)).astype(bool)
+      d = bob.io.base.load(self.m_file_selector.d_matrix_file(group))
+      d_same_value = bob.io.base.load(self.m_file_selector.d_same_value_matrix_file(group)).astype(bool)
       # Loops over the model ids
       for model_id in model_ids:
         # Loads probe files to get information about the type of access
         probe_objects = self.m_file_selector.probe_objects_for_model(model_id, group)
 
         # Loads A, B, and C matrices for current model id
-        a = bob.io.load(self.m_file_selector.a_file(model_id, group))
-        b = bob.io.load(self.m_file_selector.b_file(model_id, group))
-        c = bob.io.load(self.m_file_selector.c_file_for_model(model_id, group))
+        a = bob.io.base.load(self.m_file_selector.a_file(model_id, group))
+        b = bob.io.base.load(self.m_file_selector.b_file(model_id, group))
+        c = bob.io.base.load(self.m_file_selector.c_file_for_model(model_id, group))
 
         # compute zt scores
-        zt_scores = bob.machine.ztnorm(a, b, c, d, d_same_value)
+        zt_scores = bob.learn.misc.ztnorm(a, b, c, d, d_same_value)
 
         # Saves to text file
         self.__save_scores__(self.m_file_selector.zt_norm_file(model_id, group), zt_scores, probe_objects, self.m_file_selector.client_id(model_id, group))
@@ -755,7 +759,7 @@ class ToolChain:
 
       # create a LLR trainer
       utils.info(" - Calibration: Training calibration for type %s from group %s" % (norm, groups[0]))
-      llr_trainer = bob.trainer.CGLogRegTrainer(prior, 1e-16, 100000)
+      llr_trainer = bob.learn.linear.CGLogRegTrainer(prior, 1e-16, 100000)
 
       training_scores = list(bob.measure.load.split_four_column(training_score_file))
       for i in (0,1):

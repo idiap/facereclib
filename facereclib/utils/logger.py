@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import bob
+import bob.core
 
 def set_formatter(logger_name):
   # this formats the logger to print the name of the logger, the time, the type of message and the message itself

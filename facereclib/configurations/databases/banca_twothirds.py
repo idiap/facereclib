@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
-import xbob.db.banca
+import bob.db.banca
 import facereclib
 
 banca_directory = "[YOUR_BANCA_DIRECTORY]"
 
 database = facereclib.databases.DatabaseXBobZT(
-    database = xbob.db.banca.Database(),
+    database = bob.db.banca.Database(
+        original_directory = banca_directory,
+        original_extension = ".ppm"
+    ),
     name = "banca",
     original_directory = banca_directory,
     original_extension = ".ppm",

@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
+import bob.io.base
+
 import numpy
 import math
 from .. import utils
@@ -147,12 +148,12 @@ class Keypoints (FaceCrop):
     return self.extract_keypoints(image2, annotations)
 
   def save_data(self, image, image_file):
-    f = bob.io.HDF5File(image_file, 'w')
+    f = bob.io.base.HDF5File(image_file, 'w')
     f.set('image', image[0])
     f.set('annotations', image[1])
 
   def read_data(self, image_file):
-    f = bob.io.HDF5File(image_file, 'r')
+    f = bob.io.base.HDF5File(image_file, 'r')
     image = f.read('image')
     annotations = f.read('annotations')
     return (image, annotations)

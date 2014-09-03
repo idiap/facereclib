@@ -1,4 +1,4 @@
-import xbob.db.verification.filelist
+import bob.db.verification.filelist
 import facereclib
 import os
 
@@ -9,8 +9,10 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
     # call base class constructor with useful parameters
     facereclib.databases.DatabaseXBobZT.__init__(
         self,
-        database = xbob.db.verification.filelist.Database(
+        database = bob.db.verification.filelist.Database(
             base_dir = os.path.realpath(os.path.dirname(__file__)),
+            original_directory = facereclib.utils.tests.atnt_database_directory(),
+            original_extension = ".pgm",
             dev_subdir = '.',
             eval_subdir = '.',
             world_filename = 'world.lst',

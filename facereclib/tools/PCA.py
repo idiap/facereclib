@@ -2,7 +2,9 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import bob
+import bob.learn.linear
+import bob.io.base
+
 import numpy
 import scipy.spatial
 
@@ -48,8 +50,10 @@ class PCA (Tool):
     data = numpy.vstack([feature.flatten() for feature in training_features])
 
     utils.info("  -> Training LinearMachine using PCA")
-    t = bob.trainer.PCATrainer()
+    t = bob.learn.linear.PCATrainer()
     self.m_machine, self.m_variances = t.train(data)
+    # For re-shaping, we need to copy...
+    self.m_variances = self.m_variances.copy()
 
     # compute variance percentage, if desired
     if isinstance(self.m_subspace_dim, float):
@@ -66,7 +70,7 @@ class PCA (Tool):
     self.m_machine.resize(self.m_machine.shape[0], self.m_subspace_dim)
     self.m_variances.resize(self.m_subspace_dim)
 
-    f = bob.io.HDF5File(projector_file, "w")
+    f = bob.io.base.HDF5File(projector_file, "w")
     f.set("Eigenvalues", self.m_variances)
     f.create_group("Machine")
     f.cd("/Machine")
@@ -76,10 +80,10 @@ class PCA (Tool):
   def load_projector(self, projector_file):
     """Reads the PCA projection matrix from file"""
     # read PCA projector
-    f = bob.io.HDF5File(projector_file)
+    f = bob.io.base.HDF5File(projector_file)
     self.m_variances = f.read("Eigenvalues")
     f.cd("/Machine")
-    self.m_machine = bob.machine.LinearMachine(f)
+    self.m_machine = bob.learn.linear.Machine(f)
     # Allocates an array for the projected data
     self.m_projected_feature = numpy.ndarray(self.m_machine.shape[1], numpy.float64)
 

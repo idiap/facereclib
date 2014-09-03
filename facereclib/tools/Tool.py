@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
 import numpy
 import os
 from .. import utils
@@ -107,9 +106,9 @@ class Tool:
     """Saves the given *projected* feature to a file with the given name.
     In this base class implementation:
 
-    - If the given feature has a 'save' attribute, it calls feature.save(bob.io.HDF5File(feature_file), 'w').
-      In this case, the given feature_file might be either a file name or a bob.io.HDF5File.
-    - Otherwise, it uses bob.io.save to do that.
+    - If the given feature has a 'save' attribute, it calls feature.save(bob.io.base.HDF5File(feature_file), 'w').
+      In this case, the given feature_file might be either a file name or a bob.io.base.HDF5File.
+    - Otherwise, it uses bob.io.base.save to do that.
 
     If you have a different format, please overwrite this function.
 
@@ -120,7 +119,7 @@ class Tool:
 
   def read_feature(self, feature_file):
     """Reads the *projected* feature from file.
-    In this base class implementation, it uses bob.io.load to do that.
+    In this base class implementation, it uses bob.io.base.load to do that.
     If you have different format, please overwrite this function.
 
     Please register 'performs_projection = True' in the constructor to enable this function.
@@ -132,9 +131,9 @@ class Tool:
     """Saves the enrolled model to the given file.
     In this base class implementation:
 
-    - If the given model has a 'save' attribute, it calls model.save(bob.io.HDF5File(model_file), 'w').
-      In this case, the given model_file might be either a file name or a bob.io.HDF5File.
-    - Otherwise, it uses bob.io.save to do that.
+    - If the given model has a 'save' attribute, it calls model.save(bob.io.base.HDF5File(model_file), 'w').
+      In this case, the given model_file might be either a file name or a bob.io.base.HDF5File.
+    - Otherwise, it uses bob.io.base.save to do that.
 
     If you have a different format, please overwrite this function.
     """
@@ -143,7 +142,7 @@ class Tool:
 
   def read_model(self, model_file):
     """Loads the enrolled model from file.
-    In this base class implementation, it uses bob.io.load to do that.
+    In this base class implementation, it uses bob.io.base.load to do that.
 
     If you have a different format, please overwrite this function.
     """

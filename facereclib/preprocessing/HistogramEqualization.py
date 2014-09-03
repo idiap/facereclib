@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
+import bob.ip.base
+
 import numpy
 from .. import utils
 from .FaceCrop import FaceCrop
@@ -44,7 +45,7 @@ class HistogramEqualization (FaceCrop):
     if self.m_histogram_image is None or self.m_histogram_image.shape != image.shape:
       self.m_histogram_image = numpy.ndarray(image.shape, numpy.float64)
 
-    bob.ip.histogram_equalization(numpy.round(image).astype(numpy.uint8), self.m_histogram_image)
+    bob.ip.base.histogram_equalization(numpy.round(image).astype(numpy.uint8), self.m_histogram_image)
 
     return self.m_histogram_image
 

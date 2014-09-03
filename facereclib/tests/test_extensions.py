@@ -22,7 +22,7 @@ import facereclib
 
 cls = None
 # Here we test all installed databases and everything else that has a bob.test declared in the setup.py
-# The technology is adapted from the xbob.db.aggegator tests
+# The technology is adapted from the bob.db.aggegator tests
 import pkg_resources
 for i, ep in enumerate(pkg_resources.iter_entry_points('bob.test')):
   ep_parts = str(ep).split(' = ')[1].split(':')

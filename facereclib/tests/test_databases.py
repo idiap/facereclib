@@ -31,7 +31,7 @@ class DatabaseTest(unittest.TestCase):
     try:
       return facereclib.utils.tests.configuration_file(resource, 'database', 'databases')
     except Exception as e:
-      raise SkipTest("The resource for database '%s' could not be loaded; probably you didn't define the 'xbob.db.%s' in your *buildout.cfg*. Here is the import error: '%s'" % (resource, resource, e))
+      raise SkipTest("The resource for database '%s' could not be loaded; probably you didn't define the 'bob.db.%s' in your *buildout.cfg*. Here is the import error: '%s'" % (resource, resource, e))
 
   def check_database(self, database, groups = ('dev',), protocol = None):
     if protocol: database.protocol = protocol

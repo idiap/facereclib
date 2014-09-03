@@ -22,9 +22,10 @@ from __future__ import print_function
 """This script evaluates the given score files and computes EER, HTER.
 It also is able to plot CMC and ROC curves."""
 
+import bob.measure
+
 from .. import utils
 import argparse
-import bob
 import numpy, math
 import os
 
@@ -59,6 +60,8 @@ def command_line_arguments(command_line_parameters):
   parser.add_argument('-m', '--mindcf', action = 'store_true', help = "If given, minDCF will be computed.")
   parser.add_argument('--cost', default=0.99,  help='Cost for FAR in minDCF')
   parser.add_argument('-l', '--legends', nargs='+', help = "A list of legend strings used for ROC, CMC and DET plots; if given, must be the same number than --dev-files.")
+  parser.add_argument('-F', '--legend-font-size', type=int, default=18, help = "Set the font size of the legends.")
+  parser.add_argument('-P', '--legend-position', type=int, help = "Set the font size of the legends.")
   parser.add_argument('-R', '--roc', help = "If given, ROC curves will be plotted into the given pdf file.")
   parser.add_argument('-D', '--det', help = "If given, DET curves will be plotted into the given pdf file.")
   parser.add_argument('-C', '--cmc', help = "If given, CMC curves will be plotted into the given pdf file.")
@@ -87,7 +90,8 @@ def command_line_arguments(command_line_parameters):
 
   return args
 
-def _plot_roc(frrs, colors, labels, title):
+def _plot_roc(frrs, colors, labels, title, fontsize=18, position=None):
+  if position is None: position = 4
   figure = mpl.figure()
   # plot FAR and FRR for each algorithm
   for i in range(len(frrs)):
@@ -100,13 +104,14 @@ def _plot_roc(frrs, colors, labels, title):
   mpl.xlabel('FAR (\%)')
   mpl.ylabel('CAR (\%)')
   mpl.grid(True, color=(0.6,0.6,0.6))
-  mpl.legend(loc=4)
+  mpl.legend(loc=position, prop = {'size':fontsize})
   mpl.title(title)
 
   return figure
 
 
-def _plot_det(dets, colors, labels, title):
+def _plot_det(dets, colors, labels, title, fontsize=18, position=None):
+  if position is None: position = 1
   # open new page for current plot
   figure = mpl.figure(figsize=(8.2,8))
 
@@ -124,12 +129,13 @@ def _plot_det(dets, colors, labels, title):
 
   mpl.xlabel('FAR (\%)')
   mpl.ylabel('FRR (\%)')
-  mpl.legend(loc=1)
+  mpl.legend(loc=position, prop = {'size':fontsize})
   mpl.title(title)
 
   return figure
 
-def _plot_cmc(cmcs, colors, labels, title):
+def _plot_cmc(cmcs, colors, labels, title, fontsize=18, position=None):
+  if position is None: position = 4
   # open new page for current plot
   figure = mpl.figure()
 
@@ -145,7 +151,7 @@ def _plot_cmc(cmcs, colors, labels, title):
   mpl.ylabel('Probability (\%)')
   mpl.xticks(ticks, [str(t) for t in ticks])
   mpl.axis([0, max_x, 0, 100])
-  mpl.legend(loc=4)
+  mpl.legend(loc=position, prop = {'size':fontsize})
   mpl.title(title)
 
   return figure
@@ -200,8 +206,8 @@ def main(command_line_parameters=None):
           # apply threshold to evaluation set
           far, frr = bob.measure.farfrr(scores_eval[i][0], scores_eval[i][1], threshold)
           print("The minDCF of the evaluation set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.eval_files[i], (args.cost * far + (1-args.cost) * frr) * 100. ))
-          
-      
+
+
     if args.cllr:
       utils.info("Computing Cllr and minCllr on the development " + ("and on the evaluation set" if args.eval_files else "set"))
       for i in range(len(scores_dev)):
@@ -225,10 +231,10 @@ def main(command_line_parameters=None):
       # create a multi-page PDF for the ROC curve
       pdf = PdfPages(args.roc)
       # create a separate figure for dev and eval
-      pdf.savefig(_plot_roc(frrs_dev, colors, args.legends if args.legends else args.dev_files, "ROC curve for development set"))
+      pdf.savefig(_plot_roc(frrs_dev, colors, args.legends if args.legends else args.dev_files, "ROC curve for development set", args.legend_font_size, args.legend_position))
       del frrs_dev
       if args.eval_files:
-        pdf.savefig(_plot_roc(frrs_eval, colors, args.legends if args.legends else args.eval_files, "ROC curve for evaluation set"))
+        pdf.savefig(_plot_roc(frrs_eval, colors, args.legends if args.legends else args.eval_files, "ROC curve for evaluation set", args.legend_font_size, args.legend_position))
         del frrs_eval
       pdf.close()
 
@@ -243,10 +249,10 @@ def main(command_line_parameters=None):
       # create a multi-page PDF for the ROC curve
       pdf = PdfPages(args.det)
       # create a separate figure for dev and eval
-      pdf.savefig(_plot_det(dets_dev, colors, args.legends if args.legends else args.dev_files, "DET plot for development set"))
+      pdf.savefig(_plot_det(dets_dev, colors, args.legends if args.legends else args.dev_files, "DET plot for development set", args.legend_font_size, args.legend_position))
       del dets_dev
       if args.eval_files:
-        pdf.savefig(_plot_det(dets_eval, colors, args.legends if args.legends else args.eval_files, "DET plot for evaluation set"))
+        pdf.savefig(_plot_det(dets_eval, colors, args.legends if args.legends else args.eval_files, "DET plot for evaluation set", args.legend_font_size, args.legend_position))
         del dets_eval
       pdf.close()
 
@@ -262,7 +268,7 @@ def main(command_line_parameters=None):
     # create a multi-page PDF for the ROC curve
     pdf = PdfPages(args.cmc)
     # create a separate figure for dev and eval
-    pdf.savefig(_plot_cmc(cmcs_dev, colors, args.legends if args.legends else args.dev_files, "CMC curve for development set"))
+    pdf.savefig(_plot_cmc(cmcs_dev, colors, args.legends if args.legends else args.dev_files, "CMC curve for development set", args.legend_font_size, args.legend_position))
     if args.eval_files:
-      pdf.savefig(_plot_cmc(cmcs_eval, colors, args.legends if args.legends else args.eval_files, "CMC curve for evaluation set"))
+      pdf.savefig(_plot_cmc(cmcs_eval, colors, args.legends if args.legends else args.eval_files, "CMC curve for evaluation set", args.legend_font_size, args.legend_position))
     pdf.close()

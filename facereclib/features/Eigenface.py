@@ -2,8 +2,10 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import bob
 import numpy
+
+import bob.learn.linear
+import bob.io.base
 
 from .Extractor import Extractor
 from .. import utils
@@ -22,16 +24,16 @@ class Eigenface (Extractor):
     data = numpy.vstack([image.flatten() for image in image_list])
 
     utils.info("  -> Training LinearMachine using PCA (SVD)")
-    t = bob.trainer.PCATrainer()
+    t = bob.learn.linear.PCATrainer()
     self.m_machine, __eig_vals = t.train(data)
     # Machine: get shape, then resize
     self.m_machine.resize(self.m_machine.shape[0], self.m_subspace_dimension)
-    self.m_machine.save(bob.io.HDF5File(extractor_file, "w"))
+    self.m_machine.save(bob.io.base.HDF5File(extractor_file, "w"))
 
 
   def load(self, extractor_file):
     # read PCA projector
-    self.m_machine = bob.machine.LinearMachine(bob.io.HDF5File(extractor_file))
+    self.m_machine = bob.learn.linear.Machine(bob.io.base.HDF5File(extractor_file))
     # Allocates an array for the projected data
     self.m_projected_feature = numpy.ndarray(self.m_machine.shape[1], numpy.float64)
 

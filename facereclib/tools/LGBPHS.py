@@ -2,7 +2,8 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import bob
+import bob.math
+
 import numpy
 
 from .Tool import Tool

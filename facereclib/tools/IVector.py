@@ -2,7 +2,11 @@
 # vim: set fileencoding=utf-8 :
 # Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
 
-import bob
+import bob.core
+import bob.io.base
+import bob.learn.linear
+import bob.learn.misc
+
 import numpy
 
 from .Tool import Tool
@@ -55,15 +59,15 @@ class IVector (UBMGMM):
     data = []
     for feature in train_features:
       # Initializes GMMStats object
-      self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+      self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
       data.append(UBMGMM.project(self, feature))
 
     utils.info("  -> Training IVector enroller")
-    self.m_tv = bob.machine.IVectorMachine(self.m_ubm, self.m_subspace_dimension_of_t)
+    self.m_tv = bob.learn.misc.IVectorMachine(self.m_ubm, self.m_subspace_dimension_of_t)
     self.m_tv.variance_threshold = self.m_variance_threshold
 
     # train IVector model
-    t = bob.trainer.IVectorTrainer(update_sigma=self.m_update_sigma, max_iterations=self.m_tv_training_iterations)
+    t = bob.learn.misc.IVectorTrainer(update_sigma=self.m_update_sigma, max_iterations=self.m_tv_training_iterations)
     t.rng = bob.core.random.mt19937(self.m_init_seed)
     t.train(self.m_tv, data)
 
@@ -73,11 +77,11 @@ class IVector (UBMGMM):
    # load GMM stats from training files
     ivectors_matrix = numpy.vstack(training_features)
     # create a Linear Machine
-    self.m_whitening_machine = bob.machine.LinearMachine(ivectors_matrix.shape[1],ivectors_matrix.shape[1])
+    self.m_whitening_machine = bob.learn.linear.Machine(ivectors_matrix.shape[1],ivectors_matrix.shape[1])
     # create the whitening trainer
-    t = bob.trainer.WhiteningTrainer()
+    t = bob.learn.linear.WhiteningTrainer()
 
-    t.train(self.m_whitening_machine, ivectors_matrix)
+    t.train(ivectors_matrix, self.m_whitening_machine)
 
   def train_projector(self, train_features, projector_file):
     """Train Projector and Enroller at the same time"""
@@ -100,7 +104,7 @@ class IVector (UBMGMM):
 
   def save_projector(self, projector_file):
     # Save the IVector base AND the UBM AND the whitening into the same file
-    hdf5file = bob.io.HDF5File(projector_file, "w")
+    hdf5file = bob.io.base.HDF5File(projector_file, "w")
     hdf5file.create_group('Projector')
     hdf5file.cd('Projector')
     self.m_ubm.save(hdf5file)
@@ -117,26 +121,26 @@ class IVector (UBMGMM):
 
 
   def load_ubm(self, ubm_file):
-    hdf5file = bob.io.HDF5File(ubm_file)
+    hdf5file = bob.io.base.HDF5File(ubm_file)
     # read UBM
-    self.m_ubm = bob.machine.GMMMachine(hdf5file)
+    self.m_ubm = bob.learn.misc.GMMMachine(hdf5file)
     self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
     # Initializes GMMStats object
-    self.m_gmm_stats = bob.machine.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+    self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
 
   def load_tv(self, tv_file):
-    hdf5file = bob.io.HDF5File(tv_file)
-    self.m_tv = bob.machine.IVectorMachine(hdf5file)
+    hdf5file = bob.io.base.HDF5File(tv_file)
+    self.m_tv = bob.learn.misc.IVectorMachine(hdf5file)
     # add UBM model from base class
     self.m_tv.ubm = self.m_ubm
 
   def load_whitening(self, whitening_file):
-    hdf5file = bob.io.HDF5File(whitening_file)
-    self.m_whitening_machine = bob.machine.LinearMachine(hdf5file)
+    hdf5file = bob.io.base.HDF5File(whitening_file)
+    self.m_whitening_machine = bob.learn.linear.Machine(hdf5file)
 
   def load_projector(self, projector_file):
     """Load the GMM and the ISV model from the same HDF5 file"""
-    hdf5file = bob.io.HDF5File(projector_file)
+    hdf5file = bob.io.base.HDF5File(projector_file)
 
     # Load Projector
     hdf5file.cd('/Projector')

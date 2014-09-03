@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
+import bob.ip.base
+
 import numpy
 from .. import utils
 from .FaceCrop import FaceCrop
@@ -64,7 +65,7 @@ class INormLBP (FaceCrop):
     )
 
     # lbp extraction
-    self.m_lgb_extractor = bob.ip.LBP(8, radius, is_circular, compare_to_average, add_average_bit, is_uniform, is_rotation_invariant, bob.ip.ELBPType.REGULAR)
+    self.m_lgb_extractor = bob.ip.base.LBP(8, radius, is_circular, compare_to_average, add_average_bit, is_uniform, is_rotation_invariant, 'regular')
     if self.m_perform_image_cropping:
       self.m_i_norm_image = numpy.ndarray([size - 2*radius for size in self.m_cropped_image.shape], numpy.uint16)
     else:

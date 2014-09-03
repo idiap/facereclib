@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-import xbob.db.arface
+import bob.db.arface
 import facereclib
 
 arface_directory = "[YOUR_ARFACE_DIRECTORY]"
 
 database = facereclib.databases.DatabaseXBob(
-    database = xbob.db.arface.Database(),
+    database = bob.db.arface.Database(
+      original_directory = arface_directory
+    ),
     name = 'arface',
     original_directory = arface_directory,
     original_extension = ".ppm",

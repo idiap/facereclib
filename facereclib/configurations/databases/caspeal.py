@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-import xbob.db.caspeal
+import bob.db.caspeal
 import facereclib
 
 caspeal_directory = "[YOUR_CAS-PEAL_DIRECTORY]"
 
 database = facereclib.databases.DatabaseXBob(
-    database = xbob.db.caspeal.Database(),
+    database = bob.db.caspeal.Database(
+      original_directory = caspeal_directory
+    ),
     name = "caspeal",
     original_directory = caspeal_directory,
     original_extension = ".tif",

@@ -1,4 +1,4 @@
-import xbob.db.atnt
+import bob.db.atnt
 import facereclib
 import os
 
@@ -8,7 +8,9 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
     # call base class constructor with useful parameters
     facereclib.databases.DatabaseXBobZT.__init__(
         self,
-        database = xbob.db.atnt.Database(),
+        database = bob.db.atnt.Database(
+            original_directory = facereclib.utils.tests.atnt_database_directory(),
+        ),
         name = 'test2',
         original_directory = facereclib.utils.tests.atnt_database_directory(),
         original_extension = ".pgm"

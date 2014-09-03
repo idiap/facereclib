@@ -2,7 +2,7 @@
 # vim: set fileencoding=utf-8 :
 # Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
 
-import bob
+import bob.ip.base
 import numpy
 from .. import utils
 
@@ -11,7 +11,7 @@ from .Extractor import Extractor
 class SIFTBobKeypoints(Extractor):
   """Extracts Sift descriptors according to the given keypoints"""
 
-  def __init__(self, 
+  def __init__(self,
       sigmas,
       height,
       width,
@@ -46,8 +46,7 @@ class SIFTBobKeypoints(Extractor):
     self.m_len_keypoint = len(self.m_sigmas)
 
     # SIFT extractor
-    self.m_sift_extract = bob.ip.SIFT(self.m_height, self.m_width, self.m_n_octaves, self.m_n_scales, self.m_octave_min, 
-      self.m_sigma_n, self.m_sigma0, self.m_contrast_thres, self.m_edge_thres, self.m_norm_thres, self.m_kernel_radius_factor)
+    self.m_sift_extract = bob.ip.base.SIFT((self.m_height, self.m_width), self.m_n_octaves, self.m_n_scales, self.m_octave_min, self.m_sigma_n, self.m_sigma0, self.m_contrast_thres, self.m_edge_thres, self.m_norm_thres, self.m_kernel_radius_factor)
     if self.m_set_sigma0_no_init_smoothing: self.m_sift_extract.set_sigma0_no_init_smoothing()
 
   def __linearize__(self, descr):
@@ -55,12 +54,12 @@ class SIFTBobKeypoints(Extractor):
 
   def read(self, filename):
     """Read image and annotations stored in an HDF5 file"""
-    f = bob.io.HDF5File(str(filename))
+    f = bob.io.base.HDF5File(str(filename))
     image = f.read('image')
     annotations = f.read('annotations')
     return (image, annotations)
 
- 
+
   def __call__(self, image):
     """Extract SIFT features given the image and the keypoints"""
     # Creates keypoints
@@ -68,7 +67,7 @@ class SIFTBobKeypoints(Extractor):
     annotations = image[1]
     for k in range(annotations.shape[0]):
       for x in range(len(self.m_sigmas)):
-        kp.append(bob.ip.GSSKeypoint(self.m_sigmas[x],annotations[k,0], annotations[k,1]))
+        kp.append(bob.ip.base.GSSKeypoint(self.m_sigmas[x], annotations[k]))
 
     # Extracts and returns descriptors
     return self.__linearize__(self.m_sift_extract.compute_descriptor(image[0], kp))

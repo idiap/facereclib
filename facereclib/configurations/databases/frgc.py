@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import xbob.db.frgc
+import bob.db.frgc
 import facereclib
 
 frgc_directory = "[YOUR_FRGC_DIRECTORY]"
 
 database = facereclib.databases.DatabaseXBob(
-    database = xbob.db.frgc.Database(frgc_directory),
+    database = bob.db.frgc.Database(frgc_directory),
     name = "frgc",
     original_directory = frgc_directory,
     original_extension = ".jpg",

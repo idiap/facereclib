@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='facereclib',
-    version='1.3.0a1',
+    version='2.0.0a0',
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
     url='http://github.com/idiap/facereclib',
@@ -132,8 +132,17 @@ setup(
 
     install_requires=[
       "setuptools",      # for whatever
-      "bob >= 1.3.0a0",    # base signal processing/machine learning library
-      "xbob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
+      "bob.core",
+      "bob.io.base",
+      "bob.io.image",
+      "bob.ip.base",
+      "bob.ip.gabor",
+      "bob.ip.color",
+      "bob.math",
+      "bob.measure",
+      "bob.learn.misc",
+      "bob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
+      "bob.db.verification.filelist",
     ],
 
     # Classifiers are important if you plan to distribute this package through

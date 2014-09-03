@@ -2,7 +2,11 @@
 # vim: set fileencoding=utf-8 :
 # Laurent El Shafey <Laurent.El-Shafey@idiap.ch>
 
-import bob
+import bob.core
+import bob.io.base
+import bob.learn.linear
+import bob.learn.misc
+
 import numpy
 
 from .Tool import Tool
@@ -20,11 +24,11 @@ class PLDA (Tool):
       plda_training_iterations = 200, # Maximum number of iterations for the EM loop
       # TODO: refactor the remaining parameters!
       INIT_SEED = 5489, # seed for initializing
-      INIT_F_METHOD = bob.trainer.PLDATrainer.BETWEEN_SCATTER,
+      INIT_F_METHOD = bob.learn.misc.PLDATrainer.BETWEEN_SCATTER,
       INIT_F_RATIO = 1,
-      INIT_G_METHOD = bob.trainer.PLDATrainer.WITHIN_SCATTER,
+      INIT_G_METHOD = bob.learn.misc.PLDATrainer.WITHIN_SCATTER,
       INIT_G_RATIO = 1,
-      INIT_S_METHOD = bob.trainer.PLDATrainer.VARIANCE_DATA,
+      INIT_S_METHOD = bob.learn.misc.PLDATrainer.VARIANCE_DATA,
       INIT_S_RATIO = 1,
       multiple_probe_scoring = 'joint_likelihood'
   ):
@@ -71,7 +75,7 @@ class PLDA (Tool):
     data = numpy.vstack(data_list)
 
     utils.info("  -> Training LinearMachine using PCA ")
-    t = bob.trainer.PCATrainer()
+    t = bob.learn.linear.PCATrainer()
     machine, __eig_vals = t.train(data)
     # limit number of pcs
     machine.resize(machine.shape[0], self.m_subspace_dimension_pca)
@@ -113,7 +117,7 @@ class PLDA (Tool):
 
     utils.info("  -> Training PLDA base machine")
     # create trainer
-    t = bob.trainer.PLDATrainer(self.m_plda_training_iterations)
+    t = bob.learn.misc.PLDATrainer(self.m_plda_training_iterations)
 
     #t.rng.seed = self.m_init[0]
     t.rng = bob.core.random.mt19937(self.m_init[0])
@@ -125,11 +129,11 @@ class PLDA (Tool):
     t.init_sigma_ratio = self.m_init[6]
 
     # train machine
-    self.m_plda_base = bob.machine.PLDABase(input_dimension, self.m_subspace_dimension_of_f, self.m_subspace_dimension_of_g)
+    self.m_plda_base = bob.learn.misc.PLDABase(input_dimension, self.m_subspace_dimension_of_f, self.m_subspace_dimension_of_g)
     t.train(self.m_plda_base, training_features)
 
     # write machines to file
-    proj_hdf5file = bob.io.HDF5File(str(projector_file), "w")
+    proj_hdf5file = bob.io.base.HDF5File(str(projector_file), "w")
     if self.m_subspace_dimension_pca is not None:
       proj_hdf5file.create_group('/pca')
       proj_hdf5file.cd('/pca')
@@ -142,15 +146,15 @@ class PLDA (Tool):
   def load_enroller(self, projector_file):
     """Reads the PCA projection matrix and the PLDA model from file"""
     # read UBM
-    proj_hdf5file = bob.io.HDF5File(projector_file)
+    proj_hdf5file = bob.io.base.HDF5File(projector_file)
     if self.m_subspace_dimension_pca is not None:
       proj_hdf5file.cd('/pca')
-      self.m_pca_machine = bob.machine.LinearMachine(proj_hdf5file)
+      self.m_pca_machine = bob.learn.linear.Machine(proj_hdf5file)
     proj_hdf5file.cd('/plda')
-    self.m_plda_base = bob.machine.PLDABase(proj_hdf5file)
+    self.m_plda_base = bob.learn.misc.PLDABase(proj_hdf5file)
     #self.m_plda_base = bob.machine.PLDABase(bob.io.HDF5File(projector_file))
-    self.m_plda_machine = bob.machine.PLDAMachine(self.m_plda_base)
-    self.m_plda_trainer = bob.trainer.PLDATrainer()
+    self.m_plda_machine = bob.learn.misc.PLDAMachine(self.m_plda_base)
+    self.m_plda_trainer = bob.learn.misc.PLDATrainer()
 
   def enroll(self, enroll_features):
     """Enrolls the model by computing an average of the given input vectors"""
@@ -164,7 +168,7 @@ class PLDA (Tool):
   def read_model(self, model_file):
     """Reads the model, which in this case is a PLDA-Machine"""
     # read machine and attach base machine
-    plda_machine = bob.machine.PLDAMachine(bob.io.HDF5File(model_file), self.m_plda_base)
+    plda_machine = bob.learn.misc.PLDAMachine(bob.io.base.HDF5File(model_file), self.m_plda_base)
     return plda_machine
 
   def score(self, model, probe):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import facereclib
-import bob
+import bob.math
 
 tool = facereclib.tools.LGBPHS(
     distance_function = bob.math.histogram_intersection,

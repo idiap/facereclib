@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
 import os
 
 from .. import utils
@@ -65,9 +64,9 @@ class Extractor:
     """Saves the given *extracted* feature to a file with the given name.
     In this base class implementation:
 
-    - If the given feature has a 'save' attribute, it calls feature.save(bob.io.HDF5File(feature_file), 'w').
-      In this case, the given feature_file might be either a file name or a bob.io.HDF5File.
-    - Otherwise, it uses bob.io.save to do that.
+    - If the given feature has a 'save' attribute, it calls feature.save(bob.io.base.HDF5File(feature_file), 'w').
+      In this case, the given feature_file might be either a file name or a bob.io.base.HDF5File.
+    - Otherwise, it uses bob.io.base.save to do that.
 
     If you have a different format, please overwrite this function.
     """
@@ -76,7 +75,7 @@ class Extractor:
 
   def read_feature(self, feature_file):
     """Reads the *extracted* feature from file.
-    In this base class implementation, it uses bob.io.load to do that.
+    In this base class implementation, it uses bob.io.base.load to do that.
     If you have different format, please overwrite this function.
     """
     return utils.load(feature_file)

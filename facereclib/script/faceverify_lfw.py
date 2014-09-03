@@ -3,10 +3,11 @@
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 from __future__ import print_function
 
+import bob.measure
+
 import sys, os
 import argparse
 import numpy
-import bob
 
 from . import ToolChainExecutor
 from .. import toolchain

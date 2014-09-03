@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
+import bob.ip.base
+
 import numpy
 import math
 from .. import utils
@@ -101,13 +102,13 @@ class FaceCrop (Preprocessor):
 
     if key not in self.m_croppers:
       # generate cropper on the fly
-      cropper = bob.ip.FaceEyesNorm(
-          int(self.m_cropped_image_size[0] + 2 * self.m_offset), # cropped image height
-          int(self.m_cropped_image_size[1] + 2 * self.m_offset), # cropped image width
-          self.m_cropped_positions[pair[0]][0] + self.m_offset, # Y of first position (usually: right eye)
-          self.m_cropped_positions[pair[0]][1] + self.m_offset, # X of first position (usually: right eye)
-          self.m_cropped_positions[pair[1]][0] + self.m_offset,  # Y of second position (usually: left eye)
-          self.m_cropped_positions[pair[1]][1] + self.m_offset   # X of second position (usually: left eye)
+      cropper = bob.ip.base.FaceEyesNorm(
+        crop_size = (int(self.m_cropped_image_size[0] + 2 * self.m_offset), # cropped image height
+                     int(self.m_cropped_image_size[1] + 2 * self.m_offset)), # cropped image width
+        right_eye = (self.m_cropped_positions[pair[0]][0] + self.m_offset, # Y of first position (usually: right eye)
+                     self.m_cropped_positions[pair[0]][1] + self.m_offset), # X of first position (usually: right eye)
+        left_eye =  (self.m_cropped_positions[pair[1]][0] + self.m_offset,  # Y of second position (usually: left eye)
+                     self.m_cropped_positions[pair[1]][1] + self.m_offset)   # X of second position (usually: left eye)
       )
       self.m_croppers[key] = cropper
 
@@ -137,10 +138,10 @@ class FaceCrop (Preprocessor):
     # check, which type of annotations we have
     if self.m_fixed_postions:
       # get the cropper for the fixed positions
-      keys = sorted(self.m_fixed_postions.keys())
+      keys = self.m_fixed_postions.keys()
       # take the fixed annotations
       annotations = self.m_fixed_postions
-    elif annotations:
+    if annotations:
       # get cropper for given annotations
       for pair in self.m_supported_annotations:
         if pair[0] in annotations and pair[1] in annotations:
@@ -151,7 +152,6 @@ class FaceCrop (Preprocessor):
       # No annotations and no fixed positions: don't do any processing
       return image.astype(numpy.float64)
 
-
     cropper = self.__cropper__(keys)
     mask = self.__mask__(image.shape)
 
@@ -161,10 +161,8 @@ class FaceCrop (Preprocessor):
         mask,   # full input mask
         self.m_cropped_image, # cropped image
         self.m_cropped_mask,  # cropped mask
-        annotations[keys[0]][0], # Y-position of first annotation, usually left eye
-        annotations[keys[0]][1], # X-position of first annotation, usually left eye
-        annotations[keys[1]][0], # Y-position of first annotation, usually right eye
-        annotations[keys[1]][1]  # X-position of first annotation, usually right eye
+        right_eye = annotations[keys[0]], # position of first annotation, usually left eye
+        left_eye = annotations[keys[1]]  # position of second annotation, usually right eye
     )
 
     # assure that pixels from the masked area are 0

@@ -16,7 +16,6 @@ feature_extractor = facereclib.features.GridGraph(
 
     # what kind of information to extract
     normalize_gabor_jets = True,
-    extract_gabor_phases = True,
 
     # setup of the aligned grid
     eyes = {'leye' : LEFT_EYE_POS, 'reye' : RIGHT_EYE_POS},

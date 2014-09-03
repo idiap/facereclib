@@ -2,7 +2,9 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import bob
+import bob.io.base
+import bob.learn.linear
+
 import numpy
 import scipy.spatial
 
@@ -68,7 +70,7 @@ class LDA (Tool):
     data = numpy.vstack(data_list)
 
     utils.info("  -> Training LinearMachine using PCA")
-    t = bob.trainer.PCATrainer()
+    t = bob.learn.linear.PCATrainer()
     machine, eigen_values = t.train(data)
 
     if isinstance(self.m_pca_subspace, float):
@@ -109,20 +111,21 @@ class LDA (Tool):
       data = self.__perform_pca__(pca_machine, data)
 
     utils.info("  -> Training LinearMachine using LDA")
-    t = bob.trainer.FisherLDATrainer(strip_to_rank = (self.m_lda_subspace == 0))
+    t = bob.learn.linear.FisherLDATrainer(strip_to_rank = (self.m_lda_subspace == 0))
     self.m_machine, self.m_variances = t.train(data)
     if self.m_lda_subspace:
       self.m_machine.resize(self.m_machine.shape[0], self.m_lda_subspace)
+      self.m_variances = self.m_variances.copy()
       self.m_variances.resize(self.m_lda_subspace)
 
     if self.m_pca_subspace:
       # compute combined PCA/LDA projection matrix
       combined_matrix = numpy.dot(pca_machine.weights, self.m_machine.weights)
       # set new weight matrix (and new mean vector) of novel machine
-      self.m_machine = bob.machine.LinearMachine(combined_matrix)
+      self.m_machine = bob.learn.linear.Machine(combined_matrix)
       self.m_machine.input_subtract = pca_machine.input_subtract
 
-    f = bob.io.HDF5File(projector_file, "w")
+    f = bob.io.base.HDF5File(projector_file, "w")
     f.set("Eigenvalues", self.m_variances)
     f.create_group("Machine")
     f.cd("/Machine")
@@ -132,10 +135,10 @@ class LDA (Tool):
   def load_projector(self, projector_file):
     """Reads the LDA projection matrix from file"""
     # read PCA projector
-    f = bob.io.HDF5File(projector_file)
+    f = bob.io.base.HDF5File(projector_file)
     self.m_variances = f.read("Eigenvalues")
     f.cd("/Machine")
-    self.m_machine = bob.machine.LinearMachine(f)
+    self.m_machine = bob.learn.linear.Machine(f)
     # Allocates an array for the projected data
     self.m_projected_feature = numpy.ndarray(self.m_machine.shape[1], numpy.float64)
 

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-import xbob.db.lfw
+import bob.db.lfw
 import facereclib
 
 lfw_directory = "[YOUR_LFW_DIRECTORY]"
 
 database = facereclib.databases.DatabaseXBob(
-    database = xbob.db.lfw.Database(),
+    database = bob.db.lfw.Database(
+        original_directory = lfw_directory
+    ),
     name = 'lfw',
     original_directory = lfw_directory,
     original_extension = ".jpg",

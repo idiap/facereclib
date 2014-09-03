@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
+import bob.ip.base
+
 import numpy
 from .. import utils
 from .Preprocessor import Preprocessor
@@ -67,7 +68,7 @@ class TanTriggs (FaceCrop):
       # resolution of input image is not known yet
       self.m_tan_triggs_image = None
 
-    self.m_tan_triggs = bob.ip.TanTriggs(gamma, sigma0, sigma1, size, threshold, alpha)
+    self.m_tan_triggs = bob.ip.base.TanTriggs(gamma, sigma0, sigma1, size, threshold, alpha)
 
 
   def tan_triggs(self, image):

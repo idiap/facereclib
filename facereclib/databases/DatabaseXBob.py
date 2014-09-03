@@ -21,11 +21,11 @@
 from .Database import Database, DatabaseZT
 
 class DatabaseXBob (Database):
-  """This class can be used whenever you have a database that follows the default XBob database interface."""
+  """This class can be used whenever you have a database that follows the default Bob database interface."""
 
   def __init__(
       self,
-      database,  # The xbob database that is used
+      database,  # The bob database that is used
       has_internal_annotations = False, # annotations are stored internally and do not need to be read from file
       all_files_options = {}, # additional options for the database query that can be used to extract all files
       extractor_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
@@ -37,7 +37,7 @@ class DatabaseXBob (Database):
     Parameters of the constructor of this database:
 
     database
-      the xbob.db.___ database that provides the actual interface
+      the bob.db.___ database that provides the actual interface
 
     image_directory
       The directory where the original images are stored.

@@ -21,7 +21,6 @@ from .Tool import Tool
 
 import numpy
 import scipy.spatial
-import bob
 from .. import utils
 
 

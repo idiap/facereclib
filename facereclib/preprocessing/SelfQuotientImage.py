@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
+import bob.ip.base
 import numpy
 import math
 from .. import utils
@@ -27,12 +27,12 @@ from .FaceCrop import FaceCrop
 class SelfQuotientImage (FaceCrop):
   """Crops the face according to the eye positions (if given), computes the self quotient image."""
 
-  def __init__(self, variance = 2., **kwargs):
+  def __init__(self, sigma = 2., **kwargs):
     # call base class function
-    FaceCrop.__init__(self, variance = variance, **kwargs)
+    FaceCrop.__init__(self, sigma = sigma, **kwargs)
 
-    size = max(1, int(3. * math.sqrt(variance)))
-    self.m_self_quotient = bob.ip.SelfQuotientImage(size_min = size, sigma2 = variance)
+    size = max(1, int(3. * sigma))
+    self.m_self_quotient = bob.ip.base.SelfQuotientImage(size_min = size, sigma = sigma)
 
     if self.m_perform_image_cropping:
       self.m_self_quotient_image = numpy.ndarray(self.m_cropped_image.shape, numpy.float64)

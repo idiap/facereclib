@@ -17,7 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import bob
+import bob.io.base
+import bob.io.image
+
 import os
 
 from .. import utils
@@ -59,19 +61,19 @@ class Preprocessor:
 
   def read_original_data(self, original_file_name):
     """Reads the *original* data (usually an image) from file.
-    In this base class implementation, it uses ``bob.io.load`` to do that.
+    In this base class implementation, it uses ``bob.io.base.load`` to do that.
     If you have different format, please overwrite this function.
     """
-    return bob.io.load(original_file_name)
+    return bob.io.base.load(original_file_name)
 
 
   def save_data(self, data, data_file):
     """Saves the given *preprocessed* data to a file with the given name.
     In this base class implementation:
 
-    - If the given data has a ``save`` attribute, it calls ``data.save(bob.io.HDF5File(data_file), 'w')``.
-      In this case, the given data_file might be either a file name or a bob.io.HDF5File.
-    - Otherwise, it uses ``bob.io.save`` to do that.
+    - If the given data has a ``save`` attribute, it calls ``data.save(bob.io.base.HDF5File(data_file), 'w')``.
+      In this case, the given data_file might be either a file name or a bob.io.base.HDF5File.
+    - Otherwise, it uses ``bob.io.base.save`` to do that.
 
     If you have a different format (e.g. not images), please overwrite this function.
     """
@@ -80,7 +82,7 @@ class Preprocessor:
 
   def read_data(self, data_file):
     """Reads the *preprocessed* data from file.
-    In this base class implementation, it uses ``bob.io.load`` to do that.
+    In this base class implementation, it uses ``bob.io.base.load`` to do that.
     If you have different format, please overwrite this function.
     """
     return utils.load(data_file)

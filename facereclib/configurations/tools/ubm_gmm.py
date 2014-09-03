@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import facereclib
-import bob
 
 tool = facereclib.tools.UBMGMM(
     number_of_gaussians = 512,

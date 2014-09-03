@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 
+import bob.measure
+
 import unittest
 import os
 import sys
@@ -26,7 +28,6 @@ import tempfile
 import numpy
 
 import facereclib
-import bob
 from nose.plugins.skip import SkipTest
 
 import pkg_resources
@@ -197,9 +198,9 @@ class ScriptTest (unittest.TestCase):
 
   def test01x_faceverify_filelist(self):
     try:
-      import xbob.db.verification.filelist
+      import bob.db.verification.filelist
     except ImportError:
-      raise SkipTest("Skipping test since xbob.db.verification.filelist is not available")
+      raise SkipTest("Skipping test since bob.db.verification.filelist is not available")
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
@@ -274,7 +275,7 @@ class ScriptTest (unittest.TestCase):
     try:
       facereclib.utils.resources.load_resource('lfw','database')
     except Exception as e:
-      raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'xbob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
+      raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'bob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
 
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
@@ -302,7 +303,7 @@ class ScriptTest (unittest.TestCase):
     try:
       facereclib.utils.resources.load_resource('lfw','database')
     except Exception as e:
-      raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'xbob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
+      raise SkipTest("The resource for database 'lfw' could not be loaded; probably you didn't define the 'bob.db.lfw' in your *buildout.cfg*. Here is the import error: '%s'" % e)
 
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
@@ -330,7 +331,7 @@ class ScriptTest (unittest.TestCase):
     try:
       facereclib.utils.resources.load_resource('gbu','database')
     except Exception as e:
-      raise SkipTest("The resource for database 'gbu' could not be loaded; probably you didn't define the 'xbob.db.gbu' in your *buildout.cfg*. Here is the import error: '%s'" % e)
+      raise SkipTest("The resource for database 'gbu' could not be loaded; probably you didn't define the 'bob.db.gbu' in your *buildout.cfg*. Here is the import error: '%s'" % e)
 
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
@@ -358,7 +359,7 @@ class ScriptTest (unittest.TestCase):
     try:
       facereclib.utils.resources.load_resource('gbu','database')
     except Exception as e:
-      raise SkipTest("The resource for database 'gbu' could not be loaded; probably you didn't define the 'xbob.db.gbu' in your *buildout.cfg*. Here is the import error: '%s'" % e)
+      raise SkipTest("The resource for database 'gbu' could not be loaded; probably you didn't define the 'bob.db.gbu' in your *buildout.cfg*. Here is the import error: '%s'" % e)
 
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters

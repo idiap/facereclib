@@ -2,7 +2,9 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import bob
+import bob.ip.gabor
+import bob.ip.base
+
 import numpy
 import math
 
@@ -72,37 +74,26 @@ class LGBPHS (Extractor):
       raise ValueError("The overlap is bigger than the block size. This won't work. Please check your setup!")
 
     # Gabor wavelet transform class
-    self.m_gwt = bob.ip.GaborWaveletTransform(
+    self.m_gwt = bob.ip.gabor.Transform(
         number_of_scales = gabor_scales,
-        number_of_angles = gabor_directions,
+        number_of_directions = gabor_directions,
         sigma = gabor_sigma,
         k_max = gabor_maximum_frequency,
         k_fac = gabor_frequency_step,
-        pow_of_k = gabor_power_of_k,
+        power_of_k = gabor_power_of_k,
         dc_free = gabor_dc_free
     )
     self.m_trafo_image = None
     self.m_use_phases = use_gabor_phases
 
-
-    # Initializes LBPHS processor
-    real_h = self.m_block_size[0] + 2 * lbp_radius
-    real_w = self.m_block_size[1] + 2 * lbp_radius
-    real_oy = self.m_block_overlap[0] + 2 * lbp_radius
-    real_ox = self.m_block_overlap[1] + 2 * lbp_radius
-
-    self.m_lgbphs_extractor = bob.ip.LBPHSFeatures(
-          block_h = real_h,
-          block_w = real_w,
-          overlap_h = real_oy,
-          overlap_w = real_ox,
-          lbp_radius = float(lbp_radius),
-          lbp_neighbours = lbp_neighbor_count,
-          circular = lbp_circular,
-          to_average = lbp_compare_to_average,
-          add_average_bit = lbp_add_average,
-          uniform = lbp_uniform,
-          rotation_invariant = lbp_rotation_invariant
+    self.m_lbp = bob.ip.base.LBP(
+        neighbors = lbp_neighbor_count,
+        radius = float(lbp_radius),
+        circular = lbp_circular,
+        to_average = lbp_compare_to_average,
+        add_average_bit = lbp_add_average,
+        uniform = lbp_uniform,
+        rotation_invariant = lbp_rotation_invariant
     )
 
     self.m_split = split_histogram
@@ -131,27 +122,26 @@ class LGBPHS (Extractor):
   def __call__(self, image):
     """Extracts the local Gabor binary pattern histogram sequence from the given image"""
     # perform GWT on image
-    if self.m_trafo_image is None or self.m_trafo_image.shape[1:2] != image.shape:
+    if self.m_trafo_image is None or self.m_trafo_image.shape[1:3] != image.shape:
       # create trafo image
-      self.m_trafo_image = self.m_gwt.empty_trafo_image(image)
+      self.m_trafo_image = numpy.ndarray((self.m_gwt.number_of_wavelets, image.shape[0], image.shape[1]), numpy.complex128)
 
-    # convert image to complex
-    image = image.astype(numpy.complex128)
-    self.m_gwt(image, self.m_trafo_image)
+    # perform Gabor wavelet transform
+    self.m_gwt.transform(image, self.m_trafo_image)
 
-    jet_length = self.m_gwt.number_of_kernels * (2 if self.m_use_phases else 1)
+    jet_length = self.m_gwt.number_of_wavelets * (2 if self.m_use_phases else 1)
 
     lgbphs_array = None
     # iterate through the layers of the trafo image
-    for j in range(self.m_gwt.number_of_kernels):
+    for j in range(self.m_gwt.number_of_wavelets):
       # compute absolute part of complex response
       abs_image = numpy.abs(self.m_trafo_image[j])
       # Computes LBP histograms
-      abs_blocks = self.m_lgbphs_extractor(abs_image)
+      abs_blocks = bob.ip.base.lbphs(abs_image, self.m_lbp, self.m_block_size, self.m_block_overlap)
 
       # Converts to Blitz array (of different dimensionalities)
-      self.m_n_bins = self.m_lgbphs_extractor.n_bins
-      self.m_n_blocks = len(abs_blocks)
+      self.m_n_bins = abs_blocks.shape[1]
+      self.m_n_blocks = abs_blocks.shape[0]
 
       if self.m_split == None:
         shape = (self.m_n_blocks * self.m_n_bins * jet_length,)
@@ -175,9 +165,9 @@ class LGBPHS (Extractor):
         # compute phase part of complex response
         phase_image = numpy.angle(self.m_trafo_image[j])
         # Computes LBP histograms
-        phase_blocks = self.m_lgbphs_extractor(phase_image)
+        phase_blocks = bob.ip.base.lbphs(phase_image, self.m_lbp, self.m_block_size, self.m_block_overlap)
         # fill the array with the phases at the end of the blocks
-        self.__fill__(lgbphs_array, phase_blocks, j + self.m_gwt.number_of_kernels)
+        self.__fill__(lgbphs_array, phase_blocks, j + self.m_gwt.number_of_wavelets)
 
 
     # return the concatenated list of all histograms

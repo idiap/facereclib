@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-import xbob.db.gbu
+import bob.db.gbu
 import facereclib
 
 mbgc_v1_directory = "[YOUR_MBGC-V1_DIRECTORY]"
 
 database = facereclib.databases.DatabaseXBob(
-    database = xbob.db.gbu.Database(),
+    database = bob.db.gbu.Database(
+        original_directory = mbgc_v1_directory
+    ),
     name = "gbu",
     original_directory = mbgc_v1_directory,
     original_extension = ".jpg",

@@ -17,13 +17,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import bob.io.base
+import bob.learn.linear
+import bob.learn.misc
 
 import unittest
 import os
 import numpy
+import math
 import tempfile
 import facereclib
-import bob
 from nose.plugins.skip import SkipTest
 
 import pkg_resources
@@ -57,11 +60,11 @@ class ToolTest(unittest.TestCase):
     # generate a random sequence of GMM-Stats features
     numpy.random.seed(42)
     train_set = []
-    f = bob.io.HDF5File(feature_file)
+    f = bob.io.base.HDF5File(feature_file)
     for i in range(count):
       per_id = []
       for j in range(count):
-        gmm_stats = bob.machine.GMMStats(f)
+        gmm_stats = bob.learn.misc.GMMStats(f)
         gmm_stats.sum_px = numpy.random.random(gmm_stats.sum_px.shape) * (maximum - minimum) + minimum
         gmm_stats.sum_pxx = numpy.random.random(gmm_stats.sum_pxx.shape) * (maximum - minimum) + minimum
         per_id.append(gmm_stats)
@@ -72,19 +75,48 @@ class ToolTest(unittest.TestCase):
 
   def test01_gabor_jet(self):
     # read input
-    feature = facereclib.utils.load(self.input_dir('graph_with_phase.hdf5'))
+    extractor = facereclib.utils.tests.configuration_file('grid-graph', 'feature_extractor', 'features')
+    feature = extractor.read_feature(self.input_dir('graph_regular.hdf5'))
     tool = self.config('gabor-jet')
     self.assertFalse(tool.performs_projection)
     self.assertFalse(tool.requires_enroller_training)
 
     # enroll
     model = tool.enroll([feature])
-    self.compare(model, 'graph_model.hdf5')
+    # execute the preprocessor
+    if regenerate_refs:
+      tool.save_model(model, self.reference_dir('graph_model.hdf5'))
+    reference = tool.read_model(self.reference_dir('graph_model.hdf5'))
+    self.assertEqual(len(model), 1)
+    for n in range(len(model[0])):
+      self.assertTrue((numpy.abs(model[0][n].abs - reference[0][n].abs) < 1e-5).all())
+      self.assertTrue((numpy.abs(model[0][n].phase - reference[0][n].phase) < 1e-5).all())
 
     # score
     sim = tool.score(model, feature)
     self.assertAlmostEqual(sim, 1.)
     self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature, feature]), 1.)
+
+    # test averaging
+    tool = facereclib.tools.GaborJets(
+      "PhaseDiffPlusCanberra",
+      gabor_sigma = math.sqrt(2.) * math.pi,
+      multiple_feature_scoring = "average_model"
+    )
+    model = tool.enroll([feature, feature])
+
+    # absoulte values must be identical
+    for n in range(len(model)):
+      self.assertTrue((numpy.abs(model[n].abs - reference[0][n].abs) < 1e-5).all())
+    # phases might differ with 2 Pi
+    for n in range(len(model)):
+      for j in range(len(model[n].phase)):
+        self.assertTrue(abs(model[n].phase[j] - reference[0][n].phase[j]) < 1e-5 or abs(model[n].phase[j] - reference[0][n].phase[j] + 2*math.pi) < 1e-5 or abs(model[n].phase[j] - reference[0][n].phase[j] - 2*math.pi) < 1e-5)
+
+    sim = tool.score(model, feature)
+    self.assertAlmostEqual(sim, 1.)
+    self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature, feature]), 1.)
+
 
 
   def test02_lgbphs(self):
@@ -129,10 +161,10 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('pca_projector.hdf5'))
     # compare the resulting machines
-    f = bob.io.HDF5File(t)
+    f = bob.io.base.HDF5File(t)
     new_variances = f.read("Eigenvalues")
     f.cd("/Machine")
-    new_machine = bob.machine.LinearMachine(f)
+    new_machine = bob.learn.linear.Machine(f)
     del f
     self.assertEqual(tool.m_variances.shape, new_variances.shape)
     self.assertTrue(numpy.abs(tool.m_variances - new_variances < 1e-5).all())
@@ -194,10 +226,10 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('pca+lda_projector.hdf5'))
     # compare the resulting machines
-    f = bob.io.HDF5File(t)
+    f = bob.io.base.HDF5File(t)
     new_variances = f.read("Eigenvalues")
     f.cd("/Machine")
-    new_machine = bob.machine.LinearMachine(f)
+    new_machine = bob.learn.linear.Machine(f)
     del f
     self.assertEqual(tool.m_machine.shape, new_machine.shape)
     self.assertTrue(numpy.abs(tool.m_variances - new_variances < 1e-5).all())
@@ -256,8 +288,8 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_enroller(self.reference_dir('bic_enroller.hdf5'))
     # compare the resulting machines
-    new_machine = bob.machine.BICMachine(tool.m_use_dffs)
-    new_machine.load(bob.io.HDF5File(t))
+    new_machine = bob.learn.misc.BICMachine(tool.m_use_dffs)
+    new_machine.load(bob.io.base.HDF5File(t))
     self.assertTrue(tool.m_bic_machine.is_similar_to(new_machine))
     os.remove(t)
 
@@ -281,8 +313,8 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_enroller(self.reference_dir('iec_enroller.hdf5'))
     # compare the resulting machines
-    new_machine = bob.machine.BICMachine(tool.m_use_dffs)
-    new_machine.load(bob.io.HDF5File(t))
+    new_machine = bob.learn.misc.BICMachine(tool.m_use_dffs)
+    new_machine.load(bob.io.base.HDF5File(t))
     self.assertTrue(tool.m_bic_machine.is_similar_to(new_machine))
     os.remove(t)
 
@@ -320,21 +352,21 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('gmm_projector.hdf5'))
     # compare GMM projector with reference
-    new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
+    new_machine = bob.learn.misc.GMMMachine(bob.io.base.HDF5File(t))
     self.assertTrue(tool.m_ubm.is_similar_to(new_machine))
     os.remove(t)
 
     # project the feature
     projected = tool.project(feature)
     if regenerate_refs:
-      projected.save(bob.io.HDF5File(self.reference_dir('gmm_feature.hdf5'), 'w'))
+      projected.save(bob.io.base.HDF5File(self.reference_dir('gmm_feature.hdf5'), 'w'))
     probe = tool.read_probe(self.reference_dir('gmm_feature.hdf5'))
     self.assertTrue(projected.is_similar_to(probe))
 
     # enroll model with the unprojected feature
     model = tool.enroll([feature])
     if regenerate_refs:
-      model.save(bob.io.HDF5File(self.reference_dir('gmm_model.hdf5'), 'w'))
+      model.save(bob.io.base.HDF5File(self.reference_dir('gmm_model.hdf5'), 'w'))
     reference_model = tool.read_model(self.reference_dir('gmm_model.hdf5'))
     self.assertTrue(model.is_similar_to(reference_model))
 
@@ -412,15 +444,15 @@ class ToolTest(unittest.TestCase):
     tool.load_projector(self.reference_dir('isv_projector.hdf5'))
 
     # compare ISV projector with reference
-    hdf5file = bob.io.HDF5File(t)
+    hdf5file = bob.io.base.HDF5File(t)
     hdf5file.cd('Projector')
-    projector_reference = bob.machine.GMMMachine(hdf5file)
+    projector_reference = bob.learn.misc.GMMMachine(hdf5file)
     self.assertTrue(tool.m_ubm.is_similar_to(projector_reference))
 
     # compare ISV enroller with reference
     hdf5file.cd('/')
     hdf5file.cd('Enroller')
-    enroller_reference = bob.machine.ISVBase(hdf5file)
+    enroller_reference = bob.learn.misc.ISVBase(hdf5file)
     enroller_reference.ubm = projector_reference
     self.assertTrue(tool.m_isvbase.is_similar_to(enroller_reference))
     os.remove(t)
@@ -437,7 +469,7 @@ class ToolTest(unittest.TestCase):
     # enroll model with the projected feature
     model = tool.enroll([projected[0]])
     if regenerate_refs:
-      model.save(bob.io.HDF5File(self.reference_dir('isv_model.hdf5'), 'w'))
+      model.save(bob.io.base.HDF5File(self.reference_dir('isv_model.hdf5'), 'w'))
     reference_model = tool.read_model(self.reference_dir('isv_model.hdf5'))
     # compare the ISV model with the reference
     self.assertTrue(model.is_similar_to(reference_model))
@@ -488,14 +520,14 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('jfa_projector.hdf5'))
     # compare JFA projector with reference
-    new_machine = bob.machine.GMMMachine(bob.io.HDF5File(t))
+    new_machine = bob.learn.misc.GMMMachine(bob.io.base.HDF5File(t))
     self.assertTrue(tool.m_ubm.is_similar_to(new_machine))
     os.remove(t)
 
     # project the feature
     projected = tool.project(feature)
     if regenerate_refs:
-      projected.save(bob.io.HDF5File(self.reference_dir('jfa_feature.hdf5'), 'w'))
+      projected.save(bob.io.base.HDF5File(self.reference_dir('jfa_feature.hdf5'), 'w'))
     # compare the projected feature with the reference
     projected_reference = tool.read_feature(self.reference_dir('jfa_feature.hdf5'))
     self.assertTrue(projected.is_similar_to(projected_reference))
@@ -508,7 +540,7 @@ class ToolTest(unittest.TestCase):
       shutil.copy2(t, self.reference_dir('jfa_enroller.hdf5'))
     tool.load_enroller(self.reference_dir('jfa_enroller.hdf5'))
     # compare JFA enroller with reference
-    enroller_reference = bob.machine.JFABase(bob.io.HDF5File(t))
+    enroller_reference = bob.learn.misc.JFABase(bob.io.base.HDF5File(t))
     enroller_reference.ubm = new_machine
     self.assertTrue(tool.m_jfabase.is_similar_to(enroller_reference))
     os.remove(t)
@@ -516,7 +548,7 @@ class ToolTest(unittest.TestCase):
     # enroll model with the projected feature
     model = tool.enroll([projected])
     if regenerate_refs:
-      model.save(bob.io.HDF5File(self.reference_dir('jfa_model.hdf5'), 'w'))
+      model.save(bob.io.base.HDF5File(self.reference_dir('jfa_model.hdf5'), 'w'))
     # assert that the model is ok
     reference_model = tool.read_model(self.reference_dir('jfa_model.hdf5'))
     self.assertTrue(model.is_similar_to(reference_model))
@@ -560,11 +592,11 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_enroller(self.reference_dir('pca+plda_enroller.hdf5'))
     # compare the resulting machines
-    test_file = bob.io.HDF5File(t)
+    test_file = bob.io.base.HDF5File(t)
     test_file.cd('/pca')
-    pca_machine = bob.machine.LinearMachine(test_file)
+    pca_machine = bob.learn.linear.Machine(test_file)
     test_file.cd('/plda')
-    plda_machine = bob.machine.PLDABase(test_file)
+    plda_machine = bob.learn.misc.PLDABase(test_file)
     # TODO: compare the PCA machines
     #self.assertEqual(pca_machine, tool.m_pca_machine)
     # TODO: compare the PLDA machines
@@ -574,7 +606,7 @@ class ToolTest(unittest.TestCase):
     # enroll model
     model = tool.enroll([feature])
     if regenerate_refs:
-      model.save(bob.io.HDF5File(self.reference_dir('pca+plda_model.hdf5'), 'w'))
+      model.save(bob.io.base.HDF5File(self.reference_dir('pca+plda_model.hdf5'), 'w'))
     # TODO: compare the models with the reference
     #reference_model = tool.read_model(self.reference_dir('pca+plda_model.hdf5'))
     #self.assertEqual(model, reference_model)
@@ -620,15 +652,15 @@ class ToolTest(unittest.TestCase):
     tool.load_projector(self.reference_dir('ivector_projector.hdf5'))
 
     # compare ISV projector with reference
-    hdf5file = bob.io.HDF5File(t)
+    hdf5file = bob.io.base.HDF5File(t)
     hdf5file.cd('Projector')
-    projector_reference = bob.machine.GMMMachine(hdf5file)
+    projector_reference = bob.learn.misc.GMMMachine(hdf5file)
     self.assertTrue(tool.m_ubm.is_similar_to(projector_reference))
 
     # compare ISV enroller with reference
     hdf5file.cd('/')
     hdf5file.cd('Enroller')
-    enroller_reference = bob.machine.IVectorMachine(hdf5file)
+    enroller_reference = bob.learn.misc.IVectorMachine(hdf5file)
     enroller_reference.ubm = projector_reference
     self.assertTrue(tool.m_tv.is_similar_to(enroller_reference))
     os.remove(t)

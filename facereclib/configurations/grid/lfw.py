@@ -1,6 +1,6 @@
 import facereclib
 
-# define a queue specifically for the xbob.db.lfw database
+# define a queue specifically for the bob.db.lfw database
 grid = facereclib.utils.GridParameters(
   training_queue = '16G',
   # model enrollment

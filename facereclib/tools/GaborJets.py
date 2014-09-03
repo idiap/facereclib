@@ -2,7 +2,9 @@
 # vim: set fileencoding=utf-8 :
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
-import bob
+import bob.ip.gabor
+import bob.io.base
+
 import numpy
 import math
 
@@ -30,7 +32,7 @@ class GaborJets (Tool):
     Tool.__init__(
         self,
 
-        gabor_jet_similarity_type = str(gabor_jet_similarity_type),
+        gabor_jet_similarity_type = gabor_jet_similarity_type,
         multiple_feature_scoring = multiple_feature_scoring,
         gabor_directions = gabor_directions,
         gabor_scales = gabor_scales,
@@ -44,22 +46,19 @@ class GaborJets (Tool):
         multiple_probe_scoring = None
     )
 
-    # graph machine for enrolling models and comparing graphs
-    self.m_graph_machine = bob.machine.GaborGraphMachine()
-
     # the Gabor wavelet transform; used by (some of) the Gabor jet similarities
-    gwt = bob.ip.GaborWaveletTransform(
+    gwt = bob.ip.gabor.Transform(
         number_of_scales = gabor_scales,
-        number_of_angles = gabor_directions,
+        number_of_directions = gabor_directions,
         sigma = gabor_sigma,
         k_max = gabor_maximum_frequency,
         k_fac = gabor_frequency_step,
-        pow_of_k = gabor_power_of_k,
+        power_of_k = gabor_power_of_k,
         dc_free = gabor_dc_free
     )
 
     # jet comparison function
-    self.m_similarity_function = bob.machine.GaborJetSimilarity(gabor_jet_similarity_type, gwt)
+    self.m_similarity_function = bob.ip.gabor.Similarity(gabor_jet_similarity_type, gwt)
 
     # how to proceed with multiple features per model
     self.m_jet_scoring = {
@@ -87,37 +86,58 @@ class GaborJets (Tool):
 
   def enroll(self, enroll_features):
     """Enrolls the model by computing an average graph for each model"""
-    graph_count = len(enroll_features)
+    assert len(enroll_features)
+    if self.m_jet_scoring is not None:
+      return enroll_features
 
-    shape = [graph_count] + list(enroll_features[0].shape)
-    model = numpy.ndarray(tuple(shape), dtype=numpy.float64)
-    for c, graph in enumerate(enroll_features):
-      if graph.shape != model.shape[1:]:
-        raise Exception('Size mismatched')
-      model[c] = graph
+    # compute average model
+    return [bob.ip.gabor.Jet([enroll_features[g][n] for g in range(len(enroll_features))], normalize=True) for n in range(len(enroll_features[0]))]
 
+
+  def save_model(self, model, model_file):
+    f = bob.io.base.HDF5File(model_file, 'w')
     if self.m_jet_scoring is None:
-      if model.ndim != 4:
-        raise Exception('Averaging is only supported when phases are included')
-      # compute average model
-      average = numpy.ndarray(model.shape[1:], dtype=numpy.float64)
-      self.m_graph_machine.average(model, average)
-      # return the average
-      return average
-
+      # only one averaged model
+      bob.ip.gabor.save_jets(model, f)
     else:
-      # return the generated model
+      # several model graphs
+      f.set("NumberOfModels", len(model))
+      for g in range(len(model)):
+        name = "Model" + str(g+1)
+        f.create_group(name)
+        f.cd(name)
+        bob.ip.gabor.save_jets(model[g], f)
+        f.cd("..")
+    f.close()
+
+  def read_model(self, model_file):
+    f = bob.io.base.HDF5File(model_file)
+    if self.m_jet_scoring is None:
+      # only one graph
+      assert not f.has_key("NumberOfModels")
+      return bob.ip.gabor.load_jets(f)
+    else:
+      # several graphs
+      count = f.get("NumberOfModels")
+      model = []
+      for g in range(count):
+        name = "Model" + str(g+1)
+        f.cd(name)
+        model.append(bob.ip.gabor.load_jets(f))
+        f.cd("..")
       return model
 
+  def read_probe(self, probe_file):
+    return bob.ip.gabor.load_jets(bob.io.base.HDF5File(probe_file))
 
   def score(self, model, probe):
     """Computes the score of the probe and the model"""
     if self.m_jet_scoring is None:
       # compute sum of Gabor jet similarities between averaged model graph and probe graph
-      return numpy.average([self.m_similarity_function(model[n], probe[n]) for n in range(model.shape[0])])
+      return numpy.average([self.m_similarity_function(model[n], probe[n]) for n in range(len(model))])
     else:
       # compute all Gabor jet similarities
-      scores = [[self.m_similarity_function(model[c,n], probe[n]) for n in range(model.shape[1])] for c in range(model.shape[0])]
+      scores = [[self.m_similarity_function(model[c][n], probe[n]) for n in range(len(model[0]))] for c in range(len(model))]
       # for each jet location, compute the desired score averaging
       return self.m_graph_scoring(self.m_jet_scoring(scores, axis=0))
 
@@ -126,10 +146,10 @@ class GaborJets (Tool):
     """This function computes the score between the given model graph(s) and several given probe graphs."""
     if self.m_jet_scoring is None:
       # compute sum of Gabor jet similarities between averaged model graph and probe graphs
-      return numpy.average([self.m_similarity_function(model[n], probes[p][n]) for n in range(model.shape[0]) for p in len(probes)])
+      return numpy.average([self.m_similarity_function(model[n], probes[p][n]) for n in range(len(model)) for p in range(len(probes))])
     else:
       # compute all Gabor jet similarities
-      scores = [[self.m_similarity_function(model[c,n], probes[p][n]) for n in range(model.shape[1])] for p in range(len(probes)) for c in range(model.shape[0])]
+      scores = [[self.m_similarity_function(model[c][n], probes[p][n]) for n in range(len(model[0]))] for p in range(len(probes)) for c in range(len(model))]
       # for each jet location, compute the desired score averaging
       return self.m_graph_scoring(self.m_jet_scoring(scores, axis=0))
 

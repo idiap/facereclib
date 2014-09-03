@@ -31,4 +31,4 @@ replace = {
 
 requirements = ["#1 > #4"]
 
-imports = ['bob', 'facereclib']
+imports = ['bob.math', 'facereclib']
