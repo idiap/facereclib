@@ -69,53 +69,76 @@ class DatabaseTest(unittest.TestCase):
 
 
   def test02_banca(self):
-    self.check_database_zt(self.config('banca'))
-    self.check_database_zt(self.config('banca_twothirds'))
-    self.check_annotations(self.config('banca'))
-
+    try:
+      self.check_database_zt(self.config('banca'))
+      self.check_database_zt(self.config('banca_twothirds'))
+      self.check_annotations(self.config('banca'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test03_xm2vts(self):
-    self.check_database(self.config('xm2vts'), groups=('dev', 'eval'))
-    self.check_database(self.config('xm2vts'), groups=('dev', 'eval'), protocol = 'darkened-lp1')
-    self.check_annotations(self.config('xm2vts'))
+    try:
+      self.check_database(self.config('xm2vts'), groups=('dev', 'eval'))
+      self.check_database(self.config('xm2vts'), groups=('dev', 'eval'), protocol = 'darkened-lp1')
+      self.check_annotations(self.config('xm2vts'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test04_scface(self):
-    self.check_database_zt(self.config('scface'))
-    self.check_annotations(self.config('scface'))
+    try:
+      self.check_database_zt(self.config('scface'))
+      self.check_annotations(self.config('scface'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test05_mobio(self):
-    self.check_database_zt(self.config('mobio'))
-    self.check_database_zt(self.config('mobio'), protocol = 'female')
-    self.check_database_zt(self.config('mobio_male'))
-    self.check_database_zt(self.config('mobio_female'))
-    self.check_annotations(self.config('mobio'))
+    try:
+      self.check_database_zt(self.config('mobio'))
+      self.check_database_zt(self.config('mobio'), protocol = 'female')
+      self.check_database_zt(self.config('mobio_male'))
+      self.check_database_zt(self.config('mobio_female'))
+      self.check_annotations(self.config('mobio'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test06_multipie(self):
     raise SkipTest('This test definitely takes too much time. If you want the tests enabled, please disable this exception temporarily.')
-    self.check_database_zt(self.config('multipie'))
-    self.check_database_zt(self.config('multipie_P'))
-    self.check_database_zt(self.config('multipie_P110'))
-    self.check_annotations(self.config('multipie'))
+    try:
+      self.check_database_zt(self.config('multipie'))
+      self.check_database_zt(self.config('multipie_P'))
+      self.check_database_zt(self.config('multipie_P110'))
+      self.check_annotations(self.config('multipie'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test07_lfw(self):
-    self.check_database(self.config('lfw'))
-    self.check_database(self.config('lfw'), protocol = 'fold1')
-    self.check_database(self.config('lfw_unrestricted'))
+    try:
+      self.check_database(self.config('lfw'))
+      self.check_database(self.config('lfw'), protocol = 'fold1')
+      self.check_database(self.config('lfw_unrestricted'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test08_arface(self):
-    self.check_database(self.config('arface'), groups=('dev', 'eval'))
-    self.check_annotations(self.config('arface'))
+    try:
+      self.check_database(self.config('arface'), groups=('dev', 'eval'))
+      self.check_annotations(self.config('arface'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test09_gbu(self):
-    self.check_database(self.config('gbu'))
-    self.check_annotations(self.config('gbu'))
+    try:
+      self.check_database(self.config('gbu'))
+      self.check_annotations(self.config('gbu'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test10_frgc(self):
@@ -125,9 +148,12 @@ class DatabaseTest(unittest.TestCase):
 
 
   def test11_caspeal(self):
-    self.check_database(self.config('caspeal'))
-    self.check_database(self.config('caspeal'), protocol = 'aging')
-    self.check_annotations(self.config('caspeal'))
+    try:
+      self.check_database(self.config('caspeal'))
+      self.check_database(self.config('caspeal'), protocol = 'aging')
+      self.check_annotations(self.config('caspeal'))
+    except IOError as e:
+      raise SkipTest("The database could not queried; probably the db.sql3 file is missing. Here is the import error: '%s'" % e)
 
 
   def test20_verification_filelist(self):
