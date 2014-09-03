@@ -42,7 +42,7 @@ class FileSelector:
     """Returns true if the given protocol enables several probe files for scoring."""
     return self.m_database.uses_probe_file_sets()
 
-  def get_paths(self, files, directory_type = None, directory = None, extension = None):
+  def get_paths(self, files, directory_type = None):
     """Returns the list of file names for the given list of File objects."""
     if directory_type == 'preprocessed':
       directory = self.preprocessed_directory
@@ -50,41 +50,28 @@ class FileSelector:
       directory = self.features_directory
     elif directory_type == 'projected':
       directory = self.projected_directory
-    elif directory_type is not None:
+    else:
       raise ValueError("The given directory type '%s' is not supported." % directory_type)
 
-    if directory is None:
-      directory = ""
-    if extension is None:
-      extension = self.default_extension
+    return self.m_database.file_names(files, directory, self.default_extension)
 
-    # return the paths of the files
-    if self.uses_probe_file_sets() and files and hasattr(files[0], 'files'):
-      # List of Filesets: do not remove duplicates
-      return [[f.make_path(directory, extension) for f in file_set.files] for file_set in files]
-    else:
-      # List of files, remove duplicate entries
-      known = set()
-      return [file.make_path(directory, extension) for file in files if file.path not in known and not known.add(file.path)]
 
   ### List of files that will be used for all files
   def original_data_list(self, groups = None):
     """Returns the list of original data that can be used for preprocessing."""
-    return self.get_paths(self.m_database.all_files(groups=groups), directory = self.m_database.original_directory, extension = self.m_database.original_extension)
+    return self.m_database.original_file_names(self.m_database.all_files(groups=groups))
 
   def annotation_list(self, groups = None):
-    """Returns the list of annotations, if existing."""
-    known = set()
-    return [file for file in self.m_database.all_files(groups=groups) if file.path not in known and not known.add(file.path)]
+    """Returns the list of annotations objects."""
+    return self.m_database.all_files(groups=groups)
 
   def get_annotations(self, annotation_file):
-    """Reads the annotation of the given file."""
+    """Returns the annotations of the given file."""
     return self.m_database.annotations(annotation_file)
 
   def preprocessed_data_list(self, groups = None):
     """Returns the list of preprocessed data files."""
-    files = self.m_database.all_files(groups=groups)
-    return self.get_paths(files, "preprocessed")
+    return self.get_paths(self.m_database.all_files(groups=groups), "preprocessed")
 
   def feature_list(self, groups = None):
     """Returns the list of extracted feature files."""

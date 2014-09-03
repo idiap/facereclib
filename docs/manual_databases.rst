@@ -17,7 +17,7 @@ Basic database interface
 Database interface for Bob_ databases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: facereclib.databases.DatabaseXBob
+.. automodule:: facereclib.databases.DatabaseBob
 
 
 .. include:: links.rst

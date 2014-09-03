@@ -5,11 +5,9 @@ import facereclib
 
 atnt_directory = "[YOUR_ATNT_DIRECTORY]"
 
-database = facereclib.databases.DatabaseXBob(
+database = facereclib.databases.DatabaseBob(
     database = bob.db.atnt.Database(
-      original_directory = atnt_directory
+        original_directory = atnt_directory
     ),
-    name = 'atnt',
-    original_directory = atnt_directory,
-    original_extension = ".pgm"
+    name = 'atnt'
 )

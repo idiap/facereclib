@@ -7,7 +7,6 @@ from . import histogram
 from . import tests
 from . import resources
 from .logger import add_logger_command_line_option, set_verbosity_level, add_bob_handlers, debug, info, warn, error
-from .annotations import read_annotations
 from .grid import GridParameters
 
 import bob.io.base

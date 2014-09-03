@@ -2,18 +2,16 @@ import bob.db.atnt
 import facereclib
 import os
 
-class TestDatabase (facereclib.databases.DatabaseXBobZT):
+class TestDatabase (facereclib.databases.DatabaseBobZT):
 
   def __init__(self):
     # call base class constructor with useful parameters
-    facereclib.databases.DatabaseXBobZT.__init__(
+    facereclib.databases.DatabaseBobZT.__init__(
         self,
         database = bob.db.atnt.Database(
             original_directory = facereclib.utils.tests.atnt_database_directory(),
         ),
-        name = 'test2',
-        original_directory = facereclib.utils.tests.atnt_database_directory(),
-        original_extension = ".pgm"
+        name = 'test2'
     )
 
   def uses_probe_file_sets(self):
@@ -33,7 +31,7 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
 
 
   def all_files(self, groups = ['dev']):
-    return facereclib.databases.DatabaseXBob.all_files(self, groups)
+    return facereclib.databases.DatabaseBob.all_files(self, groups)
 
 
   def t_model_ids(self, group = 'dev'):

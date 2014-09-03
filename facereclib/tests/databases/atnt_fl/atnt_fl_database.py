@@ -2,12 +2,12 @@ import bob.db.verification.filelist
 import facereclib
 import os
 
-class TestDatabase (facereclib.databases.DatabaseXBobZT):
+class TestDatabase (facereclib.databases.DatabaseBobZT):
 
   def __init__(self):
 
     # call base class constructor with useful parameters
-    facereclib.databases.DatabaseXBobZT.__init__(
+    facereclib.databases.DatabaseBobZT.__init__(
         self,
         database = bob.db.verification.filelist.Database(
             base_dir = os.path.realpath(os.path.dirname(__file__)),
@@ -23,8 +23,6 @@ class TestDatabase (facereclib.databases.DatabaseXBobZT):
             keep_read_lists_in_memory = True
         ),
         name = 'test_fl',
-        original_directory = facereclib.utils.tests.atnt_database_directory(),
-        original_extension = ".pgm",
         protocol = None
     )
 

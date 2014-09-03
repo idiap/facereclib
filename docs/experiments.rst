@@ -104,7 +104,7 @@ In the following, we will provide a detailed explanation of the parameters of th
 Databases
 ~~~~~~~~~
 Currently, all implemented databases are taken from Bob_.
-To define a common API for all of the databases, the |project| defines the wrapper classes `facereclib.databases.DatabaseXBob <file:../facereclib/databases/DatabaseXBob.py>`_ and `facereclib.databases.DatabaseXBobZT  <file:../facereclib/databases/DatabaseXBob.py>`_ for these databases.
+To define a common API for all of the databases, the |project| defines the wrapper classes `facereclib.databases.DatabaseBob <file:../facereclib/databases/DatabaseBob.py>`_ and `facereclib.databases.DatabaseBobZT  <file:../facereclib/databases/DatabaseBob.py>`_ for these databases.
 The parameters of this wrapper class are:
 
 Required parameters
@@ -112,22 +112,13 @@ Required parameters
 
 * ``name``: The name of the database, in lowercase letters without special characters.
   This name will be used as a default sub-directory to separate resulting files of different experiments.
-* ``database = xbob.db.<DATABASE>()``: One of the image databases available at `Idiap at GitHub`_.
-* ``original_directory``: The base directory, where the original data of the database is stored.
-* ``original_extension``: The file extension of the original data in the database.
+* ``database = bob.db.<DATABASE>(original_directory=...)``: One of the image databases available at `Idiap at GitHub`_.
+  Please set the ``original_directory`` and, if required, the ``original_extension`` parameter in the constructor of that database.
+* ``protocol``: The name of the protocol that should be used.
+  If omitted, the protocol *Default* will be used (which might not be available in all databases, so please specify).
 
 Optional parameters
 *******************
-
-* ``has_internal_annotations``: Set to true if the database stores the annotations directly.
-   In this case, the actual database object needs to provide a ``annotations`` function.
-* ``annotation_directory``: The directory containing the (hand-labeled) annotations of the database, if available.
-* ``annotation_extension``: The file extension of the images. Default value: *.pos*.
-* ``annotation_type``: The way the annotations are stored in the annotation files.
-  Possible values are: *eyecenter*, *named*, *multipie*, *scface*, *cosmin* (see `facereclib.utils.read_annotations <file:../facereclib/utils/annotations.py>`_ on which one works for you).
-  This option must be specified when ``annotation_directory`` is given.
-* ``protocol``: The name of the protocol that should be used.
-  If omitted, the protocol *Default* will be used (which might not be available in all databases, so please specify).
 
 These parameters can be used to reduce the number of training images.
 Usually, there is no need to specify them, but in case your algorithm requires to much memory:
@@ -144,7 +135,7 @@ By clicking on the database name, you open one configuration file of the databas
 If you have an ``image_directory`` different to the one specified in the file, please change the directory accordingly to be able to use the database.
 
 
-* `facereclib.database.DatabaseXBob <file:../facereclib/databases/DatabaseXBob.py>`_:
+* `facereclib.database.DatabaseBob <file:../facereclib/databases/DatabaseBob.py>`_:
 
   - `AR face <file:../facereclib/configurations/databases/arface.py>`_ : http://www2.ece.ohio-state.edu/~aleix/ARdatabase.html
 
@@ -166,12 +157,12 @@ If you have an ``image_directory`` different to the one specified in the file, p
   .. note::
     The GBU database uses the data from the MBGC http://www.nist.gov/itl/iad/ig/mbgc.cfm database of the NIST.
     The directory structure of the MBGC seems to be changed lately.
-    Hence, the ``xbob.db.gbu`` database might not be up to date.
+    Hence, the ``bob.db.gbu`` database might not be up to date.
     Please refer to the documentation of this database on how to adapt the database to the new structure.
 
   - `Labeled Faces in the Wild (LFW) <file:../facereclib/configurations/databases/lfw.py>`_ : http://vis-www.cs.umass.edu/lfw/
 
-* `facereclib.database.DatabaseXBobZT <file:../facereclib/databases/DatabaseXBob.py>`_:
+* `facereclib.database.DatabaseBobZT <file:../facereclib/databases/DatabaseBob.py>`_:
 
   - `BANCA <file:../facereclib/configurations/databases/banca.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/banca
   - `MOBIO <file:../facereclib/configurations/databases/mobio.py>`_ : http://www.idiap.ch/dataset/mobio
@@ -179,7 +170,7 @@ If you have an ``image_directory`` different to the one specified in the file, p
   - `Surveillance Camera (SC) face database <file:../facereclib/configurations/databases/scface.py>`_ : http://www.scface.org
   - `Extended M2VTS (XM2VTS) <file:../facereclib/configurations/databases/xm2vts.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/xm2vtsdb
 
-There is also one interface for the ``xbob.db.verification.filelist`` database, which contains a file-based API to define simple evaluation protocols for other databases.
+There is also one interface for the ``bob.db.verification.filelist`` database, which contains a file-based API to define simple evaluation protocols for other databases.
 An example, which is based on the `AT&T database`, on how to configure and use this database can be found in `facereclib/tests/databases/atnt_fl/atnt_fl_database.py <file:../facereclib/tests/databases/atnt_fl/atnt_fl_database.py>`_.
 For more information, please also read the :ref:`filelist` section.
 

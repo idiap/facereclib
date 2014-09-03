@@ -5,14 +5,11 @@ import facereclib
 
 mbgc_v1_directory = "[YOUR_MBGC-V1_DIRECTORY]"
 
-database = facereclib.databases.DatabaseXBob(
+database = facereclib.databases.DatabaseBob(
     database = bob.db.gbu.Database(
         original_directory = mbgc_v1_directory
     ),
     name = "gbu",
-    original_directory = mbgc_v1_directory,
-    original_extension = ".jpg",
-    has_internal_annotations = True,
     protocol = 'Good',
 
     all_files_options = { 'subworld': 'x2' },

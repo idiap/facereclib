@@ -22,6 +22,7 @@ import unittest
 import os
 import numpy
 import facereclib
+import bob.db.verification.utils
 
 from nose.plugins.skip import SkipTest
 
@@ -40,7 +41,7 @@ class PreprocessingTest(unittest.TestCase):
     return ref
 
   def input(self):
-    return (facereclib.utils.load(self.input_dir("testimage.jpg")), facereclib.utils.read_annotations(self.input_dir("testimage.pos"), 'named'))
+    return (facereclib.utils.load(self.input_dir("testimage.jpg")), bob.db.verification.utils.read_annotation_file(self.input_dir("testimage.pos"), 'named'))
 
   def config(self, resource):
     return facereclib.utils.tests.configuration_file(resource, 'preprocessor', 'preprocessing')

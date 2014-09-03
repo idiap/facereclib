@@ -6,17 +6,13 @@ import facereclib
 mobio_image_directory = "[YOUR_MOBIO_IMAGE_DIRECTORY]"
 mobio_annotation_directory = "[YOUR_MOBIO_ANNOTATION_DIRECTORY]"
 
-database = facereclib.databases.DatabaseXBobZT(
+database = facereclib.databases.DatabaseBobZT(
     database = bob.db.mobio.Database(
         original_directory = mobio_image_directory,
         original_extension = ".png",
         annotation_directory = mobio_annotation_directory,
     ),
     name = "mobio",
-    original_directory = mobio_image_directory,
-    original_extension = ".png",
-    annotation_directory = mobio_annotation_directory,
-    annotation_type = 'eyecenter',
     protocol = 'male',
 
     all_files_options = { 'gender' : 'male' },

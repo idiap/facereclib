@@ -44,10 +44,10 @@ There are two ways of providing these information for your class:
 
 Image databases
 ~~~~~~~~~~~~~~~
-If you have your own database that you want to execute the recognition experiments on, you should first check if you could use the ``xbob.db.verification.filelist`` database interface by defining appropriate file lists for the training set, the model set, and the probes.
-If you can do this, just write your own configuration file that uses the ``facereclib.databases.DatabaseXBob`` or ``facereclib.databases.DatabaseXBobZT`` interface (see :ref:`databases` for details).
-In most of the cases, the ``xbob.db.verification.filelist`` should be sufficient to run experiments.
-Please refer to the documentation: https://github.com/bioidiap/xbob.db.verification.filelist/blob/master/docs/index.rst (which is currently wrong) of this database for more instructions on how to configure this database.
+If you have your own database that you want to execute the recognition experiments on, you should first check if you could use the ``bob.db.verification.filelist`` database interface by defining appropriate file lists for the training set, the model set, and the probes.
+If you can do this, just write your own configuration file that uses the ``facereclib.databases.DatabaseBob`` or ``facereclib.databases.DatabaseBobZT`` interface (see :ref:`databases` for details).
+In most of the cases, the ``bob.db.verification.filelist`` should be sufficient to run experiments.
+Please refer to the documentation: https://github.com/bioidiap/bob.db.verification.filelist/blob/master/docs/index.rst (which is currently wrong) of this database for more instructions on how to configure this database.
 
 In case you want to have a more complicated interface to your database, you are welcome to write your own database wrapper class.
 In this case, you have to derive your class from the `facereclib.databases.Database <file:../facereclib/databases/Database.py>`_, and provide the following functions:

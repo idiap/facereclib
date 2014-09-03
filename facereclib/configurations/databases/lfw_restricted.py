@@ -5,13 +5,11 @@ import facereclib
 
 lfw_directory = "[YOUR_LFW_DIRECTORY]"
 
-database = facereclib.databases.DatabaseXBob(
+database = facereclib.databases.DatabaseBob(
     database = bob.db.lfw.Database(
         original_directory = lfw_directory
     ),
     name = 'lfw',
-    original_directory = lfw_directory,
-    original_extension = ".jpg",
     protocol = 'view1',
 
     all_files_options = {'world_type' : 'restricted'},

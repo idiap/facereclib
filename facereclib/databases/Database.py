@@ -18,7 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from .. import utils
 
 class File:
   """This class defines the minimum interface of a file that needs to be exported"""
@@ -62,8 +61,8 @@ class Database:
   def __init__(
      self,
      name,
-     original_directory,
-     original_extension,
+     original_directory = None,
+     original_extension = None,
      annotation_directory = None,
      annotation_extension = '.pos',
      annotation_type = None,
@@ -144,16 +143,39 @@ class Database:
   def annotations(self, file):
     """Returns the annotations for the given File object, if available."""
     if self.annotation_directory:
-      annotation_path = os.path.join(self.annotation_directory, file.path + self.annotation_extension)
-      return utils.read_annotations(annotation_path, self.annotation_type)
-    else:
-      return None
+      try:
+        import bob.db.verification.utils
+        annotation_path = os.path.join(self.annotation_directory, file.path + self.annotation_extension)
+        return bob.db.verification.utils.read_annotation_file(annotation_path, self.annotation_type)
+      except ImportError as e:
+        from .. import utils
+        utils.error("Cannot import bob.db.verification.utils: '%s'. No annotation is read." % e)
+
+    return None
 
 
   def uses_probe_file_sets(self):
     """Defines if, for the current protocol, the database uses several probe files to generate a score.
     By default, False is returned. Overwrite the default if you need different behavior."""
     return False
+
+
+  def file_names(self, files, directory, extension):
+    """Returns the full path of the given File objects."""
+    # return the paths of the files
+    if self.uses_probe_file_sets() and files and hasattr(files[0], 'files'):
+      # List of Filesets: do not remove duplicates
+      return [[f.make_path(directory, extension) for f in file_set.files] for file_set in files]
+    else:
+      # List of files, remove duplicate entries
+      known = set()
+      return [f.make_path(directory, extension) for f in files if f.path not in known and not known.add(f.path)]
+
+  def original_file_names(self, files):
+    """Returns the full path of the original data of the given File objects."""
+    assert self.original_directory is not None
+    assert self.original_extension is not None
+    return self.file_names(files, self.original_directory, self.original_extension)
 
 
   ###########################################################################

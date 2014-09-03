@@ -20,13 +20,12 @@
 
 from .Database import Database, DatabaseZT
 
-class DatabaseXBob (Database):
+class DatabaseBob (Database):
   """This class can be used whenever you have a database that follows the default Bob database interface."""
 
   def __init__(
       self,
       database,  # The bob database that is used
-      has_internal_annotations = False, # annotations are stored internally and do not need to be read from file
       all_files_options = {}, # additional options for the database query that can be used to extract all files
       extractor_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
       projector_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
@@ -67,7 +66,6 @@ class DatabaseXBob (Database):
     )
 
     self.m_database = database
-    self.has_internal_annotations = has_internal_annotations
 
     self.all_files_options = all_files_options
     self.extractor_training_options = extractor_training_options
@@ -76,16 +74,11 @@ class DatabaseXBob (Database):
 
     self._kwargs = kwargs
 
-    if self.has_internal_annotations and not hasattr(self.m_database, 'annotations'):
-      raise AssertionError("The database is supposed to have internal annotations, but does not provide an 'annotations' function.")
-
 
   def __str__(self):
     """This function returns a string containing all parameters of this class (and its derived class)."""
     params = ", ".join(["%s=%s" % (key, value) for key, value in self._kwargs.items()])
     params += ", original_directory=%s, original_extension=%s" % (self.original_directory, self.original_extension)
-    if self.has_internal_annotations:
-      params += ", has_internal_annotations=True"
     if self.all_files_options: params += ", all_files_options=%s"%self.all_files_options
     if self.extractor_training_options: params += ", extractor_training_options=%s"%self.extractor_training_options
     if self.projector_training_options: params += ", projector_training_options=%s"%self.projector_training_options
@@ -172,15 +165,16 @@ class DatabaseXBob (Database):
 
   def annotations(self, file):
     """Returns the annotations for the given File object, if available."""
-    if self.has_internal_annotations:
-      return self.m_database.annotations(file.id)
-    else:
-      # call base class implementation
-      return Database.annotations(self, file)
+    return self.m_database.annotations(file.id)
 
 
-class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
-  """This class can be used whenever you have a database that follows the default XBob database interface defining file lists for ZT score normalization."""
+  def original_file_names(self, files):
+    """Returns the full path of the original data of the given File objects."""
+    return self.m_database.original_file_names(files)
+
+
+class DatabaseBobZT (DatabaseBob, DatabaseZT):
+  """This class can be used whenever you have a database that follows the default Bob database interface defining file lists for ZT score normalization."""
 
   def __init__(
       self,
@@ -188,7 +182,7 @@ class DatabaseXBobZT (DatabaseXBob, DatabaseZT):
       **kwargs
   ):
     # call base class constructor, passing all the parameters to it
-    DatabaseXBob.__init__(self, z_probe_options = z_probe_options, **kwargs)
+    DatabaseBob.__init__(self, z_probe_options = z_probe_options, **kwargs)
 
     self.m_z_probe_options = z_probe_options
 
