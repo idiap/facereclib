@@ -140,8 +140,10 @@ setup(
       "bob.ip.color",
       "bob.math",
       "bob.measure",
+      "bob.learn.linear",
       "bob.learn.misc",
       "bob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
+      "bob.db.verification.utils",
       "bob.db.verification.filelist",
     ],
 

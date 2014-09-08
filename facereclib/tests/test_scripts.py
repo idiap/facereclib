@@ -228,7 +228,6 @@ class ScriptTest (unittest.TestCase):
     # assert that the scores are are identical
     reference_files = (os.path.join(base_dir, 'scripts', 'scores-nonorm-dev'), os.path.join(base_dir, 'scripts', 'scores-ztnorm-dev'))
 
-    import bob
     for i in (0,1):
 
       a1, b1 = bob.measure.load.split_four_column(score_files[i])
