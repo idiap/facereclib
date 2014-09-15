@@ -604,7 +604,7 @@ class ToolChain:
     c_for_all = None
     for t_model_id in t_model_ids:
       tmp = bob.io.base.load(self.m_file_selector.c_file(t_model_id, group))
-      if c_for_all == None:
+      if c_for_all is None:
         c_for_all = tmp
       else:
         c_for_all = numpy.vstack((c_for_all, tmp))
@@ -625,7 +625,7 @@ class ToolChain:
     for t_model_id in t_model_ids:
       tmp = bob.io.base.load(self.m_file_selector.d_file(t_model_id, group))
       tmp2 = bob.io.base.load(self.m_file_selector.d_same_value_file(t_model_id, group))
-      if d_for_all == None and d_same_value == None:
+      if d_for_all is None and d_same_value is None:
         d_for_all = tmp
         d_same_value = tmp2
       else:

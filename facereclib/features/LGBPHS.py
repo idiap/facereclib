@@ -105,7 +105,7 @@ class LGBPHS (Extractor):
   def __fill__(self, lgbphs_array, lgbphs_blocks, j):
     """Copies the given array into the given blocks"""
     # fill array in the desired shape
-    if self.m_split == None:
+    if self.m_split is None:
       start = j * self.m_n_bins * self.m_n_blocks
       for b in range(self.m_n_blocks):
         lgbphs_array[start + b * self.m_n_bins : start + (b+1) * self.m_n_bins] = lgbphs_blocks[b][:]
@@ -143,7 +143,7 @@ class LGBPHS (Extractor):
       self.m_n_bins = abs_blocks.shape[1]
       self.m_n_blocks = abs_blocks.shape[0]
 
-      if self.m_split == None:
+      if self.m_split is None:
         shape = (self.m_n_blocks * self.m_n_bins * jet_length,)
       elif self.m_split == 'blocks':
         shape = (self.m_n_blocks, self.m_n_bins * jet_length)
@@ -155,7 +155,7 @@ class LGBPHS (Extractor):
         raise ValueError("The split parameter must be one of ['blocks', 'wavelets', 'both'] or None")
 
       # create new array if not done yet
-      if lgbphs_array == None:
+      if lgbphs_array is None:
         lgbphs_array = numpy.ndarray(shape, 'float64')
 
       # fill the array with the absolute values of the Gabor wavelet transform
