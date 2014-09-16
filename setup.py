@@ -20,6 +20,8 @@
 
 from setuptools import setup, find_packages
 
+packages = ['facereclib.' + p for p in find_packages("facereclib")]
+
 setup(
     name='facereclib',
     version='2.0.0a0',
@@ -35,7 +37,7 @@ setup(
 
     keywords = "Face recognition, face verification, reproducible research, algorithm evaluation",
 
-    packages=find_packages(),
+    packages=packages,
     include_package_data=True,
     zip_safe=False,
 
