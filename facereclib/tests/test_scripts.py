@@ -134,6 +134,7 @@ class ScriptTest (unittest.TestCase):
 
 
   def test01c_faceverify_parallel(self):
+    self.grid_available()
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     test_database = os.path.join(test_dir, "database.sql3")
 
