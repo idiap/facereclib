@@ -40,7 +40,7 @@ If you prefer not to install Bob_ in its default location, you have to adapt the
 .. note::
   Currently, there is no MS Windows version of Bob_.
 
-Usually, all possible database satellite packages (called ``xbob.db.[...]``) are automatically downloaded from PyPI_.
+Usually, all possible database satellite packages (called ``bob.db.[...]``) are automatically downloaded from PyPI_.
 If you don't want to download the databases, please edit the ``eggs`` section of the buildout.cfg_ configuration file by removing the databases that you don't want.
 
 The ``gridtk`` tool kit is mainly used for submitting submitting jobs to Idiap_'s SGE_ grid.

@@ -90,15 +90,16 @@ These two dependencies have to be downloaded manually, as explained in the follo
 Bob
 ...
 
-You will need a copy of Bob_ to run the algorithms.
-The master branch of the FaceRecLib only works against the master branch of Bob_, which you can clone from its webpage.
-After downloading, you should go to the console and write::
+This version of the FaceRecLib relies on Bob_ version 2 or greater.
+There is no need to have a global installation of Bob_ any more.
+
+Just go to the console and write::
 
   $ python bootstrap.py
   $ bin/buildout
 
 This will download all required packages and install them locally.
-If you don't want all the database packages to be downloaded, please remove the xbob.db.[database] lines from the ``eggs`` section of the file **buildout.cfg** in the main directory before calling the three commands above.
+If you don't want all the database packages to be downloaded, please remove the bob.db.[database] lines from the ``eggs`` section of the file **buildout.cfg** in the main directory before calling the three commands above.
 
 The CSU Face Recognition Resources
 ..................................
@@ -118,9 +119,8 @@ To verify that your installation worked as expected, you might want to run our t
 
   $ bin/nosetests
 
-Usually, all tests should pass, if you use Bob_ from the master branch.
+Usually, all tests should pass, if you use the latest packages of Bob_.
 With other versions of Bob_, you might find some failing tests, or some errors might occur.
-For Bob_ version 1.2.0 we know that the ISV and JFA tests fail due to a different random initialization of the algorithms.
 
 
 Read further

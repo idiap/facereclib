@@ -103,7 +103,7 @@ If your class returns data that is **not** of type numpy.ndarray, you might need
 * ``save_data(data, filename)``: Writes the given data (that has been preprocessed using the ``__call__`` function of this class) to file.
 * ``read_data(filename)``: Reads the preprocessed data from file.
 
-By default, the original data is read by ``bob.io.load``.
+By default, the original data is read by :py:func:`bob.io.base.load`.
 Hence, data is given as ``numpy.ndarray``'s.
 If you want to use a different IO for the original data (rarely useful...), you might want to overload:
 
@@ -132,7 +132,7 @@ Please also overwrite the function to read your kind of features:
 * ``read_feature(self, feature_file) -> feature``: Reads the feature (as written by the ``save_feature`` function) from the given file name.
 
 .. note::
-  If your feature is of a class that contains and is written via a ``save(bob.io.HDF5File)`` method, you do not need to define a ``save_feature`` function.
+  If your feature is of a class that contains and is written via a ``save(bob.io.base.HDF5File)`` method, you do not need to define a ``save_feature`` function.
   Remember: the ``read_feature`` function is required in this case.
 
 If the feature extraction process requires to read a trained extractor model from file, simply overload the function:
@@ -179,7 +179,7 @@ A recognition tool has to have at least three functions:
 * ``__init__(self, <parameters>)``: Initializes the face recognition algorithm with the parameters it needs.
   Please call the base class constructor in this constructor, e.g. as ``facereclib.tools.Tool.__init__(self, ...)`` (there are more parameters to this constructor, see above).
 * ``enroll(self, enroll_features) -> model``: Enrolls a model from the given vector of features (which usually stem from one identity) and returns it.
-  The returned model should either be a ``numpy.ndarray`` or an instance of a class that defines a ``save(bob.io.HDF5File)`` method.
+  The returned model should either be a ``numpy.ndarray`` or an instance of a class that defines a ``save(bob.io.base.HDF5File)`` method.
   If neither of the two options are appropriate, you have to define a ``write_model`` function (see below).
 * ``score(self, model, probe) -> value``: Computes a similarity or probability score that the given probe feature and the given model stem from the same identity.
 
@@ -197,7 +197,7 @@ Additionally, your tool may need to project the features before they can be used
 
 * ``load_projector(self, projector_file)``: Loads the projector from the given file.
   This function is always called before the ``project``, ``enroll``, and ``score`` functions are executed.
-* ``project(self, feature) -> feature``: Projects the given feature and returns the projected feature, which should either be a ``numpy.ndarray`` or an instance of a class that defines a ``save(bob.io.HDF5File)`` method.
+* ``project(self, feature) -> feature``: Projects the given feature and returns the projected feature, which should either be a ``numpy.ndarray`` or an instance of a class that defines a ``save(bob.io.base.HDF5File)`` method.
 
   .. note::
     If you write this function, please assure that you use ``performs_projection=True`` during the base class constructor call in your ``__init__`` function.
