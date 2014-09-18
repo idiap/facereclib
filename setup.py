@@ -20,7 +20,9 @@
 
 from setuptools import setup, find_packages
 
-packages = ['facereclib.' + p for p in find_packages("facereclib")]
+print find_packages()
+
+packages = ['facereclib'] + ['facereclib.' + p for p in find_packages('facereclib')]
 
 setup(
     name='facereclib',
