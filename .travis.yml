@@ -7,8 +7,8 @@ matrix:
   - python: 2.7
     env:
     - SCIPYSPEC===0.12.0
-#    - secure: Exztxl4RdDn/zsSykHPMWvEyZBElVQjN6L8ZRgCgQp/J8AxtBWyBHuGJSAlZVqVFSCmsQwhPmr+bbpH8poLbjrmiYkzpOMabs+DNynkMxhdNCuTnDhYKSngWNd5BeNVE2HvqEJhvMMpzBKRiOCORqG11WoLKBgXIrGPNHsmM6Lo=
-#    - secure: VghR2ttbIRzUtJoC8RhQdvf+RnJmsapJ5YIrSGsUp7XxR0zkwNe+NaFgRngyEjsmKBloAKc/yxW5SxK/BYH68qrs2N2YX12eCHW72fNRqTQjekcfbyjd3eqbPQChDvGXU5VSKYxRJ2R9waqsalpc23fMxy4Ya31xj4W4ji4pVMk=
+    - secure: HNA0cG/STPaAkrUK/cdqaj7ryi/AIcvbFDQJvqcyBqCHz7PuCcnGwqIthPzsEhh+2YMObbPmCPjt7CrS3ULsFbc5Vv0AbKkmwyUqP+WgijMYMuABFuAUN1hmII4dY5V7tn1+d/iSCaIvgztzNZ6maXBKA3YeplHPFU3ktRTtx3U=
+    - secure: edoOuO1tKhwruEnvKq7Sac0MDJ6BEv3WtS0XHwIJB8j08bZVUXIRCJ2LDqYgh+9az0EUroAawnXZ2hGu8JdrTVZP+JucI+cDe0LRyOictBNk4ur14CGIFSpGkwEwFZA6gk8FFPm7aw4tq7VzWx9JwxQpX8PCy0FZnkJ+1AIywjQ=
 #  - python: 3.2
 #    env:
 #    - NUMPYSPEC===1.8.0
