@@ -8,7 +8,7 @@
 Executing baseline algorithms
 =============================
 
-The first thing you might want to do is to execute one of the baseline algorithms that are implemented in the |project|.
+The first thing you might want to do is to execute one of the baseline algorithms that are implemented in the FaceRecLib.
 
 Setting up your database
 ------------------------
@@ -16,16 +16,16 @@ Setting up your database
 As already mentioned, the image databases are not included in this package, so you have to download them.
 For example, you can easily download the images of the `AT&T database`_, for links to other utilizable image databases please read the :ref:`databases` section.
 
-By default, the |project| does not know, where the images are located.
+By default, the FaceRecLib does not know, where the images are located.
 Hence, before running experiments you have to specify the image database directories by modifying the accordant configuration files.
 For further information on these topic, you might want to read the :ref:`managing-resources` and the :ref:`databases` sections.
 To make the baseline algorithms work, e.g., on the `AT&T database`_, you have to correct the  ``atnt_directory`` entry in the `facereclib/configurations/databases/atnt.py <../facereclib/configurations/databases/atnt.py>`_ file.
 
 
-Structure of an experiment in the |project|
--------------------------------------------
+Structure of an experiment in the FaceRecLib
+--------------------------------------------
 
-Each face recognition experiment that is run with the |project| is divided into several steps.
+Each face recognition experiment that is run with the FaceRecLib is divided into several steps.
 The steps are:
 
 1. Data preprocessing: Raw data is preprocessed, e.g., images are aligned and photometrically enhanced.
@@ -43,7 +43,7 @@ The output of one step usually serves as the input of the subsequent step(s).
 Depending on the algorithm, some of the steps are not applicable/available.
 E.g. most of the feature extractors do not need a special training step, or some algorithms do not require a subspace projection.
 In these cases, the according steps are skipped.
-The |project| takes care that always the correct files are forwarded to the subsequent steps.
+The FaceRecLib takes care that always the correct files are forwarded to the subsequent steps.
 
 
 Running baseline experiments

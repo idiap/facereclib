@@ -21,7 +21,7 @@ In this section, only the long names of the arguments are listed, please refer t
 
 Required command line arguments
 -------------------------------
-To run a face recognition experiment using the |project|, you have to tell the ``bin/faceverify.py`` script, which database, preprocessing, features, and algorithm should be used.
+To run a face recognition experiment using the FaceRecLib, you have to tell the ``bin/faceverify.py`` script, which database, preprocessing, features, and algorithm should be used.
 To use this script, you have to specify at least these command line arguments (see also the ``--help`` option):
 
 * ``--database``: The database to run the experiments on, and which protocol to use.
@@ -39,7 +39,7 @@ Please specify a descriptive name for your experiment to be able to remember, ho
 
 Managing resources
 ~~~~~~~~~~~~~~~~~~
-The |project| is designed in a way that makes it very easy to select the setup of your experiments.
+The FaceRecLib is designed in a way that makes it very easy to select the setup of your experiments.
 Basically, you can specify your algorithm and its configuration in three different ways:
 
 1. You choose one of the registered resources.
@@ -86,7 +86,7 @@ Basically, you can specify your algorithm and its configuration in three differe
 
 Of course, you can mix the ways, how you define command line options.
 
-For several databases, preprocessors, feature types, and recognition algorithms the |project| provides configuration files.
+For several databases, preprocessors, feature types, and recognition algorithms the FaceRecLib provides configuration files.
 They are located in the `facereclib/configurations`_ directories.
 Each configuration file contains the required information for the part of the experiment, and all required parameters are preset with a suitable default value.
 Many of these configuration files with their default parameters are registered as resources, so that you don't need to specify the path.
@@ -104,7 +104,7 @@ In the following, we will provide a detailed explanation of the parameters of th
 Databases
 ~~~~~~~~~
 Currently, all implemented databases are taken from Bob_.
-To define a common API for all of the databases, the |project| defines the wrapper classes `facereclib.databases.DatabaseBob <file:../facereclib/databases/DatabaseBob.py>`_ and `facereclib.databases.DatabaseBobZT  <file:../facereclib/databases/DatabaseBob.py>`_ for these databases.
+To define a common API for all of the databases, the FaceRecLib defines the wrapper classes `facereclib.databases.DatabaseBob <file:../facereclib/databases/DatabaseBob.py>`_ and `facereclib.databases.DatabaseBobZT  <file:../facereclib/databases/DatabaseBob.py>`_ for these databases.
 The parameters of this wrapper class are:
 
 Required parameters
@@ -130,7 +130,7 @@ Usually, there is no need to specify them, but in case your algorithm requires t
 
 Implemented database interfaces
 *******************************
-Here we list the database interfaces that are currently available in the |project|.
+Here we list the database interfaces that are currently available in the FaceRecLib.
 By clicking on the database name, you open one configuration file of the database.
 If you have an ``image_directory`` different to the one specified in the file, please change the directory accordingly to be able to use the database.
 
@@ -179,7 +179,7 @@ For more information, please also read the :ref:`filelist` section.
 
 Preprocessors
 ~~~~~~~~~~~~~
-Currently, all preprocessors that are defined in |project| perform work on facial images and are, hence, used for face recognition.
+Currently, all preprocessors that are defined in FaceRecLib perform work on facial images and are, hence, used for face recognition.
 They perform an automatic image alignment to the hand-labeled eye positions as provided by the :ref:`databases`.
 Hence, most preprocessors that are defined in `facereclib/preprocessing <file:../facereclib/preprocessing>`_ have a common set of parameters:
 
@@ -289,7 +289,7 @@ Here is the list of classes to perform feature extraction and its parameters.
 
 Recognition algorithms
 ~~~~~~~~~~~~~~~~~~~~~~
-There are also a variety of recognition algorithms implemented in the |project|.
+There are also a variety of recognition algorithms implemented in the FaceRecLib.
 All face recognition algorithms are based on the `facereclib.tools.Tool <file:../facereclib/tools/Tool.py>`_ base class.
 This base class has parameters that some of the algorithms listed below share.
 These parameters mainly deal with how to compute a single score when more than one feature is provided for the model or for the probe:
@@ -443,7 +443,7 @@ The name of the database file by default is **submitted.sql3**, but you can chan
 
 Command line arguments to change default behavior
 -------------------------------------------------
-Additionally to the required command line arguments discussed above, there are several options to modify the behavior of the |project| experiments.
+Additionally to the required command line arguments discussed above, there are several options to modify the behavior of the FaceRecLib experiments.
 One set of command line arguments change the directory structure of the output.
 By default, the results of the recognition experiment will be written to directory **/idiap/user/<USER>/<DATABASE>/<EXPERIMENT>/<SCOREDIR>/<PROTOCOL>**, while the intermediate (temporary) files are by default written to **/idiap/temp/<USER>/<DATABASE>/<EXPERIMENT>** or **/scratch/<USER>/<DATABASE>/<EXPERIMENT>**, depending on whether the ``--grid`` argument is used or not, respectively:
 

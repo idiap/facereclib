@@ -32,7 +32,7 @@ Hence, if the first two elements are identical, the score is a client (a.k.a. ge
 Evaluation
 ----------
 Since all required information is available in the score file, you can use any tool (like MatLab) to evaluate the score file and compute error measures or generate plots.
-The |project| defines one generic script that is able to evaluate the score files, compute some error measures and generate various types of plots.
+The FaceRecLib defines one generic script that is able to evaluate the score files, compute some error measures and generate various types of plots.
 This script is called ``bin/evaluate.py`` and has the following command line options (see ``bin/evaluate.py --help`` for the shortcuts):
 
 * ``--dev-files``: A list of files of the development set that will be evaluated.

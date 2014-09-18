@@ -6,33 +6,33 @@
 Implementing your own database, preprocessor, feature, or algorithm
 ===================================================================
 
-The |project| module is specifically designed to be as flexible as possible while trying to keep things simple.
+The FaceRecLib module is specifically designed to be as flexible as possible while trying to keep things simple.
 Therefore, it uses python to implement algorithms.
 It is file based so any algorithm can implement its own way of reading and writing data, features or models.
 Algorithm configurations are stored in configuration files, so it should be easy to test different parameters of your algorithms without modifying the code.
 
-To implement your own database, preprocessor, feature, or algorithm, simply follow the examples that are already in the |project|.
+To implement your own database, preprocessor, feature, or algorithm, simply follow the examples that are already in the FaceRecLib.
 In the following sections there will be an overview of the functions that need to be implemented.
 
-The |project| is designed in a way that useful default functionalities are executed.
+The FaceRecLib is designed in a way that useful default functionalities are executed.
 If you want/need to have a different behavior, you can simply add functions to your classes and register these functions, for details please see below.
 
 
 Implementing your own functions
 -------------------------------
 
-There are two options to add functionality to the |project|.
-The preferred option should be to write a satellite package of the |project|, implement everything you want to do, test it and document it.
+There are two options to add functionality to the FaceRecLib.
+The preferred option should be to write a satellite package of the FaceRecLib, implement everything you want to do, test it and document it.
 Please read the :ref:`satellite-packages` section for more details on this.
 
-Here, we describe the second way, which is to add functionality to |project| directly.
+Here, we describe the second way, which is to add functionality to FaceRecLib directly.
 
 Base classes
 ~~~~~~~~~~~~
 In general, any database, preprocessor, feature extractor or recognition algorithm should be derived from a base class that is detailed below.
 This base class provides default implementations of functionality that can be used directly or overwritten in your class.
 One of these functions, which is identical to all base classes, is the ``__str__(self)`` function, a special Python construct to convert an object of a class into a string that contains information about the object.
-In the |project|, this function is used to write the experimental configuration into a specific text file (by default: *Experiment.info* in the ``--result-directory``).
+In the FaceRecLib, this function is used to write the experimental configuration into a specific text file (by default: *Experiment.info* in the ``--result-directory``).
 This information is useful to see the exact configuration of the experiment with which the results was generated.
 
 There are two ways of providing these information for your class:
@@ -247,9 +247,9 @@ For this, it might also be a good idea to use a small image database, like ``--d
 Adding tests
 ------------
 To make sure that your peace of code it working properly, you should add a test case for your class.
-The |project|, as well as Bob_, rely on `nose tests <http://pypi.python.org/pypi/nose>`_ to run the unit tests.
+The FaceRecLib, as well as Bob_, rely on `nose tests <http://pypi.python.org/pypi/nose>`_ to run the unit tests.
 To implement a unit test for your contribution, you simply can create a python file with a name containing 'test' in your package.
-In the |project|, these files are located in `facereclib/tests/ <file:../facereclib/tests>`_.
+In the FaceRecLib, these files are located in `facereclib/tests/ <file:../facereclib/tests>`_.
 
 In the test file, please write a test class that derives from ``unittest.TestCase``.
 Any function name containing the string ``test`` will be automatically found and executed when running ``bin/nosetests``.

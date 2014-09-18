@@ -16,12 +16,12 @@ Installation instructions
 Download
 --------
 
-|project|
-~~~~~~~~~
-To have a stable version of the |project|, the safest option is to go to the FaceRecLib_'s web page on Pypi_ and download the latest version.
+FaceRecLib
+~~~~~~~~~~
+To have a stable version of the FaceRecLib, the safest option is to go to the FaceRecLib_'s web page on Pypi_ and download the latest version.
 
 Nevertheless, the library is also available as a project of `Idiap at GitHub`_.
-To check out the current version of the |project|, go to the console, move to any place you like and call:
+To check out the current version of the FaceRecLib, go to the console, move to any place you like and call:
 
 .. code-block:: sh
 
@@ -29,16 +29,16 @@ To check out the current version of the |project|, go to the console, move to an
 
 Be aware that you will get the latest changes and that it might not work as expected.
 
+
 Bob
 ~~~
 
-The |project| is a satellite package of Bob_, where most of the image processing, feature extraction, and face recognition algorithms, as well as the evaluation techniques are implemented.
-To run properly, |project| requires Bob_ at least in version 1.2.0.
-If you have not installed Bob_ or your version is to old, please visit Bob_'s web page and download the latest version.
-If you prefer not to install Bob_ in its default location, you have to adapt the ``prefixes`` of the buildout.cfg_ configuration file, which sits in the main directory of the |project|.
+The FaceRecLib is a satellite package of Bob_, where most of the image processing, feature extraction, and face recognition algorithms, as well as the evaluation techniques are implemented.
+In its current version, the FaceRecLib requires Bob_ version 2 or greater.
+Since version 2.0 there is no need for a global installation of Bob any more, all required packages will be automatically downloaded from PyPi_.
 
 .. note::
-  Currently, there is no MS Windows version of Bob_.
+  Currently, running Bob_ under MS Windows in not yet supported.
 
 Usually, all possible database satellite packages (called ``bob.db.[...]``) are automatically downloaded from PyPI_.
 If you don't want to download the databases, please edit the ``eggs`` section of the buildout.cfg_ configuration file by removing the databases that you don't want.
@@ -63,27 +63,33 @@ after downloading and patching the CSU resources, and updating the ``sources-dir
 Image databases
 ~~~~~~~~~~~~~~~
 
-With the |project| you will run face recognition experiments using some default facial image databases.
-Though the verification protocols are implemented in the |project|, the images (and the hand-labelled annotations) are **not included**.
+With the FaceRecLib you will run face recognition experiments using some default facial image databases.
+Though the verification protocols are implemented in the FaceRecLib, the images are **not included**, and for some databases, also the hand-labelled facial landmark annotations are external.
 To download the image databases, please refer to the according Web-pages.
 
 For a start, you might want to try the small, but freely available image database called the `AT&T database`_ (formerly known as the ORL database).
+
+.. warning::
+  The AT&T database is a toy database and outdated.
+  Do **not** base any real experiments on the AT&T database.
+  Particularly, do **not** try to publish scientific papers that rely on AT&T experiments!
+
 Other database URL's will be given in the :ref:`databases` section.
 
-Set-up your |project|
----------------------
+Set-up your FaceRecLib
+----------------------
 
-Now, you have everything set up such that you can continue to set up the |project|.
+Now, you have everything set up such that you can continue to set up the FaceRecLib.
 To do this, we use the BuildOut_ system.
-To proceed, open a terminal in your |project| main directory and call:
+To proceed, open a terminal in your FaceRecLib main directory and call:
 
 .. code-block:: sh
 
   $ python bootstrap.py
   $ bin/buildout
 
-The first step will generate a `bin <file:../bin>`_ directory in the main directory of the |project|.
-The second step automatically downloads all dependencies (except for Bob_) of the |project| and creates all required scripts that we will need soon.
+The first step will generate a `bin <file:../bin>`_ directory in the main directory of the FaceRecLib.
+The second step automatically downloads all dependencies of the FaceRecLib and creates all required scripts that we will need soon.
 
 
 Test your installation

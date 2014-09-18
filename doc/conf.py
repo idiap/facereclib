@@ -70,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'FaceRecLib'
-copyright = u'2012, Manuel Günther'
+copyright = u'2012-2014, Idiap Research Institute'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -118,7 +118,6 @@ pygments_style = 'sphinx'
 # Included after all input documents
 rst_epilog = """
 .. Some variables
-.. |project| replace:: FaceRecLib
 .. |bobweb| replace:: https://www.idiap.ch/software/bob
 .. |current-year| date:: %Y
 """
@@ -221,7 +220,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'FaceRecLib.tex', u'FaceRecLib Documentation',
-   u'Manuel Günther', 'manual'),
+   u'Manuel Guenther', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -251,7 +250,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'facereclib', u'FaceRecLib Documentation',
-     [u'Manuel Günther'], 1)
+     [u'Manuel Guenther'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -265,7 +264,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'FaceRecLib', u'FaceRecLib Documentation',
-   u'Manuel Günther', 'FaceRecLib', 'One line description of project.',
+   u'Manuel Guenther', 'FaceRecLib', 'One line description of project.',
    'Miscellaneous'),
 ]
 

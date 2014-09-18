@@ -27,6 +27,7 @@ install:
 - python bootstrap.py
 - ./bin/buildout buildout:debug=false -c develop.cfg
 script:
+- ./bin/python -c 'from facereclib import get_config; print(get_config())'
 - ./bin/coverage run --source=facereclib ./bin/nosetests -s
 - ./bin/sphinx-build -b doctest docs sphinx
 - ./bin/sphinx-build -b html docs sphinx

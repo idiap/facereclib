@@ -14,7 +14,7 @@ Testing configurations of an algorithm
 --------------------------------------
 Sometimes, configurations of algorithms are highly dependent on the database or even the employed protocol.
 Additionally, configuration parameters depend on each other.
-The |project| provides a relatively simple set up that allows to test different configurations in the same task.
+The FaceRecLib provides a relatively simple set up that allows to test different configurations in the same task.
 For this, the ``bin/parameter_test.py`` script can be employed.
 This script executes a configurable series of experiments, which reuse data as far as possible.
 
