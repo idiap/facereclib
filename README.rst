@@ -1,3 +1,20 @@
+.. vim: set fileencoding=utf-8 :
+.. Manuel Guenther <manuel.guenther@idiap.ch>
+.. Fri Sep 19 12:51:09 CEST 2014
+
+.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=master
+   :target: https://travis-ci.org/idiap/facereclib
+.. image:: http://img.shields.io/badge/docs-latest-orange.png
+   :target: https://www.idiap.ch/software/bob/docs/latest/idiap/facereclib/master/index.html
+.. image:: https://coveralls.io/repos/idiap/facereclib/badge.png
+   :target: https://coveralls.io/r/idiap/facereclib
+.. image:: http://img.shields.io/github/tag/idiap/facereclib.png
+   :target: https://github.com/idiap/facereclib
+.. image:: http://img.shields.io/pypi/v/facereclib.png
+   :target: https://pypi.python.org/pypi/facereclib
+.. image:: http://img.shields.io/pypi/dm/facereclib.png
+   :target: https://pypi.python.org/pypi/facereclib
+
 The Face Recognition Library
 ============================
 
