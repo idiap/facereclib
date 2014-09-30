@@ -25,7 +25,6 @@ global job_count
 # the total number of experiments run
 global task_count
 
-
 # The different steps of the processing chain.
 # Use these keywords to change parameters of the specific part
 steps = ['preprocessing', 'extraction', 'projection', 'enrollment', 'scoring']
@@ -63,17 +62,23 @@ def command_line_options(command_line_parameters):
   parser.add_argument('-g', '--grid',
       help = 'The SGE grid configuration')
 
+  parser.add_argument('-x', '--executable',
+      help = '(optional) The executable to be executed instead of facereclib/script/faceverify.py (taken *always* from the facereclib, not from the bin directory)')
+
   parser.add_argument('-i', '--preprocessed-data-directory',
       help = '(optional) The directory where to read the already preprocessed data from (no preprocessing is performed in this case).')
 
-  parser.add_argument('-s', '--grid-database-directory', default = '.',
-      help = 'Directory where the submitted.db files should be written into (will create sub-directories on need)')
+  parser.add_argument('-s', '--grid-database-directory', default = 'grid_db',
+      help = 'Directory where the submitted.sql3 files should be written into (will create sub-directories on need)')
 
   parser.add_argument('-w', '--write-commands',
       help = '(optional) The file name where to write the calls into (will not write the dependencies, though)')
 
   parser.add_argument('-q', '--dry-run', action='store_true',
       help = 'Just write the commands to console and mimic dependencies, but do not execute the commands')
+
+  parser.add_argument('-j', '--skip-when-existent', action='store_true',
+      help = 'Skip the submission/execution of jobs when the result directory already exists')
 
   parser.add_argument('parameters', nargs = argparse.REMAINDER,
       help = "Parameters directly passed to the face verify script. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify.py --help' for a complete list of options.")
@@ -83,6 +88,11 @@ def command_line_options(command_line_parameters):
   global args
   args = parser.parse_args(command_line_parameters)
   utils.set_verbosity_level(args.verbose)
+
+  if args.executable:
+    global faceverify
+    faceverify = __import__('importlib').import_module(args.executable)
+
 
 
 
@@ -134,7 +144,7 @@ def replace(string, replacements):
     # replace the place holder by the desired string and add the remaining of the command
     retval += str(replacements[keys[i]]) + str(parts[i+1][1:])
 
-  return '"' + retval + '"'
+  return retval
 
 
 def create_command_line(replacements):
@@ -186,7 +196,6 @@ def directory_parameters(directories):
 
   global args
   parameters = []
-  db_file_name = 'submitted.db'
 
   # add directory parameters
   # - preprocessing
@@ -215,7 +224,7 @@ def directory_parameters(directories):
 
   # grid database
   if args.grid:
-    parameters.extend(['--submit-db-file', os.path.join(args.grid_database_directory, 'submitted.sql3')])
+    parameters.extend(['--submit-db-file', os.path.join(args.grid_database_directory, join_dirs(4, 'submitted.sql3'))])
 
   return parameters
 
@@ -273,12 +282,18 @@ def execute_dependent_task(command_line, directories, dependency_level):
   new_job_ids = {}
   try:
     verif_args = faceverify.parse_args(command_line[1:])
-    if args.dry_run:
-      print ("Would have executed job", " ".join(command_line), "with dependencies", dependencies)
+    result_dir = os.path.join(verif_args.user_directory, verif_args.sub_directory, verif_args.score_sub_directory)
+    print (result_dir)
+    if not args.skip_when_existent or not os.path.exists(result_dir):
+      # get the command line parameter for the result directory
+      if args.dry_run:
+        print ("Would have executed job", utils.command_line(command_line), "with dependencies", dependencies)
+      else:
+        # execute the face verification experiment
+        global fake_job_id
+        new_job_ids = faceverify.face_verify(verif_args, command_line, external_dependencies = dependencies, external_fake_job_id = fake_job_id)
     else:
-      # execute the face verification experiment
-      global fake_job_id
-      new_job_ids = faceverify.face_verify(verif_args, command_line, external_dependencies = dependencies, external_fake_job_id = fake_job_id)
+      utils.info("Skipping execution of %s since result directory '%s' already exists" % (utils.command_line(command_line), result_dir))
 
   except Exception as e:
     utils.error("The execution of job was rejected!\n%s\n Reason:\n%s"%(" ".join(command_line), e))

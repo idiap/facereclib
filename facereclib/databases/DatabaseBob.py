@@ -66,6 +66,7 @@ class DatabaseBob (Database):
     )
 
     self.m_database = database
+    self.original_directory = database.original_directory
 
     self.all_files_options = all_files_options
     self.extractor_training_options = extractor_training_options
@@ -171,6 +172,7 @@ class DatabaseBob (Database):
   def original_file_names(self, files):
     """Returns the full path of the original data of the given File objects."""
     return self.m_database.original_file_names(files)
+
 
 
 class DatabaseBobZT (DatabaseBob, DatabaseZT):

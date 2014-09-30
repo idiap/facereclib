@@ -25,6 +25,7 @@ class FileSelector:
 
     """Initialize the file selector object with the current configuration."""
     self.m_database = database
+    self.original_directory = database.original_directory
     self.preprocessed_directory = preprocessed_directory
     self.extractor_file = extractor_file
     self.features_directory = features_directory

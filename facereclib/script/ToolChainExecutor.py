@@ -287,8 +287,8 @@ class ToolChainExecutor:
       self.m_fake_job_id += 1
       print ('would have submitted job', name, 'with id', self.m_fake_job_id, 'with parameters', kwargs, end='')
       if array:
-        print ('using', array[1], 'parallel jobs', end='')
-      print ('as:', utils.command_line(cmd), '\nwith dependencies', dependencies)
+        print (' using', array[1], 'parallel jobs', end='')
+      print (' as:', utils.command_line(cmd), '\nwith dependencies', dependencies)
       return self.m_fake_job_id
 
 
