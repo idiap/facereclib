@@ -224,7 +224,8 @@ def directory_parameters(directories):
 
   # grid database
   if args.grid:
-    parameters.extend(['--submit-db-file', os.path.join(args.grid_database_directory, join_dirs(4, 'submitted.sql3'))])
+    # we get one database per preprocessing job (all others might have job inter-dependencies)
+    parameters.extend(['--submit-db-file', os.path.join(args.grid_database_directory, join_dirs(0, 'submitted.sql3'))])
 
   return parameters
 
@@ -283,7 +284,6 @@ def execute_dependent_task(command_line, directories, dependency_level):
   try:
     verif_args = faceverify.parse_args(command_line[1:])
     result_dir = os.path.join(verif_args.user_directory, verif_args.sub_directory, verif_args.score_sub_directory)
-    print (result_dir)
     if not args.skip_when_existent or not os.path.exists(result_dir):
       # get the command line parameter for the result directory
       if args.dry_run:
