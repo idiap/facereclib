@@ -93,9 +93,9 @@ def command_line_arguments(command_line_parameters):
 def _plot_roc(frrs, colors, labels, title, fontsize=18, position=None):
   if position is None: position = 4
   figure = mpl.figure()
-  # plot FAR and FRR for each algorithm
+  # plot FAR and CAR for each algorithm
   for i in range(len(frrs)):
-    mpl.semilogx([100.0*f for f in frrs[i][0]], [100.0*f for f in frrs[i][1]], color=colors[i], lw=2, ms=10, mew=1.5, label=labels[i])
+    mpl.semilogx([100.0*f for f in frrs[i][0]], [100. - 100.0*f for f in frrs[i][1]], color=colors[i], lw=2, ms=10, mew=1.5, label=labels[i])
 
   # finalize plot
   mpl.plot([0.1,0.1],[0,100], "--", color=(0.3,0.3,0.3))
