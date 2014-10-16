@@ -35,6 +35,9 @@ class FaceCrop (Preprocessor):
       color_channel = 'gray',    # the color channel to extract from colored images, if colored images are in the database
       offset = 0,                # if your feature extractor requires a specific offset, you might want to specify it here
       supported_annotations = None, # The set of annotations that this cropper excepts; (('reye', 'leye'), ('eye', 'mouth')) by default
+      mask_sigma = None,         # The sigma for random values areas outside image
+      mask_neighbors = 5,        # The number of neighbors to consider while extrapolating
+      mask_seed = None,          # The seed for generating random values during extrapolation
       **kwargs                   # parameters to be written in the __str__ method
   ):
     """Parameters of the constructor of this preprocessor:
@@ -60,6 +63,22 @@ class FaceCrop (Preprocessor):
       If the database has different names for the annotations, they should be put here (used mainly for testing purposes).
       If not specified, (('reye', 'leye'), ('eye', 'mouth')) is used.
 
+    mask_sigma
+      Fill the area outside of image boundaries with random pixels from the border, by adding noise to the pixel values.
+      To disable extrapolation, set this value to None.
+      To disable adding random noise, set it to a negative value or 0.
+
+    mask_neighbors
+      The number of neighbors used during mask extrapolation.
+      See :py:func:`bob.ip.base.extrapolate_mask` for details.
+
+    mask_seed
+      The random seed to apply for mask extrapolation.
+
+      .. warning::
+         When run in parallel, the same random seed will be applied to all parallel processes.
+         Hence, results of parallel execution will differ from the results in serial execution.
+
     """
 
     # call base class constructor
@@ -71,6 +90,9 @@ class FaceCrop (Preprocessor):
         color_channel = color_channel,
         offset = offset,
         supported_annotations = supported_annotations,
+        mask_sigma = mask_sigma,
+        mask_neighbors = mask_neighbors,
+        mask_seed = mask_seed,
         **kwargs
     )
 
@@ -80,6 +102,9 @@ class FaceCrop (Preprocessor):
     self.m_color_channel = color_channel
     self.m_offset = offset
     self.m_supported_annotations = supported_annotations if supported_annotations is not None else (('reye', 'leye'), ('eye', 'mouth'))
+    self.m_mask_sigma = mask_sigma
+    self.m_mask_neighbors = mask_neighbors
+    self.m_mask_rng = bob.core.random.mt19937(mask_seed) if mask_seed is not None else bob.core.random.mt19937()
 
     if fixed_positions:
       assert len(fixed_positions) == 2
@@ -155,6 +180,9 @@ class FaceCrop (Preprocessor):
     cropper = self.__cropper__(keys)
     mask = self.__mask__(image.shape)
 
+    # assure that the image is initialized with 0
+    self.m_cropped_image[:] = 0.
+
     # perform the cropping
     cropper(
         image,  # input image
@@ -165,8 +193,9 @@ class FaceCrop (Preprocessor):
         left_eye = annotations[keys[1]]  # position of second annotation, usually right eye
     )
 
-    # assure that pixels from the masked area are 0
-    self.m_cropped_image[self.m_cropped_mask == False] = 0.
+    if self.m_mask_sigma is not None:
+      # extrapolate the mask so that pixels outside of the image original image region are filled with border pixels
+      bob.ip.base.extrapolate_mask(self.m_cropped_mask, self.m_cropped_image, self.m_mask_sigma, self.m_mask_neighbors, self.m_mask_rng)
 
     return self.m_cropped_image
 
