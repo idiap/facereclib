@@ -61,7 +61,10 @@ class ToolChain:
       preprocessed_data_file = preprocessed_data_files[i]
 
       if not self.__check_file__(preprocessed_data_file, force, 1000):
-        data = preprocessor.read_original_data(str(data_files[i]))
+        file_name = data_files[i]
+        if isinstance(file_name,unicode):
+          file_name = str(file_name)
+        data = preprocessor.read_original_data(file_name)
 
         # get the annotations; might be None
         annotations = self.m_file_selector.get_annotations(annotation_list[i])
