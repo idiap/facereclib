@@ -67,8 +67,6 @@ setup(
         'multipie          = facereclib.configurations.databases.multipie:database',
         'scface            = facereclib.configurations.databases.scface:database',
         'xm2vts            = facereclib.configurations.databases.xm2vts:database',
-
-        'cbsr_nir_vis_2__view2_1   = facereclib.configurations.databases.cbsr_nir_vis_2__view2_1:database',
       ],
 
       # registered preprocessors
