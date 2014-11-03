@@ -67,6 +67,8 @@ setup(
         'multipie          = facereclib.configurations.databases.multipie:database',
         'scface            = facereclib.configurations.databases.scface:database',
         'xm2vts            = facereclib.configurations.databases.xm2vts:database',
+
+        'cbsr_nir_vis_2__view2_1   = facereclib.configurations.databases.cbsr_nir_vis_2__view2_1:database',
       ],
 
       # registered preprocessors
@@ -147,6 +149,8 @@ setup(
       "bob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
       "bob.db.verification.utils",
       "bob.db.verification.filelist",
+      "bob.db.cbsr_nir_vis_2",
+      "six",
     ],
 
     # Classifiers are important if you plan to distribute this package through

@@ -11,6 +11,7 @@ import os
 import sys
 import numpy
 import tarfile
+import six
 
 from .. import utils
 
@@ -62,7 +63,7 @@ class ToolChain:
 
       if not self.__check_file__(preprocessed_data_file, force, 1000):
         file_name = data_files[i]
-        if isinstance(file_name,unicode):
+        if isinstance(file_name,six.text_type):
           file_name = str(file_name)
         data = preprocessor.read_original_data(file_name)
 
