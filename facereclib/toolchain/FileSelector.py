@@ -96,9 +96,12 @@ class FileSelector:
 
 
   ### Enrollment and models
-  def client_id(self, model_id, group):
-    """Returns the id of the client for the given model id."""
-    return self.m_database.client_id_from_model_id(model_id, group = group)
+  def client_id(self, model_id, group, is_t_model_id = False):
+    """Returns the id of the client for the given model id or T-norm model id."""
+    if is_t_model_id:
+      return self.m_database.client_id_from_t_model_id(model_id, group = group)
+    else:
+      return self.m_database.client_id_from_model_id(model_id, group = group)
 
   def model_ids(self, group):
     """Returns the sorted list of model ids from the given group."""

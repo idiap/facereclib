@@ -2,12 +2,12 @@ import bob.db.verification.filelist
 import facereclib
 import os
 
-class TestDatabase (facereclib.databases.DatabaseBobZT):
+class TestDatabase (facereclib.databases.DatabaseFileList):
 
   def __init__(self):
 
     # call base class constructor with useful parameters
-    facereclib.databases.DatabaseBobZT.__init__(
+    facereclib.databases.DatabaseFileList.__init__(
         self,
         database = bob.db.verification.filelist.Database(
             base_dir = os.path.realpath(os.path.dirname(__file__)),

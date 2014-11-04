@@ -529,7 +529,7 @@ class ToolChain:
           d = self.__scores__(t_model, z_probe_files)
         bob.io.base.save(d, score_file)
 
-        t_client_id = [self.m_file_selector.client_id(t_model_id, group)]
+        t_client_id = [self.m_file_selector.client_id(t_model_id, group, True)]
         d_same_value_tm = bob.learn.misc.ztnorm_same_value(t_client_id, z_probe_ids)
         bob.io.base.save(d_same_value_tm, same_score_file)
 

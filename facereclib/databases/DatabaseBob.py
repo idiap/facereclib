@@ -132,17 +132,14 @@ class DatabaseBob (Database):
   def client_id_from_model_id(self, model_id, group = 'dev'):
     """Returns the client id for the given model id."""
     if hasattr(self.m_database, 'get_client_id_from_model_id'):
-      try:
-        return self.m_database.get_client_id_from_model_id(model_id, groups = group, protocol = self.protocol)
-      except TypeError:
-        return self.m_database.get_client_id_from_model_id(model_id)
+      return self.m_database.get_client_id_from_model_id(model_id)
     else:
       return model_id
 
 
   def enroll_files(self, model_id, group = 'dev'):
     """Returns the list of enrollment File objects for the given model id."""
-    files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'enrol')
+    files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'enroll')
     return self.sort(files)
 
 
@@ -166,7 +163,7 @@ class DatabaseBob (Database):
 
   def annotations(self, file):
     """Returns the annotations for the given File object, if available."""
-    return self.m_database.annotations(file.id)
+    return self.m_database.annotations(file)
 
 
   def original_file_names(self, files):

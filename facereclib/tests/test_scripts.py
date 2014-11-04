@@ -90,7 +90,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test')
 
@@ -109,7 +109,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test_a')
 
@@ -128,7 +128,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test_b')
 
@@ -151,7 +151,7 @@ class ScriptTest (unittest.TestCase):
         '-g', 'facereclib.utils.GridParameters(grid = "local", number_of_parallel_processes = 2, scheduler_sleep_time = 0.1)', '-G', test_database, '--run-local-scheduler'
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test_c')
 
@@ -171,7 +171,7 @@ class ScriptTest (unittest.TestCase):
         '--write-compressed-score-files'
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test_d', score_modifier=('scores', '.tar.bz2'))
 
@@ -191,7 +191,7 @@ class ScriptTest (unittest.TestCase):
         '--calibrate-scores'
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     # check that the calibrated scores are as expected
     self.__face_verify__(parameters, test_dir, 'test', '-calibrated', score_modifier=('calibrated', ''))
@@ -205,7 +205,6 @@ class ScriptTest (unittest.TestCase):
     test_dir = tempfile.mkdtemp(prefix='frltest_')
     # define dummy parameters
     parameters = [
-        sys.argv[0],
         '-d', os.path.join(base_dir, 'databases', 'atnt_fl', 'atnt_fl_database.py'),
 #        '--protocol', 'None',
         '-p', os.path.join(config_dir, 'preprocessing', 'face_crop.py'),
@@ -217,9 +216,10 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
-    facereclib.script.faceverify.main(parameters)
+    from facereclib.script.faceverify import main
+    main([sys.argv[0]] + parameters)
 
     # assert that the score file exists
     score_files = (os.path.join(test_dir, 'test_x', 'scores', 'nonorm', 'scores-dev'), os.path.join(test_dir, 'test_x', 'scores', 'ztnorm', 'scores-dev'))
@@ -262,7 +262,7 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     # run the test; should not execute anything...
     from facereclib.script.faceverify import main
@@ -289,7 +289,7 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     # run the test; should not execute anything...
     from facereclib.script.faceverify_lfw import main
@@ -318,7 +318,7 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     # run the test; should not execute anything...
     from facereclib.script.faceverify_lfw import main
@@ -345,7 +345,7 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     # run the test; should not execute anything...
     from facereclib.script.faceverify_gbu import main
@@ -374,7 +374,7 @@ class ScriptTest (unittest.TestCase):
         '-b', 'dummy'
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     # run the test; should not execute anything...
     from facereclib.script.faceverify_gbu import main
@@ -396,7 +396,7 @@ class ScriptTest (unittest.TestCase):
         '--user-directory', test_dir
     ]
 
-    print (' '.join(parameters))
+    print (facereclib.utils.command_line(parameters))
 
     self.__face_verify__(parameters, test_dir, 'test', ref_modifier="-fileset")
 

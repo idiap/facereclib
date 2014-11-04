@@ -6,3 +6,4 @@
 
 from .Database import File, FileSet, Database, DatabaseZT
 from .DatabaseBob import DatabaseBob, DatabaseBobZT
+from .DatabaseFileList import DatabaseFileList

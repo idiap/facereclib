@@ -76,6 +76,9 @@ def atnt_database_directory():
   warn("Downloading the AT&T database from '%s' to '%s' ..." % (db_url, atnt_downloaded_directory))
   warn("To avoid this, please download the database manually, extract the data and set the ATNT_DATABASE_DIRECTORY environment variable to this directory.")
 
+  # to avoid re-downloading in parallel test execution
+  os.environ['ATNT_DATABASE_DIRECTORY'] = atnt_downloaded_directory
+
   # download
   url = urllib.urlopen(db_url)
   local_zip_file = os.path.join(atnt_downloaded_directory, 'att_faces.zip')

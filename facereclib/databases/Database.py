@@ -197,7 +197,7 @@ class Database:
     raise NotImplementedError("Please implement this function in derived classes")
 
 
-  def client_id_from_model_id(self, model_id):
+  def client_id_from_model_id(self, model_id, group = 'dev'):
     """Returns the client id for the given model id"""
     raise NotImplementedError("Please implement this function in derived classes")
 
@@ -225,6 +225,12 @@ class DatabaseZT (Database):
   def t_model_ids(self, group = 'dev'):
     """Returns a list of T-Norm model ids for the given group"""
     raise NotImplementedError("Please implement this function in derived classes")
+
+  def client_id_from_t_model_id(self, t_model_id, group = 'dev'):
+    """Returns the client id for the given T-model id.
+    In this base class implementation, we just use the :py:meth:`client_id_from_model_id` function.
+    Overload this function if you need another behavior."""
+    return self.client_id_from_model_id(t_model_id, group)
 
   def t_enroll_files(self, model_id, group = 'dev'):
     """Returns a list of enrollment files for the given T-Norm model id and the given group"""
