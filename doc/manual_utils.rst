@@ -2,10 +2,10 @@
 .. author: Manuel Günther <manuel.guenther@idiap.ch>
 .. date: Fri Oct 26 17:05:40 CEST 2012
 
-=============
-Preprocessors
-=============
+====================
+FaceRecLib Utilities
+====================
 
-.. automodule:: facereclib.preprocessing
+.. automodule:: facereclib.utils
 
 

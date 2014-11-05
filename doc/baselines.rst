@@ -5,12 +5,12 @@
 .. _baselines:
 
 =============================
-Executing baseline algorithms
+Executing Baseline Algorithms
 =============================
 
 The first thing you might want to do is to execute one of the baseline algorithms that are implemented in the FaceRecLib.
 
-Setting up your database
+Setting up your Database
 ------------------------
 
 As already mentioned, the image databases are not included in this package, so you have to download them.
@@ -22,7 +22,7 @@ For further information on these topic, you might want to read the :ref:`managin
 To make the baseline algorithms work, e.g., on the `AT&T database`_, you have to correct the  ``atnt_directory`` entry in the `facereclib/configurations/databases/atnt.py <../facereclib/configurations/databases/atnt.py>`_ file.
 
 
-Structure of an experiment in the FaceRecLib
+Structure of an Experiment in the FaceRecLib
 --------------------------------------------
 
 Each face recognition experiment that is run with the FaceRecLib is divided into several steps.
@@ -38,7 +38,7 @@ The steps are:
 8. Scoring: The verification scores between various models and probe features are computed.
 9. Evaluation: The computed scores are evaluated and curves are plotted.
 
-The communication between two steps is file-based.
+The communication between two steps is file-based, usually using a binary HDF5_ interface, which is implemented in the :py:class:`bob.io.base.HDF5File` class.
 The output of one step usually serves as the input of the subsequent step(s).
 Depending on the algorithm, some of the steps are not applicable/available.
 E.g. most of the feature extractors do not need a special training step, or some algorithms do not require a subspace projection.
@@ -46,7 +46,7 @@ In these cases, the according steps are skipped.
 The FaceRecLib takes care that always the correct files are forwarded to the subsequent steps.
 
 
-Running baseline experiments
+Running Baseline Experiments
 ----------------------------
 
 To run the baseline experiments, you can use the ``bin/baselines.py`` script by just going to the console and typing:
@@ -76,7 +76,7 @@ Here is an almost complete extract:
 Usually it is a good idea to have at least verbose level 2 (i.e., calling ``bin/baselines.py --verbose --verbose``, or the short version ``bin/baselines.py -vv``).
 
 
-The algorithms
+The Algorithms
 --------------
 
 The algorithms present an (incomplete) set of state-of-the-art face recognition algorithms. Here is the list of short-cuts:
@@ -108,8 +108,9 @@ The algorithms present an (incomplete) set of state-of-the-art face recognition 
 .. note::
   The ``lrpca`` and ``lda_ir`` algorithms are taken from the `CSU Face Recognition Resources`_ and are only available when ``xfacereclib.extension.CSU`` and ``PythonFaceEvaluation`` is enabled (e.g. by using the `buildout-with-csu.cfg <file:../buildout-with-csu.cfg>`_ during the buildout step), see :ref:`installation` for details.
 
+.. _baseline_results:
 
-Baseline results
+Baseline Results
 ----------------
 
 To evaluate the results, a wrapper call to ``bin/evaluate.py`` is produced by the ``bin/baselines.py --evaluate`` command.

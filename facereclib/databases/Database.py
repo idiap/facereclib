@@ -241,5 +241,5 @@ class DatabaseZT (Database):
     raise NotImplementedError("Please implement this function in derived classes")
 
   def z_probe_file_sets(self, model_id = None, group = 'dev'):
-    """Returns a list of Z-probesets object in a specific format that should be compared with the model belonging to the given model id of the specified group"""
+    """Returns a list of Z-probe FileSets object in a specific format that should be compared with the model belonging to the given model id of the specified group"""
     raise NotImplementedError("Please implement this function in derived classes")

@@ -12,3 +12,6 @@ from .GridGraph import GridGraph
 from .Eigenface import Eigenface
 from .SIFTKeypoints import SIFTKeypoints
 from .SIFTBobKeypoints import SIFTBobKeypoints
+
+# gets sphinx autodoc done right - don't remove it
+__all__ = [_ for _ in dir() if not _.startswith('_')]

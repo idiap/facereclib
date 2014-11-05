@@ -120,15 +120,6 @@ setup(
         'local-p8          = facereclib.configurations.grid.local:grid_p8',
         'local-p16         = facereclib.configurations.grid.local:grid_p16'
       ],
-
-      # registered tests (will, e.g., be run in the xbob.db.aggregator)
-      'bob.test' : [
-        'databases         = facereclib.tests.test_databases:DatabaseTest',
-        'preprocessors     = facereclib.tests.test_preprocessing:PreprocessingTest',
-        'feature_extractors= facereclib.tests.test_features:FeatureExtractionTest',
-        'tools             = facereclib.tests.test_tools:ToolTest',
-        'scripts           = facereclib.tests.test_scripts:ScriptTest'
-      ]
     },
 
 
@@ -154,6 +145,7 @@ setup(
     # PyPI. You can find the complete list of classifiers that are valid and
     # useful here (http://pypi.python.org/pypi?%3Aaction=list_classifiers).
     classifiers = [
+      'Framework :: Bob',
       'Development Status :: 4 - Beta',
       'Intended Audience :: Science/Research',
       'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',

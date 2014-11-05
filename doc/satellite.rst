@@ -4,13 +4,13 @@
 
 .. _satellite-packages:
 
-===================================
-Creating your own satellite package
-===================================
+=================================
+Create your own Satellite Package
+=================================
 
 The simplest and most clean way to test your own code in the FaceRecLib is to add it in a satellite package.
 In principle, you can choose a name that fits you, but it is preferable to have a package name that starts with ``xfacereclib.`` to show that it is a satellite package to the FaceRecLib.
-Please refer to the `satellite package explanation of Bob <http://www.idiap.ch/software/bob/docs/releases/last/sphinx/html/OrganizeYourCode.html>`_, which explains in detail how to start.
+Please refer to the :ref:`satellite package explanation of Bob <bob.extension>`, which explains in detail how to start.
 
 Depending on of what nature is your contribution, you have to register it in the `setup.py` file of your satellite package.
 In case, your contribution is a face recognition algorithm, you might want to :ref:`register it <register-resources>`.
@@ -22,13 +22,9 @@ In this case, the contribution is more about scripts that can be used to run exp
 To cause the buildout_ system to create a python script in the `bin <file:../bin>`_ directory, you have to register the script in your `setup.py` file under the ``console_scripts`` section.
 One working example of providing source code to rerun experiments for [GWM12]_ can be found in http://pypi.python.org/pypi/xfacereclib.paper.BeFIT2012.
 
-.. TODO::
-  Write a more precise documentation on how to create satellite packages to the FaceRecLib.
 
-
-
-Contributing your code
-----------------------
+Contribute your Code
+--------------------
 When you invented a completely new type of preprocessing, features, or recognition algorithm and you want to share them with the world, or you want other researchers to be able to rerun your experiments, you are highly welcome **and encouraged** to do so.
 Please make sure that every part of your code is documented and tested.
 
@@ -40,6 +36,6 @@ Add the required packages in the `setup.py` file and under the ``install_require
   $ python setup.py register
   $ python setup.py sdist --formats zip upload
 
-Now, all other researchers can make use of your invention, with the effect that your paper will be cited more often, simply by adding your project to the `setup.py` in their satellite package.
+Now, all other researchers can make use of your invention, with the effect that your paper will be cited more often, simply by adding your project to the **setup.py** in their satellite package.
 
 .. include:: links.rst

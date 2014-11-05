@@ -7,7 +7,6 @@
 .. _idiap: http://www.idiap.ch
 .. _github: http://www.github.com/idiap
 .. _bob: http://www.idiap.ch/software/bob
-.. _facereclib: http://pypi.python.org/pypi/facereclib
 .. _github bug reporting system: http://github.com/idiap/facereclib/issues
 .. _idiap at github: http://www.github.com/bioidiap
 .. _at&t database: http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
@@ -19,4 +18,5 @@
 .. _sge: http://wiki.idiap.ch/linux/SunGridEngine
 .. _csu face recognition resources: http://www.cs.colostate.edu/facerec
 .. _xfacereclib.extension.csu: http://pypi.python.org/pypi/xfacereclib.extension.CSU
-
+.. _virtualbox: https://www.virtualbox.org
+.. _hdf5: http://www.hdfgroup.org/HDF5

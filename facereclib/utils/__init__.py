@@ -116,7 +116,16 @@ def ensure_dir(dirname):
 
 
 def score_fusion_strategy(strategy_name = 'avarage'):
-  """Returns a function to compute a fusion strategy between different scores."""
+  """Returns a function to compute a fusion strategy between different scores.
+
+  Different strategies are employed:
+
+  * ``'average'`` : The averaged score is computed using the :py:func:`numpy.average` function.
+  * ``'min'`` : The minimum score is computed using the :py:func:`min` function.
+  * ``'max'`` : The maximum score is computed using the :py:func:`max` function.
+  * ``'median'`` : The median score is computed using the :py:func:`numpy.median` function.
+  * ``None`` is also accepted, in which case ``None`` is returned.
+  """
   try:
     return {
         'average' : numpy.average,
@@ -169,3 +178,6 @@ def command_line(cmdline):
       c += "'%s' " % cmd
   return c
 
+
+# gets sphinx autodoc done right - don't remove it
+__all__ = [_ for _ in dir() if not _.startswith('_')]

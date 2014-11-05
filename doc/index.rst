@@ -2,16 +2,13 @@
 .. author: Manuel Günther <manuel.guenther@idiap.ch>
 .. date: Thu Sep 20 11:58:57 CEST 2012
 
-.. FaceRecLib documentation master file, created by
-   sphinx-quickstart on Thu Sep 20 11:10:55 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. _facereclib:
 
 ========================================
  Welcome to FaceRecLib's documentation!
 ========================================
 
-The FaceRecLib is an open source platform that is designed to run comparable and reproducible face recognition experiments.
+The FaceRecLib is an open source tool that is designed to run comparable and reproducible face recognition experiments.
 To design a face recognition experiment, one has to choose:
 
 * an image databases and its according protocol,
@@ -30,9 +27,12 @@ For example, we created wrapper classes for the `CSU Face Recognition Resources`
 If you are interested, please continue reading:
 
 
+===========
+Users Guide
+===========
+
 .. toctree::
    :maxdepth: 2
-
 
    installation
    baselines
@@ -43,9 +43,9 @@ If you are interested, please continue reading:
    satellite
    references
 
-===========================
-FaceRecLib reference manual
-===========================
+================
+Reference Manual
+================
 
 .. toctree::
    :maxdepth: 2
@@ -54,6 +54,7 @@ FaceRecLib reference manual
    manual_preprocessors
    manual_features
    manual_tools
+   manual_utils
 
 
 ToDo-List

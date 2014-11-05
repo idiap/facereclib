@@ -9,15 +9,4 @@ Databases
 
 .. automodule:: facereclib.databases
 
-Basic database interface
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: facereclib.databases.Database
-
-Database interface for Bob_ databases
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: facereclib.databases.DatabaseBob
-
-
 .. include:: links.rst

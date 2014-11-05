@@ -5,7 +5,7 @@
 .. _installation:
 
 =========================
-Installation instructions
+Installation Instructions
 =========================
 
 .. note::
@@ -18,7 +18,7 @@ Download
 
 FaceRecLib
 ~~~~~~~~~~
-To have a stable version of the FaceRecLib, the safest option is to go to the FaceRecLib_'s web page on Pypi_ and download the latest version.
+To have a stable version of the FaceRecLib, the safest option is to go to the `FaceRecLib <http://pypi.python.org/pypi/facereclib>`_\s web page on PyPI_ and download the latest version.
 
 Nevertheless, the library is also available as a project of `Idiap at GitHub`_.
 To check out the current version of the FaceRecLib, go to the console, move to any place you like and call:
@@ -37,8 +37,13 @@ The FaceRecLib is a satellite package of Bob_, where most of the image processin
 In its current version, the FaceRecLib requires Bob_ version 2 or greater.
 Since version 2.0 there is no need for a global installation of Bob any more, all required packages will be automatically downloaded from PyPi_.
 
+To install `Packages of Bob <https://github.com/idiap/bob/wiki/Packages>`_, please read the `Installation Instructions <https://github.com/idiap/bob/wiki/Installation>`_.
+For Bob_ to be able to work properly, some dependent packages are required to be installed.
+Please make sure that you have read the `Dependencies <https://github.com/idiap/bob/wiki/Dependencies>`_ for your operating system.
+
 .. note::
   Currently, running Bob_ under MS Windows in not yet supported.
+  However, we found that running Bob_ in a virtual Unix environment such as the one provided by VirtualBox_ is a good alternative.
 
 Usually, all possible database satellite packages (called ``bob.db.[...]``) are automatically downloaded from PyPI_.
 If you don't want to download the databases, please edit the ``eggs`` section of the buildout.cfg_ configuration file by removing the databases that you don't want.
@@ -60,11 +65,11 @@ To enable them, please call::
 after downloading and patching the CSU resources, and updating the ``sources-dir`` in the **buildout-with-csu.cfg** file -- as explained in xfacereclib.extension.CSU_.
 
 
-Image databases
+Image Databases
 ~~~~~~~~~~~~~~~
 
 With the FaceRecLib you will run face recognition experiments using some default facial image databases.
-Though the verification protocols are implemented in the FaceRecLib, the images are **not included**, and for some databases, also the hand-labelled facial landmark annotations are external.
+Though the verification protocols are implemented in the FaceRecLib, the images are **not included**, and for some databases, also the hand-labeled facial landmark annotations are external.
 To download the image databases, please refer to the according Web-pages.
 
 For a start, you might want to try the small, but freely available image database called the `AT&T database`_ (formerly known as the ORL database).
@@ -76,10 +81,11 @@ For a start, you might want to try the small, but freely available image databas
 
 Other database URL's will be given in the :ref:`databases` section.
 
+
 Set-up your FaceRecLib
 ----------------------
 
-Now, you have everything set up such that you can continue to set up the FaceRecLib.
+Now, you have everything ready so that you can continue to set up the FaceRecLib.
 To do this, we use the BuildOut_ system.
 To proceed, open a terminal in your FaceRecLib main directory and call:
 
@@ -92,7 +98,7 @@ The first step will generate a `bin <file:../bin>`_ directory in the main direct
 The second step automatically downloads all dependencies of the FaceRecLib and creates all required scripts that we will need soon.
 
 
-Test your installation
+Test your Installation
 ~~~~~~~~~~~~~~~~~~~~~~
 
 One of the scripts that were generated during the bootstrap/buildout step is a test script.
@@ -109,7 +115,7 @@ To avoid the download, please:
 
 1. Download the `AT&T database`_ database and extract it to the directory of your choice.
 2. Set an environment variable ``ATNT_DATABASE_DIRECTORY`` to the directory, where you extracted the database to.
-   For example, in a ``bash`` you can call
+   For example, in a ``bash`` you can call:
 
 .. code-block:: sh
 
@@ -122,8 +128,8 @@ To avoid the download, please:
 In case any of the tests fail for unexplainable reasons, please file a bug report through the `GitHub bug reporting system`_.
 
 .. note::
-  Currently, all tests should pass using Bob_ in version 1.2.1.
-  In other versions, some of the tests may fail (currently I know of ISV and JFA tests that use different random initializations in Bob 1.2.0.)
+  Usually, all tests should pass with the latest stable versions of the Bob_ packages.
+  In other versions, some of the tests may fail.
 
 
 Generate this documentation

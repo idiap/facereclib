@@ -5,7 +5,7 @@
 .. _experiments:
 
 ================================
-Running non-baseline experiments
+Running non-baseline Experiments
 ================================
 
 The ``bin/baselines.py`` script that we have discussed in the previous section is just a wrapper for the ``bin/faceverify.py`` script.
@@ -19,7 +19,7 @@ In this section, only the long names of the arguments are listed, please refer t
 
 .. _required:
 
-Required command line arguments
+Required Command Line Arguments
 -------------------------------
 To run a face recognition experiment using the FaceRecLib, you have to tell the ``bin/faceverify.py`` script, which database, preprocessing, features, and algorithm should be used.
 To use this script, you have to specify at least these command line arguments (see also the ``--help`` option):
@@ -37,7 +37,7 @@ Please specify a descriptive name for your experiment to be able to remember, ho
 
 .. _managing-resources:
 
-Managing resources
+Managing Resources
 ~~~~~~~~~~~~~~~~~~
 The FaceRecLib is designed in a way that makes it very easy to select the setup of your experiments.
 Basically, you can specify your algorithm and its configuration in three different ways:
@@ -53,7 +53,7 @@ Basically, you can specify your algorithm and its configuration in three differe
 
      $ bin/faceverify.py --database atnt
 
-2. You define a configuration file or choose one of the already existing configuration files that are located in `facereclib/configurations`_ and its subdirectories.
+2. You define a configuration file or choose one of the already existing configuration files that are located in `facereclib/configurations`_ and its sub-directories.
    How to define a new configuration file, please read section :ref:`configuration-files`.
 
    Example:
@@ -102,13 +102,13 @@ In the following, we will provide a detailed explanation of the parameters of th
 .. _databases:
 
 Databases
-~~~~~~~~~
+---------
 Currently, all implemented databases are taken from Bob_.
-To define a common API for all of the databases, the FaceRecLib defines the wrapper classes `facereclib.databases.DatabaseBob <file:../facereclib/databases/DatabaseBob.py>`_ and `facereclib.databases.DatabaseBobZT  <file:../facereclib/databases/DatabaseBob.py>`_ for these databases.
+To define a common API for all of the databases, the FaceRecLib defines the wrapper classes :py:class:`facereclib.databases.DatabaseBob` and :py:class:`facereclib.databases.DatabaseBobZT` and :py:class:`facereclib.databases.DatabaseFileList` for these databases.
 The parameters of this wrapper class are:
 
-Required parameters
-*******************
+Required Parameters
+~~~~~~~~~~~~~~~~~~~
 
 * ``name``: The name of the database, in lowercase letters without special characters.
   This name will be used as a default sub-directory to separate resulting files of different experiments.
@@ -117,8 +117,8 @@ Required parameters
 * ``protocol``: The name of the protocol that should be used.
   If omitted, the protocol *Default* will be used (which might not be available in all databases, so please specify).
 
-Optional parameters
-*******************
+Optional Parameters
+~~~~~~~~~~~~~~~~~~~
 
 These parameters can be used to reduce the number of training images.
 Usually, there is no need to specify them, but in case your algorithm requires to much memory:
@@ -128,31 +128,31 @@ Usually, there is no need to specify them, but in case your algorithm requires t
 * ``projector_training_options``: Special options that are passed to the query, e.g., to reduce the number of images in the projector training.
 * ``enroller_training_options``: Special options that are passed to the query, e.g., to reduce the number of images in the enroller training.
 
-Implemented database interfaces
-*******************************
+Implemented Database Interfaces
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Here we list the database interfaces that are currently available in the FaceRecLib.
-By clicking on the database name, you open one configuration file of the database.
+By clicking on the database name, you open one configuration file of the database, the link in ``<>`` parentheses will link to the ``bob.db`` database package documentation.
 If you have an ``image_directory`` different to the one specified in the file, please change the directory accordingly to be able to use the database.
 
 
-* `facereclib.database.DatabaseBob <file:../facereclib/databases/DatabaseBob.py>`_:
+* :py:class:`facereclib.databases.DatabaseBob`:
 
-  - `AR face <file:../facereclib/configurations/databases/arface.py>`_ : http://www2.ece.ohio-state.edu/~aleix/ARdatabase.html
+  - `AR face <file:../facereclib/configurations/databases/arface.py>`_ <:ref:`bob.db.arface <bob.db.arface>`>: http://www2.ece.ohio-state.edu/~aleix/ARdatabase.html
 
   .. note::
     At Idiap we might not have the latest version of this database.
     We tried to contact the responsible author of the database, but he didn't reply over years.
     Good luck for your trial to get the data.
 
-  - `AT&T <file:../facereclib/configurations/databases/atnt.py>`_ : http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
-  - `CAS-PEAL <file:../facereclib/configurations/databases/caspeal.py>`_: http://www.jdl.ac.cn/peal/index.html
-  - `Face Recognition Grand Challenge ver2.0 (FRGC) <file:../facereclib/configurations/databases/frgc.py>`_ : http://www.nist.gov/itl/iad/ig/frgc.cfm
+  - `AT&T <file:../facereclib/configurations/databases/atnt.py>`_ <:ref:`bob.db.atnt <bob.db.atnt>`>: http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
+  - `CAS-PEAL <file:../facereclib/configurations/databases/caspeal.py>`_ <:ref:`bob.db.caspeal <bob.db.caspeal>`>: http://www.jdl.ac.cn/peal/index.html
+  - `Face Recognition Grand Challenge ver2.0 (FRGC) <file:../facereclib/configurations/databases/frgc.py>`_ <:ref:`bob.db.frgc <bob.db.frgc>`>: http://www.nist.gov/itl/iad/ig/frgc.cfm
 
   .. note::
     The FRGC database interface requires to set the ``frgc_directory`` in the configuration file to your copy of the FRGC database.
     If this directory is not set, the FRGC database will not be available, e.g., it will not show up in the available databases of ``bin/baselines.py --help``.
 
-  - `The Good, The Bad & The Ugly (GBU) <file:../facereclib/configurations/databases/gbu.py>`_ : http://www.nist.gov/itl/iad/ig/focs.cfm
+  - `The Good, The Bad & The Ugly (GBU) <file:../facereclib/configurations/databases/gbu.py>`_ <:ref:`bob.db.gbu <bob.db.gbu>`>: http://www.nist.gov/itl/iad/ig/focs.cfm
 
   .. note::
     The GBU database uses the data from the MBGC http://www.nist.gov/itl/iad/ig/mbgc.cfm database of the NIST.
@@ -160,17 +160,17 @@ If you have an ``image_directory`` different to the one specified in the file, p
     Hence, the ``bob.db.gbu`` database might not be up to date.
     Please refer to the documentation of this database on how to adapt the database to the new structure.
 
-  - `Labeled Faces in the Wild (LFW) <file:../facereclib/configurations/databases/lfw.py>`_ : http://vis-www.cs.umass.edu/lfw/
+  - `Labeled Faces in the Wild (LFW) <file:../facereclib/configurations/databases/lfw.py>`_ <:ref:`bob.db.lfw <bob.db.lfw>`>: http://vis-www.cs.umass.edu/lfw/
 
-* `facereclib.database.DatabaseBobZT <file:../facereclib/databases/DatabaseBob.py>`_:
+* :py:class:`facereclib.databases.DatabaseBobZT`:
 
-  - `BANCA <file:../facereclib/configurations/databases/banca.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/banca
-  - `MOBIO <file:../facereclib/configurations/databases/mobio.py>`_ : http://www.idiap.ch/dataset/mobio
-  - `Multi-PIE <file:../facereclib/configurations/databases/multipie.py>`_ : http://www.multipie.org
-  - `Surveillance Camera (SC) face database <file:../facereclib/configurations/databases/scface.py>`_ : http://www.scface.org
-  - `Extended M2VTS (XM2VTS) <file:../facereclib/configurations/databases/xm2vts.py>`_ : http://www.ee.surrey.ac.uk/CVSSP/xm2vtsdb
+  - `BANCA <file:../facereclib/configurations/databases/banca.py>`_ <:ref:`bob.db.banca <bob.db.banca>`>: http://www.ee.surrey.ac.uk/CVSSP/banca
+  - `MOBIO <file:../facereclib/configurations/databases/mobio.py>`_ <:ref:`bob.db.mobio <bob.db.mobio>`>: http://www.idiap.ch/dataset/mobio
+  - `Multi-PIE <file:../facereclib/configurations/databases/multipie.py>`_ <:ref:`bob.db.multipie <bob.db.multipie>`>: http://www.multipie.org
+  - `Surveillance Camera (SC) face database <file:../facereclib/configurations/databases/scface.py>`_ <:ref:`bob.db.scface <bob.db.scface>`>: http://www.scface.org
+  - `Extended M2VTS (XM2VTS) <file:../facereclib/configurations/databases/xm2vts.py>`_ <:ref:`bob.db.xm2vts <bob.db.xm2vts>`>: http://www.ee.surrey.ac.uk/CVSSP/xm2vtsdb
 
-There is also one interface for the ``bob.db.verification.filelist`` database, which contains a file-based API to define simple evaluation protocols for other databases.
+There is also a special :py:class:`facereclib.databases.DatabaseFileList` interface for the :py:class:`bob.db.verification.filelist.Database` database, which contains a file-based API to define simple evaluation protocols for other databases.
 An example, which is based on the `AT&T database`, on how to configure and use this database can be found in `facereclib/tests/databases/atnt_fl/atnt_fl_database.py <file:../facereclib/tests/databases/atnt_fl/atnt_fl_database.py>`_.
 For more information, please also read the :ref:`filelist` section.
 
@@ -178,13 +178,13 @@ For more information, please also read the :ref:`filelist` section.
 .. _preprocessors:
 
 Preprocessors
-~~~~~~~~~~~~~
+-------------
 Currently, all preprocessors that are defined in FaceRecLib perform work on facial images and are, hence, used for face recognition.
-They perform an automatic image alignment to the hand-labeled eye positions as provided by the :ref:`databases`.
+Using the :py:class:`bob.ip.base.FaceEyesNorm`, they perform an automatic image alignment to the hand-labeled eye positions as provided by the :ref:`databases`.
 Hence, most preprocessors that are defined in `facereclib/preprocessing <file:../facereclib/preprocessing>`_ have a common set of parameters:
 
-Face cropping parameters
-************************
+Face Cropping Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 * ``cropped_image_size``: The resolution of the cropped image, defined as a tuple (image_height, image_width).
   If not specified, no face cropping is performed.
@@ -203,16 +203,16 @@ Face cropping parameters
   If you want a different color channel, please implement it in the ``gray_channel`` function of the `facereclib/utils/__init__.py <file:../facereclib/utils/__init__.py>`_ file.
 * ``offset``: If your feature extraction step needs some surrounding information of the image (e.g. the ``LGBPHS`` feature extractor reduces the image size), you can add an offset here, so that the actual returned image will be larger.
 
-Preprocessor classes
-********************
+Preprocessor Classes
+~~~~~~~~~~~~~~~~~~~~
 
-* `facereclib.preprocessing.FaceCrop <file:../facereclib/preprocessing/FaceCrop.py>`_: Crops the image to the desired resolution and puts the specified annotations to the specified positions in the image.
-* `facereclib.preprocessing.HistogramEqualization <file:../facereclib/preprocessing/HistogramEqualization.py>`_: Face cropping and gray value histogram equalization.
-* `facereclib.preprocessing.TanTriggs <file:../facereclib/preprocessing/TanTriggs.py>`_: Face cropping and photometric normalization using the Tan&Triggs algorithm.
+* :py:class:`facereclib.preprocessing.FaceCrop`: Crops the image to the desired resolution and puts the specified annotations to the specified positions in the image.
+* :py:class:`facereclib.preprocessing.HistogramEqualization`: Face cropping and gray value histogram equalization.
+* :py:class:`facereclib.preprocessing.TanTriggs`: Face cropping and photometric normalization using the Tan&Triggs algorithm :py:class:`bob.ip.base.TanTriggs`.
   For details about the parameters, please refer to [TT10]_.
-* `facereclib.preprocessing.SelfQuotientImage <file:../facereclib/preprocessing/SelfQuotientImage.py>`_: Face cropping and photometric normalization using the Self-quotient image technology.
+* :py:class:`facereclib.preprocessing.SelfQuotientImage`: Face cropping and photometric normalization using the Self-quotient image technology.
   For details about the parameters, please refer to [WLW04]_.
-* `facereclib.preprocessing.INormLBP <file:../facereclib/preprocessing/INormLBP.py>`_: Face cropping and pixel value normalization using the I-Norm LBP technology
+* :py:class:`facereclib.preprocessing.INormLBP`: Face cropping and pixel value normalization using the I-Norm LBP technology.
   For details about the parameters, please refer to [HRM06]_.
 
 
@@ -227,19 +227,21 @@ Preprocessor classes
 
 .. _extractors:
 
-Feature extractors
-~~~~~~~~~~~~~~~~~~
+Feature Extractors
+------------------
 Several different kinds of features can be extracted from the preprocessed data.
 Here is the list of classes to perform feature extraction and its parameters.
 
-* `facereclib.features.Linearize <file:../facereclib/features/Linearize.py>`_: Just puts the elements of the preprocessed data to one vector.
+* :py:class:`facereclib.features.Linearize`: Just puts the elements of the preprocessed data to one vector.
   There are no parameters to this class.
 
-* `facereclib.features.Eigenface <file:../facereclib/features/Eigenface.py>`_: Extracts eigenface features from the preprocessed data, after training the extractor using the preprocessed data from the training set.
+* :py:class:`facereclib.features.Eigenface`: Extracts eigenface features from the preprocessed data, after training the extractor using the preprocessed data from the training set.
+  These features are based on the :ref:`bob.learn.linear <bob.learn.linear>` package.
 
   - ``subspace_dimension``: The number of kept eigenfaces.
 
-* `facereclib.features.DCTBlocks <file:../facereclib/features/DCT.py>`_: Extracts *Discrete Cosine Transform* (DCT) features from (overlapping) image blocks.
+* :py:class:`facereclib.features.DCTBlocks`: Extracts *Discrete Cosine Transform* (DCT) features from (overlapping) image blocks.
+  These features are based on the :py:class:`bob.ip.base.DCTFeatures` class.
   The default parametrization is the one that performed best on the BANCA database in [WMM+11]_.
 
   - ``block_size``: The size of the blocks that will be extracted.
@@ -250,7 +252,7 @@ Here is the list of classes to perform feature extraction and its parameters.
   - ``normalize_blocks``: Normalize the values of the blocks to zero mean and unit standard deviation before extracting DCT coefficients. Default is ``True``.
   - ``normalize_dcts``: Normalize the values of the DCT components to zero mean and unit standard deviation. Default is ``True``.
 
-* `facereclib.features.GridGraph <file:../facereclib/features/GridGraph.py>`_: Extracts Gabor jets in a grid structure [GHW12]_.
+* :py:class:`facereclib.features.GridGraph`: Extracts Gabor jets in a grid structure [GHW12]_ using functionalities from :ref:`bob.ip.gabor <bob.ip.gabor>`.
 
   - ``gabor_...``: The parameters of the Gabor wavelet family, with its default values set as given in [WFK97]_.
   - ``normalize_gabor_jets``: Perform Gabor jet normalization during extraction? Default: ``True``.
@@ -258,7 +260,7 @@ Here is the list of classes to perform feature extraction and its parameters.
     Possible values are: ``True``, ``False``, ``'inline'``, the default is ``True``.
 
     .. note::
-      Inlining the Gabor phases should not be used when the ``facereclib.tools.GaborJet`` tool is employed.
+      Inlining the Gabor phases should not be used when the :py:class:`facereclib.tools.GaborJets` tool is employed.
 
   - ``eyes``: If given, align the grid to the eye positions.
 
@@ -268,12 +270,12 @@ Here is the list of classes to perform feature extraction and its parameters.
     + If ``eyes`` are not specified, a regular grid is placed according to the ``first_node``, ``node_distance``, and ``image_resolution`` parameters.
       In this case, if the ``first_node`` is omitted (i.e. ``None``), it is calculated automatically to equally cover the whole image.
 
-* `facereclib.features.LGBPHS <file:../facereclib/features/LGBPHS.py>`_: Extracts *Local Gabor Binary Pattern Histogram Sequences* (LGBPHS) [ZSG+05]_ from the images:
+* :py:class:`facereclib.features.LGBPHS`: Extracts *Local Gabor Binary Pattern Histogram Sequences* (LGBPHS) [ZSG+05]_ from the images, using functionality from :ref:`bob.ip.base <bob.ip.base>` and :ref:`bob.ip.gabor <bob.ip.gabor>`:
 
   - ``block_size``, ``block_overlap``: Setup of the blocks to split the histograms.
-    For details on how to use these parameters, please refer to the ``facereclib.features.DCTBlocks`` above.
+    For details on how to use these parameters, please refer to the :py:class:`facereclib.features.DCTBlocks` above.
   - ``gabor_...``: Setup of the Gabor wavelet family.
-    The default setup is identical to the ``facereclib.features.GridGraph`` features.
+    The default setup is identical to the :py:class:`facereclib.features.GridGraph`` features.
   - ``use_gabor_phases``: Extract also the Gabor phases (inline) and not only the absolute values -> ELGBPHS [ZSQ+09]_. Default: ``False``.
   - ``lbp_...``: The parameters of the *Local Binary Patterns* (LBP).
     The default values are as given in [ZSG+05]_ (the values of [ZSQ+09]_ might differ).
@@ -282,54 +284,54 @@ Here is the list of classes to perform feature extraction and its parameters.
     Possible values are: ``None``, ``'blocks'``, ``'wavelets'``, ``'both'``, the default is ``None``.
 
     .. note::
-      Splitting the LGBPHS is usually not useful if the employed tool is the ``facereclib.tools.LGBPHS``.
+      Splitting the LGBPHS is usually not useful if the employed tool is the :py:class:`facereclib.tools.LGBPHS`.
 
 
 .. _algorithms:
 
-Recognition algorithms
-~~~~~~~~~~~~~~~~~~~~~~
+Recognition Algorithms
+----------------------
 There are also a variety of recognition algorithms implemented in the FaceRecLib.
-All face recognition algorithms are based on the `facereclib.tools.Tool <file:../facereclib/tools/Tool.py>`_ base class.
+All face recognition algorithms are based on the :py:class:`facereclib.tools.Tool` base class.
 This base class has parameters that some of the algorithms listed below share.
 These parameters mainly deal with how to compute a single score when more than one feature is provided for the model or for the probe:
 
 - ``multiple_model_scoring``: Strategy to combine several features in a model.
-  Possible values are (see also `facereclib.utils.score_fusion_strategy <file:../facereclib/utils/__init__.py>`_):  ``'average'``, ``'min'``, ``'max'``, ``'median'``, default is ``'average'``.
+  Possible values are (see also :py:func:`facereclib.utils.score_fusion_strategy`):  ``'average'``, ``'min'``, ``'max'``, ``'median'``, default is ``'average'``.
 - ``multiple_probe_scoring``: Strategy to combine several probe scores.
-  Possible values are (see also `facereclib.utils.score_fusion_strategy <file:../facereclib/utils/__init__.py>`_):  ``'average'``, ``'min'``, ``'max'``, ``'median'``, default is ``'average'``.
+  Possible values are (see also :py:func:`facereclib.utils.score_fusion_strategy`):  ``'average'``, ``'min'``, ``'max'``, ``'median'``, default is ``'average'``.
 
 Here is a list of the most important algorithms and their parameters:
 
 
-* `facereclib.tools.PCA <file:../facereclib/tools/PCA.py>`_: Computes a PCA projection on the given training features, projects the features to face space and computes the distance of two projected features in face space.
+* :py:class:`facereclib.tools.PCA`: Computes a PCA projection (:py:class:`bob.learn.linear.PCATrainer`) on the given training features, projects the features to face space and computes the distance of two projected features in face space.
 
   - ``subspace_dimension``: If integral: the number of kept eigenvalues in the projection matrix; if float in range[0,1]: the percentage of variance to keep.
-  - ``distance_function``: The distance function to be used to compare two features in face space. Default: ``scipy.spatial.distance.euclidean``.
+  - ``distance_function``: The distance function to be used to compare two features in face space. Default: :py:func:`scipy.spatial.distance.euclidean`.
   - ``is_distance_function``: Specifies, if the ``distance_function`` is a distance or a similarity function. Default: ``True``.
   - ``uses_variances``: Does the ``distance_function`` require the PCA variances? Default: ``False``.
 
-* `facereclib.tools.LDA <file:../facereclib/tools/LDA.py>`_: Computes an LDA or a PCA+LDA projection on the given features.
+* :py:class:`facereclib.tools.LDA`: Computes an LDA (:py:class:`bob.learn.linear.FisherLDATrainer`) or a PCA+LDA projection on the given features.
 
   - ``lda_subspace_dimension``: **(optional)** Limit the number of dimensions of the LDA subspace.
     If this parameter is not specified, the maximum useful dimensions, i.e, the number of training clients-1 is returned.
-    The ``lda_subspace_dimension`` can actually be higher then the useful limit, in which case eignevectors with vanishing eigenvalues are used.
+    The ``lda_subspace_dimension`` can actually be higher then the useful limit, in which case eigenvectors with vanishing eigenvalues are used.
   - ``pca_subspace_dimension``: **(optional)** If given, the computed projection matrix will be a PCA+LDA matrix, where ``pca_subspace_dimension`` defines the size of the PCA subspace.
     If ``pca_subspace_dimension`` is integral, it is the number of kept eigenvalues in the projection matrix; if is is float, it stands for the percentage of variance to keep.
-  - ``distance_function``: The distance function to be used to compare two features in Fisher space. Default: ``scipy.spatial.distance.euclidean``.
+  - ``distance_function``: The distance function to be used to compare two features in Fisher space. Default: :py:func:`scipy.spatial.distance.euclidean`.
   - ``is_distance_function``: Specifies, if the ``distance_function`` is a distance or a similarity function. Default: ``True``.
   - ``uses_variances``: Does the ``distance_function`` require the LDA variances? Default: ``False``.
 
     .. note:: If ``lda_subspace_dimension`` is higher than the useful limit, vanishing eigenvalues will be used. In this case, avoid distance functions that require the eigenvalues.
 
-* `facereclib.tools.PLDA <file:../facereclib/tools/PLDA.py>`_: Computes a probabilistic LDA
+* :py:class:`facereclib.tools.PLDA`: Computes a probabilistic LDA (:py:class:`bob.learn.misc.PLDATrainer`)
 
   - ``subspace_dimension_pca``: **(optional)** If given, features will first be projected into a PCA subspace, and then classified by PLDA.
 
   .. TODO::
     Document the remaining parameters of the PLDA
 
-* `facereclib.tools.BIC <file:../facereclib/tools/BIC.py>`_: Computes the Bayesian intrapersonal/extrapersonal classifier.
+* :py:class:`facereclib.tools.BIC`: Computes the Bayesian intrapersonal/extrapersonal classifier (:py:class:`bob.learn.misc.BICTrainer`).
   Currently two different versions are implemented: One with [MWP98]_ and one without (a generalization of [GW09]_) subspace projection of the features.
 
   - ``distance_function``: The function to compare the features in the original feature space.
@@ -342,23 +344,23 @@ Here is a list of the most important algorithms and their parameters:
   - ``uses_dffs``: Use the *Distance From Feature Space* (DFFS) (cf. [MWP98]_) during scoring.
     This flag is only valid when subspace projection is performed, and you should use this flag with care!
 
-* `facereclib.tools.GaborJets <file:../facereclib/tools/GaborJets.py>`_: Computes a comparison of Gabor jets.
+* :py:class:`facereclib.tools.GaborJets`: Computes a comparison of Gabor jets (:py:class:`bob.ip.gabor.Similarity`).
 
   - ``gabor_jet_similarity_type``: The Gabor jet similarity to compute.
-    Please refer to the documentation of ``bob.machine.gabor_jet_similarity_type`` in Bob_ for a list of possible values.
+    Please refer to the documentation of :py:class:`bob.ip.gabor.Similarity` for a list of possible values.
   - ``multiple_feature_scoring``: How to compute the score if several features per model or probe are available.
     Possible values are: ``'average_model'``, ``'average'``, ``'min_jet'``, ``'max_jet'``, ``'med_jet'``, ``'min_graph'``, ``'max_graph'``, ``'med_graph'``, the default is the best working strategy ``'max_jet'``.
   - ``gabor_...``: The parameters of the Gabor wavelet family.
     These parameters are required by some of the Gabor jet similarity functions.
-    The default values are identical to the ones in the ``facereclib.features.GridGraph`` features.
-    Please assure that this class and the ``facereclib.features.GridGraph`` class get the same configuration, otherwise unexpected things might happen.
+    The default values are identical to the ones in the :py:class:`facereclib.features.GridGraph` features.
+    Please assure that this class and the :py:class:`facereclib.features.GridGraph` class get the same configuration, otherwise unexpected things might happen.
 
-* `facereclib.tools.LGBPHS <file:../facereclib/tools/LGBPHS.py>`_: Computes a similarity measure between extracted LGBP histograms.
+* :py:class:`facereclib.tools.LGBPHS`: Computes a similarity measure between extracted LGBP histograms using functions from :ref:`bob.math <bob.math>`.
 
-  - ``distance_function``: The function to be used to compare two histograms. Default: ``bob.math.chi_square``
+  - ``distance_function``: The function to be used to compare two histograms. Default: :py:func:`bob.math.chi_square`
   - ``is_distance_function``: Is the given ``distance_function`` a distance (``True``) or a similarity (``False``) function. Default: ``True``
 
-* `facereclib.tools.UBMGMM <file:../facereclib/tools/UBMGMM.py>`_: Computes a *Gaussian mixture model* (GMM) of the training set (the so-called *Unified Background Model* (UBM) and adapts a client-specific GMM during enrollment.
+* :py:class:`facereclib.tools.UBMGMM`: Computes a *Gaussian mixture model* (GMM) of the training set (the so-called *Unified Background Model* (UBM) and adapts a client-specific GMM during enrollment (:ref:`bob.learn.misc <bob.learn.misc>`).
 
   - ``number_of_gaussians``: The number of Gaussians in the UBM and GMM.
   - ``..._training_iterations``: Maximum number of training iterations of the training steps.
@@ -366,18 +368,18 @@ Here is a list of the most important algorithms and their parameters:
   .. TODO::
     Document the remaining parameters of the UBMGMM tool
 
-* `facereclib.tools.ISV <file:../facereclib/tools/ISV.py>`_: This class is an extension of the ``facereclib.tools.UBMGMM``.
-  Hence, all the parameters of the ``facereclib.tools.UBMGMM`` must be specified as well.
-  Additionally, a subspace projection is computed such that the *Inter Session Variability* of one enrolled client is minimized.
+* :py:class:`facereclib.tools.ISV`: This class is an extension of the :py:class:`facereclib.tools.UBMGMM`.
+  Hence, all the parameters of the :py:class:`facereclib.tools.UBMGMM` must be specified as well.
+  Additionally, a subspace projection is computed such that the *Inter Session Variability* of one enrolled client is minimized (:ref:`bob.learn.misc <bob.learn.misc>`).
 
   - ``subspace_dimension_of_u``: The dimension of the ISV subspace.
 
   .. TODO::
     Document the remaining parameters of the ISV tool
 
-* `facereclib.tools.JFA <file:../facereclib/tools/JFA.py>`_: This class is an extension of the ``facereclib.tools.UBMGMM``.
-  Hence, all the parameters of the ``facereclib.tools.UBMGMM`` must be specified as well.
-  Additionally, a subspace projection is computed using the *Joint Factor Analysis*.
+* :py:class:`facereclib.tools.JFA`: This class is an extension of the :py:class:`facereclib.tools.UBMGMM`.
+  Hence, all the parameters of the :py:class:`facereclib.tools.UBMGMM` must be specified as well.
+  Additionally, a subspace projection is computed using the *Joint Factor Analysis* (:ref:`bob.learn.misc <bob.learn.misc>`).
 
   - ``subspace_dimension_of_u``: The dimension of the JFA U subspace.
   - ``subspace_dimension_of_v``: The dimension of the JFA V subspace.
@@ -386,10 +388,11 @@ Here is a list of the most important algorithms and their parameters:
     Document the JFA tool
 
 
-Parameters of the SGE_ grid
----------------------------
+Parallel Execution of Experiments
+---------------------------------
+
 By default, all jobs of the face recognition tool chain run sequentially on the local machine.
-To speed up the processing, some jobs can be parallelized using the SGE_ grid or using multi-processing on the local machine.
+To speed up the processing, some jobs can be parallelized using the SGE_ grid or using multi-processing on the local machine, using the :ref:`GridTK <gridtk>`.
 For this purpose, there is another option:
 
 * ``--grid``: The configuration file for the grid execution of the tool chain.
@@ -402,7 +405,7 @@ The SGE_ setup is defined in a way that easily allows to parallelize data prepro
 Additionally, if the training of the extractor, projector, or enroller needs special requirements (like more memory), this can be specified as well.
 
 Several configuration files can be found in the `facereclib/configurations/grid <file:../facereclib/configurations/grid>`_ directory.
-All of them are based on the `facereclib.utils.grid <file:../facereclib/utils/grid.py>`_ class.
+All of them are based on the :py:class:`facereclib.utils.GridParameters` class.
 Here are the parameters that you can set:
 
 * ``grid``: The type of the grid configuration; currently "sge" and "local" are supported.
@@ -412,7 +415,7 @@ Here are the parameters that you can set:
 * ``number_of_enrollment_jobs``: Number of parallel enrollment jobs (when development and evaluation sets are enabled, both sets will be split separately).
 * ``number_of_scoring_jobs``: Number of parallel scoring jobs (when development and evaluation sets are enabled, or ZT-norm is computed, more scoring jobs will be generated).
 
-If the ``grid`` parameter is set to ``sge`` (the default), jobs will be submitted to the SGE_ grid.
+If the ``grid`` parameter is set to ``'sge'`` (the default), jobs will be submitted to the SGE_ grid.
 In this case, the SGE_ queue parameters might be specified, either using one of the pre-defined queues (see `facereclib/configurations/grid <file:../facereclib/configurations/grid>`_) or using a dictionary of key/value pairs that are sent to the grid during submission of the jobs:
 
 * ``training_queue``: The queue that is used in any of the training (extractor, projector, enroller) steps.
@@ -435,13 +438,13 @@ If the jobs are sent to the SGE_ grid (``grid = "sge"``), the script will exit i
 Otherwise, the jobs will be run locally in parallel and the script will exit after all jobs are finished.
 
 In any of the two cases, the script writes a database file that you can monitor using the ``bin/jman`` command.
-Please refer to ``bin/jman --help`` or the `GridTK documentation <http://github.com/idiap/gridtk>`_ to see the command line arguments of this tool.
+Please refer to ``bin/jman --help`` or the :ref:`GridTK documentation <gridtk>` to see the command line arguments of this tool.
 The name of the database file by default is **submitted.sql3**, but you can change the name (and its path) using the argument:
 
 * ``--submit-db-file``
 
 
-Command line arguments to change default behavior
+Command Line Arguments to change Default Behavior
 -------------------------------------------------
 Additionally to the required command line arguments discussed above, there are several options to modify the behavior of the FaceRecLib experiments.
 One set of command line arguments change the directory structure of the output.
@@ -458,7 +461,7 @@ These default directories can be overwritten using the following command line ar
 * ``--temp-directory``
 * ``--result-directory`` (for compatibility reasons also ``--user-directory`` can be used)
 
-Re-using parts of experiments
+Re-using Parts of Experiments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you want to re-use parts previous experiments, you can specify the directories (which are relative to the ``--temp-directory``, but you can also specify absolute paths):
 
@@ -505,7 +508,7 @@ In this case, you could simply specify a:
 
 In this case, no feature or model is recomputed (unless you use the ``--force`` option), but only new scores are computed.
 
-Database-dependent arguments
+Database-dependent Arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Many databases define several protocols that can be executed.
 For example, the GBU database provides the three protocols ``'Good'``, ``'Bad'``, ``'Ugly'``.
@@ -527,7 +530,7 @@ The scores of the two groups will be concatenated into two files called **scores
 In this case, by default only the development set is employed.
 To use both groups, just specify:
 
-* ``--groups dev eval`` (of course, you can also only use the 'eval' set by calling ``--groups eval``)
+* ``--groups dev eval`` (of course, you can also only use the ``'eval'`` set by calling ``--groups eval``)
 
 One score normalization technique is the so-called ZT score normalization.
 To enable this, simply use the argument:
@@ -541,14 +544,15 @@ If the ZT-norm is enabled, two sets of scores will be computed, and they will be
 argument.
 
 
-Other arguments
+Other Arguments
 ---------------
 
-For some applications it is interesting to get calibrated scores. Simply add the:
+For some applications it is interesting to get calibrated scores.
+Simply add the:
 
 * ``--calibrate-scores``
 
-option and another set of score files will be created by training the score calibration on the scores of the 'dev' group and execute it to all available groups .
+option and another set of score files will be created by training the score calibration on the scores of the ``'dev'`` group and execute it to all available groups.
 The scores will be located at the same directory as the **nonorm** and **ztnorm** scores, and the file names are **calibrated-dev** (and **calibrated-eval** if applicable) .
 
 During score computation, the probe files usually will be loaded on need.

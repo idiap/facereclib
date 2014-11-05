@@ -2,27 +2,31 @@
 .. Manuel Guenther <manuel.guenther@idiap.ch>
 .. Fri Sep 19 12:51:09 CEST 2014
 
-.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=master
-   :target: https://travis-ci.org/idiap/facereclib
+.. image:: http://img.shields.io/badge/docs-stable-yellow.png
+   :target: http://pythonhosted.org/facereclib/index.html
 .. image:: http://img.shields.io/badge/docs-latest-orange.png
    :target: https://www.idiap.ch/software/bob/docs/latest/idiap/facereclib/master/index.html
+.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=master
+   :target: https://travis-ci.org/idiap/facereclib
 .. image:: https://coveralls.io/repos/idiap/facereclib/badge.png
    :target: https://coveralls.io/r/idiap/facereclib
-.. image:: http://img.shields.io/github/tag/idiap/facereclib.png
-   :target: https://github.com/idiap/facereclib
+.. image:: https://img.shields.io/badge/github-master-0000c0.png
+   :target: https://github.com/idiap/facereclib/tree/master
 .. image:: http://img.shields.io/pypi/v/facereclib.png
    :target: https://pypi.python.org/pypi/facereclib
 .. image:: http://img.shields.io/pypi/dm/facereclib.png
    :target: https://pypi.python.org/pypi/facereclib
 
-The Face Recognition Library
-============================
+
+==============================
+ The Face Recognition Library
+==============================
 
 Welcome to the Face Recognition Library.
 This library is designed to perform a fair comparison of face recognition algorithms.
 It contains scripts to execute various kinds of face recognition experiments on a variety of facial image databases, and running baseline algorithms is as easy as going to the command line and typing::
 
-  $ bin/baselines.py --database frgc --algorithm lda
+  $ bin/baselines.py --database frgc --algorithm eigenface
 
 
 About
@@ -96,6 +100,7 @@ References
 .. [LBP+12]  *Y.M. Lui, D.S. Bolme, P.J. Phillips, J.R. Beveridge and B.A. Draper*. **Preliminary studies on the Good, the Bad, and the Ugly face recognition challenge problem**. Computer Vision and Pattern Recognition Workshops (CVPRW), pages 9-16. 2012.
 .. [GWC12]   *M. Guenther, R. Wallace and S. Marcel*. **An Open Source Framework for Standardized Comparisons of Face Recognition Algorithms**. Computer Vision - ECCV 2012. Workshops and Demonstrations, LNCS, 7585, 547-556, 2012.
 
+
 Installation
 ------------
 
@@ -104,30 +109,36 @@ To download the FaceRecLib, please go to http://pypi.python.org/pypi/facereclib,
 The FaceRecLib is a satellite package of the free signal processing and machine learning library Bob_, and some of its algorithms rely on the `CSU Face Recognition Resources`_.
 These two dependencies have to be downloaded manually, as explained in the following.
 
+
 Bob
 ...
 
 This version of the FaceRecLib relies on Bob_ version 2 or greater.
-There is no need to have a global installation of Bob_ any more.
+To install `Packages of Bob <https://github.com/idiap/bob/wiki/Packages>`_, please read the `Installation Instructions <https://github.com/idiap/bob/wiki/Installation>`_.
+For Bob_ to be able to work properly, some dependent packages are required to be installed.
+Please make sure that you have read the `Dependencies <https://github.com/idiap/bob/wiki/Dependencies>`_ for your operating system.
 
-Just go to the console and write::
+The most simple solution is to download and extract this package, go to the console and write::
 
   $ python bootstrap.py
   $ bin/buildout
 
-This will download all required packages and install them locally.
+This will download all required dependent packages and install them locally.
 If you don't want all the database packages to be downloaded, please remove the bob.db.[database] lines from the ``eggs`` section of the file **buildout.cfg** in the main directory before calling the three commands above.
+
 
 The CSU Face Recognition Resources
 ..................................
+
 Two open source algorithms are provided by the `CSU Face Recognition Resources`_, namely the LRPCA and the LDA-IR (a.k.a. CohortLDA) algorithm.
 For these algorithms, optional wrapper classes are provided in the xfacereclib.extension.CSU_ satellite package.
 By default, this package is disabled.
-To enable them, please call::
+To enable the two algorithms, please call::
 
   $ bin/buildout -c buildout-with-csu.cfg
 
 after downloading and patching the CSU resources, and updating the ``sources-dir`` in the **buildout-with-csu.cfg** file -- as explained in xfacereclib.extension.CSU_.
+
 
 Test your installation
 ......................
@@ -143,21 +154,22 @@ With other versions of Bob_, you might find some failing tests, or some errors m
 Read further
 ------------
 
-Further documentation is given in our `FaceRecLib documentation <http://pythonhosted.org/facereclib>`_.
+For further documentation on this package, please read the `Stable Version <http://pythonhosted.org/facereclib/index.html>`_ or the `Latest Version <https://www.idiap.ch/software/bob/docs/latest/idiap/facereclib/master/index.html>`_ of the documentation.
+For a list of tutorials on this or the other packages ob Bob_, or information on submitting issues, asking questions and starting discussions, please visit its website.
 
-.. note::
-  The online documentation is valid for the latest stable version of the FaceRecLib only.
+Generate a local documentation
+..............................
 
-There are several file links in the documentation, which won't work in the online documentation.
+There are several file links in the documentation, which won't work correctly in the online documentation.
 To generate the documentation locally, type::
 
-  $ bin/sphinx-build docs sphinx
+  $ bin/sphinx-build doc sphinx
   $ firefox sphinx/index.html
 
 and read further instructions on how to use this library.
 
 .. note::
-  Some links in the documentation require that the documentation is generated with ``bin/sphinx-build docs sphinx`` (see above).
+  Some links in the documentation require that the documentation is generated exactly with the command line ``bin/sphinx-build doc sphinx`` (see above).
   If you generated the documentation using another command line, please be aware that file links might not be found either.
 
 
