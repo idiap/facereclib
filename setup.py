@@ -22,9 +22,12 @@ from setuptools import setup, find_packages
 
 packages = ['facereclib'] + ['facereclib.' + p for p in find_packages('facereclib')]
 
+# Define package version
+version = open("version.txt").read().rstrip()
+
 setup(
     name='facereclib',
-    version='2.0.0a0',
+    version=version,
     description='Compare a variety of face recognition algorithms by running them on many image databases with default protocols.',
 
     url='http://github.com/idiap/facereclib',
