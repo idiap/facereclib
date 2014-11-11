@@ -75,8 +75,13 @@ Extensions
 ..........
 On top of these already pre-coded algorithms, the FaceRecLib provides an easy Python interface for implementing new image preprocessors, feature types, face recognition algorithms or database interfaces, which directly integrate into the face recognition experiment.
 Hence, after a short period of coding, researchers can compare their new invention directly with already existing algorithms in a fair manner.
+Some of this code is provided as extensions of the FaceRecLib.
 
-As a small example, we provide wrapper classes for the CSU face recognition resources [http://www.cs.colostate.edu/facerec] in the xfacereclib.extension.CSU_ package:
+The CSU Face Recognition Resources
+++++++++++++++++++++++++++++++++++
+
+As a small example, we provide wrapper classes for the CSU face recognition resources, which you can download `here <http://www.cs.colostate.edu/facerec>`__ in the xfacereclib.extension.CSU_ package.
+We have implemented wrappers for two face recognition algorithms:
 
 - Local Region PCA [PBD+11]_
 - LDA-IR (a.k.a. CohortLDA) [LBP+12]_
@@ -137,7 +142,7 @@ To enable the two algorithms, please call::
 
   $ bin/buildout -c buildout-with-csu.cfg
 
-after downloading and patching the CSU resources, and updating the ``sources-dir`` in the **buildout-with-csu.cfg** file -- as explained in xfacereclib.extension.CSU_.
+after downloading and patching the CSU resources, and updating the ``csu-dir`` in the **buildout-with-csu.cfg** file -- as explained in xfacereclib.extension.CSU_.
 
 
 Test your installation
