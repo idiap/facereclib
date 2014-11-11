@@ -118,8 +118,9 @@ class DatabaseBob (Database):
     else:
       return files
 
-  def test_files(self):
-    return self.sort(self.m_database.test_files(self.protocol, **self.all_files_options))
+  def test_files(self, groups = ['dev']):
+    """Returns the test files (i.e., enrollment and probe files) for the given groups."""
+    return self.sort(self.m_database.test_files(protocol = self.protocol, groups = groups, **self.all_files_options))
 
   def model_ids(self, group = 'dev'):
     """Returns the model ids for the given group and the current protocol."""
