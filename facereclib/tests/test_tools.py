@@ -290,8 +290,7 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_enroller(self.reference_dir('bic_enroller.hdf5'))
     # compare the resulting machines
-    new_machine = bob.learn.misc.BICMachine(tool.m_use_dffs)
-    new_machine.load(bob.io.base.HDF5File(t))
+    new_machine = bob.learn.linear.BICMachine(bob.io.base.HDF5File(t))
     self.assertTrue(tool.m_bic_machine.is_similar_to(new_machine))
     os.remove(t)
 
@@ -315,8 +314,7 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_enroller(self.reference_dir('iec_enroller.hdf5'))
     # compare the resulting machines
-    new_machine = bob.learn.misc.BICMachine(tool.m_use_dffs)
-    new_machine.load(bob.io.base.HDF5File(t))
+    new_machine = bob.learn.linear.BICMachine(bob.io.base.HDF5File(t))
     self.assertTrue(tool.m_bic_machine.is_similar_to(new_machine))
     os.remove(t)
 

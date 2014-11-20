@@ -3,7 +3,7 @@
 # Manuel Guenther <Manuel.Guenther@idiap.ch>
 
 import bob.io.base
-import bob.learn.misc
+import bob.learn.linear
 
 import numpy
 import math
@@ -46,9 +46,9 @@ class BIC (Tool):
     if subspace_dimensions is not None:
       self.m_M_I = subspace_dimensions[0]
       self.m_M_E = subspace_dimensions[1]
-      self.m_bic_machine = bob.learn.misc.BICMachine(self.m_use_dffs)
+      self.m_bic_machine = bob.learn.linear.BICMachine(self.m_use_dffs)
     else:
-      self.m_bic_machine = bob.learn.misc.BICMachine(False)
+      self.m_bic_machine = bob.learn.linear.BICMachine(False)
       self.m_M_I = None
       self.m_M_E = None
 
@@ -108,8 +108,8 @@ class BIC (Tool):
     extra_vectors = self.__trainset_for__(extra_pairs)
 
     utils.info("  -> Training BIC machine")
-    trainer = bob.learn.misc.BICTrainer(self.m_M_I, self.m_M_E) if self.m_M_I != None else bob.learn.misc.BICTrainer()
-    trainer.train(self.m_bic_machine, intra_vectors, extra_vectors)
+    trainer = bob.learn.linear.BICTrainer(self.m_M_I, self.m_M_E) if self.m_M_I != None else bob.learn.linear.BICTrainer()
+    trainer.train(intra_vectors, extra_vectors, self.m_bic_machine)
 
     # save the machine to file
     self.m_bic_machine.save(bob.io.base.HDF5File(enroller_file, 'w'))
@@ -119,7 +119,7 @@ class BIC (Tool):
     self.m_bic_machine.load(bob.io.base.HDF5File(enroller_file, 'r'))
     # to set this should not be required, but just in case
     # you re-use a trained enroller file that hat different setup of use_DFFS
-    self.m_bic_machine.use_dffs = self.m_use_dffs
+    self.m_bic_machine.use_DFFS = self.m_use_dffs
 
   def enroll(self, enroll_features):
     """Enrolls features by concatenating them"""
