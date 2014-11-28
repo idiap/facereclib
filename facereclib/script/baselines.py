@@ -123,8 +123,7 @@ def lgbphs():
   features      = 'lgbphs'
   tool          = 'lgbphs'
   grid          = 'grid'
-  preprocessing = os.path.join(config_dir, 'preprocessing', 'tan_triggs_with_offset.py')
-  return (features, tool, grid, preprocessing)
+  return (features, tool, grid)
 
 def gmm():
   """UBM/GMM modelling of DCT block features"""

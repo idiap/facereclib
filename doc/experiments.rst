@@ -201,7 +201,7 @@ Face Cropping Parameters
 * ``color_channel``: Use the specified color channel of the colored image.
   Options are ``'gray'``, ``'red'``, ``'green'``, and ``'blue'``, where ``'gray'`` is the default.
   If you want a different color channel, please implement it in the ``gray_channel`` function of the `facereclib/utils/__init__.py <file:../facereclib/utils/__init__.py>`_ file.
-* ``offset``: If your feature extraction step needs some surrounding information of the image (e.g. the ``LGBPHS`` feature extractor reduces the image size), you can add an offset here, so that the actual returned image will be larger.
+* ``offset``: If your feature extraction step needs some surrounding information of the image, you can add an offset here, so that the actual returned image will be larger.
 
 Preprocessor Classes
 ~~~~~~~~~~~~~~~~~~~~

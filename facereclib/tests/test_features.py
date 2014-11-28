@@ -125,7 +125,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
     # in this test, we use a smaller setup of the LGBPHS features
     extractor = facereclib.features.LGBPHS(
-        block_size = 10,
+        block_size = 8,
         block_overlap = 0,
         gabor_directions = 4,
         gabor_scales = 2,
@@ -138,7 +138,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
     # generate new non-sparse extractor
     extractor = facereclib.features.LGBPHS(
-        block_size = 10,
+        block_size = 8,
         block_overlap = 0,
         gabor_directions = 4,
         gabor_scales = 2,
@@ -149,7 +149,7 @@ class FeatureExtractionTest(unittest.TestCase):
 
     # generate new graph without phases
     extractor = facereclib.features.LGBPHS(
-        block_size = 10,
+        block_size = 8,
         block_overlap = 0,
         gabor_directions = 4,
         gabor_scales = 2,

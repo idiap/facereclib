@@ -41,12 +41,6 @@ class INormLBP (FaceCrop):
   ):
 
     self.m_radius = radius
-    if cropped_image_size is not None:
-      assert len(cropped_image_size) == 2
-      cropped_image_size = tuple([pos + 2*radius for pos in cropped_image_size])
-    if cropped_positions is not None:
-      for key in cropped_positions:
-        cropped_positions[key] = tuple([pos + radius for pos in cropped_positions[key]])
 
     # call base class constructor
     FaceCrop.__init__(
@@ -65,9 +59,9 @@ class INormLBP (FaceCrop):
     )
 
     # lbp extraction
-    self.m_lgb_extractor = bob.ip.base.LBP(8, radius, is_circular, compare_to_average, add_average_bit, is_uniform, is_rotation_invariant, 'regular')
+    self.m_lgb_extractor = bob.ip.base.LBP(8, radius, is_circular, compare_to_average, add_average_bit, is_uniform, is_rotation_invariant, 'regular', 'wrap')
     if self.m_perform_image_cropping:
-      self.m_i_norm_image = numpy.ndarray([size - 2*radius for size in self.m_cropped_image.shape], numpy.uint16)
+      self.m_i_norm_image = numpy.ndarray(self.m_cropped_image.shape, numpy.uint16)
     else:
       self.m_i_norm_image = None
 
@@ -76,7 +70,7 @@ class INormLBP (FaceCrop):
   def i_norm(self, image):
     """Computes the I-Norm-LBP normalization on the given image"""
     # check the shape of the image and correct it if needed
-    desired_shape = tuple([size - 2*self.m_radius for size in image.shape])
+    desired_shape = image.shape
     if self.m_i_norm_image.shape != desired_shape:
       self.m_i_norm_image = numpy.ndarray(desired_shape, numpy.uint16)
 
@@ -96,7 +90,7 @@ class INormLBP (FaceCrop):
     if self.m_perform_image_cropping and annotations != None:
       # set the positions that were masked during face cropping to 0; respect the size change of the two images!
       # I am not sure if 0 is the right value here...
-      i_norm_image[self.m_cropped_mask[self.m_radius:-self.m_radius, self.m_radius:-self.m_radius] == False] = 0
+      i_norm_image[self.m_cropped_mask == False] = 0
 
     # save the image to file
     return i_norm_image.astype(numpy.float64)

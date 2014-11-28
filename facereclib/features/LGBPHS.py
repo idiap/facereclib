@@ -93,7 +93,8 @@ class LGBPHS (Extractor):
         to_average = lbp_compare_to_average,
         add_average_bit = lbp_add_average,
         uniform = lbp_uniform,
-        rotation_invariant = lbp_rotation_invariant
+        rotation_invariant = lbp_rotation_invariant,
+        border_handling = 'wrap'
     )
 
     self.m_split = split_histogram
