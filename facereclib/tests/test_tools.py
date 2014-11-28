@@ -135,7 +135,7 @@ class ToolTest(unittest.TestCase):
 
     # score
     sim = tool.score(model, feature2)
-    self.assertAlmostEqual(sim, 33600.0)
+    self.assertAlmostEqual(sim, 40960.)
     self.assertAlmostEqual(tool.score_for_multiple_probes(model, [feature2, feature2]), sim)
 
 
