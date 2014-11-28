@@ -203,7 +203,7 @@ Additionally, your tool may need to project the features before they can be used
 
 And once more, if the projected feature is not of type ``numpy.ndarray``, overwrite the methods:
 
-* ``write_feature(feature, feature_file)``: Writes the feature (as returned by the ``project`` function) to file.
+* ``save_feature(feature, feature_file)``: Writes the feature (as returned by the ``project`` function) to file.
 * ``read_feature(feature_file) -> feature``: Reads and returns the feature (as written by the ``write_feature`` function).
 
 Some tools also require to train the model enroller.
@@ -221,7 +221,7 @@ Again, simply overwrite the functions:
 By default, it is assumed that both the models and the probe features are of type :py:class:`numpy.ndarray`.
 If your ``score`` function expects models and probe features to be of a different type, you should overwrite the functions:
 
-* ``write_model(self, model, model_file)``: writes the model (as returned by the ``enroll`` function)
+* ``save_model(self, model, model_file)``: writes the model (as returned by the ``enroll`` function)
 * ``read_model(self, model_file) -> model``: reads the model (as written by the ``write_model`` function) from file.
 * ``read_probe(self, probe_file) -> feature``: reads the probe feature from file.
 

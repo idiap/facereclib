@@ -96,14 +96,14 @@ The algorithms present an (incomplete) set of state-of-the-art face recognition 
 * ``plda``: *Probabilistic LDA* (PLDA) [Pri07]_ is a probabilistic generative version of the LDA, in its scalable formulation of [ESM+13]_.
   Here, we also apply it on pixel-based representations of the image, though also other features should be possible.
 
-* ``bic``: In the *Bayesian Intrapersonal/Extrapersonal Classifier* (BIC) [MWP98]_, a pixel-based difference image is classified to be intrapersonal (i.e., both images are from the same person) or extrapersonal.
+* ``bic``: In the *Bayesian Intrapersonal/Extrapersonal Classifier* (BIC) [MWP98]_, a gabor-grid-graph based similarity vector is classified to be intrapersonal (i.e., both images are from the same person) or extrapersonal, as explained in [GW09]_.
 
 * ``lrpca``: In Local Region PCA [PBD+11]_, the face is sub-divided into local regions and a PCA is performed for each local region.
 
 * ``lda_ir``: The LDA-IR (a.k.a. CohortLDA [LBP+12]_) extracts color information from images after, and computes a PCA+LDA projection on two color layers.
 
 .. note::
-  The ``plda`` and ``bic`` algorithms are currently under construction and the setup is not yet useful.
+  The ``plda`` algorithm is currently under construction and the setup is not yet useful.
 
 .. note::
   The ``lrpca`` and ``lda_ir`` algorithms are taken from the `CSU Face Recognition Resources`_ and are only available when ``xfacereclib.extension.CSU`` and ``PythonFaceEvaluation`` is enabled (e.g. by using the `buildout-with-csu.cfg <file:../buildout-with-csu.cfg>`_ during the buildout step), see :ref:`installation` for details.
@@ -128,11 +128,11 @@ The resulting files will be **ROC.pdf**, **DET.pdf** and **CMC.pdf**, and the HT
 
 For the `AT&T database`_ the results should be as follows:
 
-.. image:: ROC.png
+.. image:: img/ROC.png
   :width: 35%
-.. image:: DET.png
+.. image:: img/DET.png
   :width: 27%
-.. image:: CMC.png
+.. image:: img/CMC.png
   :width: 35%
 
 
@@ -141,7 +141,7 @@ For the `AT&T database`_ the results should be as follows:
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
   |  eigenface  |     lda     |  gaborgraph |    lgbphs   |     gmm     |     isv     |    plda     |     bic     |
   +=============+=============+=============+=============+=============+=============+=============+=============+
-  |   8.237%    |   10.000%   |   6.211%    |     8.947%  |    0.658%   |    0.053%   |   25.342%   |   41.711%   |
+  |   8.237%    |   10.000%   |   6.211%    |     8.947%  |    0.658%   |    0.053%   |   25.342%   |    3.526%   |
   +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
 
 

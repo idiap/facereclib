@@ -81,7 +81,7 @@ Basically, you can specify your algorithm and its configuration in three differe
 
      .. code-block:: sh
 
-       $ bin/faceverify.py --tool "facereclib.tools.BIC(distance_function=numpy.subtract)" --imports facereclib numpy
+       $ bin/faceverify.py --tool "facereclib.tools.BIC(comparison_function=numpy.subtract)" --imports facereclib numpy
 
 
 Of course, you can mix the ways, how you define command line options.
@@ -331,10 +331,12 @@ Here is a list of the most important algorithms and their parameters:
   .. TODO::
     Document the remaining parameters of the PLDA
 
-* :py:class:`facereclib.tools.BIC`: Computes the Bayesian intrapersonal/extrapersonal classifier (:py:class:`bob.learn.misc.BICTrainer`).
+* :py:class:`facereclib.tools.BIC`: Computes the Bayesian intrapersonal/extrapersonal classifier (:py:class:`bob.learn.linear.BICTrainer`).
+  In this generic implementation, any distance or similarity vector that results as a comparison of two images can be used.
   Currently two different versions are implemented: One with [MWP98]_ and one without (a generalization of [GW09]_) subspace projection of the features.
+  A simple configuration file can be found in `facereclib/configurations/tools/bic.py <file:../facereclib/configurations/tools/bic.py>`_, while `facereclib/configurations/tools/bic_jets.py <file:../facereclib/configurations/tools/bic_jets.py>`_ contains a more complex setup including the definition of a particular ``comparison_function``.
 
-  - ``distance_function``: The function to compare the features in the original feature space.
+  - ``comparison_function``: The function to compare the features in the original feature space.
     For a given pair of features, this function is supposed to compute a vector of similarity (or distance) values.
     In the easiest case, it just computes the element-wise difference of the feature vectors, but more difficult functions can be applied, and the function might be specialized for the features you put in.
   - ``maximum_training_pair_count``: **(optional)** Limit the number of training image pairs to the given value.
@@ -343,6 +345,8 @@ Here is a list of the most important algorithms and their parameters:
     If omitted, no subspace projection is performed (cf. [GW09]_).
   - ``uses_dffs``: Use the *Distance From Feature Space* (DFFS) (cf. [MWP98]_) during scoring.
     This flag is only valid when subspace projection is performed, and you should use this flag with care!
+  - ``load_function``: A function to load a feature from :py:class:`bob.io.base.HDF5File`. Default: :py:func:`facereclib.utils.load`.
+  - ``save_function``: A function to save a feature to :py:class:`bob.io.base.HDF5File`. Default: :py:func:`facereclib.utils.save`.
 
 * :py:class:`facereclib.tools.GaborJets`: Computes a comparison of Gabor jets (:py:class:`bob.ip.gabor.Similarity`).
 

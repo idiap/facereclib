@@ -59,6 +59,7 @@ def command_line_arguments(command_line_parameters):
   parser.add_argument('-x', '--cllr', action = 'store_true', help = "If given, Cllr and minCllr will be computed.")
   parser.add_argument('-m', '--mindcf', action = 'store_true', help = "If given, minDCF will be computed.")
   parser.add_argument('--cost', default=0.99,  help='Cost for FAR in minDCF')
+  parser.add_argument('-r', '--rr', action = 'store_true', help = "If given, the Recognition Rate will be computed.")
   parser.add_argument('-l', '--legends', nargs='+', help = "A list of legend strings used for ROC, CMC and DET plots; if given, must be the same number than --dev-files.")
   parser.add_argument('-F', '--legend-font-size', type=int, default=18, help = "Set the font size of the legends.")
   parser.add_argument('-P', '--legend-position', type=int, help = "Set the font size of the legends.")
@@ -257,13 +258,14 @@ def main(command_line_parameters=None):
       pdf.close()
 
 
-  if args.cmc:
-    utils.info("Computing CMC curves on the development " + ("and on the evaluation set" if args.eval_files else "set"))
+  if args.cmc or args.rr:
+    utils.info("Loading CMC data on the development " + ("and on the evaluation set" if args.eval_files else "set"))
     cmc_parser = {'4column' : bob.measure.load.cmc_four_column, '5column' : bob.measure.load.cmc_five_column}[args.parser]
     cmcs_dev = [cmc_parser(os.path.join(args.directory, f)) for f in args.dev_files]
     if args.eval_files:
       cmcs_eval = [cmc_parser(os.path.join(args.directory, f)) for f in args.eval_files]
 
+  if args.cmc:
     utils.info("Plotting CMC curves to file '%s'" % args.cmc)
     # create a multi-page PDF for the ROC curve
     pdf = PdfPages(args.cmc)
@@ -272,3 +274,14 @@ def main(command_line_parameters=None):
     if args.eval_files:
       pdf.savefig(_plot_cmc(cmcs_eval, colors, args.legends if args.legends else args.eval_files, "CMC curve for evaluation set", args.legend_font_size, args.legend_position))
     pdf.close()
+
+  if args.rr:
+    utils.info("Computing recognition rate on the development " + ("and on the evaluation set" if args.eval_files else "set"))
+    for i in range(len(cmcs_dev)):
+      rr = bob.measure.recognition_rate(cmcs_dev[i])
+      print("The Recognition Rate of the development set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], rr * 100.))
+      if args.eval_files:
+        rr = bob.measure.recognition_rate(cmcs_eval[i])
+        print("The Recognition Rate of the development set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.eval_files[i], rr * 100.))
+
+

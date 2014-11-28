@@ -61,7 +61,7 @@ def command_line_arguments(command_line_parameters):
   parser.add_argument('-q', '--dry-run', action = 'store_true', help = 'Just print the commands, but do not execute them.')
 
   # - evaluate the algorithm (after it has finished)
-  parser.add_argument('-e', '--evaluate', nargs='+', choices = ('EER', 'HTER', 'ROC', 'DET', 'CMC'), help = 'Evaluate the results of the algorithms (instead of running them) using the given evaluation techniques.')
+  parser.add_argument('-e', '--evaluate', nargs='+', choices = ('EER', 'HTER', 'ROC', 'DET', 'CMC', 'RR'), help = 'Evaluate the results of the algorithms (instead of running them) using the given evaluation techniques.')
 
   # - other parameters that are passed to the underlying script
   parser.add_argument('parameters', nargs = argparse.REMAINDER, help = 'Parameters directly passed to the face verification script.')
@@ -149,10 +149,11 @@ def plda():
 
 def bic():
   """The Bayesian Intrapersonal/Extrapersonal classifier"""
-  features      = 'linearize'
-  tool          = 'bic'
-  grid          = 'demanding'
-  return (features, tool, grid)
+  features      = 'grid-graph'
+  tool          = 'bic-jets'
+  grid          = 'grid'
+  preprocessing = 'face-crop'
+  return (features, tool, grid, preprocessing)
 
 def lrpca():
   """Local Region PCA"""
@@ -249,6 +250,8 @@ def main(command_line_parameters = sys.argv):
       base_call += ['--det', 'DETxxx.pdf']
     if 'CMC' in args.evaluate:
       base_call += ['--cmc', 'CMCxxx.pdf']
+    if 'RR' in args.evaluate:
+      base_call += ['--rr']
     if args.verbose:
       base_call += ['-' + 'v'*args.verbose]
 
@@ -316,7 +319,7 @@ def main(command_line_parameters = sys.argv):
         command.extend(['--grid', grid])
 
       if args.parallel:
-        command.extend(['--grid', 'facereclib.utils.GridParameters("local",number_of_parallel_processes=%d)'%args.parallel])
+        command.extend(['--grid', 'facereclib.utils.GridParameters("local",number_of_parallel_processes=%d)'%args.parallel, '--run-local-scheduler'])
 
       # compute ZT-norm if the database provides this setup
       if has_zt_norm and args.zt_norm:

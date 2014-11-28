@@ -167,9 +167,8 @@ class Database:
       # List of Filesets: do not remove duplicates
       return [[f.make_path(directory, extension) for f in file_set.files] for file_set in files]
     else:
-      # List of files, remove duplicate entries
-      known = set()
-      return [f.make_path(directory, extension) for f in files if f.path not in known and not known.add(f.path)]
+      # List of files, do not remove duplicates
+      return [f.make_path(directory, extension) for f in files]
 
   def original_file_names(self, files):
     """Returns the full path of the original data of the given File objects."""

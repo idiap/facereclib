@@ -19,10 +19,12 @@ class BIC (Tool):
 
   def __init__(
       self,
-      distance_function, # the function to be used to compare two features; this highly depends on the type of features that are used
+      comparison_function, # the function to be used to compare two features; this highly depends on the type of features that are used
       maximum_training_pair_count = None,  # if set, limit the number of training pairs to the given number in a non-random manner
       subspace_dimensions = None, # if set as a pair (intra_dim, extra_dim), PCA subspace truncation for the two classes is performed
       uses_dffs = False, # use the distance from feature space; only valid when PCA truncation is enabled; WARNING: uses this flag with care
+      load_function = utils.load,
+      save_function = utils.save,
       **kwargs # parameters directly sent to the base class
   ):
 
@@ -31,16 +33,20 @@ class BIC (Tool):
         self,
         requires_enroller_training = True,
 
-        distance_function = str(distance_function),
+        comparison_function = str(comparison_function),
         maximum_training_pair_count = maximum_training_pair_count,
         subspace_dimensions = subspace_dimensions,
         uses_dffs = uses_dffs,
+        load_function=str(load_function),
+        save_function=str(save_function),
 
         **kwargs
     )
 
     # set up the BIC tool
-    self.m_distance_function = distance_function
+    self.m_comparison_function = comparison_function
+    self.m_load_function = load_function
+    self.m_save_function = save_function
     self.m_maximum_pair_count = maximum_training_pair_count
     self.m_use_dffs = uses_dffs
     if subspace_dimensions is not None:
@@ -55,11 +61,8 @@ class BIC (Tool):
 
   def __compare__(self, feature_1, feature_2):
     """Computes a vector of similarities"""
-    assert feature_1.shape == feature_2.shape
-    sim = numpy.ndarray((feature_1.shape[0],), dtype = numpy.float64)
-    for i in range(feature_1.shape[0]):
-      sim[i] = self.m_distance_function(feature_1[i], feature_2[i])
-    return sim
+    return self.m_comparison_function(feature_1, feature_2)
+
 
   def __intra_extra_pairs__(self, train_features):
     """Computes intrapersonal and extrapersonal pairs of features from given training files"""
@@ -90,10 +93,11 @@ class BIC (Tool):
 
     return (intra_pairs, extra_pairs)
 
+
   def __trainset_for__(self, pairs):
     """Computes the array containing the comparison results for the given set of image pairs."""
-    comparison_results = numpy.vstack([self.__compare__(f1, f2) for (f1, f2) in pairs])
-    return comparison_results
+    return numpy.vstack([self.__compare__(f1, f2) for (f1, f2) in pairs])
+
 
   def train_enroller(self, train_features, enroller_file):
     """Trains the IEC Tool, i.e., computes intrapersonal and extrapersonal subspaces"""
@@ -114,6 +118,7 @@ class BIC (Tool):
     # save the machine to file
     self.m_bic_machine.save(bob.io.base.HDF5File(enroller_file, 'w'))
 
+
   def load_enroller(self, enroller_file):
     """Reads the intrapersonal and extrapersonal mean and variance values"""
     self.m_bic_machine.load(bob.io.base.HDF5File(enroller_file, 'r'))
@@ -121,16 +126,39 @@ class BIC (Tool):
     # you re-use a trained enroller file that hat different setup of use_DFFS
     self.m_bic_machine.use_DFFS = self.m_use_dffs
 
+
   def enroll(self, enroll_features):
     """Enrolls features by concatenating them"""
-    shape = list(enroll_features[0].shape)
-    shape.insert(0,len(enroll_features))
-    model = numpy.ndarray(tuple(shape), dtype = numpy.float64)
+    return enroll_features
 
-    for i in range(len(enroll_features)):
-      model[i] = enroll_features[i]
 
+  def save_model(self, model, model_file):
+    """Writes all features of the model into one HDF5 file, using the ``save_function`` specified in the constructor."""
+    hdf5 = bob.io.base.HDF5File(model_file, "w")
+    for i, f in enumerate(model):
+      hdf5.create_group("Feature%d" % i)
+      hdf5.cd("Feature%d" % i)
+      self.m_save_function(f, hdf5)
+      hdf5.cd("..")
+
+
+  def read_model(self, model_file):
+    """Loads all features of the model from the HDF5 file, using the ``load_function`` specified in the constructor."""
+    hdf5 = bob.io.base.HDF5File(model_file)
+    i = 0
+    model = []
+    while hdf5.has_group("Feature%d" % i):
+      hdf5.cd("Feature%d" % i)
+      model.append(self.m_load_function(hdf5))
+      hdf5.cd("..")
+      i += 1
     return model
+
+
+  def read_probe(self, probe_file):
+    """Loads the probe feature from file, using the ``load_function`` specified in the constructor."""
+    return self.m_load_function(bob.io.base.HDF5File(probe_file))
+
 
   def __iec_score__(self, feature_1, feature_2):
     """Computes the IEC score for two features"""
@@ -143,4 +171,4 @@ class BIC (Tool):
   def score(self, model, probe):
     """Computes the IEC score for the given model and probe pair"""
     # compute average score for the models
-    return self.m_model_fusion_function([self.__iec_score__(model[i], probe) for i in range(model.shape[0])])
+    return self.m_model_fusion_function([self.__iec_score__(model[i], probe) for i in range(len(model))])

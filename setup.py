@@ -96,6 +96,7 @@ setup(
       # registered face recognition algorithms
       'facereclib.tool': [
         'bic               = facereclib.configurations.tools.bic:tool',
+        'bic-jets          = facereclib.configurations.tools.bic_jets:tool',
         'gabor-jet         = facereclib.configurations.tools.gabor_jet:tool',
         'isv               = facereclib.configurations.tools.isv:tool',
         'ivector           = facereclib.configurations.tools.ivector:tool',
