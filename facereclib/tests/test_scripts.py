@@ -448,8 +448,6 @@ class ScriptTest (unittest.TestCase):
     os.rmdir(test_dir)
 
 
-
-
   def test16_collect_results(self):
     # simply test that the collect_results script works
     test_dir = tempfile.mkdtemp(prefix='frltest_')
@@ -470,10 +468,10 @@ class ScriptTest (unittest.TestCase):
         '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-f', 'lgbphs',
         '-b', 'test_p',
-        '-s', test_dir,
+        '-s', ".",
+        '-T', test_dir,
+        '-R', test_dir,
         '--', '--dry-run',
-        '--temp-directory', test_dir,
-        '--user-directory', test_dir
     ]
     from facereclib.script.parameter_test import main
     main(parameters)
@@ -490,11 +488,11 @@ class ScriptTest (unittest.TestCase):
         '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-f', 'lgbphs',
         '-b', 'test_p',
-        '-s', test_dir,
+        '-s', ".",
+        '-T', test_dir,
+        '-R', test_dir,
         '-g', 'grid',
         '--', '--dry-run',
-        '--temp-directory', test_dir,
-        '--user-directory', test_dir
     ]
     main(parameters)
 

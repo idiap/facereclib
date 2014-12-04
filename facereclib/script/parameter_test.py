@@ -65,6 +65,12 @@ def command_line_options(command_line_parameters):
   parser.add_argument('-x', '--executable',
       help = '(optional) The executable to be executed instead of facereclib/script/faceverify.py (taken *always* from the facereclib, not from the bin directory)')
 
+  parser.add_argument('-R', '--result-directory', default = "results",
+      help = 'The directory where to write the resulting score files to.')
+
+  parser.add_argument('-T', '--temp-directory', default = "temp",
+      help = 'The directory where to write temporary files into.')
+
   parser.add_argument('-i', '--preprocessed-data-directory',
       help = '(optional) The directory where to read the already preprocessed data from (no preprocessing is performed in this case).')
 
@@ -157,6 +163,7 @@ def create_command_line(replacements):
   call = [sys.argv[0], '--database', args.database]
   if args.protocol:
     call += ['--protocol', args.protocol]
+  call += ['--temp-directory', args.temp_directory, '--result-directory', args.result_directory]
   return call + [
       '--preprocessing', replace(configuration.preprocessor, values),
       '--features', replace(configuration.feature_extractor, values),
