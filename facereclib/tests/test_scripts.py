@@ -468,7 +468,7 @@ class ScriptTest (unittest.TestCase):
         '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-f', 'lgbphs',
         '-b', 'test_p',
-        '-s', ".",
+        '-s', '.',
         '-T', test_dir,
         '-R', test_dir,
         '--', '--dry-run',
@@ -488,7 +488,8 @@ class ScriptTest (unittest.TestCase):
         '-d', os.path.join(base_dir, 'scripts', 'atnt_Test.py'),
         '-f', 'lgbphs',
         '-b', 'test_p',
-        '-s', ".",
+        '-i', '.',
+        '-s', '.',
         '-T', test_dir,
         '-R', test_dir,
         '-g', 'grid',
@@ -498,7 +499,7 @@ class ScriptTest (unittest.TestCase):
 
     # number of jobs should be 12
     self.assertEqual(facereclib.script.parameter_test.task_count, 12)
-    # number of jobs in the grid: 42 (including best possible re-use of files)
-    self.assertEqual(facereclib.script.parameter_test.job_count, 42)
+    # number of jobs in the grid: 36 (including best possible re-use of files; minus preprocessing)
+    self.assertEqual(facereclib.script.parameter_test.job_count, 36)
 
     shutil.rmtree(test_dir)

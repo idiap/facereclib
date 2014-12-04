@@ -207,7 +207,7 @@ def directory_parameters(directories):
   # add directory parameters
   # - preprocessing
   if args.preprocessed_data_directory:
-    parameters.extend(['--preprocessed-data-directory', args.preprocessed_data_directory] + skips[1])
+    parameters.extend(['--preprocessed-data-directory', os.path.join(args.preprocessed_data_directory, join_dirs(0, 'preprocessed'))] + skips[1])
   else:
     parameters.extend(['--preprocessed-data-directory', join_dirs(0, 'preprocessed')])
 
@@ -254,7 +254,6 @@ def check_requirements(replacements):
 
 def execute_dependent_task(command_line, directories, dependency_level):
   # add other command line arguments
-  command_line.extend(args.parameters[1:])
   if args.grid:
     command_line.extend(['--grid', args.grid])
   if args.verbose:
@@ -266,6 +265,9 @@ def execute_dependent_task(command_line, directories, dependency_level):
   # add skip parameters according to the dependency level
   for i in range(1, dependency_level+1):
     command_line.extend(skips[i])
+
+  if args.parameters is not None:
+    command_line.extend(args.parameters[1:])
 
   # write the command to file?
   if args.write_commands:
