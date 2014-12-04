@@ -296,7 +296,7 @@ def execute_dependent_task(command_line, directories, dependency_level):
       utils.info("Skipping execution of %s since result directory '%s' already exists" % (utils.command_line(command_line), result_dir))
 
   except Exception as e:
-    utils.error("The execution of job was rejected!\n%s\n Reason:\n%s"%(" ".join(command_line), e))
+    utils.error("The execution of job was rejected!\n%s\n Reason:\n%s"%(utils.command_line(command_line), e))
 
   # some statistics
   global job_count, task_count
