@@ -14,18 +14,11 @@ class Configuration:
   """This class stores the basic configuration of the experiments.
   This configuration includes directories and files that are used."""
 
-  def __init__(self, args, database_name, use_local_files):
+  def __init__(self, args):
     """Creates the default configuration based on the command line options."""
     # add command line based arguments
-    if args.user_directory:
-      self.user_directory = os.path.join(args.user_directory, args.sub_directory)
-    else:
-      self.user_directory = os.path.join("results", args.sub_directory)
-
-    if args.temp_directory:
-      self.temp_directory = os.path.join(args.temp_directory, args.sub_directory)
-    else:
-      self.temp_directory = os.path.join("temp", args.sub_directory)
+    self.user_directory = os.path.join(args.user_directory, args.sub_directory)
+    self.temp_directory = os.path.join(args.temp_directory, args.sub_directory)
 
     self.extractor_file = os.path.join(self.temp_directory, args.extractor_file)
     self.projector_file = os.path.join(self.temp_directory, args.projector_file)
@@ -55,13 +48,11 @@ class ToolChainExecutor:
     self.m_tool = utils.resources.load_resource(' '.join(args.tool), 'tool', imports = args.imports)
 
     # load configuration files specified on command line
-    use_local_files = True
     if args.grid:
       self.m_grid = utils.resources.load_resource(' '.join(args.grid), 'grid', imports = args.imports)
-      use_local_files = self.m_grid.is_local()
 
     # generate configuration
-    self.m_configuration = Configuration(args, self.m_database.name, use_local_files)
+    self.m_configuration = Configuration(args)
 
     utils.set_verbosity_level(args.verbose)
 
