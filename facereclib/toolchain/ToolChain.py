@@ -229,6 +229,7 @@ class ToolChain:
         tool.load_projector(str(self.m_file_selector.projector_file))
         # training models
         train_files = self.m_file_selector.training_list('projected' if tool.use_projected_features_for_enrollment else 'features', 'train_enroller', arrange_by_client = True)
+        utils.info("- Enrollment: loading %d enroller training files" %len(train_files))
         train_features = self.__read_features_by_client__(train_files, reader)
 
         # perform training

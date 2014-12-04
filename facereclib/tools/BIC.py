@@ -103,6 +103,7 @@ class BIC (Tool):
     """Trains the IEC Tool, i.e., computes intrapersonal and extrapersonal subspaces"""
 
     # compute intrapersonal and extrapersonal pairs
+    utils.info("  -> Computing pairs")
     intra_pairs, extra_pairs = self.__intra_extra_pairs__(train_features)
 
     # train the BIC Machine with these pairs
