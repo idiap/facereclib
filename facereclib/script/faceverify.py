@@ -495,12 +495,6 @@ def parse_args(command_line_parameters):
     for skip in skip_choices:
       if skip not in args.execute_only:
         exec("args.skip_%s = True" % (skip.replace("-", "_")))
-
-  if args.user_directory is None:
-    args.user_directory = "results"
-  if args.temp_directory is None:
-    args.temp_directory = "temp"
-
   return args
 
 
