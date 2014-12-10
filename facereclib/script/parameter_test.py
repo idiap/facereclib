@@ -24,6 +24,9 @@ fake_job_id = 0
 global job_count
 # the total number of experiments run
 global task_count
+# the directories, where score files will be generated
+global score_directories
+
 
 # The different steps of the processing chain.
 # Use these keywords to change parameters of the specific part
@@ -85,6 +88,9 @@ def command_line_options(command_line_parameters):
 
   parser.add_argument('-j', '--skip-when-existent', action='store_true',
       help = 'Skip the submission/execution of jobs when the result directory already exists')
+
+  parser.add_argument('-N', '--replace-variable',
+      help = 'Use the given variable instead of the "replace" keyword in the configuration file')
 
   parser.add_argument('parameters', nargs = argparse.REMAINDER,
       help = "Parameters directly passed to the face verify script. Use -- to separate this parameters from the parameters of this script. See 'bin/faceverify.py --help' for a complete list of options.")
@@ -222,12 +228,15 @@ def directory_parameters(directories):
   # - model enrollment
   # TODO: other parameters for other scripts?
   parameters.extend(['--models-directories', join_dirs(3, 'N-Models'), join_dirs(3, 'T-Models')])
-  parameters.extend(['--enroller-file', join_dirs(3, 'Enroler.hdf5')])
+  parameters.extend(['--enroller-file', join_dirs(3, 'Enroller.hdf5')])
 
   # - scoring
   parameters.extend(['--score-sub-directory', join_dirs(4, 'scores')])
 
   parameters.extend(['--sub-directory', args.sub_directory])
+
+  global score_directories
+  score_directories.append(join_dirs(4, 'scores'))
 
   # grid database
   if args.grid:
@@ -296,7 +305,8 @@ def execute_dependent_task(command_line, directories, dependency_level):
     if not args.skip_when_existent or not os.path.exists(result_dir):
       # get the command line parameter for the result directory
       if args.dry_run:
-        print ("Would have executed job", utils.command_line(command_line), "with dependencies", dependencies)
+        if args.verbose:
+          print ("Would have executed job", utils.command_line(command_line), "with dependencies", dependencies)
       else:
         # execute the face verification experiment
         global fake_job_id
@@ -362,10 +372,11 @@ def create_recursive(replace_dict, step_index, directories, dependency_level, ke
 def main(command_line_parameters = sys.argv):
   """Main entry point for the parameter test. Try --help to see the parameters that can be specified."""
 
-  global task_count, job_count, job_ids
+  global task_count, job_count, job_ids, score_directories
   job_count = 0
   task_count = 0
   job_ids = {}
+  score_directories = []
 
   command_line_options(command_line_parameters[1:])
 
@@ -379,6 +390,9 @@ def main(command_line_parameters = sys.argv):
     configuration.feature_extractor = args.features
   if args.tool:
     configuration.tool = args.tool
+
+  if args.replace_variable is not None:
+    exec("configuration.replace = configuration.%s" % args.replace_variable)
 
   for attribute in ('preprocessor', 'feature_extractor', 'tool'):
     if not hasattr(configuration, attribute):
@@ -407,6 +421,8 @@ def main(command_line_parameters = sys.argv):
 
   # finally, write some information about the
   utils.info("The number of executed tasks is: %d, which are split up into %d jobs that are executed in the grid" %(task_count, job_count))
+
+  return score_directories
 
 
 if __name__ == "__main__":
