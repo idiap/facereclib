@@ -21,11 +21,10 @@ before_install:
 - sudo apt-get install -qq --force-yes dvipng texlive-latex-base texlive-latex-extra texlive-math-extra texlive-latex-recommended texlive-fonts-recommended
 - sudo apt-get install -qq --force-yes libatlas-dev libatlas-base-dev liblapack-dev
 - if [ -n "${NUMPYSPEC}" ]; then sudo apt-get install -qq gfortran; fi
-- if [ -n "${NUMPYSPEC}" ]; then pip install --upgrade pip setuptools; fi
 - if [ -n "${NUMPYSPEC}" ]; then pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel numpy$NUMPYSPEC; fi
-- pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel scipy$SCIPYSPEC matplotlib==1.3.0 sphinx nose==1.3.0 jinja2==2.6 pygments==1.6 coveralls setuptools==7.0
+- pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel scipy$SCIPYSPEC matplotlib==1.3.1 sphinx nose==1.3.0 jinja2==2.6 pygments==1.6 coveralls
 install:
-- python bootstrap.py
+- python bootstrap-buildout.py
 - ./bin/buildout buildout:debug=false -c develop.cfg
 script:
 - ./bin/python -c 'from facereclib import get_config; print(get_config())'
