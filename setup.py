@@ -79,7 +79,6 @@ setup(
         'inorm-lbp         = facereclib.configurations.preprocessing.inorm_lbp:preprocessor',
         'self-quotient     = facereclib.configurations.preprocessing.self_quotient:preprocessor',
         'tan-triggs        = facereclib.configurations.preprocessing.tan_triggs:preprocessor',
-        'audio-preprocessor= facereclib.configurations.preprocessing.audio_preprocessor:preprocessor',
       ],
 
       # registered feature extractors
@@ -90,7 +89,6 @@ setup(
         'lgbphs            = facereclib.configurations.features.lgbphs:feature_extractor',
         'linearize         = facereclib.configurations.features.linearize:feature_extractor',
         'sift              = facereclib.configurations.features.sift_keypoints:feature_extractor',
-        'cepstral          = facereclib.configurations.features.cepstral:feature_extractor',
       ],
 
       # registered face recognition algorithms

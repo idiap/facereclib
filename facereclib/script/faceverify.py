@@ -436,14 +436,14 @@ class ToolChainExecutorZT (ToolChainExecutor.ToolChainExecutor):
       raise ValueError("The given subtask '%s' could not be processed. THIS IS A BUG. Please report this to the authors." % self.m_args.sub_task)
 
 
-def parse_args(command_line_parameters):
-  """This function parses the given options (which by default are the command line options)."""
+def parse_args(command_line_parameters, exclude_resources_from = []):
+  """This function parses the given options (which by default are the command line options). If exclude_resources_from is specified (as a list), the resources from the given packages are not listed in the help message."""
   # set up command line parser
   parser = argparse.ArgumentParser(description=__doc__,
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   # add the arguments required for all tool chains
-  config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorZT.required_command_line_options(parser)
+  config_group, dir_group, file_group, sub_dir_group, other_group, skip_group = ToolChainExecutorZT.required_command_line_options(parser, exclude_resources_from)
 
   config_group.add_argument('-P', '--protocol', metavar='PROTOCOL',
       help = 'Overwrite the protocol that is stored in the database by the given one (might not by applicable for all databases).')
@@ -584,4 +584,3 @@ def main(command_line_parameters = sys.argv):
 
 if __name__ == "__main__":
   main()
-

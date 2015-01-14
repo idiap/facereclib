@@ -59,9 +59,9 @@ def read_config_file(file, keyword = None):
 def _get_entry_points(keyword):
   return  [entry_point for entry_point in pkg_resources.iter_entry_points('facereclib.' + keyword)]
 
-def resource_keys(keyword):
+def resource_keys(keyword, exclude_packages=[]):
   """Reads and returns all resources that are registered with the given keyword."""
-  return sorted([entry_point.name for entry_point in _get_entry_points(keyword)])
+  return sorted([entry_point.name for entry_point in _get_entry_points(keyword) if entry_point.dist.project_name not in exclude_packages])
 
 def load_resource(resource, keyword, imports = ['facereclib'], preferred_distribution = None):
   """Loads the given resource that is registered with the given keyword.

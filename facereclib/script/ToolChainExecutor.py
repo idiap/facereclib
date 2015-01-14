@@ -89,22 +89,22 @@ class ToolChainExecutor:
 
 
   @staticmethod
-  def required_command_line_options(parser):
+  def required_command_line_options(parser, exclude_resources_from = []):
     """Initializes the minimum command line options that are required to run this experiment."""
 
     #######################################################################################
     ############## options that are required to be specified #######################
     config_group = parser.add_argument_group('\nParameters defining the experiment. Most of these parameters can be a registered resource, a configuration file, or even a string that defines a newly created object')
     config_group.add_argument('-d', '--database', metavar = 'x', nargs = '+', required = True,
-        help = 'Database and the protocol; registered databases are: %s'%utils.resources.resource_keys('database'))
+        help = 'Database and the protocol; registered databases are: %s'%utils.resources.resource_keys('database', exclude_resources_from))
     config_group.add_argument('-p', '--preprocessing', metavar = 'x', nargs = '+', dest = 'preprocessor', required = True,
-        help = 'Image preprocessing; registered preprocessors are: %s'%utils.resources.resource_keys('preprocessor'))
+        help = 'Image preprocessing; registered preprocessors are: %s'%utils.resources.resource_keys('preprocessor', exclude_resources_from))
     config_group.add_argument('-f', '--features', metavar = 'x', nargs = '+', required = True,
-        help = 'Feature extraction; registered feature extractors are: %s'%utils.resources.resource_keys('feature_extractor'))
+        help = 'Feature extraction; registered feature extractors are: %s'%utils.resources.resource_keys('feature_extractor', exclude_resources_from))
     config_group.add_argument('-t', '--tool', metavar = 'x', nargs = '+', required = True,
-        help = 'Face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool'))
+        help = 'Face recognition; registered face recognition tools are: %s'%utils.resources.resource_keys('tool', exclude_resources_from))
     config_group.add_argument('-g', '--grid', metavar = 'x', nargs = '+',
-        help = 'Configuration file for the grid setup; if not specified, the commands are executed sequentially on the local machine.')
+        help = 'Configuration for the grid setup; if not specified, the commands are executed sequentially on the local machine.')
     config_group.add_argument('--imports', metavar = 'LIB', nargs = '+', default = ['facereclib'],
         help = 'If one of your configuration files is an actual command, please specify the lists of required imports to execute this command')
     config_group.add_argument('-b', '--sub-directory', metavar = 'DIR', required = True,
