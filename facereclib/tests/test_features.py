@@ -162,6 +162,11 @@ class FeatureExtractionTest(unittest.TestCase):
 
 
   def test05_sift_key_points(self):
+    # check if VLSIFT is available
+    import bob.ip.base
+    if not hasattr(bob.ip.base, "VLSIFT"):
+      raise SkipTest("VLSIFT is not part of bob.ip.base; maybe SIFT headers aren't installed in your system?")
+
     # we need the preprocessor tool to actually read the data
     preprocessor = facereclib.preprocessing.Keypoints()
     data = preprocessor.read_data(self.input_dir('key_points.hdf5'))

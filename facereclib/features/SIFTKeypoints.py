@@ -26,6 +26,9 @@ class SIFTKeypoints (Extractor):
       estimate_orientation = False
   ):
 
+    if not hasattr(bob.ip.base, "VLSIFT"):
+      raise NotImplementedError("VLSIFT is not part of bob.ip.base; maybe SIFT headers aren't installed in your system? Try out facereclib.features.SIFTBobKeypoints!")
+
     # call base class constructor
     Extractor.__init__(self)
 
@@ -80,4 +83,3 @@ class SIFTKeypoints (Extractor):
 
     # Extracts and returns descriptors
     return self.__linearize_cut__(self.m_sift_extract(image, kp))
-
