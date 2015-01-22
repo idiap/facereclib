@@ -7,14 +7,13 @@ matrix:
     - secure: HNA0cG/STPaAkrUK/cdqaj7ryi/AIcvbFDQJvqcyBqCHz7PuCcnGwqIthPzsEhh+2YMObbPmCPjt7CrS3ULsFbc5Vv0AbKkmwyUqP+WgijMYMuABFuAUN1hmII4dY5V7tn1+d/iSCaIvgztzNZ6maXBKA3YeplHPFU3ktRTtx3U=
     - secure: edoOuO1tKhwruEnvKq7Sac0MDJ6BEv3WtS0XHwIJB8j08bZVUXIRCJ2LDqYgh+9az0EUroAawnXZ2hGu8JdrTVZP+JucI+cDe0LRyOictBNk4ur14CGIFSpGkwEwFZA6gk8FFPm7aw4tq7VzWx9JwxQpX8PCy0FZnkJ+1AIywjQ=
     - BOB_DOCUMENTATION_SERVER=https://www.idiap.ch/software/bob/docs/latest/bioidiap/%s/master
-  - python: 3.2
+#  - python: 3.2
 before_install:
 - sudo add-apt-repository -y ppa:biometrics/bob
 - sudo apt-get update -qq
 - sudo apt-get install -qq --force-yes libjpeg8-dev libnetpbm10-dev libpng12-dev libtiff4-dev libgif-dev libboost-all-dev libblitz1-dev libhdf5-serial-dev libvl-dev
 - sudo apt-get install -qq --force-yes dvipng texlive-latex-base texlive-latex-extra texlive-math-extra texlive-latex-recommended texlive-fonts-recommended
-- sudo apt-get install -qq --force-yes libatlas-dev libatlas-base-dev liblapack-dev
-- if [ -n "${NUMPYSPEC}" ]; then sudo apt-get install -qq gfortran; fi
+- sudo apt-get install -qq --force-yes libatlas-dev libatlas-base-dev liblapack-dev gfortran
 - pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel numpy scipy matplotlib sphinx nose==1.3.0 jinja2==2.6 pygments==1.6 coveralls
 install:
 - python bootstrap-buildout.py
