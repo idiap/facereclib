@@ -140,25 +140,25 @@ class DatabaseBob (Database):
 
   def enroll_files(self, model_id, group = 'dev'):
     """Returns the list of enrollment File objects for the given model id."""
-    files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'enroll')
+    files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'enroll', **self.all_files_options)
     return self.sort(files)
 
 
   def probe_files(self, model_id = None, group = 'dev'):
     """Returns the list of probe File objects (for the given model id, if given)."""
     if model_id:
-      files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'probe')
+      files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'probe', **self.all_files_options)
     else:
-      files = self.m_database.objects(protocol = self.protocol, groups = group, purposes = 'probe')
+      files = self.m_database.objects(protocol = self.protocol, groups = group, purposes = 'probe', **all_files_options)
     return self.sort(files)
 
 
   def probe_file_sets(self, model_id = None, group = 'dev'):
     """Returns the list of probe File objects (for the given model id, if given)."""
     if model_id:
-      file_sets = self.m_database.object_sets(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'probe')
+      file_sets = self.m_database.object_sets(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'probe', **self.all_files_options)
     else:
-      file_sets = self.m_database.object_sets(protocol = self.protocol, groups = group, purposes = 'probe')
+      file_sets = self.m_database.object_sets(protocol = self.protocol, groups = group, purposes = 'probe', **self.all_files_options)
     return self.sort(file_sets)
 
 

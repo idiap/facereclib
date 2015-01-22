@@ -123,7 +123,9 @@ class FaceCrop (Preprocessor):
 
   def __cropper__(self, pair):
     key = (pair[0] + "+" + pair[1])
-    assert pair[0] in self.m_cropped_positions and pair[1] in self.m_cropped_positions
+    if pair[0] not in self.m_cropped_positions or pair[1] not in self.m_cropped_positions:
+      import ipdb; ipdb.set_trace()
+      raise KeyError("The given positions '%s' or '%s' are not found in the list of cropped positions: %s" % (pair[0], pair[1], self.m_cropped_positions))
 
     if key not in self.m_croppers:
       # generate cropper on the fly

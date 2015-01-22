@@ -384,8 +384,22 @@ def parse_args(command_line_parameters):
   parser.add_argument('--perform-training', action='store_true',
       help = argparse.SUPPRESS) #'Is this the first job that needs to perform the training?'
 
+  #######################################################################################
+  ####### shortcuts for the --skip-... commands #########################################
+  skip_choices = ('preprocessing', 'extractor-training', 'extraction', 'projector-training', 'projection', 'enroller-training', 'enrollment', 'score-computation', 'concatenation')
+  skip_group.add_argument('--execute-only', nargs = '+', choices = skip_choices,
+      help = 'Executes only the given parts of the tool chain.')
 
-  return parser.parse_args(command_line_parameters)
+  args = parser.parse_args(command_line_parameters)
+
+  # set groups to be 'dev' only
+  args.groups = ['dev',]
+
+  if args.execute_only is not None:
+    for skip in skip_choices:
+      if skip not in args.execute_only:
+        exec("args.skip_%s = True" % (skip.replace("-", "_")))
+  return args
 
 
 def face_verify(args, command_line_parameters, external_dependencies = [], external_fake_job_id = 0):
@@ -475,4 +489,3 @@ def main(command_line_parameters = sys.argv):
 
 if __name__ == "__main__":
   main()
-

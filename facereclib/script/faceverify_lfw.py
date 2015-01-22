@@ -460,7 +460,19 @@ def parse_args(command_line_parameters):
   parser.add_argument('--protocol', choices = ('view1', 'fold1', 'fold2', 'fold3', 'fold4', 'fold5', 'fold6', 'fold7', 'fold8', 'fold9', 'fold10'),
       help = argparse.SUPPRESS) #'The protocol which should be used in this sub-task'
 
-  return parser.parse_args(command_line_parameters)
+  #######################################################################################
+  ####### shortcuts for the --skip-... commands #########################################
+  skip_choices = ('preprocessing', 'extractor-training', 'extraction', 'projector-training', 'projection', 'enroller-training', 'enrollment', 'score-computation', 'concatenation', 'averaging')
+  skip_group.add_argument('--execute-only', nargs = '+', choices = skip_choices,
+      help = 'Executes only the given parts of the tool chain.')
+
+  args = parser.parse_args(command_line_parameters)
+
+  if args.execute_only is not None:
+    for skip in skip_choices:
+      if skip not in args.execute_only:
+        exec("args.skip_%s = True" % (skip.replace("-", "_")))
+  return args
 
 
 def face_verify(args, command_line_parameters, external_dependencies = [], external_fake_job_id = 0):
@@ -573,4 +585,3 @@ def main(command_line_parameters = sys.argv):
 
 if __name__ == "__main__":
   main()
-
