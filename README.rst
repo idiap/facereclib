@@ -6,7 +6,7 @@
    :target: http://pythonhosted.org/facereclib/index.html
 .. image:: http://img.shields.io/badge/docs-latest-orange.png
    :target: https://www.idiap.ch/software/bob/docs/latest/idiap/facereclib/master/index.html
-.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=master
+.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=v2.0.1r2
    :target: https://travis-ci.org/idiap/facereclib
 .. image:: https://coveralls.io/repos/idiap/facereclib/badge.png
    :target: https://coveralls.io/r/idiap/facereclib
@@ -205,5 +205,3 @@ If you use the FaceRecLib in any of your experiments, please cite the following 
 .. _bioidiap at github: http://www.github.com/bioidiap
 .. _csu face recognition resources: http://www.cs.colostate.edu/facerec
 .. _xfacereclib.extension.csu: http://pypi.python.org/pypi/xfacereclib.extension.CSU
-
-
