@@ -149,7 +149,7 @@ class DatabaseBob (Database):
     if model_id:
       files = self.m_database.objects(protocol = self.protocol, groups = group, model_ids = (model_id,), purposes = 'probe', **self.all_files_options)
     else:
-      files = self.m_database.objects(protocol = self.protocol, groups = group, purposes = 'probe', **all_files_options)
+      files = self.m_database.objects(protocol = self.protocol, groups = group, purposes = 'probe', **self.all_files_options)
     return self.sort(files)
 
 
@@ -223,4 +223,3 @@ class DatabaseBobZT (DatabaseBob, DatabaseZT):
     """Returns the list of Z-probe Fileset objects."""
     file_sets = self.m_database.zobject_sets(protocol = self.protocol, groups = group, **self.m_z_probe_options)
     return self.sort(file_sets)
-
