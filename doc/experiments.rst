@@ -13,7 +13,15 @@ When the former script is executed, it always prints the call to the latter scri
 The latter script is actually doing all the work.
 If you want to run experiments with a different setup than the baselines, you should use the ``bin/faceverify.py`` script directly.
 
-In the following sections the available command line arguments are listed.
+To get the command lines to the `bin/faceverify.py`` script that are executed in the baseline experiments, you can call:
+
+.. code-block:: sh
+
+   $ ./bin/baselines.py --all --dry-run
+
+Of course, you can also select a single baseline algorithm to print its command line.
+
+In the following sections the available command line arguments of the ``bin/faceverify.py`` are listed.
 Sometimes, arguments have a long version starting with ``--`` and a short one starting with a single ``-``.
 In this section, only the long names of the arguments are listed, please refer to ``bin/faceverify.py --help`` (or short: ``bin/faceverify.py -h``) for the abbreviations.
 
