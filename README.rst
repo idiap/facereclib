@@ -6,7 +6,7 @@
    :target: http://pythonhosted.org/facereclib/index.html
 .. image:: http://img.shields.io/badge/docs-latest-orange.png
    :target: https://www.idiap.ch/software/bob/docs/latest/idiap/facereclib/master/index.html
-.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=v2.0.1
+.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=master
    :target: https://travis-ci.org/idiap/facereclib
 .. image:: https://coveralls.io/repos/idiap/facereclib/badge.png
    :target: https://coveralls.io/r/idiap/facereclib
