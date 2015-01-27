@@ -75,6 +75,7 @@ setup(
       # registered preprocessors
       'facereclib.preprocessor': [
         'face-detect       = facereclib.configurations.preprocessing.face_detect:preprocessor',
+        'landmark-detect   = facereclib.configurations.preprocessing.landmark_detect:preprocessor',
         'face-crop         = facereclib.configurations.preprocessing.face_crop:preprocessor',
         'histogram-equalize= facereclib.configurations.preprocessing.histogram_equalize:preprocessor',
         'inorm-lbp         = facereclib.configurations.preprocessing.inorm_lbp:preprocessor',

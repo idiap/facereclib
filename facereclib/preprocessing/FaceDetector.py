@@ -63,7 +63,7 @@ class FaceDetector (NullPreprocessor):
       left = int(max(bb.topleft[1], 0))
       bottom = min(bb.bottomright[0], image.shape[0])
       right = int(min(bb.bottomright[1], image.shape[1]))
-      landmarks = localizer.locate(uint8_image, bb.top_left, bb.size)
+      landmarks = self.m_flandmark.locate(uint8_image, bb.top, bb.left, bb.size[0], bb.size[1])
 
       if landmarks is not None and len(landmarks):
         return {

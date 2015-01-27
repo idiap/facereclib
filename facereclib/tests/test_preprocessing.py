@@ -173,6 +173,15 @@ class PreprocessingTest(unittest.TestCase):
     self.assertAlmostEqual(preprocessor.quality(), 33.1136586)
 
 
+  def test11_landmarkdetect(self):
+    # read input
+    data, annotation = self.input()
+    preprocessor = self.config('landmark-detect')
+    # execute preprocessor
+    self.execute(preprocessor, data, annotation, 'landmark.hdf5')
+    self.assertAlmostEqual(preprocessor.quality(), 33.1136586)
+
+
   def test20_compressed_io(self):
     data = facereclib.utils.load(self.reference_dir('cropped.hdf5'))
     compressed_file = self.reference_dir('compressed.hdf5')
