@@ -164,6 +164,15 @@ class PreprocessingTest(unittest.TestCase):
     self.assertTrue((annots == annot2).all())
 
 
+  def test10_facedetect(self):
+    # read input
+    data, annotation = self.input()
+    preprocessor = self.config('face-detect')
+    # execute preprocessor
+    self.execute(preprocessor, data, annotation, 'detected.hdf5')
+    self.assertAlmostEqual(preprocessor.quality(), 33.1136586)
+
+
   def test20_compressed_io(self):
     data = facereclib.utils.load(self.reference_dir('cropped.hdf5'))
     compressed_file = self.reference_dir('compressed.hdf5')
