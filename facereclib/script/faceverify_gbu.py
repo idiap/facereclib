@@ -19,11 +19,6 @@ class ToolChainExecutorGBU (ToolChainExecutor.ToolChainExecutor):
     # select the protocol
     self.m_database.protocol = protocol
     self.m_perform_training = perform_training
-    # select, which groups are used for preprocessing and feature extraction
-    if perform_training:
-      self.m_database.all_files_options.update({'groups' : ('world', 'dev')})
-    else:
-      self.m_database.all_files_options.update({'groups' : ('dev',)})
 
     if args.training_set:
       self.m_database.all_files_options.update({'subworld' : args.training_set})
