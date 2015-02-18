@@ -125,8 +125,8 @@ class GridGraph (Extractor):
     return jets
 
   def save_feature(self, feature, feature_file):
-    bob.ip.gabor.save_jets(feature, bob.io.base.HDF5File(feature_file, 'w'))
+    feature_file = feature_file if isinstance(feature_file, bob.io.base.HDF5File) else bob.io.base.HDF5File(feature_file, 'w')
+    bob.ip.gabor.save_jets(feature, feature_file)
 
   def read_feature(self, feature_file):
     return bob.ip.gabor.load_jets(bob.io.base.HDF5File(feature_file))
-
