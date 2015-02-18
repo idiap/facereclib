@@ -83,15 +83,13 @@ def command_line_arguments(command_line_parameters):
 # - The grid configuration that it requires (only used when the --grid option is chosen)
 
 # Some default variables that are required
-faceverify_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-bin_dir = os.path.join(faceverify_dir, 'bin')
-config_dir = os.path.join(faceverify_dir, 'facereclib/configurations')
-script = os.path.join(bin_dir, 'faceverify.py')
+
 
 def dummy():
   """Dummy script just for testing the tool chain"""
+  import pkg_resources
   features      = 'eigenfaces'
-  tool          = os.path.join(config_dir, 'tools', 'dummy.py')
+  tool          = pkg_resources.resource_filename('facereclib', 'configurations/tools/dummy.py')
   grid          = 'grid'
   return (features, tool, grid)
 
@@ -185,13 +183,13 @@ def main(command_line_parameters = sys.argv):
     # call the evaluate script with the desired parameters
 
     # get the base directory of the results
-    base_dir = args.directory if args.directory else "results"
+    base_dir = args.directory if args.directory else os.path.join("results", args.database)
     if not os.path.exists(base_dir):
       if not args.dry_run:
         raise IOError("The result directory cannot be found. Please specify the --directory as it was specified during execution of the algorithms.")
 
     # get the result directory of the database
-    result_dir = os.path.join(base_dir, args.database, args.baseline_directory)
+    result_dir = os.path.join(base_dir, args.baseline_directory)
     if not os.path.exists(result_dir):
       if not args.dry_run:
         raise IOError("The result directory for the desired database cannot be found. Did you already run the experiments for this database?")
@@ -238,7 +236,7 @@ def main(command_line_parameters = sys.argv):
       return
 
     # call the evaluate script
-    base_call = [os.path.join(bin_dir, 'evaluate.py'), '--directory', result_dir, '--legends'] + legends
+    base_call = ['./bin/evaluate.py', '--directory', result_dir, '--legends'] + legends
     if 'EER' in args.evaluate:
       base_call += ['--criterion', 'EER']
     elif 'HTER' in args.evaluate:
@@ -305,7 +303,7 @@ def main(command_line_parameters = sys.argv):
 
       # create the command to the faceverify script
       command = [
-                  script,
+                  './bin/faceverify.py',
                   '--database', args.database,
                   '--preprocessing', preprocessing,
                   '--features', features,
@@ -355,4 +353,3 @@ def main(command_line_parameters = sys.argv):
 
 if __name__ == "__main__":
   main()
-

@@ -20,12 +20,12 @@ class Configuration:
     if args.user_directory:
       self.user_directory = os.path.join(args.user_directory, args.sub_directory)
     else:
-      self.user_directory = os.path.join("results", args.sub_directory)
+      self.user_directory = os.path.join("results", database_name, args.sub_directory)
 
     if args.temp_directory:
       self.temp_directory = os.path.join(args.temp_directory, args.sub_directory)
     else:
-      self.temp_directory = os.path.join("temp", args.sub_directory)
+      self.temp_directory = os.path.join("temp", database_name, args.sub_directory)
 
     self.extractor_file = os.path.join(self.temp_directory, args.extractor_file)
     self.projector_file = os.path.join(self.temp_directory, args.projector_file)

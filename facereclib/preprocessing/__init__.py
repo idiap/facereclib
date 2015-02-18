@@ -6,6 +6,7 @@
 
 from .Preprocessor import Preprocessor
 from .NullPreprocessor import NullPreprocessor
+from .FaceDetector import FaceDetector
 from .FaceCrop import FaceCrop
 from .TanTriggs import TanTriggs
 from .HistogramEqualization import HistogramEqualization

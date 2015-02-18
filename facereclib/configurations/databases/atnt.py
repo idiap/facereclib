@@ -3,7 +3,7 @@
 import bob.db.atnt
 import facereclib
 
-atnt_directory = "[YOUR_ATNT_DIRECTORY]"
+atnt_directory = "/idiap/group/biometric/databases/orl"
 
 database = facereclib.databases.DatabaseBob(
     database = bob.db.atnt.Database(
