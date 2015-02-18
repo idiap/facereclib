@@ -183,13 +183,13 @@ def main(command_line_parameters = sys.argv):
     # call the evaluate script with the desired parameters
 
     # get the base directory of the results
-    base_dir = args.directory if args.directory else os.path.join("results", args.database)
+    base_dir = args.directory if args.directory else "results"
     if not os.path.exists(base_dir):
       if not args.dry_run:
         raise IOError("The result directory cannot be found. Please specify the --directory as it was specified during execution of the algorithms.")
 
     # get the result directory of the database
-    result_dir = os.path.join(base_dir, args.baseline_directory)
+    result_dir = os.path.join(base_dir, args.database, args.baseline_directory)
     if not os.path.exists(result_dir):
       if not args.dry_run:
         raise IOError("The result directory for the desired database cannot be found. Did you already run the experiments for this database?")
