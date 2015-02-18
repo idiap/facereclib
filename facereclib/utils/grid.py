@@ -20,12 +20,13 @@
 
 PREDEFINED_QUEUES = {
   'default'     : {},
-  '2G'          : {'queue' : 'q1d',  'memfree' : '2G'},
-  '4G'          : {'queue' : 'q1d',  'memfree' : '4G'},
+  '2G'          : {'queue' : 'all.q',  'memfree' : '2G'},
+  '4G'          : {'queue' : 'all.q',  'memfree' : '4G'},
   '4G-io-big'   : {'queue' : 'q1d',  'memfree' : '4G', 'io_big' : True},
   '8G'          : {'queue' : 'q1d',  'memfree' : '8G'},
   '8G-io-big'   : {'queue' : 'q1d',  'memfree' : '8G', 'io_big' : True},
   '16G'         : {'queue' : 'q1dm', 'memfree' : '16G', 'pe_opt' : 'pe_mth 2', 'hvmem' : '8G'},
+  '16G-io-big'  : {'queue' : 'q1dm', 'memfree' : '16G', 'pe_opt' : 'pe_mth 2', 'hvmem' : '8G', 'io_big' : True},
   '32G'         : {'queue' : 'q1dm', 'memfree' : '32G', 'pe_opt' : 'pe_mth 4', 'hvmem' : '8G', 'io_big' : True},
   '64G'         : {'queue' : 'q1dm', 'memfree' : '64G', 'pe_opt' : 'pe_mth 8', 'hvmem' : '8G', 'io_big' : True},
   'Week'        : {'queue' : 'q1wm', 'memfree' : '32G', 'pe_opt' : 'pe_mth 4', 'hvmem' : '8G'}
@@ -99,7 +100,7 @@ class GridParameters:
     elif params is None:
       return {}
     else:
-      raise ValueError("The given queue parameters '%s' are not in the predefined queues and neither a dictionary with values.")
+      raise ValueError("The given queue parameters '%s' are not in the predefined queues and neither a dictionary with values." % str(params))
 
 
   def is_local(self):

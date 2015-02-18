@@ -116,8 +116,6 @@ setup(
         'gbu               = facereclib.configurations.grid.gbu:grid',
         'lfw               = facereclib.configurations.grid.lfw:grid',
         'small             = facereclib.configurations.grid.small:grid',
-        'isv               = facereclib.configurations.grid.isv_training:grid',
-        'ivector           = facereclib.configurations.grid.ivector_training:grid',
         'local-p4          = facereclib.configurations.grid.local:grid',
         'local-p8          = facereclib.configurations.grid.local:grid_p8',
         'local-p16         = facereclib.configurations.grid.local:grid_p16'
