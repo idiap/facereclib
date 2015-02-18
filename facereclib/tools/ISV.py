@@ -87,7 +87,7 @@ class ISV (UBMGMM):
         list.append(UBMGMM.project(self, feature))
       data.append(list)
 
-   # train ISV
+    # train ISV
     self._train_isv(data)
 
     # Save the ISV base AND the UBM into the same file
@@ -105,15 +105,6 @@ class ISV (UBMGMM):
     hdf5file.create_group('Enroller')
     hdf5file.cd('Enroller')
     self.m_isvbase.save(hdf5file)
-
-  # Here, we just need to load the UBM from the projector file.
-  def load_ubm(self, ubm_file):
-    hdf5file = bob.io.base.HDF5File(ubm_file)
-    # read UBM
-    self.m_ubm = bob.learn.misc.GMMMachine(hdf5file)
-    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
-    # Initializes GMMStats object
-    self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
 
   def load_isv(self, isv_file):
     hdf5file = bob.io.base.HDF5File(isv_file)
@@ -219,5 +210,3 @@ class ISV (UBMGMM):
       projected_isv_acc = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
       model.estimate_ux(gmmstats_acc, projected_isv_acc)
       return model.forward_ux(gmmstats_acc, projected_isv_acc)
-
-

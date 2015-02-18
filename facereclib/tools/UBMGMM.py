@@ -200,11 +200,19 @@ class UBMGMM (Tool):
   #######################################################
   ############## GMM training using UBM #################
 
+  def load_ubm(self, ubm_file):
+    hdf5file = bob.io.base.HDF5File(ubm_file)
+    # read UBM
+    self.m_ubm = bob.learn.misc.GMMMachine(hdf5file)
+    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
+    # Initializes GMMStats object
+    self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+
+
   def load_projector(self, projector_file):
     """Reads the UBM model from file"""
     # read UBM
-    self.m_ubm = bob.learn.misc.GMMMachine(bob.io.base.HDF5File(projector_file))
-    self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
+    self.load_ubm(projector_file)
     # prepare MAP_GMM_Trainer
     if self.m_responsibility_threshold > 0.:
       self.m_trainer = bob.learn.misc.MAP_GMMTrainer(self.m_relevance_factor, True, False, False, self.m_responsibility_threshold)
@@ -214,9 +222,6 @@ class UBMGMM (Tool):
     self.m_trainer.convergence_threshold = self.m_training_threshold
     self.m_trainer.max_iterations = self.m_gmm_enroll_iterations
     self.m_trainer.set_prior_gmm(self.m_ubm)
-
-    # Initializes GMMStats object
-    self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
 
 
   def _project_using_array(self, array):
@@ -234,10 +239,13 @@ class UBMGMM (Tool):
     return self._project_using_array(feature_array)
 
 
+  def read_gmm_stats(self, gmm_stats_file):
+    """Reads GMM stats from file."""
+    return bob.learn.misc.GMMStats(bob.io.base.HDF5File(gmm_stats_file))
+
   def read_feature(self, feature_file):
     """Read the type of features that we require, namely GMM_Stats"""
-    return bob.learn.misc.GMMStats(bob.io.base.HDF5File(feature_file))
-
+    return self.read_gmm_stats(feature_file)
 
 
   def _enroll_using_array(self, array):
@@ -318,5 +326,3 @@ class UBMGMMRegular (UBMGMM):
     for i in range(probe.shape[0]):
       score += model.forward(probe[i,:]) - self.m_ubm.forward(probe[i,:])
     return score/probe.shape[0]
-
-
