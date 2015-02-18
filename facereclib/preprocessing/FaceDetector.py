@@ -79,13 +79,13 @@ class FaceDetector (NullPreprocessor):
 
   def __call__(self, image, annotations=None):
     # convert to the desired color channel
-    image = NullPreprocessor.__call__(self, image)
+    gray_image = NullPreprocessor.__call__(self, image)
 
     # detect the face
-    bounding_box, self.m_quality = bob.ip.facedetect.detect_single_face(image, self.m_cascade, self.m_sampler, self.m_detection_overlap)
+    bounding_box, self.m_quality = bob.ip.facedetect.detect_single_face(gray_image, self.m_cascade, self.m_sampler, self.m_detection_overlap)
 
     # get the eye landmarks
-    annotations = self._landmarks(image, bounding_box)
+    annotations = self._landmarks(gray_image, bounding_box)
 
     # perform post-processing
     return self.m_post_processor(image, annotations)
