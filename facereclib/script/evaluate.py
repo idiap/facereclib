@@ -81,12 +81,15 @@ def command_line_arguments(command_line_parameters):
   if args.eval_files and len(args.dev_files) != len(args.eval_files):
     utils.error("The number of --dev-files (%d) and --eval-files (%d) are not identical" % (len(args.dev_files), len(args.eval_files)))
 
-  if args.legends and len(args.dev_files) != len(args.legends):
-    utils.error("The number of --dev-files (%d) and --legends (%d) are not identical" % (len(args.dev_files), len(args.legends)))
-
   # update legends when they are not specified on command line
   if args.legends is None:
-    args.legends = args.dev_files
+    args.legends = [f.replace('_', '-') for f in args.dev_files]
+    utils.warn("Legends are not specified; using legends estimated from --dev-files: %s" % args.legends)
+
+  # check that the legends have the same length as the dev-files
+  if len(args.dev_files) != len(args.legends):
+    utils.error("The number of --dev-files (%d) and --legends (%d) are not identical" % (len(args.dev_files), len(args.legends)))
+
 
 
   return args
@@ -186,11 +189,11 @@ def main(command_line_parameters=None):
         threshold = {'EER': bob.measure.eer_threshold, 'HTER' : bob.measure.min_hter_threshold} [args.criterion](scores_dev[i][0], scores_dev[i][1])
         # apply threshold to development set
         far, frr = bob.measure.farfrr(scores_dev[i][0], scores_dev[i][1], threshold)
-        print("The %s of the development set of '%s' is %2.3f%%" % (args.criterion, args.legends[i] if args.legends else args.dev_files[i], (far + frr) * 50.)) # / 2 * 100%
+        print("The %s of the development set of '%s' is %2.3f%%" % (args.criterion, args.legends[i], (far + frr) * 50.)) # / 2 * 100%
         if args.eval_files:
           # apply threshold to evaluation set
           far, frr = bob.measure.farfrr(scores_eval[i][0], scores_eval[i][1], threshold)
-          print("The HTER of the evaluation set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], (far + frr) * 50.)) # / 2 * 100%
+          print("The HTER of the evaluation set of '%s' is %2.3f%%" % (args.legends[i], (far + frr) * 50.)) # / 2 * 100%
 
 
     if args.mindcf:
@@ -200,13 +203,13 @@ def main(command_line_parameters=None):
         threshold = bob.measure.min_weighted_error_rate_threshold(scores_dev[i][0], scores_dev[i][1], args.cost)
         # apply threshold to development set
         far, frr = bob.measure.farfrr(scores_dev[i][0], scores_dev[i][1], threshold)
-        print("The minDCF of the development set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], (args.cost * far + (1-args.cost) * frr) * 100. ))
+        print("The minDCF of the development set of '%s' is %2.3f%%" % (args.legends[i], (args.cost * far + (1-args.cost) * frr) * 100. ))
         if args.eval_files:
           # compute threshold on evaluation set
           threshold = bob.measure.min_weighted_error_rate_threshold(scores_eval[i][0], scores_eval[i][1], args.cost)
           # apply threshold to evaluation set
           far, frr = bob.measure.farfrr(scores_eval[i][0], scores_eval[i][1], threshold)
-          print("The minDCF of the evaluation set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.eval_files[i], (args.cost * far + (1-args.cost) * frr) * 100. ))
+          print("The minDCF of the evaluation set of '%s' is %2.3f%%" % (args.legends[i], (args.cost * far + (1-args.cost) * frr) * 100. ))
 
 
     if args.cllr:
@@ -229,16 +232,18 @@ def main(command_line_parameters=None):
         frrs_eval = [bob.measure.roc_for_far(scores[0], scores[1], fars) for scores in scores_eval]
 
       utils.info("Plotting ROC curves to file '%s'" % args.roc)
-      # create a multi-page PDF for the ROC curve
-      pdf = PdfPages(args.roc)
-      # create a separate figure for dev and eval
-      pdf.savefig(_plot_roc(frrs_dev, colors, args.legends if args.legends else args.dev_files, "ROC curve for development set", args.legend_font_size, args.legend_position))
-      del frrs_dev
-      if args.eval_files:
-        pdf.savefig(_plot_roc(frrs_eval, colors, args.legends if args.legends else args.eval_files, "ROC curve for evaluation set", args.legend_font_size, args.legend_position))
-        del frrs_eval
-      pdf.close()
-
+      try:
+        # create a multi-page PDF for the ROC curve
+        pdf = PdfPages(args.roc)
+        # create a separate figure for dev and eval
+        pdf.savefig(_plot_roc(frrs_dev, colors, args.legends, "ROC curve for development set", args.legend_font_size, args.legend_position))
+        del frrs_dev
+        if args.eval_files:
+          pdf.savefig(_plot_roc(frrs_eval, colors, args.legends, "ROC curve for evaluation set", args.legend_font_size, args.legend_position))
+          del frrs_eval
+        pdf.close()
+      except RuntimeError as e:
+        raise RuntimeError("During plotting of ROC curves, the following exception occured:\n%s\nUsually this happens when the label contains characters that LaTeX cannot parse." % e)
 
     if args.det:
       utils.info("Computing DET curves on the development " + ("and on the evaluation set" if args.eval_files else "set"))
@@ -247,15 +252,18 @@ def main(command_line_parameters=None):
         dets_eval = [bob.measure.det(scores[0], scores[1], 1000) for scores in scores_eval]
 
       utils.info("Plotting DET curves to file '%s'" % args.det)
-      # create a multi-page PDF for the ROC curve
-      pdf = PdfPages(args.det)
-      # create a separate figure for dev and eval
-      pdf.savefig(_plot_det(dets_dev, colors, args.legends if args.legends else args.dev_files, "DET plot for development set", args.legend_font_size, args.legend_position))
-      del dets_dev
-      if args.eval_files:
-        pdf.savefig(_plot_det(dets_eval, colors, args.legends if args.legends else args.eval_files, "DET plot for evaluation set", args.legend_font_size, args.legend_position))
-        del dets_eval
-      pdf.close()
+      try:
+        # create a multi-page PDF for the ROC curve
+        pdf = PdfPages(args.det)
+        # create a separate figure for dev and eval
+        pdf.savefig(_plot_det(dets_dev, colors, args.legends, "DET plot for development set", args.legend_font_size, args.legend_position))
+        del dets_dev
+        if args.eval_files:
+          pdf.savefig(_plot_det(dets_eval, colors, args.legends, "DET plot for evaluation set", args.legend_font_size, args.legend_position))
+          del dets_eval
+        pdf.close()
+      except RuntimeError as e:
+        raise RuntimeError("During plotting of ROC curves, the following exception occured:\n%s\nUsually this happens when the label contains characters that LaTeX cannot parse." % e)
 
 
   if args.cmc or args.rr:
@@ -267,21 +275,22 @@ def main(command_line_parameters=None):
 
   if args.cmc:
     utils.info("Plotting CMC curves to file '%s'" % args.cmc)
-    # create a multi-page PDF for the ROC curve
-    pdf = PdfPages(args.cmc)
-    # create a separate figure for dev and eval
-    pdf.savefig(_plot_cmc(cmcs_dev, colors, args.legends if args.legends else args.dev_files, "CMC curve for development set", args.legend_font_size, args.legend_position))
-    if args.eval_files:
-      pdf.savefig(_plot_cmc(cmcs_eval, colors, args.legends if args.legends else args.eval_files, "CMC curve for evaluation set", args.legend_font_size, args.legend_position))
-    pdf.close()
+    try:
+      # create a multi-page PDF for the ROC curve
+      pdf = PdfPages(args.cmc)
+      # create a separate figure for dev and eval
+      pdf.savefig(_plot_cmc(cmcs_dev, colors, args.legends, "CMC curve for development set", args.legend_font_size, args.legend_position))
+      if args.eval_files:
+        pdf.savefig(_plot_cmc(cmcs_eval, colors, args.legends, "CMC curve for evaluation set", args.legend_font_size, args.legend_position))
+      pdf.close()
+    except RuntimeError as e:
+      raise RuntimeError("During plotting of ROC curves, the following exception occured:\n%s\nUsually this happens when the label contains characters that LaTeX cannot parse." % e)
 
   if args.rr:
     utils.info("Computing recognition rate on the development " + ("and on the evaluation set" if args.eval_files else "set"))
     for i in range(len(cmcs_dev)):
       rr = bob.measure.recognition_rate(cmcs_dev[i])
-      print("The Recognition Rate of the development set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.dev_files[i], rr * 100.))
+      print("The Recognition Rate of the development set of '%s' is %2.3f%%" % (args.legends[i], rr * 100.))
       if args.eval_files:
         rr = bob.measure.recognition_rate(cmcs_eval[i])
-        print("The Recognition Rate of the development set of '%s' is %2.3f%%" % (args.legends[i] if args.legends else args.eval_files[i], rr * 100.))
-
-
+        print("The Recognition Rate of the development set of '%s' is %2.3f%%" % (args.legends[i], rr * 100.))
