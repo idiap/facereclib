@@ -38,8 +38,9 @@ class FaceDetector (NullPreprocessor):
 
     self.m_sampler = bob.ip.facedetect.Sampler(scale_factor=scale_base, lowest_scale=lowest_scale, distance=distance)
     if cascade is None:
-      cascade = bob.ip.facedetect.default_cascade
-    self.m_cascade = bob.ip.facedetect.Cascade(bob.io.base.HDF5File(cascade))
+      self.m_cascade = bob.ip.facedetect.default_cascade()
+    else:
+      self.m_cascade = bob.ip.facedetect.Cascade(bob.io.base.HDF5File(cascade))
     self.m_detection_overlap = detection_overlap
     # load post-processor
     if isinstance(post_processor, Preprocessor):
