@@ -7,9 +7,9 @@
 .. image:: http://img.shields.io/badge/docs-latest-orange.png
    :target: https://www.idiap.ch/software/bob/docs/latest/idiap/facereclib/master/index.html
 .. image:: https://travis-ci.org/idiap/facereclib.svg?branch=master
-   :target: https://travis-ci.org/idiap/facereclib
-.. image:: https://coveralls.io/repos/idiap/facereclib/badge.png
-   :target: https://coveralls.io/r/idiap/facereclib
+   :target: https://travis-ci.org/idiap/facereclib?branch=master
+.. image:: https://coveralls.io/repos/idiap/facereclib/badge.png?branch=master
+   :target: https://coveralls.io/r/idiap/facereclib?branch=master
 .. image:: https://img.shields.io/badge/github-master-0000c0.png
    :target: https://github.com/idiap/facereclib/tree/master
 .. image:: http://img.shields.io/pypi/v/facereclib.png
@@ -200,10 +200,15 @@ If you use the FaceRecLib in any of your experiments, please cite the following 
   }
 
 
+Trouble shooting
+----------------
+
+In case of further question or problems, feel free to start a new discussion in our `Mailing List <https://groups.google.com/forum/#!forum/bob-devel>`_.
+When you have identified a clear bug, please go ahead and open a new ticket in our `Issue Tracker <http://www.github.com/bioidiap/facereclib/issues>`_.
+
+
 .. _bob: http://www.idiap.ch/software/bob
 .. _idiap: http://www.idiap.ch
 .. _bioidiap at github: http://www.github.com/bioidiap
 .. _csu face recognition resources: http://www.cs.colostate.edu/facerec
 .. _xfacereclib.extension.csu: http://pypi.python.org/pypi/xfacereclib.extension.CSU
-
-
