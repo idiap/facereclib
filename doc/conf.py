@@ -246,7 +246,7 @@ autodoc_default_flags = ['members', 'undoc-members', 'inherited-members', 'show-
 from bob.extension.utils import link_documentation
 intersphinx_mapping = link_documentation([
   'python', 'numpy', 'scipy', 'gridtk',
-  'bob.extension', 'bob.math', 'bob.io.base', 'bob.ip.base', 'bob.ip.gabor', 'bob.learn.linear', 'bob.learn.misc',
+  'bob.extension', 'bob.math', 'bob.io.base', 'bob.ip.base', 'bob.ip.gabor', 'bob.learn.linear', 'bob.learn.em',
   'bob.db.verification.utils', 'bob.db.verification.filelist', 'bob.db.atnt',
   'bob.db.arface', 'bob.db.caspeal', 'bob.db.frgc', 'bob.db.gbu', 'bob.db.lfw', 'bob.db.banca', 'bob.db.mobio', 'bob.db.multipie', 'bob.db.scface', 'bob.db.xm2vts'
 ])

@@ -5,7 +5,7 @@
 import bob.core
 import bob.io.base
 import bob.learn.linear
-import bob.learn.misc
+import bob.learn.em
 
 import numpy
 
@@ -24,12 +24,9 @@ class PLDA (Tool):
       plda_training_iterations = 200, # Maximum number of iterations for the EM loop
       # TODO: refactor the remaining parameters!
       INIT_SEED = 5489, # seed for initializing
-      INIT_F_METHOD = bob.learn.misc.PLDATrainer.BETWEEN_SCATTER,
-      INIT_F_RATIO = 1,
-      INIT_G_METHOD = bob.learn.misc.PLDATrainer.WITHIN_SCATTER,
-      INIT_G_RATIO = 1,
-      INIT_S_METHOD = bob.learn.misc.PLDATrainer.VARIANCE_DATA,
-      INIT_S_RATIO = 1,
+      INIT_F_METHOD = 'BETWEEN_SCATTER',
+      INIT_G_METHOD = 'WITHIN_SCATTER',
+      INIT_S_METHOD = 'VARIANCE_DATA',
       multiple_probe_scoring = 'joint_likelihood'
   ):
 
@@ -46,11 +43,8 @@ class PLDA (Tool):
         # TODO: refactor the remaining parameters!
         INIT_SEED = INIT_SEED, # seed for initializing
         INIT_F_METHOD = str(INIT_F_METHOD),
-        INIT_F_RATIO = INIT_F_RATIO,
         INIT_G_METHOD = str(INIT_G_METHOD),
-        INIT_G_RATIO = INIT_G_RATIO,
         INIT_S_METHOD =str(INIT_S_METHOD),
-        INIT_S_RATIO = INIT_S_RATIO,
         multiple_probe_scoring = multiple_probe_scoring,
         multiple_model_scoring = None
     )
@@ -62,7 +56,7 @@ class PLDA (Tool):
     self.m_score_set = {'joint_likelihood': 'joint_likelihood', 'average':numpy.average, 'min':min, 'max':max}[multiple_probe_scoring]
 
     # TODO: refactor
-    self.m_init = (INIT_SEED, INIT_F_METHOD, INIT_F_RATIO, INIT_G_METHOD, INIT_G_RATIO, INIT_S_METHOD, INIT_S_RATIO)
+    self.m_init = (INIT_SEED, INIT_F_METHOD, INIT_G_METHOD, INIT_S_METHOD)
 
 
   def __train_pca__(self, training_set):
@@ -117,20 +111,15 @@ class PLDA (Tool):
 
     utils.info("  -> Training PLDA base machine")
     # create trainer
-    t = bob.learn.misc.PLDATrainer(self.m_plda_training_iterations)
+    trainer = bob.learn.em.PLDATrainer()
 
-    #t.rng.seed = self.m_init[0]
-    t.rng = bob.core.random.mt19937(self.m_init[0])
-    t.init_f_method = self.m_init[1]
-    t.init_f_ratio = self.m_init[2]
-    t.init_g_method = self.m_init[3]
-    t.init_g_ratio = self.m_init[4]
-    t.init_sigma_method = self.m_init[5]
-    t.init_sigma_ratio = self.m_init[6]
+    trainer.init_f_method = self.m_init[1]
+    trainer.init_g_method = self.m_init[2]
+    trainer.init_sigma_method = self.m_init[3]
 
     # train machine
-    self.m_plda_base = bob.learn.misc.PLDABase(input_dimension, self.m_subspace_dimension_of_f, self.m_subspace_dimension_of_g)
-    t.train(self.m_plda_base, training_features)
+    self.m_plda_base = bob.learn.em.PLDABase(input_dimension, self.m_subspace_dimension_of_f, self.m_subspace_dimension_of_g)
+    bob.learn.em.train(trainer, self.m_plda_base, training_features, self.m_plda_training_iterations, rng=bob.core.random.mt19937(self.m_init[0]))
 
     # write machines to file
     proj_hdf5file = bob.io.base.HDF5File(str(projector_file), "w")
@@ -151,24 +140,24 @@ class PLDA (Tool):
       proj_hdf5file.cd('/pca')
       self.m_pca_machine = bob.learn.linear.Machine(proj_hdf5file)
     proj_hdf5file.cd('/plda')
-    self.m_plda_base = bob.learn.misc.PLDABase(proj_hdf5file)
+    self.m_plda_base = bob.learn.em.PLDABase(proj_hdf5file)
     #self.m_plda_base = bob.machine.PLDABase(bob.io.HDF5File(projector_file))
-    self.m_plda_machine = bob.learn.misc.PLDAMachine(self.m_plda_base)
-    self.m_plda_trainer = bob.learn.misc.PLDATrainer()
+    self.m_plda_machine = bob.learn.em.PLDAMachine(self.m_plda_base)
+    self.m_plda_trainer = bob.learn.em.PLDATrainer()
 
   def enroll(self, enroll_features):
     """Enrolls the model by computing an average of the given input vectors"""
     if self.m_subspace_dimension_pca is not None:
       enroll_features_projected = self.__perform_pca_client__(self.m_pca_machine, enroll_features)
-      self.m_plda_trainer.enrol(self.m_plda_machine,enroll_features_projected)
+      self.m_plda_trainer.enroll(self.m_plda_machine,enroll_features_projected)
     else:
-      self.m_plda_trainer.enrol(self.m_plda_machine,enroll_features)
+      self.m_plda_trainer.enroll(self.m_plda_machine,enroll_features)
     return self.m_plda_machine
 
   def read_model(self, model_file):
     """Reads the model, which in this case is a PLDA-Machine"""
     # read machine and attach base machine
-    plda_machine = bob.learn.misc.PLDAMachine(bob.io.base.HDF5File(model_file), self.m_plda_base)
+    plda_machine = bob.learn.em.PLDAMachine(bob.io.base.HDF5File(model_file), self.m_plda_base)
     return plda_machine
 
   def score(self, model, probe):
@@ -189,9 +178,9 @@ class PLDA (Tool):
         probe_[i,:] = projected_probe
       # forward
       if self.m_score_set == 'joint_likelihood':
-        return model.forward(probe_)
+        return model.log_likelihood_ratio(probe_)
       else:
-        scores = [model.forward(probe_[i,:]) for i in range(n_probes)]
+        scores = [model.log_likelihood_ratio(probe_[i,:]) for i in range(n_probes)]
         return self.m_score_set(scores)
     else:
       # just forward

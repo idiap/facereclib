@@ -5,7 +5,7 @@
 import bob.core
 import bob.io.base
 import bob.learn.linear
-import bob.learn.misc
+import bob.learn.em
 
 import numpy
 
@@ -59,17 +59,16 @@ class IVector (UBMGMM):
     data = []
     for feature in train_features:
       # Initializes GMMStats object
-      self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+      self.m_gmm_stats = bob.learn.em.GMMStats(*self.m_ubm.shape)
       data.append(UBMGMM.project(self, feature))
 
     utils.info("  -> Training IVector enroller")
-    self.m_tv = bob.learn.misc.IVectorMachine(self.m_ubm, self.m_subspace_dimension_of_t)
+    self.m_tv = bob.learn.em.IVectorMachine(self.m_ubm, self.m_subspace_dimension_of_t)
     self.m_tv.variance_threshold = self.m_variance_threshold
 
     # train IVector model
-    t = bob.learn.misc.IVectorTrainer(update_sigma=self.m_update_sigma, max_iterations=self.m_tv_training_iterations)
-    t.rng = bob.core.random.mt19937(self.m_init_seed)
-    t.train(self.m_tv, data)
+    trainer = bob.learn.em.IVectorTrainer(update_sigma=self.m_update_sigma)
+    bob.learn.em.train(trainer, self.m_tv, data, self.m_tv_training_iterations, rng=bob.core.random.mt19937(self.m_init_seed))
 
     return data
 
@@ -123,14 +122,14 @@ class IVector (UBMGMM):
   def load_ubm(self, ubm_file):
     hdf5file = bob.io.base.HDF5File(ubm_file)
     # read UBM
-    self.m_ubm = bob.learn.misc.GMMMachine(hdf5file)
+    self.m_ubm = bob.learn.em.GMMMachine(hdf5file)
     self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
     # Initializes GMMStats object
-    self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+    self.m_gmm_stats = bob.learn.em.GMMStats(*self.m_ubm.shape)
 
   def load_tv(self, tv_file):
     hdf5file = bob.io.base.HDF5File(tv_file)
-    self.m_tv = bob.learn.misc.IVectorMachine(hdf5file)
+    self.m_tv = bob.learn.em.IVectorMachine(hdf5file)
     # add UBM model from base class
     self.m_tv.ubm = self.m_ubm
 
@@ -158,7 +157,7 @@ class IVector (UBMGMM):
     return UBMGMM.project(self,features)
 
   def project_ivec(self, gmm_stats):
-    return self.m_tv.forward(gmm_stats)
+    return self.m_tv.project(gmm_stats)
 
   def project_whitening(self, ivector):
     whitened = self.m_whitening_machine.forward(ivector)
@@ -219,4 +218,3 @@ class IVector (UBMGMM):
     """This function computes the score between the given model and several given probe files."""
     probes = numpy.vstack([numpy.mean(numpy.vstack(probes), axis=0)])
     return self.score(model,probes)
-

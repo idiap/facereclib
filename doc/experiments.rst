@@ -332,7 +332,7 @@ Here is a list of the most important algorithms and their parameters:
 
     .. note:: If ``lda_subspace_dimension`` is higher than the useful limit, vanishing eigenvalues will be used. In this case, avoid distance functions that require the eigenvalues.
 
-* :py:class:`facereclib.tools.PLDA`: Computes a probabilistic LDA (:py:class:`bob.learn.misc.PLDATrainer`)
+* :py:class:`facereclib.tools.PLDA`: Computes a probabilistic LDA (:py:class:`bob.learn.em.PLDATrainer`)
 
   - ``subspace_dimension_pca``: **(optional)** If given, features will first be projected into a PCA subspace, and then classified by PLDA.
 
@@ -372,7 +372,7 @@ Here is a list of the most important algorithms and their parameters:
   - ``distance_function``: The function to be used to compare two histograms. Default: :py:func:`bob.math.chi_square`
   - ``is_distance_function``: Is the given ``distance_function`` a distance (``True``) or a similarity (``False``) function. Default: ``True``
 
-* :py:class:`facereclib.tools.UBMGMM`: Computes a *Gaussian mixture model* (GMM) of the training set (the so-called *Unified Background Model* (UBM) and adapts a client-specific GMM during enrollment (:ref:`bob.learn.misc <bob.learn.misc>`).
+* :py:class:`facereclib.tools.UBMGMM`: Computes a *Gaussian mixture model* (GMM) of the training set (the so-called *Unified Background Model* (UBM) and adapts a client-specific GMM during enrollment (:ref:`bob.learn.em <bob.learn.em>`).
 
   - ``number_of_gaussians``: The number of Gaussians in the UBM and GMM.
   - ``..._training_iterations``: Maximum number of training iterations of the training steps.
@@ -382,7 +382,7 @@ Here is a list of the most important algorithms and their parameters:
 
 * :py:class:`facereclib.tools.ISV`: This class is an extension of the :py:class:`facereclib.tools.UBMGMM`.
   Hence, all the parameters of the :py:class:`facereclib.tools.UBMGMM` must be specified as well.
-  Additionally, a subspace projection is computed such that the *Inter Session Variability* of one enrolled client is minimized (:ref:`bob.learn.misc <bob.learn.misc>`).
+  Additionally, a subspace projection is computed such that the *Inter Session Variability* of one enrolled client is minimized (:ref:`bob.learn.em <bob.learn.em>`).
 
   - ``subspace_dimension_of_u``: The dimension of the ISV subspace.
 
@@ -391,7 +391,7 @@ Here is a list of the most important algorithms and their parameters:
 
 * :py:class:`facereclib.tools.JFA`: This class is an extension of the :py:class:`facereclib.tools.UBMGMM`.
   Hence, all the parameters of the :py:class:`facereclib.tools.UBMGMM` must be specified as well.
-  Additionally, a subspace projection is computed using the *Joint Factor Analysis* (:ref:`bob.learn.misc <bob.learn.misc>`).
+  Additionally, a subspace projection is computed using the *Joint Factor Analysis* (:ref:`bob.learn.em <bob.learn.em>`).
 
   - ``subspace_dimension_of_u``: The dimension of the JFA U subspace.
   - ``subspace_dimension_of_v``: The dimension of the JFA V subspace.

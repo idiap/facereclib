@@ -4,7 +4,7 @@
 
 import bob.io.base
 import bob.learn.linear
-import bob.learn.misc
+import bob.learn.em
 import bob.measure
 
 import os
@@ -531,7 +531,7 @@ class ToolChain:
         bob.io.base.save(d, score_file)
 
         t_client_id = [self.m_file_selector.client_id(t_model_id, group, True)]
-        d_same_value_tm = bob.learn.misc.ztnorm_same_value(t_client_id, z_probe_ids)
+        d_same_value_tm = bob.learn.em.ztnorm_same_value(t_client_id, z_probe_ids)
         bob.io.base.save(d_same_value_tm, same_score_file)
 
 
@@ -671,7 +671,7 @@ class ToolChain:
         c = bob.io.base.load(self.m_file_selector.c_file_for_model(model_id, group))
 
         # compute zt scores
-        zt_scores = bob.learn.misc.ztnorm(a, b, c, d, d_same_value)
+        zt_scores = bob.learn.em.ztnorm(a, b, c, d, d_same_value)
 
         # Saves to text file
         self.__save_scores__(self.m_file_selector.zt_norm_file(model_id, group), zt_scores, probe_objects, self.m_file_selector.client_id(model_id, group))
@@ -790,5 +790,3 @@ class ToolChain:
             assert len(line) == 4
             calibrated_score = llr_machine([line[3]])
             f.write('%s %s %s ' % line[0:3] + str(calibrated_score[0]) + "\n")
-
-

@@ -19,7 +19,7 @@
 
 import bob.io.base
 import bob.learn.linear
-import bob.learn.misc
+import bob.learn.em
 
 import unittest
 import os
@@ -66,7 +66,7 @@ class ToolTest(unittest.TestCase):
     for i in range(count):
       per_id = []
       for j in range(count):
-        gmm_stats = bob.learn.misc.GMMStats(f)
+        gmm_stats = bob.learn.em.GMMStats(f)
         gmm_stats.sum_px = numpy.random.random(gmm_stats.sum_px.shape) * (maximum - minimum) + minimum
         gmm_stats.sum_pxx = numpy.random.random(gmm_stats.sum_pxx.shape) * (maximum - minimum) + minimum
         per_id.append(gmm_stats)
@@ -352,7 +352,7 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('gmm_projector.hdf5'))
     # compare GMM projector with reference
-    new_machine = bob.learn.misc.GMMMachine(bob.io.base.HDF5File(t))
+    new_machine = bob.learn.em.GMMMachine(bob.io.base.HDF5File(t))
     self.assertTrue(tool.m_ubm.is_similar_to(new_machine))
     os.remove(t)
 
@@ -446,13 +446,13 @@ class ToolTest(unittest.TestCase):
     # compare ISV projector with reference
     hdf5file = bob.io.base.HDF5File(t)
     hdf5file.cd('Projector')
-    projector_reference = bob.learn.misc.GMMMachine(hdf5file)
+    projector_reference = bob.learn.em.GMMMachine(hdf5file)
     self.assertTrue(tool.m_ubm.is_similar_to(projector_reference))
 
     # compare ISV enroller with reference
     hdf5file.cd('/')
     hdf5file.cd('Enroller')
-    enroller_reference = bob.learn.misc.ISVBase(hdf5file)
+    enroller_reference = bob.learn.em.ISVBase(hdf5file)
     enroller_reference.ubm = projector_reference
     if not _mac_os:
       self.assertTrue(tool.m_isvbase.is_similar_to(enroller_reference))
@@ -521,7 +521,7 @@ class ToolTest(unittest.TestCase):
     # load the projector file
     tool.load_projector(self.reference_dir('jfa_projector.hdf5'))
     # compare JFA projector with reference
-    new_machine = bob.learn.misc.GMMMachine(bob.io.base.HDF5File(t))
+    new_machine = bob.learn.em.GMMMachine(bob.io.base.HDF5File(t))
     self.assertTrue(tool.m_ubm.is_similar_to(new_machine))
     os.remove(t)
 
@@ -541,7 +541,7 @@ class ToolTest(unittest.TestCase):
       shutil.copy2(t, self.reference_dir('jfa_enroller.hdf5'))
     tool.load_enroller(self.reference_dir('jfa_enroller.hdf5'))
     # compare JFA enroller with reference
-    enroller_reference = bob.learn.misc.JFABase(bob.io.base.HDF5File(t))
+    enroller_reference = bob.learn.em.JFABase(bob.io.base.HDF5File(t))
     enroller_reference.ubm = new_machine
     if not _mac_os:
       self.assertTrue(tool.m_jfabase.is_similar_to(enroller_reference))
@@ -598,7 +598,7 @@ class ToolTest(unittest.TestCase):
     test_file.cd('/pca')
     pca_machine = bob.learn.linear.Machine(test_file)
     test_file.cd('/plda')
-    plda_machine = bob.learn.misc.PLDABase(test_file)
+    plda_machine = bob.learn.em.PLDABase(test_file)
     # TODO: compare the PCA machines
     #self.assertEqual(pca_machine, tool.m_pca_machine)
     # TODO: compare the PLDA machines
@@ -656,13 +656,13 @@ class ToolTest(unittest.TestCase):
     # compare ISV projector with reference
     hdf5file = bob.io.base.HDF5File(t)
     hdf5file.cd('Projector')
-    projector_reference = bob.learn.misc.GMMMachine(hdf5file)
+    projector_reference = bob.learn.em.GMMMachine(hdf5file)
     self.assertTrue(tool.m_ubm.is_similar_to(projector_reference))
 
     # compare ISV enroller with reference
     hdf5file.cd('/')
     hdf5file.cd('Enroller')
-    enroller_reference = bob.learn.misc.IVectorMachine(hdf5file)
+    enroller_reference = bob.learn.em.IVectorMachine(hdf5file)
     enroller_reference.ubm = projector_reference
     if not _mac_os:
       self.assertTrue(tool.m_tv.is_similar_to(enroller_reference))
@@ -695,6 +695,3 @@ class ToolTest(unittest.TestCase):
 
     # score with a concatenation of the probe
     # This is not implemented yet
-
-
-

@@ -4,7 +4,7 @@
 
 import bob.core
 import bob.io.base
-import bob.learn.misc
+import bob.learn.em
 
 import numpy
 
@@ -33,7 +33,7 @@ class UBMGMM (Tool):
       responsibility_threshold = 0, # If set, the weight of a particular Gaussian will at least be greater than this threshold. In the case the real weight is lower, the prior mean value will be used to estimate the current mean and variance.
       INIT_SEED = 5489,
       # scoring
-      scoring_function = bob.learn.misc.linear_scoring
+      scoring_function = bob.learn.em.linear_scoring
   ):
     """Initializes the local UBM-GMM tool chain with the given file selector object"""
 
@@ -75,6 +75,7 @@ class UBMGMM (Tool):
     self.m_relevance_factor = relevance_factor
     self.m_gmm_enroll_iterations = gmm_enroll_iterations
     self.m_init_seed = INIT_SEED
+    self.m_rng = bob.core.random.mt19937(self.m_init_seed)
     self.m_responsibility_threshold = responsibility_threshold
     self.m_scoring_function = scoring_function
 
@@ -140,20 +141,17 @@ class UBMGMM (Tool):
 
     # Creates the machines (KMeans and GMM)
     utils.debug(" .... Creating machines")
-    kmeans = bob.learn.misc.KMeansMachine(self.m_gaussians, input_size)
-    self.m_ubm = bob.learn.misc.GMMMachine(self.m_gaussians, input_size)
+    kmeans = bob.learn.em.KMeansMachine(self.m_gaussians, input_size)
+    self.m_ubm = bob.learn.em.GMMMachine(self.m_gaussians, input_size)
 
     # Creates the KMeansTrainer
-    kmeans_trainer = bob.learn.misc.KMeansTrainer()
-    kmeans_trainer.rng = bob.core.random.mt19937(self.m_init_seed)
-    kmeans_trainer.convergence_threshold = self.m_training_threshold
-    kmeans_trainer.max_iterations = self.m_gmm_training_iterations
+    kmeans_trainer = bob.learn.em.KMeansTrainer()
 
     # Trains using the KMeansTrainer
     utils.info("  -> Training K-Means")
-    kmeans_trainer.train(kmeans, normalized_array)
+    bob.learn.em.train(kmeans_trainer, kmeans, normalized_array, self.m_gmm_training_iterations, self.m_training_threshold, bob.core.random.mt19937(self.m_init_seed))
 
-    [variances, weights] = kmeans.get_variances_and_weights_for_each_cluster(normalized_array)
+    variances, weights = kmeans.get_variances_and_weights_for_each_cluster(normalized_array)
     means = kmeans.means
 
     # Undoes the normalization
@@ -170,11 +168,8 @@ class UBMGMM (Tool):
 
     # Trains the GMM
     utils.info("  -> Training GMM")
-    trainer = bob.learn.misc.ML_GMMTrainer(self.m_update_means, self.m_update_variances, self.m_update_weights)
-    trainer.rng = bob.core.random.mt19937(self.m_init_seed)
-    trainer.convergence_threshold = self.m_training_threshold
-    trainer.max_iterations = self.m_gmm_training_iterations
-    trainer.train(self.m_ubm, array)
+    trainer = bob.learn.em.ML_GMMTrainer(self.m_update_means, self.m_update_variances, self.m_update_weights)
+    bob.learn.em.train(trainer, self.m_ubm, array, self.m_gmm_training_iterations, self.m_training_threshold, bob.core.random.mt19937(self.m_init_seed))
 
 
   def _save_projector(self, projector_file):
@@ -203,10 +198,10 @@ class UBMGMM (Tool):
   def load_ubm(self, ubm_file):
     hdf5file = bob.io.base.HDF5File(ubm_file)
     # read UBM
-    self.m_ubm = bob.learn.misc.GMMMachine(hdf5file)
+    self.m_ubm = bob.learn.em.GMMMachine(hdf5file)
     self.m_ubm.set_variance_thresholds(self.m_variance_threshold)
     # Initializes GMMStats object
-    self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+    self.m_gmm_stats = bob.learn.em.GMMStats(self.m_ubm.shape[0], self.m_ubm.shape[1])
 
 
   def load_projector(self, projector_file):
@@ -214,14 +209,9 @@ class UBMGMM (Tool):
     # read UBM
     self.load_ubm(projector_file)
     # prepare MAP_GMM_Trainer
-    if self.m_responsibility_threshold > 0.:
-      self.m_trainer = bob.learn.misc.MAP_GMMTrainer(self.m_relevance_factor, True, False, False, self.m_responsibility_threshold)
-    else:
-      self.m_trainer = bob.learn.misc.MAP_GMMTrainer(self.m_relevance_factor, True, False, False)
-    self.m_trainer.rng = bob.core.random.mt19937(self.m_init_seed)
-    self.m_trainer.convergence_threshold = self.m_training_threshold
-    self.m_trainer.max_iterations = self.m_gmm_enroll_iterations
-    self.m_trainer.set_prior_gmm(self.m_ubm)
+    kwargs = dict(mean_var_update_responsibilities_threshold=self.m_responsibility_threshold) if self.m_responsibility_threshold > 0. else dict()
+    self.m_trainer = bob.learn.em.MAP_GMMTrainer(self.m_ubm, relevance_factor = self.m_relevance_factor, update_means = True, update_variances = False, **kwargs)
+    self.m_rng = bob.core.random.mt19937(self.m_init_seed)
 
 
   def _project_using_array(self, array):
@@ -241,7 +231,7 @@ class UBMGMM (Tool):
 
   def read_gmm_stats(self, gmm_stats_file):
     """Reads GMM stats from file."""
-    return bob.learn.misc.GMMStats(bob.io.base.HDF5File(gmm_stats_file))
+    return bob.learn.em.GMMStats(bob.io.base.HDF5File(gmm_stats_file))
 
   def read_feature(self, feature_file):
     """Read the type of features that we require, namely GMM_Stats"""
@@ -251,9 +241,9 @@ class UBMGMM (Tool):
   def _enroll_using_array(self, array):
     utils.debug(" .... Enrolling with %d feature vectors" % array.shape[0])
 
-    gmm = bob.learn.misc.GMMMachine(self.m_ubm)
+    gmm = bob.learn.em.GMMMachine(self.m_ubm)
     gmm.set_variance_thresholds(self.m_variance_threshold)
-    self.m_trainer.train(gmm, array)
+    bob.learn.em.train(self.m_trainer, gmm, array, self.m_gmm_enroll_iterations, self.m_training_threshold, self.m_rng)
     return gmm
 
   def enroll(self, feature_arrays):
@@ -266,7 +256,7 @@ class UBMGMM (Tool):
   ######################################################
   ################ Feature comparison ##################
   def read_model(self, model_file):
-    return bob.learn.misc.GMMMachine(bob.io.base.HDF5File(model_file))
+    return bob.learn.em.GMMMachine(bob.io.base.HDF5File(model_file))
 
   def score(self, model, probe):
     """Computes the score for the given model and the given probe using the scoring function from the config file"""
@@ -324,5 +314,5 @@ class UBMGMMRegular (UBMGMM):
     utils.warn("This class must be checked. Please verify that I didn't do any mistake here. For identical tests, this function gives a different score than the normal UBMGMM (see test_tools.py:test06a)")
     score = 0
     for i in range(probe.shape[0]):
-      score += model.forward(probe[i,:]) - self.m_ubm.forward(probe[i,:])
+      score += model.log_likelihood(probe[i,:]) - self.m_ubm.log_likelihood(probe[i,:])
     return score/probe.shape[0]

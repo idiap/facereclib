@@ -4,7 +4,7 @@
 
 import bob.core
 import bob.io.base
-import bob.learn.misc
+import bob.learn.em
 
 import numpy
 import types
@@ -60,11 +60,10 @@ class ISV (UBMGMM):
   def _train_isv(self, data):
     """Train the ISV model given a dataset"""
     utils.info("  -> Training ISV enroller")
-    self.m_isvbase = bob.learn.misc.ISVBase(self.m_ubm, self.m_subspace_dimension_of_u)
+    self.m_isvbase = bob.learn.em.ISVBase(self.m_ubm, self.m_subspace_dimension_of_u)
     # train ISV model
-    t = bob.learn.misc.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
-    t.rng = bob.core.random.mt19937(self.m_init_seed)
-    t.train(self.m_isvbase, data)
+    trainer = bob.learn.em.ISVTrainer(self.m_relevance_factor)
+    bob.learn.em.train(trainer, self.m_isvbase, data, self.m_isv_training_iterations, rng=self.m_rng)
 
 
   def train_projector(self, train_features, projector_file):
@@ -83,7 +82,7 @@ class ISV (UBMGMM):
       list = []
       for feature in client_features:
         # Initializes GMMStats object
-        self.m_gmm_stats = bob.learn.misc.GMMStats(self.m_ubm.dim_c, self.m_ubm.dim_d)
+        self.m_gmm_stats = bob.learn.em.GMMStats(*self.m_ubm.shape)
         list.append(UBMGMM.project(self, feature))
       data.append(list)
 
@@ -108,7 +107,7 @@ class ISV (UBMGMM):
 
   def load_isv(self, isv_file):
     hdf5file = bob.io.base.HDF5File(isv_file)
-    self.m_isvbase = bob.learn.misc.ISVBase(hdf5file)
+    self.m_isvbase = bob.learn.em.ISVBase(hdf5file)
     # add UBM model from base class
     self.m_isvbase.ubm = self.m_ubm
 
@@ -124,16 +123,16 @@ class ISV (UBMGMM):
     hdf5file.cd('/Enroller')
     self.load_isv(hdf5file)
 
-    self.m_machine = bob.learn.misc.ISVMachine(self.m_isvbase)
-    self.m_trainer = bob.learn.misc.ISVTrainer(self.m_isv_training_iterations, self.m_relevance_factor)
-    self.m_trainer.rng = bob.core.random.mt19937(self.m_init_seed)
+    self.m_machine = bob.learn.em.ISVMachine(self.m_isvbase)
+    self.m_trainer = bob.learn.em.ISVTrainer(self.m_relevance_factor)
+    self.m_rng = bob.core.random.mt19937(self.m_init_seed)
 
 
   #######################################################
   ################ ISV training #########################
   def project_isv(self, projected_ubm):
-    projected_isv = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
-    model = bob.learn.misc.ISVMachine(self.m_isvbase)
+    projected_isv = numpy.ndarray(shape=(self.m_ubm.shape[0]*self.m_ubm.shape[1],), dtype=numpy.float64)
+    model = bob.learn.em.ISVMachine(self.m_isvbase)
     model.estimate_ux(projected_ubm, projected_isv)
     return projected_isv
 
@@ -141,7 +140,7 @@ class ISV (UBMGMM):
     """Computes GMM statistics against a UBM, then corresponding Ux vector"""
     projected_ubm = UBMGMM.project(self,feature_array)
     projected_isv = self.project_isv(projected_ubm)
-    return [bob.learn.misc.GMMStats(projected_ubm), projected_isv]
+    return [bob.learn.em.GMMStats(projected_ubm), projected_isv]
 
   #######################################################
   ################## ISV model enroll ####################
@@ -160,13 +159,13 @@ class ISV (UBMGMM):
     """Read the type of features that we require, namely GMMStats"""
     hdf5file = bob.io.base.HDF5File(feature_file)
     hdf5file.cd('gmmstats')
-    gmmstats = bob.learn.misc.GMMStats(hdf5file)
+    gmmstats = bob.learn.em.GMMStats(hdf5file)
     return gmmstats
 
 
   def enroll(self, enroll_features):
     """Performs ISV enrollment"""
-    self.m_trainer.enrol(self.m_machine, enroll_features, self.m_isv_enroll_iterations)
+    self.m_trainer.enroll(self.m_machine, enroll_features, self.m_isv_enroll_iterations)
     # return the resulting gmm
     return self.m_machine
 
@@ -175,7 +174,7 @@ class ISV (UBMGMM):
   ################ Feature comparison ##################
   def read_model(self, model_file):
     """Reads the ISV Machine that holds the model"""
-    machine = bob.learn.misc.ISVMachine(bob.io.base.HDF5File(model_file))
+    machine = bob.learn.em.ISVMachine(bob.io.base.HDF5File(model_file))
     machine.isv_base = self.m_isvbase
     return machine
 
@@ -183,7 +182,7 @@ class ISV (UBMGMM):
     """Read the type of features that we require, namely GMMStats"""
     hdf5file = bob.io.base.HDF5File(probe_file)
     hdf5file.cd('gmmstats')
-    gmmstats = bob.learn.misc.GMMStats(hdf5file)
+    gmmstats = bob.learn.em.GMMStats(hdf5file)
     hdf5file.cd('..')
     Ux = hdf5file.read('Ux')
     return [gmmstats, Ux]
@@ -202,11 +201,11 @@ class ISV (UBMGMM):
     else:
       # Otherwise: compute joint likelihood of all probe features
       # create GMM statistics from first probe statistics
-      gmmstats_acc = bob.learn.misc.GMMStats(probes[0][0])
+      gmmstats_acc = bob.learn.em.GMMStats(probes[0][0])
       # add all other probe statistics
       for i in range(1,len(probes)):
         gmmstats_acc += probes[i][0]
       # compute ISV score with the accumulated statistics
-      projected_isv_acc = numpy.ndarray(shape=(self.m_ubm.dim_c*self.m_ubm.dim_d,), dtype=numpy.float64)
+      projected_isv_acc = numpy.ndarray(shape=(self.m_ubm.shape[0]*self.m_ubm.shape[1],), dtype=numpy.float64)
       model.estimate_ux(gmmstats_acc, projected_isv_acc)
       return model.forward_ux(gmmstats_acc, projected_isv_acc)
