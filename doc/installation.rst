@@ -91,8 +91,8 @@ To proceed, open a terminal in your FaceRecLib main directory and call:
 
 .. code-block:: sh
 
-  $ python bootstrap.py
-  $ bin/buildout
+  $ python bootstrap-buildout.py
+  $ ./bin/buildout
 
 The first step will generate a `bin <file:../bin>`_ directory in the main directory of the FaceRecLib.
 The second step automatically downloads all dependencies of the FaceRecLib and creates all required scripts that we will need soon.
@@ -106,7 +106,7 @@ To verify your installation, you should run the script by calling:
 
 .. code-block:: sh
 
-  $ bin/nosetests
+  $ ./bin/nosetests
 
 Some of the tests that are run require the images of the `AT&T database`_ database.
 If the database is not found on your system, it will automatically download and extract the `AT&T database`_ a temporary directory (which will not be erased).
@@ -139,7 +139,7 @@ To generate this documentation, you call:
 
 .. code-block:: sh
 
-  $ bin/sphinx-build docs sphinx
+  $ ./bin/sphinx-build doc sphinx
 
 Afterwards, the documentation is available and you can read it, e.g., by using:
 

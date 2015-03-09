@@ -8,12 +8,12 @@
 Running non-baseline Experiments
 ================================
 
-The ``bin/baselines.py`` script that we have discussed in the previous section is just a wrapper for the ``bin/faceverify.py`` script.
+The ``./bin/baselines.py`` script that we have discussed in the previous section is just a wrapper for the ``./bin/faceverify.py`` script.
 When the former script is executed, it always prints the call to the latter script.
 The latter script is actually doing all the work.
-If you want to run experiments with a different setup than the baselines, you should use the ``bin/faceverify.py`` script directly.
+If you want to run experiments with a different setup than the baselines, you should use the ``./bin/faceverify.py`` script directly.
 
-To get the command lines to the `bin/faceverify.py`` script that are executed in the baseline experiments, you can call:
+To get the command lines to the ``./bin/faceverify.py`` script that are executed in the baseline experiments, you can call:
 
 .. code-block:: sh
 
@@ -21,15 +21,15 @@ To get the command lines to the `bin/faceverify.py`` script that are executed in
 
 Of course, you can also select a single baseline algorithm to print its command line.
 
-In the following sections the available command line arguments of the ``bin/faceverify.py`` are listed.
+In the following sections the available command line arguments of the ``./bin/faceverify.py`` are listed.
 Sometimes, arguments have a long version starting with ``--`` and a short one starting with a single ``-``.
-In this section, only the long names of the arguments are listed, please refer to ``bin/faceverify.py --help`` (or short: ``bin/faceverify.py -h``) for the abbreviations.
+In this section, only the long names of the arguments are listed, please refer to ``./bin/faceverify.py --help`` (or short: ``./bin/faceverify.py -h``) for the abbreviations.
 
 .. _required:
 
 Required Command Line Arguments
 -------------------------------
-To run a face recognition experiment using the FaceRecLib, you have to tell the ``bin/faceverify.py`` script, which database, preprocessing, features, and algorithm should be used.
+To run a face recognition experiment using the FaceRecLib, you have to tell the ``./bin/faceverify.py`` script, which database, preprocessing, features, and algorithm should be used.
 To use this script, you have to specify at least these command line arguments (see also the ``--help`` option):
 
 * ``--database``: The database to run the experiments on, and which protocol to use.
@@ -51,7 +51,7 @@ The FaceRecLib is designed in a way that makes it very easy to select the setup 
 Basically, you can specify your algorithm and its configuration in three different ways:
 
 1. You choose one of the registered resources.
-   Just call ``bin/resources.py`` or ``bin/faceverify.py --help`` to see, which kind of resources are currently registered.
+   Just call ``./bin/resources.py`` or ``./bin/faceverify.py --help`` to see, which kind of resources are currently registered.
    Of course, you can also register a new resource.
    How this is done is detailed in section :ref:`register-resources`.
 
@@ -59,7 +59,7 @@ Basically, you can specify your algorithm and its configuration in three differe
 
    .. code-block:: sh
 
-     $ bin/faceverify.py --database atnt
+     $ ./bin/faceverify.py --database atnt
 
 2. You define a configuration file or choose one of the already existing configuration files that are located in `facereclib/configurations`_ and its sub-directories.
    How to define a new configuration file, please read section :ref:`configuration-files`.
@@ -68,7 +68,7 @@ Basically, you can specify your algorithm and its configuration in three differe
 
    .. code-block:: sh
 
-     $ bin/faceverify.py --preprocessing facereclib/configurations/preprocessing/tan_triggs.py
+     $ ./bin/faceverify.py --preprocessing facereclib/configurations/preprocessing/tan_triggs.py
 
 3. You directly put the constructor call of the class into the command line.
    Since the parentheses are special characters in the shell, usually you have to enclose the constructor call into quotes.
@@ -78,7 +78,7 @@ Basically, you can specify your algorithm and its configuration in three differe
 
    .. code-block:: sh
 
-     $ bin/faceverify.py --features "facereclib.features.DCTBlocks(block_size=10, block_overlap=0, number_of_dct_coefficients=42)"
+     $ ./bin/faceverify.py --features "facereclib.features.DCTBlocks(block_size=10, block_overlap=0, number_of_dct_coefficients=42)"
 
    .. note::
      If you use this option with a class that is *not* in the ``facereclib`` module, or your parameters use another module, you have to specify the imports that are needed instead.
@@ -89,7 +89,7 @@ Basically, you can specify your algorithm and its configuration in three differe
 
      .. code-block:: sh
 
-       $ bin/faceverify.py --tool "facereclib.tools.BIC(comparison_function=numpy.subtract)" --imports facereclib numpy
+       $ ./bin/faceverify.py --tool "facereclib.tools.BIC(comparison_function=numpy.subtract)" --imports facereclib numpy
 
 
 Of course, you can mix the ways, how you define command line options.
@@ -158,7 +158,7 @@ If you have an ``image_directory`` different to the one specified in the file, p
 
   .. note::
     The FRGC database interface requires to set the ``frgc_directory`` in the configuration file to your copy of the FRGC database.
-    If this directory is not set, the FRGC database will not be available, e.g., it will not show up in the available databases of ``bin/baselines.py --help``.
+    If this directory is not set, the FRGC database will not be available, e.g., it will not show up in the available databases of ``./bin/baselines.py --help``.
 
   - `The Good, The Bad & The Ugly (GBU) <file:../facereclib/configurations/databases/gbu.py>`_ <:ref:`bob.db.gbu <bob.db.gbu>`>: http://www.nist.gov/itl/iad/ig/focs.cfm
 
@@ -445,12 +445,12 @@ and the ``number_of_..._jobs`` are ignored, and ``number_of_parallel_processes``
   The parallel execution of jobs on the local machine is currently in BETA status and might be unstable.
   If any problems occur, please file a new bug at http://github.com/idiap/gridtk/issues.
 
-When calling the ``bin/faceverify.py`` script with the ``--grid ...`` argument, the script will submit all the jobs by taking care of the dependencies between the jobs.
+When calling the ``./bin/faceverify.py`` script with the ``--grid ...`` argument, the script will submit all the jobs by taking care of the dependencies between the jobs.
 If the jobs are sent to the SGE_ grid (``grid = "sge"``), the script will exit immediately after the job submission.
 Otherwise, the jobs will be run locally in parallel and the script will exit after all jobs are finished.
 
-In any of the two cases, the script writes a database file that you can monitor using the ``bin/jman`` command.
-Please refer to ``bin/jman --help`` or the :ref:`GridTK documentation <gridtk>` to see the command line arguments of this tool.
+In any of the two cases, the script writes a database file that you can monitor using the ``./bin/jman`` command.
+Please refer to ``./bin/jman --help`` or the :ref:`GridTK documentation <gridtk>` to see the command line arguments of this tool.
 The name of the database file by default is **submitted.sql3**, but you can change the name (and its path) using the argument:
 
 * ``--submit-db-file``
@@ -534,7 +534,7 @@ To change the protocol, you can either modify the configuration file, or simply 
 
   .. code-block:: sh
 
-     $ bin/faceverify.py --database gbu --protocol Bad ...
+     $ ./bin/faceverify.py --database gbu --protocol Bad ...
 
 Some databases define several kinds of evaluation setups.
 For example, often two groups of data are defined, a so-called *development set* and an *evaluation set*.

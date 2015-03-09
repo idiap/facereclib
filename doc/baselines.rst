@@ -49,14 +49,14 @@ The FaceRecLib takes care that always the correct files are forwarded to the sub
 Running Baseline Experiments
 ----------------------------
 
-To run the baseline experiments, you can use the ``bin/baselines.py`` script by just going to the console and typing:
+To run the baseline experiments, you can use the ``./bin/baselines.py`` script by just going to the console and typing:
 
 .. code-block:: sh
 
-  $ bin/baselines.py
+  $ ./bin/baselines.py
 
-This script is a simple wrapper for the ``bin/faceverify.py`` script that will be explained in more detail in the :doc:`experiments` section.
-The ``bin/baselines.py --help`` option shows you, which other options you have.
+This script is a simple wrapper for the ``./bin/faceverify.py`` script that will be explained in more detail in the :doc:`experiments` section.
+The ``./bin/baselines.py --help`` option shows you, which other options you have.
 Here is an almost complete extract:
 
 * ``--database``: The database and protocol you want to use.
@@ -65,7 +65,7 @@ Here is an almost complete extract:
   By default, only the *eigenface* algorithm is executed.
 * ``--all``: Execute all algorithms that are implemented.
 * ``--directory``: The directory where the files of the experiments are put to.
-  If not specified, by default the files are split up into the temporary files and the result files, see the ``--temp-directory`` and the ``--result-directory`` of ``bin/faceverify.py --help``.
+  If not specified, by default the files are split up into the temporary files and the result files, see the ``--temp-directory`` and the ``--result-directory`` of ``./bin/faceverify.py --help``.
   In this script, if the ``--directory`` option is specified, all files will be put into the given directory.
 * ``--evaluate``: After running the experiments, the resulting score files will be evaluated, and the result is written to console.
 * ``--dry-run``: Instead of executing the algorithm (or the evaluation), only print the command that would have been executed.
@@ -73,7 +73,7 @@ Here is an almost complete extract:
   By default, only the commands that are executed are printed, and the rest of the calculation runs quietly.
   You can increase the verbosity by adding the ``--verbose`` parameter repeatedly (up to three times).
 
-Usually it is a good idea to have at least verbose level 2 (i.e., calling ``bin/baselines.py --verbose --verbose``, or the short version ``bin/baselines.py -vv``).
+Usually it is a good idea to have at least verbose level 2 (i.e., calling ``./bin/baselines.py --verbose --verbose``, or the short version ``./bin/baselines.py -vv``).
 
 
 The Algorithms
@@ -120,7 +120,7 @@ Hence, the complete set of results of the baseline experiments are generated usi
 
 .. code-block:: sh
 
-  $ bin/baselines.py --all -vv --evaluate ROC DET CMC HTER
+  $ ./bin/baselines.py --all -vv --evaluate ROC DET CMC HTER
 
 If you specified other parameters for the execution of the algorithms, e.g., the ``--directory`` flag, you have to add these options here as well.
 If you ran only a sub-set of the available, the missing algorithms will just be skipped.

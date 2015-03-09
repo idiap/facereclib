@@ -34,7 +34,7 @@ Evaluation
 Since all required information is available in the score file, you can use any tool (like MatLab) to evaluate the score file and compute error measures or generate plots.
 The FaceRecLib defines one generic script that is able to evaluate the score files, compute some error measures and generate various types of plots.
 For example, the plots shown in section :ref:`baseline_results` are generated with this script.
-This script is called ``bin/evaluate.py`` and has the following command line options (see ``bin/evaluate.py --help`` for the shortcuts):
+This script is called ``./bin/evaluate.py`` and has the following command line options (see ``./bin/evaluate.py --help`` for the shortcuts):
 
 * ``--dev-files``: A list of files of the development set that will be evaluated.
 * ``--eval-files`` (optional): A list of files of the evaluation set. If given, please assure that there exist exactly one evaluation file for each development score file and that they are given in the same order.
@@ -47,5 +47,3 @@ This script is called ``bin/evaluate.py`` and has the following command line opt
 * ``--cllr`` (optional): If given, a the Cllr and the minCllr will be computed on both the development and the evaluation set. All results will be written to console.
 
 As usual, the ``--verbose`` (i.e., ``-v``) option exists, and it is wise to use ``-vv``.
-
-

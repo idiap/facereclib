@@ -239,7 +239,7 @@ These two functions are:
 Executing experiments with your classes
 ---------------------------------------
 Finally, executing experiments using your database, preprocessor, feature extraction, and/or recognition tool should be as easy as using the tools that are already available.
-Nonetheless, it might be a good idea to first run the experiments locally (i.e., calling the ``bin/faceverify.py -vvv`` without the ``--grid`` option) to see if your functions do work and do provide expected results.
+Nonetheless, it might be a good idea to first run the experiments locally (i.e., calling the ``./bin/faceverify.py -vvv`` without the ``--grid`` option) to see if your functions do work and do provide expected results.
 For this, it might also be a good idea to use a small image database, like ``--database atnt``.
 
 .. note::
@@ -254,7 +254,7 @@ To implement a unit test for your contribution, you simply can create a python f
 In the FaceRecLib, these files are located in `facereclib/tests <file:../facereclib/tests>`_.
 
 In the test file, please write a test class that derives from ``unittest.TestCase``.
-Any function name containing the string ``test`` will be automatically found and executed when running ``bin/nosetests``.
+Any function name containing the string ``test`` will be automatically found and executed when running ``./bin/nosetests``.
 In your test function, please assure that all aspects of your contribution are thoroughly tested and that all test cases pass.
 Also remember that your tests need to run on different machines with various operating systems, so don't test floating point values for equality.
 
@@ -288,7 +288,7 @@ Depending on your type of algorithm, you have to add:
 * ``'facereclib.feature_extractor': [ '<your-extractor-shortcut> = <your-extractor-configuration>.feature_extractor' ]``
 * ``'facereclib.tool': [ '<your-recognition-algorithm-shortcut> = <your-algorithm-configuration>.tool' ]``
 
-After re-running ``bin/buildout``, your new resource should be listed in the output of ``bin/resources.py``.
+After re-running ``./bin/buildout``, your new resource should be listed in the output of ``./bin/resources.py``.
 
 
 .. include:: links.rst
