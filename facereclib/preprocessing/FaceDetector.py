@@ -91,5 +91,13 @@ class FaceDetector (NullPreprocessor):
     # perform post-processing
     return self.m_post_processor(image, annotations)
 
+
+  def read_data(self, filename):
+    return self.m_post_processor.read_data(filename)
+
+  def save_data(self, data, filename):
+    return self.m_post_processor.save_data(data, filename)
+
+
   def quality(self):
     return self.m_quality
