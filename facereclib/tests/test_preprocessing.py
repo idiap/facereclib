@@ -46,13 +46,13 @@ class PreprocessingTest(unittest.TestCase):
   def config(self, resource):
     return facereclib.utils.tests.configuration_file(resource, 'preprocessor', 'preprocessing')
 
-  def execute(self, preprocessor, data, annotations, reference):
+  def execute(self, preprocessor, data, annotations, reference, max_diff = 1e-5):
     # execute the preprocessor
     preprocessed = preprocessor(data, annotations)
     if regenerate_refs:
       facereclib.utils.save(preprocessed, self.reference_dir(reference))
 
-    self.assertTrue((numpy.abs(facereclib.utils.load(self.reference_dir(reference)) - preprocessed) < 1e-5).all())
+    self.assertTrue((numpy.abs(facereclib.utils.load(self.reference_dir(reference)) - preprocessed) < max_diff).all())
 
 
 
@@ -178,7 +178,7 @@ class PreprocessingTest(unittest.TestCase):
     data, annotation = self.input()
     preprocessor = self.config('landmark-detect')
     # execute preprocessor
-    self.execute(preprocessor, data, annotation, 'landmark.hdf5')
+    self.execute(preprocessor, data, annotation, 'landmark.hdf5', 1e-3)
     self.assertAlmostEqual(preprocessor.quality(), 33.1136586)
 
 
