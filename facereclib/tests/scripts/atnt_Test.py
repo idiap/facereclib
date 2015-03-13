@@ -11,7 +11,8 @@ class TestDatabase (facereclib.databases.DatabaseBobZT):
         database = bob.db.atnt.Database(
             original_directory = facereclib.utils.tests.atnt_database_directory()
         ),
-        name = 'test'
+        name = 'test',
+        check_original_files_for_existence = True
     )
 
 
@@ -31,4 +32,3 @@ class TestDatabase (facereclib.databases.DatabaseBobZT):
     return self.probe_files(None, group)
 
 database = TestDatabase()
-

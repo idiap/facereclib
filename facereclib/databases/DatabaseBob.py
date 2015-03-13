@@ -30,6 +30,7 @@ class DatabaseBob (Database):
       extractor_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
       projector_training_options = {}, # additional options for the database query that can be used to extract the training files for the extractor training
       enroller_training_options = {},  # additional options for the database query that can be used to extract the training files for the extractor training
+      check_original_files_for_existence = False,
       **kwargs  # The default parameters of the base class
   ):
     """
@@ -56,6 +57,9 @@ class DatabaseBob (Database):
     enroller_training_options
       Options passed to the database query used to retrieve the images for the enroller training.
 
+    check_original_files_for_existence
+      Enables the test for the original data files when querying the database.
+
     kwargs
       The arguments of the base class
     """
@@ -72,6 +76,7 @@ class DatabaseBob (Database):
     self.extractor_training_options = extractor_training_options
     self.projector_training_options = projector_training_options
     self.enroller_training_options = enroller_training_options
+    self.check_existence = check_original_files_for_existence
 
     self._kwargs = kwargs
 
@@ -169,7 +174,7 @@ class DatabaseBob (Database):
 
   def original_file_names(self, files):
     """Returns the full path of the original data of the given File objects."""
-    return self.m_database.original_file_names(files)
+    return self.m_database.original_file_names(files, self.check_existence)
 
 
 
