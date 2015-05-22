@@ -18,8 +18,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, dist
+dist.Distribution(dict(setup_requires=['bob.extension']))
 
+from bob.extension.utils import load_requirements
+install_requires = load_requirements()
+
+# list packages
 packages = ['facereclib'] + ['facereclib.' + p for p in find_packages('facereclib')]
 
 # Define package version
@@ -44,7 +49,9 @@ setup(
     include_package_data=True,
     zip_safe=False,
 
-    entry_points={
+    install_requires = install_requires,
+
+    entry_points = {
       # console scripts that will be created in bin/
       'console_scripts': [
         'faceverify.py = facereclib.script.faceverify:main',
@@ -123,27 +130,6 @@ setup(
         'local-p16         = facereclib.configurations.grid.local:grid_p16'
       ],
     },
-
-
-    install_requires=[
-      "setuptools",      # for whatever
-      "bob.core",
-      "bob.io.base",
-      "bob.io.image",
-      "bob.ip.base",
-      "bob.ip.gabor",
-      "bob.ip.color",
-      "bob.ip.facedetect",
-      "bob.ip.flandmark",
-      "bob.math",
-      "bob.measure",
-      "bob.learn.linear",
-      "bob.learn.em",
-      "bob.db.atnt",    # for test purposes, the (freely available) AT&T database is required
-      "bob.db.verification.utils",
-      "bob.db.verification.filelist",
-      "six",
-    ],
 
     # Classifiers are important if you plan to distribute this package through
     # PyPI. You can find the complete list of classifiers that are valid and

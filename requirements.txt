@@ -1,0 +1,17 @@
+setuptools      # for whatever
+six
+bob.core
+bob.io.base
+bob.io.image
+bob.ip.base
+bob.ip.gabor
+bob.ip.color
+bob.ip.facedetect
+bob.ip.flandmark
+bob.math
+bob.measure
+bob.learn.linear
+bob.learn.em
+bob.db.verification.utils
+bob.db.verification.filelist
+bob.db.atnt

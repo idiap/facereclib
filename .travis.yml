@@ -7,7 +7,9 @@ matrix:
     - secure: HNA0cG/STPaAkrUK/cdqaj7ryi/AIcvbFDQJvqcyBqCHz7PuCcnGwqIthPzsEhh+2YMObbPmCPjt7CrS3ULsFbc5Vv0AbKkmwyUqP+WgijMYMuABFuAUN1hmII4dY5V7tn1+d/iSCaIvgztzNZ6maXBKA3YeplHPFU3ktRTtx3U=
     - secure: edoOuO1tKhwruEnvKq7Sac0MDJ6BEv3WtS0XHwIJB8j08bZVUXIRCJ2LDqYgh+9az0EUroAawnXZ2hGu8JdrTVZP+JucI+cDe0LRyOictBNk4ur14CGIFSpGkwEwFZA6gk8FFPm7aw4tq7VzWx9JwxQpX8PCy0FZnkJ+1AIywjQ=
     - BOB_DOCUMENTATION_SERVER=https://www.idiap.ch/software/bob/docs/latest/bioidiap/%s/master
-#  - python: 3.2
+    - BOB_UPLOAD_WHEEL="--universal"
+  - python: 3.3
+  - python: 3.4
 before_install:
 - sudo add-apt-repository -y ppa:biometrics/bob
 - sudo apt-get update -qq
@@ -15,16 +17,20 @@ before_install:
 - sudo apt-get install -qq --force-yes dvipng texlive-latex-base texlive-latex-extra texlive-math-extra texlive-latex-recommended texlive-fonts-recommended
 - sudo apt-get install -qq --force-yes libatlas-dev libatlas-base-dev liblapack-dev gfortran
 - sudo apt-get install -qq --force-yes python-opencv libcv-dev libcvaux-dev libopencv-dev
-- pip install --find-links http://wheels.astropy.org/ --find-links http://wheels2.astropy.org/ --use-wheel numpy scipy matplotlib==1.3.1 sphinx nose==1.3.0 jinja2==2.6 pygments==1.6 coveralls
+- pip install --find-links https://www.idiap.ch/software/bob/wheels/travis/ --use-wheel sphinx nose numpy scipy matplotlib coverage
+- pip install --find-links https://www.idiap.ch/software/bob/wheels/travis/ --use-wheel --pre -r requirements.txt coveralls
 install:
 - python bootstrap-buildout.py
-- ./bin/buildout buildout:debug=false -c develop.cfg
+- ./bin/buildout
 script:
-- ./bin/python -c 'from facereclib import get_config; print(get_config())'
+- ./bin/python -c 'import pkg_resources; from facereclib import get_config; print(get_config())'
 - ./bin/bob_dbmanage.py all download
 - ./bin/coverage run --source=facereclib ./bin/nosetests -sv
 - ./bin/sphinx-build -b doctest doc sphinx
 - ./bin/sphinx-build -b html doc sphinx
 after_success:
 - coveralls
-- ./src/bob.extension/scripts/upload-sphinx.sh
+- wget https://raw.githubusercontent.com/bioidiap/bob.extension/master/scripts/upload-{sphinx,wheel}.sh
+- chmod a+x upload-sphinx.sh upload-wheel.sh
+- ./upload-sphinx.sh
+- ./upload-wheel.sh
