@@ -6,10 +6,10 @@
    :target: http://pythonhosted.org/facereclib/index.html
 .. image:: http://img.shields.io/badge/docs-latest-orange.png
    :target: https://www.idiap.ch/software/bob/docs/latest/idiap/facereclib/master/index.html
-.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=v2.1.1
-   :target: https://travis-ci.org/idiap/facereclib?branch=v2.1.1
-.. image:: https://coveralls.io/repos/idiap/facereclib/badge.png?branch=v2.1.1
-   :target: https://coveralls.io/r/idiap/facereclib?branch=v2.1.1
+.. image:: https://travis-ci.org/idiap/facereclib.svg?branch=master
+   :target: https://travis-ci.org/idiap/facereclib?branch=master
+.. image:: https://coveralls.io/repos/idiap/facereclib/badge.png?branch=master
+   :target: https://coveralls.io/r/idiap/facereclib?branch=master
 .. image:: https://img.shields.io/badge/github-master-0000c0.png
    :target: https://github.com/idiap/facereclib/tree/master
 .. image:: http://img.shields.io/pypi/v/facereclib.png
