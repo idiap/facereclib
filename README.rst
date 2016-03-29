@@ -22,6 +22,13 @@
  The Face Recognition Library
 ==============================
 
+.. warning::
+   THIS LIBRARY IS DEPRECATED AND NO LONGER MAINTAINED.
+   It has been superseded by the ``bob.bio`` packages, which can be downloaded here: http://pypi.python.org/pypi/bob.bio.base.
+   These packages are direct successors of the ``FaceRecLib`` and ``bob.spear`` and incorporate a broader set functionality to run biometric recognition algorithms in general.
+   Please read the `Documentation <http://pythonhosted.org/bob.bio.base/index.html>`__ of the ``bob.bio`` packages, particularly their `Installation Instructions <http://pythonhosted.org/bob.bio.base/installation.html>`__.
+
+
 Welcome to the Face Recognition Library.
 This library is designed to perform a fair comparison of face recognition algorithms.
 It contains scripts to execute various kinds of face recognition experiments on a variety of facial image databases, and running baseline algorithms is as easy as going to the command line and typing::
